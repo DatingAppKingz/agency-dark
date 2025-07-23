@@ -51,7 +51,8 @@
 # 5. Financial Features
 ## Payment processing requirements (Stripe, PayPal, crypto)?
 - Crypto
-
+## Services downtime period (during the notice period to contract termination)
+-  0 < 5000 paying subscribers - 30 days, 1000 - 5001 paying subscribers - 60 days, 10000 paying subscribers and above - 90 days.
 ## How are commissions calculated and distributed?
 - 1) 0-5000 paying subscribers; we take 70%, 2) 5001 - 10000 paying subscribers; we take 65%, if amount of paying subscribers is above 10000 the we take 60 %.
 ## Invoice generation and expense tracking?
