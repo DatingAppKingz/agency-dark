@@ -1,6 +1,13 @@
 # AgencyDark
 
-A white-label SaaS portal for OnlyFans marketing agencies. This platform acts as a comprehensive wrapper around Inflow and OnlyFansAPI, providing multi-tenant architecture, role-based access control, real-time chat management, and advanced analytics.
+A white-label SaaS platform for OnlyFans marketing agencies, providing comprehensive tools for model management, fan engagement, analytics, and financial operations.
+
+![Python](https://img.shields.io/badge/python-3.11-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)
+![Redis](https://img.shields.io/badge/Redis-7-red.svg)
+![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)
+![License](https://img.shields.io/badge/license-Proprietary-red.svg)
 
 ## Features
 

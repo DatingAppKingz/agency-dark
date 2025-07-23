@@ -1,22 +1,25 @@
+version: '3.8'
+
 services:
-  db:
+  # PostgreSQL Database
+  postgres:
     image: postgres:16-alpine
-    container_name: agencydark-db
+    container_name: agencydark-postgres
     environment:
-      POSTGRES_USER: agencydark
-      POSTGRES_PASSWORD: agencydark_dev_password
-      POSTGRES_DB: agencydark_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agencydark
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agencydark"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: agencydark-redis
@@ -31,48 +34,100 @@ services:
       timeout: 5s
       retries: 5
 
+  # Backend API
   backend:
     build:
       context: ./backend
-      dockerfile: ../docker/backend/Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: agencydark-backend
-    volumes:
-      - ./backend:/app
-      - /app/__pycache__
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/agencydark
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-development_secret_key_change_in_production}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-true}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      INFLOW_API_KEY: ${INFLOW_API_KEY}
+      ONLYFANS_API_KEY: ${ONLYFANS_API_KEY}
     ports:
       - "8000:8000"
-    environment:
-      DATABASE_URL: postgresql://agencydark:agencydark_dev_password@db:5432/agencydark_dev
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: development_secret_change_this
-      FRONTEND_URL: http://localhost:3000
-      DEBUG: "true"
-      ENVIRONMENT: development
+    volumes:
+      - ./backend:/app
+      - uploads:/app/uploads
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: |
+      sh -c "
+        echo 'Running database migrations...'
+        alembic upgrade head
+        echo 'Starting application...'
+        uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+      "
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: ../docker/frontend/Dockerfile.dev
-    container_name: agencydark-frontend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+  # Frontend (placeholder for future)
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: agencydark-frontend
+  #   environment:
+  #     REACT_APP_API_URL: http://localhost:8000
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./frontend:/app
+  #   depends_on:
+  #     - backend
+
+  # Nginx Reverse Proxy (for production-like setup)
+  nginx:
+    image: nginx:alpine
+    container_name: agencydark-nginx
     ports:
-      - "3000:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-      NODE_ENV: development
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - backend
-    command: npm run dev
+    profiles:
+      - production
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: agencydark-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@agencydark.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    profiles:
+      - tools
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: agencydark-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    profiles:
+      - tools
 
 volumes:
   postgres_data:
   redis_data:
+  pgadmin_data:
+  uploads:

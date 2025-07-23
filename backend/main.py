@@ -75,19 +75,40 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    try:
-        await redis_client.ping()
-        redis_status = "healthy"
-    except Exception:
-        redis_status = "unhealthy"
+    """Basic health check endpoint."""
+    from backend.core.monitoring import HealthChecker
+    from backend.core.dependencies import get_db
     
-    return {
-        "status": "healthy",
-        "services": {
-            "api": "healthy",
-            "redis": redis_status,
-        }
-    }
+    async for db in get_db():
+        try:
+            health_data = await HealthChecker.full_health_check(db)
+            return health_data
+        finally:
+            await db.close()
+
+
+@app.get("/health/live")
+async def liveness_check():
+    """Kubernetes liveness probe endpoint."""
+    from backend.core.monitoring import HealthChecker
+    return await HealthChecker.liveness_check()
+
+
+@app.get("/health/ready")
+async def readiness_check():
+    """Kubernetes readiness probe endpoint."""
+    from backend.core.monitoring import HealthChecker
+    return await HealthChecker.readiness_check()
+
+
+@app.get("/metrics")
+async def get_prometheus_metrics():
+    """Prometheus metrics endpoint."""
+    from backend.core.monitoring import get_metrics
+    from starlette.responses import Response
+    
+    metrics = get_metrics()
+    return Response(content=metrics, media_type="text/plain")
 
 
 # Mount Socket.IO app

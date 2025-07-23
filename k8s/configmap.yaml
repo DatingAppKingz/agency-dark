@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agencydark-config
+  namespace: agencydark
+data:
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+  FRONTEND_URL: "https://app.agencydark.com"
+  UPLOAD_DIR: "/app/uploads"
+  REDIS_TTL: "3600"
+  DATABASE_POOL_SIZE: "20"
+  DATABASE_MAX_OVERFLOW: "0"
