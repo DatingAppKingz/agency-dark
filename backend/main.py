@@ -2,12 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
-from core.config import settings
-from core.database import engine, create_tables
-from core.redis import redis_client
-# from api.v1.router import api_router
-from core.middleware.tenant import TenantMiddleware
-from core.middleware.logging import LoggingMiddleware
+from backend.core.config import settings
+from backend.core.database import engine, create_tables
+from backend.core.redis import redis_client
+from backend.api.v1.api import api_router
+from backend.core.middleware.tenant import TenantMiddleware
+from backend.core.middleware.logging import LoggingMiddleware
+from backend.core.middleware.auth import AuthenticationMiddleware
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ app = FastAPI(
 )
 
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(AuthenticationMiddleware)
 app.add_middleware(TenantMiddleware)
 
 app.add_middleware(
@@ -48,7 +50,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router, prefix="/api/v1")
 
 
 @app.get("/")

@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 from uuid import UUID
-from core.domain.models import UserRole, SubscriptionStatus, NotificationType
+from backend.core.domain.models import UserRole, SubscriptionStatus, NotificationType
 
 
 class AgencyBase(BaseModel):
@@ -74,6 +74,19 @@ class User(UserInDB):
     agency: Optional[Agency] = None
 
 
+class UserResponse(UserBase):
+    id: UUID
+    agency_id: Optional[UUID]
+    is_active: bool
+    is_verified: bool
+    last_login: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
 class Token(BaseModel):
     access_token: str
     refresh_token: str
@@ -89,6 +102,8 @@ class TokenData(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+    user_agent: Optional[str] = None
+    ip_address: Optional[str] = None
 
 
 class RefreshTokenRequest(BaseModel):

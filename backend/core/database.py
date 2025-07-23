@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import MetaData, event, text
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import MetaData, event, text, create_engine
 from sqlalchemy.pool import NullPool
-from core.config import settings
+from contextlib import contextmanager
+from backend.core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -69,3 +70,19 @@ async def create_tables():
 
 async def set_tenant_id(session: AsyncSession, tenant_id: str):
     await session.execute(f"SET app.current_tenant = '{tenant_id}'")
+
+
+# Sync database for middleware
+SYNC_DATABASE_URL = settings.DATABASE_URL
+sync_engine = create_engine(SYNC_DATABASE_URL, echo=settings.DEBUG)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+
+
+@contextmanager
+def get_db_sync():
+    """Get sync database session for middleware."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

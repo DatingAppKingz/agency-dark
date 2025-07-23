@@ -2,7 +2,7 @@ import redis.asyncio as redis
 from typing import Optional, Any
 import json
 import logging
-from core.config import settings
+from backend.core.config import settings
 
 logger = logging.getLogger(__name__)
 
