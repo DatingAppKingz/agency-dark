@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
+import uvicorn
 from backend.core.config import settings
 from backend.core.database import engine, create_tables
 from backend.core.redis import redis_client
@@ -10,6 +11,7 @@ from backend.core.middleware.tenant import TenantMiddleware
 from backend.core.middleware.logging import LoggingMiddleware
 from backend.core.middleware.auth import AuthenticationMiddleware
 from backend.core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
+from backend.core.realtime.server import socket_app
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -81,3 +83,17 @@ async def health_check():
             "redis": redis_status,
         }
     }
+
+
+# Mount Socket.IO app
+app.mount("/", socket_app)
+
+
+if __name__ == "__main__":
+    # Run with uvicorn when executed directly
+    uvicorn.run(
+        "backend.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.DEBUG
+    )

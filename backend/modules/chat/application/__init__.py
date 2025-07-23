@@ -1,0 +1,3 @@
+"""
+Chat application layer.
+"""

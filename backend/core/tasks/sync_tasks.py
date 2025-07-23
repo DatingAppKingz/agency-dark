@@ -49,6 +49,15 @@ class SyncScheduler:
             replace_existing=True
         )
         
+        # Schedule claim cleanup
+        self.scheduler.add_job(
+            self.cleanup_expired_claims,
+            IntervalTrigger(minutes=5),  # Run every 5 minutes
+            id="cleanup_expired_claims",
+            name="Cleanup expired fan claims",
+            replace_existing=True
+        )
+        
         # Start the scheduler
         self.scheduler.start()
         logger.info("Sync scheduler started")
@@ -140,6 +149,17 @@ class SyncScheduler:
                 
             except Exception as e:
                 logger.error(f"Failed to refresh analytics: {e}")
+    
+    async def cleanup_expired_claims(self):
+        """Clean up expired fan claims."""
+        logger.info("Starting expired claims cleanup")
+        
+        try:
+            from backend.modules.chat.application.claim_manager import ClaimManager
+            claim_manager = ClaimManager()
+            await claim_manager.release_expired_claims()
+        except Exception as e:
+            logger.error(f"Failed to cleanup expired claims: {e}")
     
     async def sync_model_now(self, model_id: str):
         """Manually trigger sync for a specific model."""
