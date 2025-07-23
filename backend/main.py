@@ -10,6 +10,7 @@ from backend.api.v1.api import api_router
 from backend.core.middleware.tenant import TenantMiddleware
 from backend.core.middleware.logging import LoggingMiddleware
 from backend.core.middleware.auth import AuthenticationMiddleware
+from backend.core.middleware.security import SecurityMiddleware, RateLimitMiddleware, APIKeyMiddleware
 from backend.core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 from backend.core.realtime.server import socket_app
 
@@ -48,7 +49,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Add middleware in reverse order (last added is first executed)
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(RateLimitMiddleware, calls=100, period=60)
+app.add_middleware(APIKeyMiddleware)
+app.add_middleware(SecurityMiddleware)
 app.add_middleware(AuthenticationMiddleware)
 app.add_middleware(TenantMiddleware)
 
