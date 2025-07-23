@@ -58,6 +58,15 @@ class SyncScheduler:
             replace_existing=True
         )
         
+        # Schedule metrics collection
+        self.scheduler.add_job(
+            self.collect_metrics,
+            IntervalTrigger(hours=1),  # Run every hour
+            id="collect_metrics",
+            name="Collect analytics metrics",
+            replace_existing=True
+        )
+        
         # Start the scheduler
         self.scheduler.start()
         logger.info("Sync scheduler started")
@@ -160,6 +169,31 @@ class SyncScheduler:
             await claim_manager.release_expired_claims()
         except Exception as e:
             logger.error(f"Failed to cleanup expired claims: {e}")
+    
+    async def collect_metrics(self):
+        """Collect analytics metrics for all models."""
+        logger.info("Starting metrics collection")
+        
+        async with self.async_session() as db:
+            try:
+                from backend.modules.analytics.application.collector import MetricsCollector
+                collector = MetricsCollector(db)
+                
+                # Get all models
+                result = await db.execute(select(ModelProfile))
+                models = result.scalars().all()
+                
+                # Collect metrics for each model
+                for model in models:
+                    try:
+                        await collector.collect_model_metrics(model)
+                        logger.info(f"Collected metrics for model {model.id}")
+                    except Exception as e:
+                        logger.error(f"Failed to collect metrics for model {model.id}: {e}")
+                        continue
+                
+            except Exception as e:
+                logger.error(f"Failed to collect metrics: {e}")
     
     async def sync_model_now(self, model_id: str):
         """Manually trigger sync for a specific model."""
