@@ -67,6 +67,33 @@ class SyncScheduler:
             replace_existing=True
         )
         
+        # Schedule billing cycle auto-close
+        self.scheduler.add_job(
+            self.auto_close_billing_cycles,
+            IntervalTrigger(hours=24),  # Run daily
+            id="auto_close_billing_cycles",
+            name="Auto-close ended billing cycles",
+            replace_existing=True
+        )
+        
+        # Schedule payout processing
+        self.scheduler.add_job(
+            self.process_scheduled_payouts,
+            IntervalTrigger(hours=1),  # Run every hour
+            id="process_scheduled_payouts",
+            name="Process scheduled payouts",
+            replace_existing=True
+        )
+        
+        # Schedule invoice processing
+        self.scheduler.add_job(
+            self.process_overdue_invoices,
+            IntervalTrigger(hours=24),  # Run daily
+            id="process_overdue_invoices",
+            name="Mark overdue invoices",
+            replace_existing=True
+        )
+        
         # Start the scheduler
         self.scheduler.start()
         logger.info("Sync scheduler started")
@@ -194,6 +221,51 @@ class SyncScheduler:
                 
             except Exception as e:
                 logger.error(f"Failed to collect metrics: {e}")
+    
+    async def auto_close_billing_cycles(self):
+        """Auto-close ended billing cycles."""
+        logger.info("Starting billing cycle auto-close")
+        
+        async with self.async_session() as db:
+            try:
+                from backend.modules.financial.application.billing_service import BillingService
+                billing_service = BillingService(db)
+                
+                closed_count = await billing_service.process_auto_close()
+                logger.info(f"Auto-closed {closed_count} billing cycles")
+                
+            except Exception as e:
+                logger.error(f"Failed to auto-close billing cycles: {e}")
+    
+    async def process_scheduled_payouts(self):
+        """Process scheduled payouts."""
+        logger.info("Processing scheduled payouts")
+        
+        async with self.async_session() as db:
+            try:
+                from backend.modules.financial.application.payout_service import PayoutService
+                payout_service = PayoutService(db)
+                
+                result = await payout_service.process_scheduled_payouts()
+                logger.info(f"Processed payouts: {result}")
+                
+            except Exception as e:
+                logger.error(f"Failed to process payouts: {e}")
+    
+    async def process_overdue_invoices(self):
+        """Mark overdue invoices."""
+        logger.info("Processing overdue invoices")
+        
+        async with self.async_session() as db:
+            try:
+                from backend.modules.financial.application.invoice_service import InvoiceService
+                invoice_service = InvoiceService(db)
+                
+                overdue_count = await invoice_service.process_overdue_invoices()
+                logger.info(f"Marked {overdue_count} invoices as overdue")
+                
+            except Exception as e:
+                logger.error(f"Failed to process overdue invoices: {e}")
     
     async def sync_model_now(self, model_id: str):
         """Manually trigger sync for a specific model."""
