@@ -7,6 +7,7 @@ from backend.modules.api_orchestration.api.endpoints import router as orchestrat
 from backend.core.webhooks.handlers import router as webhook_router
 from backend.modules.analytics.api import router as analytics_router
 from backend.modules.financial.api import router as financial_router
+from backend.modules.whitelabel.api.routes import router as whitelabel_router
 
 api_router = APIRouter()
 
@@ -17,3 +18,4 @@ api_router.include_router(orchestration_router, tags=["orchestration"])
 api_router.include_router(webhook_router, tags=["webhooks"])
 api_router.include_router(analytics_router, tags=["analytics"])
 api_router.include_router(financial_router, tags=["financial"])
+api_router.include_router(whitelabel_router, tags=["whitelabel"])

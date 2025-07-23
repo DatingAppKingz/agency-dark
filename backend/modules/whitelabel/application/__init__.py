@@ -1,0 +1,3 @@
+"""
+White-label application services.
+"""

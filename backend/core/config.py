@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = Field("development", env="ENVIRONMENT")
     DEBUG: bool = Field(True, env="DEBUG")
     
+    UPLOAD_DIR: str = Field("uploads", env="UPLOAD_DIR")
+    MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
+    
     @validator("ALLOWED_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: str | List[str], values: dict) -> List[str]:
         if isinstance(v, str):

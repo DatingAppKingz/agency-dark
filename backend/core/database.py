@@ -60,9 +60,12 @@ async def get_db() -> AsyncSession:
 
 async def create_tables():
     # Import all models to ensure they're registered with Base
-    from .domain.models import *  # noqa: F401
-    from backend.modules.analytics.domain.models import *  # noqa: F401
-    from backend.modules.financial.domain.models import *  # noqa: F401
+    from backend.modules.auth.domain import models as auth_models  # noqa: F401
+    from backend.modules.models.domain import models as model_models  # noqa: F401
+    from backend.modules.fans.domain import models as fan_models  # noqa: F401
+    from backend.modules.analytics.domain import models as analytics_models  # noqa: F401
+    from backend.modules.financial.domain import models as financial_models  # noqa: F401
+    from backend.modules.whitelabel.domain import models as whitelabel_models  # noqa: F401
     
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
