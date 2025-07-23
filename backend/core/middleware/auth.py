@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from jose import JWTError
 import logging
 
-from backend.core.security import verify_token
+from backend.core.security import decode_token
 from backend.core.database import get_db_sync
 from backend.core.domain.models import User
 
@@ -39,7 +39,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         
         try:
             # Verify token and extract user data
-            payload = verify_token(token)
+            payload = decode_token(token)
             if payload:
                 request.state.user_id = payload.get("user_id")
                 request.state.user_email = payload.get("email")

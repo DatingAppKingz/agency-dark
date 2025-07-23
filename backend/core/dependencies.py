@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError
 
 from .database import get_db
-from .security import verify_token
+from .security import decode_token
 from .domain.models import User, UserRole
 from .domain.schemas import TokenData
 
@@ -22,7 +22,7 @@ async def get_current_user_optional(
         return None
     
     try:
-        payload = verify_token(credentials.credentials)
+        payload = decode_token(credentials.credentials)
         if not payload:
             return None
         

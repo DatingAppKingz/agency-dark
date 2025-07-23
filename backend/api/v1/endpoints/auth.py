@@ -12,7 +12,7 @@ from backend.core.security import (
     get_password_hash,
     create_access_token,
     create_refresh_token,
-    verify_token,
+    decode_token,
     generate_verification_token
 )
 from backend.core.config import settings
@@ -170,7 +170,7 @@ async def refresh_token(
         )
     
     # Verify refresh token
-    payload = verify_token(refresh_token)
+    payload = decode_token(refresh_token)
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
