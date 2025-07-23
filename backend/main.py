@@ -9,6 +9,7 @@ from backend.api.v1.api import api_router
 from backend.core.middleware.tenant import TenantMiddleware
 from backend.core.middleware.logging import LoggingMiddleware
 from backend.core.middleware.auth import AuthenticationMiddleware
+from backend.core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,9 +23,16 @@ async def lifespan(app: FastAPI):
     
     await redis_client.initialize()
     
+    # Start background sync scheduler
+    await start_sync_scheduler()
+    
     yield
     
     logger.info("Shutting down AgencyDark API...")
+    
+    # Stop background sync scheduler
+    await stop_sync_scheduler()
+    
     await redis_client.close()
     await engine.dispose()
 
