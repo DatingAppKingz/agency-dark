@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from core.config import settings
-from core.database import Base
+from core.database import Base, DATABASE_URL
 
 # Import all models to ensure they're registered with Base
 from core.domain.models import *
@@ -21,8 +21,8 @@ from core.domain.models import *
 # access to the values within the .ini file in use.
 config = context.config
 
-# Set the database URL from settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Set the database URL from the processed URL in database module
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -84,11 +84,9 @@ async def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    # Get the async database URL
-    async_database_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
-    
+    # Use the processed DATABASE_URL from database module which already has asyncpg driver
     connectable = create_async_engine(
-        async_database_url,
+        DATABASE_URL,
         poolclass=pool.NullPool,
     )
 

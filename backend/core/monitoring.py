@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 import psutil
 import asyncio
+import re
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from prometheus_client import Counter, Histogram, Gauge, generate_latest
@@ -74,12 +75,42 @@ class HealthChecker:
             latency = (time.time() - start) * 1000  # ms
             
             # Get connection pool stats
-            pool_status = {
-                "size": engine.pool.size(),
-                "checked_out": engine.pool.checked_out_connections,
-                "overflow": engine.pool.overflow,
-                "total": engine.pool.size() + engine.pool.overflow
-            }
+            # For async engines, we need to use the status() method
+            # and parse it, as AsyncAdaptedQueuePool doesn't expose
+            # individual methods like checked_out_connections
+            pool_status_str = engine.pool.status()
+            
+            # Parse the status string to extract values
+            # Format: "Pool size: X Connections in pool: Y Current Overflow: Z Current Checked out connections: W"
+            import re
+            status_match = re.search(
+                r"Pool size: (\d+) Connections in pool: (\d+) Current Overflow: (-?\d+) Current Checked out connections: (\d+)",
+                pool_status_str
+            )
+            
+            if status_match:
+                pool_size = int(status_match.group(1))
+                connections_in_pool = int(status_match.group(2))
+                current_overflow = int(status_match.group(3))
+                checked_out = int(status_match.group(4))
+                
+                pool_status = {
+                    "size": pool_size,
+                    "checked_out": checked_out,
+                    "overflow": current_overflow,
+                    "total": pool_size + current_overflow,
+                    "available": connections_in_pool,
+                    "status_string": pool_status_str
+                }
+                
+                # Update Prometheus metric
+                db_connections.set(checked_out)
+            else:
+                # Fallback if parsing fails
+                pool_status = {
+                    "status_string": pool_status_str,
+                    "error": "Unable to parse pool status"
+                }
             
             return {
                 "status": "healthy",

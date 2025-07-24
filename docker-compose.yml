@@ -47,6 +47,7 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${DEBUG:-true}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000}
       INFLOW_API_KEY: ${INFLOW_API_KEY}
       ONLYFANS_API_KEY: ${ONLYFANS_API_KEY}
     ports:

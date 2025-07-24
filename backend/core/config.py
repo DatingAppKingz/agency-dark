@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field, validator
-from typing import List, Optional
+from pydantic import Field, field_validator, ValidationInfo
+from typing import List, Optional, Union
 import secrets
 
 
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     INFLOW_RATE_LIMIT: int = 100  # requests per minute
     
     FRONTEND_URL: str = Field("http://localhost:3000", env="FRONTEND_URL")
-    ALLOWED_ORIGINS: List[str] = []
+    ALLOWED_ORIGINS: Union[str, List[str]] = Field(default="", env="ALLOWED_ORIGINS")
     
     SMTP_HOST: Optional[str] = None
     SMTP_PORT: Optional[int] = 587
@@ -42,15 +42,23 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = Field("uploads", env="UPLOAD_DIR")
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
     
-    @validator("ALLOWED_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: str | List[str], values: dict) -> List[str]:
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str], None], info: ValidationInfo) -> List[str]:
+        if v is None or v == "":
+            # Get FRONTEND_URL from the data being validated
+            frontend_url = info.data.get("FRONTEND_URL", "http://localhost:3000")
+            return [frontend_url]
         if isinstance(v, str):
-            return [i.strip() for i in v.split(",")]
+            return [i.strip() for i in v.split(",") if i.strip()]
         elif isinstance(v, list):
             return v
-        return [values.get("FRONTEND_URL", "http://localhost:3000")]
+        # Fallback
+        frontend_url = info.data.get("FRONTEND_URL", "http://localhost:3000")
+        return [frontend_url]
     
-    @validator("DATABASE_URL", pre=True)
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
     def validate_postgres_url(cls, v: str) -> str:
         if not v.startswith("postgresql://"):
             raise ValueError("DATABASE_URL must be a PostgreSQL URL")
