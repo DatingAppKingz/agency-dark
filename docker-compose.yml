@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
     container_name: agencydark-backend
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://mariuszbudzisz@host.docker.internal:5432/agencydark_dev}
       REDIS_URL: redis://redis:6379/0
       SECRET_KEY: ${SECRET_KEY:-development_secret_key_change_in_production}
       ENVIRONMENT: ${ENVIRONMENT:-development}

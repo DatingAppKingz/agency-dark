@@ -93,8 +93,8 @@ class APITester:
         # Test 2: Login with different users
         print("\n### 2. AUTHENTICATION - LOGIN MULTIPLE USERS ###")
         test_users = [
-            ("owner@testagency.com", "AgencyOwner123!"),
-            ("model@testagency.com", "ModelUser123!"),
+            ("owner@testagency.com", "Test123!"),
+            ("model@testagency.com", "Test123!"),
         ]
         
         for email, password in test_users:
@@ -184,13 +184,15 @@ class APITester:
             # Financial admin endpoints
             self.test_endpoint("POST", "/financial/commission/rules", data={
                 "name": "Test Rule",
-                "tier": "CUSTOM",
+                "tier": "custom",
                 "percentage": 75.0,
                 "min_subscribers": 0,
                 "max_subscribers": 1000
             })
             
-            # Create billing cycle
+            # Create billing cycle (using dates from analytics section)
+            start_date = (datetime.utcnow() - timedelta(days=30)).isoformat()
+            end_date = datetime.utcnow().isoformat()
             self.test_endpoint("POST", "/financial/billing-cycles", data={
                 "start_date": start_date,
                 "end_date": end_date
