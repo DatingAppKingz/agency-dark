@@ -7,14 +7,14 @@ import {
 } from '@/types/chat';
 import { PaginatedResponse, QueryParams } from '@/types/api';
 
-export const chatService = {
+export const chatApi = {
   // Conversations
   async getConversations(params?: QueryParams & { 
     status?: string; 
     assigned_to?: string; 
-  }): Promise<PaginatedResponse<Conversation>> {
+  }): Promise<Conversation[]> {
     const { data } = await apiClient.get('/chat/conversations', { params });
-    return data;
+    return data.results || data;
   },
 
   async getConversation(conversationId: string): Promise<Conversation> {
@@ -44,10 +44,15 @@ export const chatService = {
     });
   },
 
+  async updateConversation(conversationId: string, data: Partial<Conversation>): Promise<Conversation> {
+    const { data: updated } = await apiClient.patch(`/chat/conversations/${conversationId}`, data);
+    return updated;
+  },
+
   // Messages
-  async getMessages(conversationId: string, params?: QueryParams): Promise<PaginatedResponse<Message>> {
+  async getMessages(conversationId: string, params?: QueryParams): Promise<Message[]> {
     const { data } = await apiClient.get(`/chat/conversations/${conversationId}/messages`, { params });
-    return data;
+    return data.results || data;
   },
 
   async sendMessage(data: SendMessageData): Promise<Message> {
@@ -70,7 +75,7 @@ export const chatService = {
     return message;
   },
 
-  async markAsRead(conversationId: string, messageIds: string[]): Promise<void> {
+  async markAsRead(conversationId: string, messageIds?: string[]): Promise<void> {
     await apiClient.post(`/chat/conversations/${conversationId}/read`, {
       message_ids: messageIds,
     });

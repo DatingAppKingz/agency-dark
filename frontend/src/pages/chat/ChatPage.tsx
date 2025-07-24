@@ -22,6 +22,7 @@ import {
 import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageThread } from '@/components/chat/MessageThread';
 import { MessageInput } from '@/components/chat/MessageInput';
+import { ChatFilters } from '@/components/chat/ChatFilters';
 import { useChatStore } from '@/store/chatStore';
 import { useSocket } from '@/providers/SocketProvider';
 import { chatApi } from '@/services/api/chat';
@@ -45,6 +46,9 @@ const ChatPage = () => {
     setTypingStatus,
     setUserOnline,
     onlineUsers,
+    filters,
+    setFilters,
+    getUnreadCount,
   } = useChatStore();
 
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
@@ -239,13 +243,22 @@ const ChatPage = () => {
               borderRight: 1,
               borderColor: 'divider',
               overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
-            <ConversationList
-              conversations={conversations}
-              onConversationSelect={handleConversationSelect}
-              selectedConversationId={activeConversationId || undefined}
+            <ChatFilters
+              filters={filters}
+              onFiltersChange={setFilters}
+              unreadCount={getUnreadCount()}
             />
+            <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+              <ConversationList
+                conversations={conversations}
+                onConversationSelect={handleConversationSelect}
+                selectedConversationId={activeConversationId || undefined}
+              />
+            </Box>
           </Paper>
         </Grid>
 

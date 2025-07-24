@@ -41,6 +41,7 @@ export interface Conversation {
   unread_count: number;
   is_pinned: boolean;
   is_archived: boolean;
+  is_favorite: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -54,13 +55,22 @@ export interface TypingStatus {
 export interface ChatFilters {
   search: string;
   status: 'all' | 'unread' | 'pinned' | 'archived';
-  assigned_to: 'me' | 'all';
+  assigned_to: 'me' | 'all' | 'team' | 'unassigned';
+  model_id?: string;
+  subscription_tier?: string;
+  tags?: string[];
 }
 
 export interface SendMessageData {
   conversation_id: string;
   content: string;
   attachments?: File[];
+}
+
+export interface NewMessage {
+  conversation_id: string;
+  content: string;
+  attachments?: any[];
 }
 
 export interface ChatStats {
