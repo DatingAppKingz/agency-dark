@@ -14,6 +14,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const UsersPage = lazy(() => import('@/pages/users/UsersPage'));
 const ModelsPage = lazy(() => import('@/pages/models/ModelsPage'));
+const ModelDetailPage = lazy(() => import('@/pages/models/ModelDetailPage'));
 const ChatPage = lazy(() => import('@/pages/chat/ChatPage'));
 const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'));
 const FinancialPage = lazy(() => import('@/pages/financial/FinancialPage'));
@@ -94,6 +95,14 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <ModelsPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'models/:modelId',
+            element: (
+              <LazyPage>
+                <ModelDetailPage />
               </LazyPage>
             ),
           },
