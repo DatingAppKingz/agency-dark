@@ -1,0 +1,203 @@
+import { useState, useRef, KeyboardEvent } from 'react';
+import {
+  Box,
+  TextField,
+  IconButton,
+  Menu,
+  MenuItem,
+  Chip,
+  LinearProgress,
+  InputAdornment,
+} from '@mui/material';
+import {
+  Send,
+  AttachFile,
+  Image,
+  VideoCall,
+  Mic,
+  Close,
+  EmojiEmotions,
+} from '@mui/icons-material';
+import { useToast } from '@/components/common/Toaster';
+
+interface MessageInputProps {
+  onSendMessage: (content: string, attachments?: File[]) => void;
+  onTyping: (isTyping: boolean) => void;
+  disabled?: boolean;
+}
+
+export const MessageInput = ({ onSendMessage, onTyping, disabled }: MessageInputProps) => {
+  const { error } = useToast();
+  const [message, setMessage] = useState('');
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const handleSend = () => {
+    if (message.trim() || attachments.length > 0) {
+      onSendMessage(message.trim(), attachments);
+      setMessage('');
+      setAttachments([]);
+      onTyping(false);
+    }
+  };
+
+  const handleKeyPress = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleMessageChange = (value: string) => {
+    setMessage(value);
+    
+    // Handle typing indicator
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    if (value.trim()) {
+      onTyping(true);
+      typingTimeoutRef.current = setTimeout(() => {
+        onTyping(false);
+      }, 3000);
+    } else {
+      onTyping(false);
+    }
+  };
+
+  const handleAttachmentClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleAttachmentClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleFileSelect = (accept: string) => {
+    handleAttachmentClose();
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = accept;
+    input.multiple = true;
+    input.onchange = (e) => {
+      const files = Array.from((e.target as HTMLInputElement).files || []);
+      handleFilesSelected(files);
+    };
+    input.click();
+  };
+
+  const handleFilesSelected = (files: File[]) => {
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    const validFiles = files.filter((file) => {
+      if (file.size > maxSize) {
+        error(`${file.name} is too large. Maximum size is 50MB.`);
+        return false;
+      }
+      return true;
+    });
+    
+    setAttachments([...attachments, ...validFiles]);
+  };
+
+  const handleRemoveAttachment = (index: number) => {
+    setAttachments(attachments.filter((_, i) => i !== index));
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    handleFilesSelected(files);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  return (
+    <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+      {isUploading && <LinearProgress sx={{ mb: 1 }} />}
+      
+      {attachments.length > 0 && (
+        <Box sx={{ mb: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {attachments.map((file, index) => (
+            <Chip
+              key={index}
+              label={file.name}
+              size="small"
+              onDelete={() => handleRemoveAttachment(index)}
+              icon={
+                file.type.startsWith('image/') ? <Image /> :
+                file.type.startsWith('video/') ? <VideoCall /> :
+                <AttachFile />
+              }
+            />
+          ))}
+        </Box>
+      )}
+      
+      <Box 
+        sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+      >
+        <IconButton
+          onClick={handleAttachmentClick}
+          disabled={disabled}
+        >
+          <AttachFile />
+        </IconButton>
+        
+        <TextField
+          fullWidth
+          multiline
+          maxRows={4}
+          placeholder="Type a message..."
+          value={message}
+          onChange={(e) => handleMessageChange(e.target.value)}
+          onKeyPress={handleKeyPress}
+          disabled={disabled}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton size="small" disabled>
+                  <EmojiEmotions />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+        
+        <IconButton
+          color="primary"
+          onClick={handleSend}
+          disabled={disabled || (!message.trim() && attachments.length === 0)}
+        >
+          <Send />
+        </IconButton>
+      </Box>
+      
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleAttachmentClose}
+      >
+        <MenuItem onClick={() => handleFileSelect('image/*')}>
+          <Image sx={{ mr: 1 }} /> Photos
+        </MenuItem>
+        <MenuItem onClick={() => handleFileSelect('video/*')}>
+          <VideoCall sx={{ mr: 1 }} /> Videos
+        </MenuItem>
+        <MenuItem onClick={() => handleFileSelect('audio/*')}>
+          <Mic sx={{ mr: 1 }} /> Audio
+        </MenuItem>
+        <MenuItem onClick={() => handleFileSelect('*')}>
+          <AttachFile sx={{ mr: 1 }} /> Files
+        </MenuItem>
+      </Menu>
+    </Box>
+  );
+};
