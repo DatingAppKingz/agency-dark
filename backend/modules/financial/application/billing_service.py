@@ -10,16 +10,16 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 
-from backend.modules.financial.domain.models import (
+from modules.financial.domain.models import (
     BillingCycle,
     FinancialTransaction,
     TransactionType
 )
-from backend.modules.financial.domain.schemas import (
+from modules.financial.domain.schemas import (
     BillingCycleSummary,
     BillingCycleDetails
 )
-from backend.core.domain.models import Agency, User
+from core.domain.models import Agency, User
 
 
 logger = logging.getLogger(__name__)
@@ -128,7 +128,7 @@ class BillingService:
         gross_revenue = revenue_result.scalar() or Decimal("0")
         
         # Process commission calculations
-        from backend.modules.financial.application.commission_service import CommissionService
+        from modules.financial.application.commission_service import CommissionService
         commission_service = CommissionService(self.db)
         
         commission_result = await commission_service.process_billing_cycle_commission(
@@ -157,7 +157,7 @@ class BillingService:
             })
         
         # Count pending payouts
-        from backend.modules.financial.domain.models import Payout, PayoutStatus
+        from modules.financial.domain.models import Payout, PayoutStatus
         payout_result = await self.db.execute(
             select(
                 func.count(Payout.id).filter(Payout.status == PayoutStatus.PENDING),

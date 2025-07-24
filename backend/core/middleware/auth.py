@@ -5,9 +5,9 @@ from fastapi.responses import JSONResponse
 from jose import JWTError
 import logging
 
-from backend.core.security import decode_token
-from backend.core.database import get_db_sync
-from backend.core.domain.models import User
+from core.security import decode_token
+from core.database import get_db_sync
+from core.domain.models import User
 
 logger = logging.getLogger(__name__)
 

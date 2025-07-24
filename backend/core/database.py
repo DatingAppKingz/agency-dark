@@ -3,12 +3,38 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy import MetaData, event, text, create_engine
 from sqlalchemy.pool import NullPool
 from contextlib import contextmanager
-from backend.core.config import settings
+from core.config import settings
 import logging
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+# Parse DATABASE_URL and handle query parameters properly
+parsed_url = urlparse(settings.DATABASE_URL)
+query_params = parse_qs(parsed_url.query)
+
+# Remove pgbouncer parameter as it's not needed for asyncpg
+if 'pgbouncer' in query_params:
+    del query_params['pgbouncer']
+
+# Convert sslmode to ssl for asyncpg
+if 'sslmode' in query_params:
+    if query_params['sslmode'][0] == 'require':
+        query_params['ssl'] = ['require']
+    del query_params['sslmode']
+
+# Reconstruct the URL with asyncpg driver
+new_query = urlencode(query_params, doseq=True)
+asyncpg_url = urlunparse((
+    parsed_url.scheme.replace('postgresql', 'postgresql+asyncpg'),
+    parsed_url.netloc,
+    parsed_url.path,
+    parsed_url.params,
+    new_query,
+    parsed_url.fragment
+))
+
+DATABASE_URL = asyncpg_url
 
 naming_convention = {
     "ix": "ix_%(column_0_label)s",
@@ -60,12 +86,12 @@ async def get_db() -> AsyncSession:
 
 async def create_tables():
     # Import all models to ensure they're registered with Base
-    from backend.modules.auth.domain import models as auth_models  # noqa: F401
-    from backend.modules.models.domain import models as model_models  # noqa: F401
-    from backend.modules.fans.domain import models as fan_models  # noqa: F401
-    from backend.modules.analytics.domain import models as analytics_models  # noqa: F401
-    from backend.modules.financial.domain import models as financial_models  # noqa: F401
-    from backend.modules.whitelabel.domain import models as whitelabel_models  # noqa: F401
+    from core.domain import models as auth_models  # noqa: F401
+    # from modules.models.domain import models as model_models  # noqa: F401
+    # from modules.fans.domain import models as fan_models  # noqa: F401
+    from modules.analytics.domain import models as analytics_models  # noqa: F401
+    from modules.financial.domain import models as financial_models  # noqa: F401
+    from modules.whitelabel.domain import models as whitelabel_models  # noqa: F401
     
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

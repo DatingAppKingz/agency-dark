@@ -6,18 +6,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from uuid import UUID
 
-from backend.core.dependencies import (
+from core.dependencies import (
     get_current_active_user,
     get_db,
     RoleChecker
 )
-from backend.core.security import UserRole
-from backend.modules.whitelabel.application.theme_service import ThemeService
-from backend.modules.whitelabel.application.branding_service import BrandingService
-from backend.modules.whitelabel.application.email_template_service import EmailTemplateService
-from backend.modules.whitelabel.application.agency_profile_service import AgencyProfileService
-from backend.modules.whitelabel.application.model_branding_service import ModelBrandingService
-from backend.modules.whitelabel.domain.schemas import (
+from core.domain.models import UserRole
+from modules.whitelabel.application.theme_service import ThemeService
+from modules.whitelabel.application.branding_service import BrandingService
+from modules.whitelabel.application.email_template_service import EmailTemplateService
+from modules.whitelabel.application.agency_profile_service import AgencyProfileService
+from modules.whitelabel.application.model_branding_service import ModelBrandingService
+from modules.whitelabel.domain.schemas import (
     # Theme schemas
     ThemeConfigurationCreate,
     ThemeConfigurationUpdate,
@@ -41,7 +41,7 @@ from backend.modules.whitelabel.domain.schemas import (
     EmailTemplatePreview,
     WhiteLabelConfig
 )
-from backend.modules.whitelabel.domain.models import (
+from modules.whitelabel.domain.models import (
     LogoType,
     EmailTemplateType,
     ThemeMode

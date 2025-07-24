@@ -11,10 +11,10 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from backend.core.database import get_db
-from backend.core.redis import redis_client
-from backend.core.domain.models import ModelProfile, Fan, Message
-from backend.modules.api_orchestration.application.orchestrator import APIOrchestrator
+from core.database import get_db
+from core.redis import redis_client
+from core.domain.models import ModelProfile, Fan
+from modules.api_orchestration.application.orchestrator import APIOrchestrator
 
 
 logger = logging.getLogger(__name__)

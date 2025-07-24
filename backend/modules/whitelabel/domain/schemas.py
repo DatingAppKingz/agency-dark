@@ -13,34 +13,34 @@ from .models import ThemeMode, LogoType, EmailTemplateType
 class ThemeColors(BaseModel):
     """Theme color configuration."""
     # Primary colors
-    primary: str = Field(..., regex="^#[0-9A-Fa-f]{6}$")
-    primary_hover: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
-    primary_text: Optional[str] = Field("#FFFFFF", regex="^#[0-9A-Fa-f]{6}$")
+    primary: str = Field(..., pattern="^#[0-9A-Fa-f]{6}$")
+    primary_hover: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+    primary_text: Optional[str] = Field("#FFFFFF", pattern="^#[0-9A-Fa-f]{6}$")
     
     # Secondary colors
-    secondary: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
-    secondary_hover: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
-    secondary_text: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
+    secondary: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+    secondary_hover: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+    secondary_text: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
     
     # Background colors
-    background: str = Field(..., regex="^#[0-9A-Fa-f]{6}$")
-    surface: str = Field(..., regex="^#[0-9A-Fa-f]{6}$")
+    background: str = Field(..., pattern="^#[0-9A-Fa-f]{6}$")
+    surface: str = Field(..., pattern="^#[0-9A-Fa-f]{6}$")
     
     # Text colors
-    text_primary: str = Field(..., regex="^#[0-9A-Fa-f]{6}$")
-    text_secondary: str = Field(..., regex="^#[0-9A-Fa-f]{6}$")
-    text_disabled: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
+    text_primary: str = Field(..., pattern="^#[0-9A-Fa-f]{6}$")
+    text_secondary: str = Field(..., pattern="^#[0-9A-Fa-f]{6}$")
+    text_disabled: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
     
     # Status colors
-    success: Optional[str] = Field("#4CAF50", regex="^#[0-9A-Fa-f]{6}$")
-    warning: Optional[str] = Field("#FF9800", regex="^#[0-9A-Fa-f]{6}$")
-    error: Optional[str] = Field("#F44336", regex="^#[0-9A-Fa-f]{6}$")
-    info: Optional[str] = Field("#2196F3", regex="^#[0-9A-Fa-f]{6}$")
+    success: Optional[str] = Field("#4CAF50", pattern="^#[0-9A-Fa-f]{6}$")
+    warning: Optional[str] = Field("#FF9800", pattern="^#[0-9A-Fa-f]{6}$")
+    error: Optional[str] = Field("#F44336", pattern="^#[0-9A-Fa-f]{6}$")
+    info: Optional[str] = Field("#2196F3", pattern="^#[0-9A-Fa-f]{6}$")
     
     # Additional colors
-    border: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
-    divider: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
-    shadow: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
+    border: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+    divider: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+    shadow: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
 
 
 class ThemeConfigurationCreate(BaseModel):
@@ -91,7 +91,7 @@ class BrandingAssetUpload(BaseModel):
     """Upload branding asset."""
     asset_type: LogoType
     file_name: str
-    mime_type: str = Field(..., regex="^image/(jpeg|jpg|png|gif|svg\\+xml|webp)$")
+    mime_type: str = Field(..., pattern="^image/(jpeg|jpg|png|gif|svg\\+xml|webp)$")
 
 
 class BrandingAssetResponse(BaseModel):
@@ -141,7 +141,7 @@ class AgencyProfileCreate(BaseModel):
     tagline: Optional[str] = Field(None, max_length=200)
     description: Optional[str] = None
     support_email: Optional[EmailStr] = None
-    support_phone: Optional[str] = Field(None, regex="^\\+?[1-9]\\d{1,14}$")
+    support_phone: Optional[str] = Field(None, pattern="^\\+?[1-9]\\d{1,14}$")
     website_url: Optional[HttpUrl] = None
     social_links: Optional[SocialLinks] = None
     legal_name: Optional[str] = Field(None, max_length=200)
@@ -158,7 +158,7 @@ class AgencyProfileUpdate(BaseModel):
     tagline: Optional[str] = Field(None, max_length=200)
     description: Optional[str] = None
     support_email: Optional[EmailStr] = None
-    support_phone: Optional[str] = Field(None, regex="^\\+?[1-9]\\d{1,14}$")
+    support_phone: Optional[str] = Field(None, pattern="^\\+?[1-9]\\d{1,14}$")
     website_url: Optional[HttpUrl] = None
     social_links: Optional[SocialLinks] = None
     legal_name: Optional[str] = Field(None, max_length=200)
@@ -208,7 +208,7 @@ class ModelBrandingCreate(BaseModel):
     links: Optional[Dict[str, HttpUrl]] = Field(default_factory=dict)
     watermark_enabled: bool = False
     watermark_text: Optional[str] = Field(None, max_length=100)
-    watermark_position: Optional[str] = Field("bottom-right", regex="^(top|bottom)-(left|right)$")
+    watermark_position: Optional[str] = Field("bottom-right", pattern="^(top|bottom)-(left|right)$")
     watermark_opacity: Optional[int] = Field(50, ge=0, le=100)
     auto_welcome_message: Optional[str] = None
     tip_thank_you_message: Optional[str] = None
@@ -224,7 +224,7 @@ class ModelBrandingUpdate(BaseModel):
     links: Optional[Dict[str, HttpUrl]] = None
     watermark_enabled: Optional[bool] = None
     watermark_text: Optional[str] = Field(None, max_length=100)
-    watermark_position: Optional[str] = Field(None, regex="^(top|bottom)-(left|right)$")
+    watermark_position: Optional[str] = Field(None, pattern="^(top|bottom)-(left|right)$")
     watermark_opacity: Optional[int] = Field(None, ge=0, le=100)
     auto_welcome_message: Optional[str] = None
     tip_thank_you_message: Optional[str] = None
@@ -265,7 +265,7 @@ class EmailTemplateVariable(BaseModel):
 class EmailTemplateCreate(BaseModel):
     """Create email template."""
     template_type: EmailTemplateType
-    language: str = Field("en", regex="^[a-z]{2}(-[A-Z]{2})?$")
+    language: str = Field("en", pattern="^[a-z]{2}(-[A-Z]{2})?$")
     subject: str = Field(..., min_length=1, max_length=200)
     html_body: str
     text_body: Optional[str] = None

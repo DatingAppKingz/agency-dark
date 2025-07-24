@@ -275,3 +275,22 @@ class OnlyFansAPIError(BaseModel):
     error: Union[str, Dict[str, Any]]
     message: Optional[str] = None
     code: Optional[int] = None
+
+
+class MessageCreateRequest(BaseModel):
+    """Request to create/send a message."""
+    fan_id: str
+    text: Optional[str] = None
+    price: Optional[Decimal] = None
+    media_ids: List[str] = Field(default_factory=list)
+    preview: Optional[str] = None
+
+
+class PostCreateRequest(BaseModel):
+    """Request to create a post."""
+    text: Optional[str] = None
+    price: Optional[Decimal] = None
+    media_ids: List[str] = Field(default_factory=list)
+    preview: Optional[str] = None
+    is_pinned: bool = False
+    schedule_date: Optional[datetime] = None

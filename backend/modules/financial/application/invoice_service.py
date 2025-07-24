@@ -11,20 +11,20 @@ from io import BytesIO
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 
-from backend.modules.financial.domain.models import (
+from modules.financial.domain.models import (
     Invoice,
     InvoiceStatus,
     BillingCycle,
     FinancialTransaction,
     TransactionType
 )
-from backend.modules.financial.domain.schemas import (
+from modules.financial.domain.schemas import (
     InvoiceCreate,
     InvoiceUpdate,
     InvoiceResponse,
     InvoiceLineItem
 )
-from backend.core.domain.models import Agency, ModelProfile, User
+from core.domain.models import Agency, ModelProfile, User
 
 
 logger = logging.getLogger(__name__)
@@ -289,7 +289,7 @@ class InvoiceService:
         model_revenues = result.all()
         
         # Get commission service
-        from backend.modules.financial.application.commission_service import CommissionService
+        from modules.financial.application.commission_service import CommissionService
         commission_service = CommissionService(self.db)
         
         created_invoices = []

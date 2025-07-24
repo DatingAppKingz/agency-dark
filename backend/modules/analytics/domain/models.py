@@ -7,7 +7,7 @@ from sqlalchemy.sql import func
 from datetime import datetime
 import uuid
 
-from backend.core.database import Base
+from core.database import Base
 
 
 class MetricSnapshot(Base):

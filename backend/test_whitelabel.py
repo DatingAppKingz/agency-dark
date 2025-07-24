@@ -3,15 +3,15 @@ Test script for white-label features.
 """
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.core.database import get_db, create_tables
-from backend.modules.whitelabel.application.theme_service import ThemeService
-from backend.modules.whitelabel.application.email_template_service import EmailTemplateService
-from backend.modules.whitelabel.domain.schemas import (
+from core.database import get_db, create_tables
+from modules.whitelabel.application.theme_service import ThemeService
+from modules.whitelabel.application.email_template_service import EmailTemplateService
+from modules.whitelabel.domain.schemas import (
     ThemeConfigurationCreate,
     ThemeColors,
     EmailTemplateCreate
 )
-from backend.modules.whitelabel.domain.models import EmailTemplateType
+from modules.whitelabel.domain.models import EmailTemplateType
 import uuid
 
 

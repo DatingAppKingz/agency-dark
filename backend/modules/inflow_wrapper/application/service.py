@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.core.database import get_db
-from backend.core.redis import redis_client
-from backend.core.domain.models import ModelProfile, Fan, User
+from core.database import get_db
+from core.redis import redis_client
+from core.domain.models import ModelProfile, Fan, User
 from ..domain.interfaces import IInflowClient
 from ..domain.schemas import (
     InflowConfig,

@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 from uuid import UUID
-from backend.core.domain.models import UserRole, SubscriptionStatus, NotificationType
+from core.domain.models import UserRole, SubscriptionStatus, NotificationType
 
 
 class AgencyBase(BaseModel):

@@ -7,19 +7,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 import json
 
-from backend.modules.whitelabel.domain.models import (
+from modules.whitelabel.domain.models import (
     ThemeConfiguration,
     ThemePreset,
     ThemeMode
 )
-from backend.modules.whitelabel.domain.schemas import (
+from modules.whitelabel.domain.schemas import (
     ThemeConfigurationCreate,
     ThemeConfigurationUpdate,
     ThemeConfigurationResponse,
     ThemePresetResponse
 )
-from backend.core.exceptions import NotFoundException, BadRequestException
-from backend.modules.auth.domain.models import Agency
+from core.exceptions import NotFoundException, BadRequestException
+from core.domain.models import Agency
 
 
 class ThemeService:

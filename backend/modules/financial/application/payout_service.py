@@ -9,7 +9,7 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func, update
 
-from backend.modules.financial.domain.models import (
+from modules.financial.domain.models import (
     Payout,
     PayoutStatus,
     BillingCycle,
@@ -17,13 +17,13 @@ from backend.modules.financial.domain.models import (
     FinancialTransaction,
     TransactionType
 )
-from backend.modules.financial.domain.schemas import (
+from modules.financial.domain.schemas import (
     PayoutRequest,
     PayoutResponse,
     PayoutStatusUpdate
 )
-from backend.core.domain.models import User, Agency, ModelProfile
-from backend.modules.financial.application.crypto_service import CryptoService
+from core.domain.models import User, Agency, ModelProfile
+from modules.financial.application.crypto_service import CryptoService
 
 
 logger = logging.getLogger(__name__)
@@ -295,7 +295,7 @@ class PayoutService:
         model_revenues = result.all()
         
         # Get commission service to calculate net amounts
-        from backend.modules.financial.application.commission_service import CommissionService
+        from modules.financial.application.commission_service import CommissionService
         commission_service = CommissionService(self.db)
         
         created_payouts = []

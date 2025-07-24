@@ -2,10 +2,10 @@
 Unit tests for security features.
 """
 import pytest
-from backend.core.validation import InputValidator, ValidationError
-from backend.core.encryption import EncryptionService, mask_email, mask_phone, mask_api_key
-from backend.core.api_keys import APIKeyManager
-from backend.core.audit import AuditLogger, AuditEventType
+from core.validation import InputValidator, ValidationError
+from core.encryption import EncryptionService, mask_email, mask_phone, mask_api_key
+from core.api_keys import APIKeyManager
+from core.audit import AuditLogger, AuditEventType
 import re
 
 
@@ -166,7 +166,7 @@ class TestSQLInjectionPatterns:
     
     def test_sql_injection_detection(self):
         """Test SQL injection pattern detection."""
-        from backend.core.middleware.security import SecurityMiddleware
+        from core.middleware.security import SecurityMiddleware
         
         middleware = SecurityMiddleware(None)
         
@@ -200,7 +200,7 @@ class TestXSSPatterns:
     
     def test_xss_detection(self):
         """Test XSS pattern detection."""
-        from backend.core.middleware.security import SecurityMiddleware
+        from core.middleware.security import SecurityMiddleware
         
         middleware = SecurityMiddleware(None)
         

@@ -7,9 +7,9 @@ from datetime import datetime, timedelta
 import json
 import asyncio
 
-from backend.core.redis import redis_client
-from backend.core.database import AsyncSessionLocal
-from backend.core.domain.models import User, Message, Fan
+from core.redis import redis_client
+from core.database import AsyncSessionLocal
+from core.domain.models import User, Fan
 
 
 logger = logging.getLogger(__name__)
@@ -148,7 +148,7 @@ class MessageQueue:
                 return
             
             # Check if fan is claimed
-            from backend.modules.chat.application.claim_manager import ClaimManager
+            from modules.chat.application.claim_manager import ClaimManager
             claim_manager = ClaimManager()
             claim_status = await claim_manager.check_claim_status(fan_id)
             
@@ -172,7 +172,7 @@ class MessageQueue:
                 # Queue for all chatters in the agency
                 # Get all chatters for this model's agency
                 from sqlalchemy import select, and_
-                from backend.core.domain.models import UserRole, ModelProfile
+                from core.domain.models import UserRole, ModelProfile
                 
                 model = await db.get(ModelProfile, model_id)
                 if not model:

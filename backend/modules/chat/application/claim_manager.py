@@ -9,9 +9,9 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, update
 
-from backend.core.redis import redis_client
-from backend.core.database import AsyncSessionLocal
-from backend.core.domain.models import Fan, FanClaim, User, ModelProfile
+from core.redis import redis_client
+from core.database import AsyncSessionLocal
+from core.domain.models import Fan, FanClaim, User, ModelProfile
 
 
 logger = logging.getLogger(__name__)

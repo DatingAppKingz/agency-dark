@@ -10,9 +10,9 @@ import asyncio
 from socketio import AsyncNamespace
 from sqlalchemy import select, and_, func
 
-from backend.core.database import AsyncSessionLocal
-from backend.core.redis import redis_client
-from backend.core.domain.models import User, ModelProfile, Agency, UserRole
+from core.database import AsyncSessionLocal
+from core.redis import redis_client
+from core.domain.models import User, ModelProfile, Agency, UserRole
 
 
 logger = logging.getLogger(__name__)
@@ -226,7 +226,7 @@ class NotificationNamespace(AsyncNamespace):
                     await redis_client.setex(cache_key, 300, str(metric_data['revenue_today']))
             
             if 'active_subscribers' in metrics:
-                from backend.core.domain.models import Fan
+                from core.domain.models import Fan
                 result = await db.execute(
                     select(func.count(Fan.id)).where(
                         and_(
@@ -256,7 +256,7 @@ class NotificationNamespace(AsyncNamespace):
                 metric_data['online_chatters'] = 0
             
             if 'unclaimed_fans' in metrics:
-                from backend.core.domain.models import Fan, FanClaim
+                from core.domain.models import Fan, FanClaim
                 # Count fans without active claims
                 result = await db.execute(
                     select(func.count(Fan.id)).where(
@@ -318,7 +318,7 @@ class NotificationNamespace(AsyncNamespace):
             return model.agency_id == user.agency_id
         elif user.role == UserRole.MODEL:
             return model.user_id == user.id
-        elif user.role in [UserRole.MANAGER, UserRole.CHATTER, UserRole.ANALYST]:
+        elif user.role in [UserRole.AGENCY_MEMBER, UserRole.CHATTER, UserRole.AGENCY_MEMBER]:
             return model.agency_id == user.agency_id
         return False
 
@@ -375,7 +375,7 @@ class DashboardNamespace(AsyncNamespace):
         async with AsyncSessionLocal() as db:
             if role == UserRole.SUPER_ADMIN:
                 # Get platform-wide stats
-                from backend.core.domain.models import Agency, ModelProfile, Fan
+                from core.domain.models import Agency, ModelProfile, Fan
                 
                 agencies_count = await db.execute(select(func.count(Agency.id)))
                 models_count = await db.execute(select(func.count(ModelProfile.id)))
@@ -390,7 +390,7 @@ class DashboardNamespace(AsyncNamespace):
                 
             elif agency_id:
                 # Get agency-specific stats
-                from backend.core.domain.models import ModelProfile, Fan
+                from core.domain.models import ModelProfile, Fan
                 
                 models_count = await db.execute(
                     select(func.count(ModelProfile.id)).where(

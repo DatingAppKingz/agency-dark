@@ -9,21 +9,21 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 
-from backend.core.database import get_db
-from backend.modules.analytics.domain.models import (
+from core.database import get_db
+from modules.analytics.domain.models import (
     MetricSnapshot,
     RevenueTransaction,
     ContentPerformance,
     FanSpendingHistory,
     CategoryPerformance
 )
-from backend.core.domain.models import (
+from core.domain.models import (
     ModelProfile,
     Fan,
     Message,
     User
 )
-from backend.modules.api_orchestration.application.orchestrator import APIOrchestrator
+from modules.api_orchestration.application.orchestrator import APIOrchestrator
 
 
 logger = logging.getLogger(__name__)

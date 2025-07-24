@@ -3,16 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 import uvicorn
-from backend.core.config import settings
-from backend.core.database import engine, create_tables
-from backend.core.redis import redis_client
-from backend.api.v1.api import api_router
-from backend.core.middleware.tenant import TenantMiddleware
-from backend.core.middleware.logging import LoggingMiddleware
-from backend.core.middleware.auth import AuthenticationMiddleware
-from backend.core.middleware.security import SecurityMiddleware, RateLimitMiddleware, APIKeyMiddleware
-from backend.core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
-from backend.core.realtime.server import socket_app
+from core.config import settings
+from core.database import engine, create_tables
+from core.redis import redis_client
+from api.v1.api import api_router
+from core.middleware.tenant import TenantMiddleware
+from core.middleware.logging import LoggingMiddleware
+from core.middleware.auth import AuthenticationMiddleware
+from core.middleware.security import SecurityMiddleware, RateLimitMiddleware, APIKeyMiddleware
+from core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
+from core.realtime.server import socket_app
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("Starting up AgencyDark API...")
     
-    await create_tables()
+    # await create_tables()  # Commented out for PgBouncer compatibility
     
     await redis_client.initialize()
     
@@ -76,8 +76,8 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Basic health check endpoint."""
-    from backend.core.monitoring import HealthChecker
-    from backend.core.dependencies import get_db
+    from core.monitoring import HealthChecker
+    from core.dependencies import get_db
     
     async for db in get_db():
         try:
@@ -90,21 +90,21 @@ async def health_check():
 @app.get("/health/live")
 async def liveness_check():
     """Kubernetes liveness probe endpoint."""
-    from backend.core.monitoring import HealthChecker
+    from core.monitoring import HealthChecker
     return await HealthChecker.liveness_check()
 
 
 @app.get("/health/ready")
 async def readiness_check():
     """Kubernetes readiness probe endpoint."""
-    from backend.core.monitoring import HealthChecker
+    from core.monitoring import HealthChecker
     return await HealthChecker.readiness_check()
 
 
 @app.get("/metrics")
 async def get_prometheus_metrics():
     """Prometheus metrics endpoint."""
-    from backend.core.monitoring import get_metrics
+    from core.monitoring import get_metrics
     from starlette.responses import Response
     
     metrics = get_metrics()
@@ -118,7 +118,7 @@ app.mount("/", socket_app)
 if __name__ == "__main__":
     # Run with uvicorn when executed directly
     uvicorn.run(
-        "backend.main:app",
+        "main:app",
         host="0.0.0.0",
         port=8000,
         reload=settings.DEBUG

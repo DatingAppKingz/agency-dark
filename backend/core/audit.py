@@ -11,8 +11,8 @@ import uuid
 import json
 from enum import Enum
 
-from backend.core.database import Base
-from backend.core.redis import redis_client
+from core.database import Base
+from core.redis import redis_client
 import logging
 
 logger = logging.getLogger(__name__)

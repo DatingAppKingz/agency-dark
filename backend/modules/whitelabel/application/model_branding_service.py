@@ -7,14 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Union
 
-from backend.modules.whitelabel.domain.models import ModelBranding
-from backend.modules.whitelabel.domain.schemas import (
+from modules.whitelabel.domain.models import ModelBranding
+from modules.whitelabel.domain.schemas import (
     ModelBrandingCreate,
     ModelBrandingUpdate,
     ModelBrandingResponse
 )
-from backend.core.exceptions import NotFoundException, BadRequestException
-from backend.modules.models.domain.models import ModelProfile
+from core.exceptions import NotFoundException, BadRequestException
+from core.domain.models import ModelProfile
 
 
 class ModelBrandingService:

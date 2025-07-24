@@ -11,9 +11,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from backend.core.database import get_db
-from backend.core.dependencies import CurrentUser, Model, require_model
-from backend.core.domain.models import ModelProfile, User
+from core.database import get_db
+from core.dependencies import CurrentUser, Model, require_model
+from core.domain.models import ModelProfile, User
 from .application.service import InflowService
 from .domain.schemas import (
     InflowUser,
@@ -94,9 +94,9 @@ async def sync_subscribers(
 @router.post("/models/{model_id}/sync/messages")
 async def sync_messages(
     model_id: UUID,
-    since: Optional[datetime] = Query(None, description="Sync messages since this timestamp"),
-    current_user: CurrentUser = Depends(CurrentUser),
-    db: AsyncSession = Depends(get_db)
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db),
+    since: Optional[datetime] = Query(None, description="Sync messages since this timestamp")
 ):
     """Sync messages from Inflow for a model."""
     model_profile = await get_model_profile(model_id, current_user, db)
@@ -119,9 +119,9 @@ async def sync_messages(
 @router.get("/models/{model_id}/content", response_model=List[InflowContent])
 async def list_content(
     model_id: UUID,
-    content_type: Optional[str] = Query(None, description="Filter by content type"),
-    current_user: CurrentUser = Depends(CurrentUser),
-    db: AsyncSession = Depends(get_db)
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db),
+    content_type: Optional[str] = Query(None, description="Filter by content type")
 ):
     """List content from Inflow for a model."""
     model_profile = await get_model_profile(model_id, current_user, db)
@@ -142,9 +142,9 @@ async def send_message(
     model_id: UUID,
     fan_id: UUID,
     content: str,
-    price: Optional[float] = None,
-    current_user: CurrentUser = Depends(CurrentUser),
-    db: AsyncSession = Depends(get_db)
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db),
+    price: Optional[float] = None
 ):
     """Send a message through Inflow."""
     # Only models and chatters can send messages
@@ -181,7 +181,7 @@ async def get_analytics(
     model_id: UUID,
     start_date: date,
     end_date: date,
-    current_user: CurrentUser = Depends(CurrentUser),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get analytics from Inflow for a model."""

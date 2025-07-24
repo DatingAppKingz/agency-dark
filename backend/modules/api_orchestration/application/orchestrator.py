@@ -13,11 +13,11 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 
-from backend.core.database import get_db
-from backend.core.redis import redis_client
-from backend.core.domain.models import ModelProfile, Fan, FanClaim, User
-from backend.modules.inflow_wrapper.application.service import InflowService
-from backend.modules.onlyfans_wrapper.application.service import OnlyFansService
+from core.database import get_db
+from core.redis import redis_client
+from core.domain.models import ModelProfile, Fan, FanClaim, User
+from modules.inflow_wrapper.application.service import InflowService
+from modules.onlyfans_wrapper.application.service import OnlyFansService
 from ..domain.schemas import (
     DataSource,
     ConflictResolution,

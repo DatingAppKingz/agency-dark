@@ -6,8 +6,8 @@ from typing import Optional, Dict, Any
 import socketio
 from socketio import AsyncNamespace
 
-from backend.core.config import settings
-from backend.core.redis import redis_client
+from core.config import settings
+from core.redis import redis_client
 
 
 logger = logging.getLogger(__name__)
@@ -21,8 +21,8 @@ sio = socketio.AsyncServer(
     engineio_logger=logger if settings.DEBUG else False,
     # Use Redis for multi-server support
     client_manager=socketio.AsyncRedisManager(
-        f'redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}'
-    ) if settings.REDIS_HOST else None
+        settings.REDIS_URL
+    ) if settings.REDIS_URL else None
 )
 
 # Create ASGI app
@@ -52,7 +52,7 @@ class AuthMiddleware:
             return None
         
         # Import here to avoid circular imports
-        from backend.core.security import decode_token
+        from core.security import decode_token
         
         try:
             # Decode JWT token
@@ -64,8 +64,8 @@ class AuthMiddleware:
                 return None
             
             # Get user data from database
-            from backend.core.database import AsyncSessionLocal
-            from backend.core.domain.models import User
+            from core.database import AsyncSessionLocal
+            from core.domain.models import User
             from sqlalchemy import select
             
             async with AsyncSessionLocal() as db:
@@ -139,7 +139,7 @@ async def disconnect(sid: str):
         # Clean up any active claims or states
         if session.get('role') == 'chatter':
             # Release any active fan claims
-            from backend.modules.chat.application.claim_manager import ClaimManager
+            from modules.chat.application.claim_manager import ClaimManager
             claim_manager = ClaimManager()
             await claim_manager.release_all_claims(session['user_id'])
     else:
@@ -163,8 +163,8 @@ async def catch_all(event, sid, *args):
 
 
 # Register namespaces
-from backend.modules.chat.realtime.namespace import ChatNamespace
-from backend.modules.notifications.realtime.namespace import NotificationNamespace, DashboardNamespace
+from modules.chat.realtime.namespace import ChatNamespace
+from modules.notifications.realtime.namespace import NotificationNamespace, DashboardNamespace
 
 sio.register_namespace(ChatNamespace('/chat'))
 sio.register_namespace(NotificationNamespace('/notifications'))

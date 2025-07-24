@@ -12,19 +12,19 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
-from backend.core.config import settings
-from backend.modules.analytics.domain.models import (
+from core.config import settings
+from modules.analytics.domain.models import (
     MetricSnapshot,
     RevenueTransaction,
     ContentPerformance,
     FanSpendingHistory
 )
-from backend.modules.analytics.domain.schemas import (
+from modules.analytics.domain.schemas import (
     ExportFormat,
     ExportRequest,
     ExportResponse
 )
-from backend.core.domain.models import ModelProfile, Fan
+from core.domain.models import ModelProfile, Fan
 
 
 logger = logging.getLogger(__name__)

@@ -8,15 +8,15 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.core.database import get_db
-from backend.core.dependencies import get_current_user, RoleChecker
-from backend.core.domain.models import User, UserRole
-from backend.modules.financial.application.commission_service import CommissionService
-from backend.modules.financial.application.payout_service import PayoutService
-from backend.modules.financial.application.crypto_service import CryptoService
-from backend.modules.financial.application.invoice_service import InvoiceService
-from backend.modules.financial.application.billing_service import BillingService
-from backend.modules.financial.domain.schemas import (
+from core.database import get_db
+from core.dependencies import get_current_user, RoleChecker
+from core.domain.models import User, UserRole
+from modules.financial.application.commission_service import CommissionService
+from modules.financial.application.payout_service import PayoutService
+from modules.financial.application.crypto_service import CryptoService
+from modules.financial.application.invoice_service import InvoiceService
+from modules.financial.application.billing_service import BillingService
+from modules.financial.domain.schemas import (
     # Commission
     CommissionRuleCreate,
     CommissionRuleUpdate,
@@ -156,7 +156,7 @@ async def get_commission_rules(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -169,7 +169,7 @@ async def get_commission_rules(
         elif current_user.role == UserRole.MODEL:
             # Models can only see their own rules
             from sqlalchemy import select
-            from backend.core.domain.models import ModelProfile
+            from core.domain.models import ModelProfile
             
             result = await db.execute(
                 select(ModelProfile).where(ModelProfile.user_id == current_user.id)
@@ -180,7 +180,7 @@ async def get_commission_rules(
                 agency_id = str(model_profile.agency_id)
             else:
                 return []
-        elif current_user.role == UserRole.MANAGER:
+        elif current_user.role == UserRole.AGENCY_MEMBER:
             agency_id = str(current_user.agency_id)
     
     service = CommissionService(db)
@@ -204,8 +204,8 @@ async def calculate_commission(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
-            UserRole.ANALYST
+            UserRole.AGENCY_MEMBER,
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -260,7 +260,7 @@ async def close_billing_cycle(
     cycle_id: str,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MANAGER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -276,7 +276,7 @@ async def close_billing_cycle(
             raise HTTPException(status_code=404, detail="Billing cycle not found")
         
         # Check permissions
-        if current_user.role in [UserRole.AGENCY_OWNER, UserRole.MANAGER]:
+        if current_user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER]:
             if str(current_user.agency_id) != cycle.agency_id:
                 raise HTTPException(status_code=403, detail="Not authorized")
         
@@ -299,8 +299,8 @@ async def get_billing_cycles(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
-            UserRole.ANALYST
+            UserRole.AGENCY_MEMBER,
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -328,7 +328,7 @@ async def create_payout(
     payout_data: PayoutRequest,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MANAGER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -374,7 +374,7 @@ async def get_payouts(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -383,7 +383,7 @@ async def get_payouts(
     # Apply permission filters
     if current_user.role == UserRole.MODEL:
         recipient_id = str(current_user.id)
-    elif current_user.role in [UserRole.AGENCY_OWNER, UserRole.MANAGER]:
+    elif current_user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER]:
         # TODO: Filter by agency
         pass
     
@@ -457,7 +457,7 @@ async def create_invoice(
     invoice_data: InvoiceCreate,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MANAGER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -477,7 +477,7 @@ async def update_invoice(
     update_data: InvoiceUpdate,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MANAGER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -496,7 +496,7 @@ async def send_invoice(
     invoice_id: str,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MANAGER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -525,8 +525,8 @@ async def get_invoices(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
-            UserRole.ANALYST
+            UserRole.AGENCY_MEMBER,
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -537,7 +537,7 @@ async def get_invoices(
         if current_user.role == UserRole.MODEL:
             # Get model profile
             from sqlalchemy import select
-            from backend.core.domain.models import ModelProfile
+            from core.domain.models import ModelProfile
             
             result = await db.execute(
                 select(ModelProfile).where(ModelProfile.user_id == current_user.id)

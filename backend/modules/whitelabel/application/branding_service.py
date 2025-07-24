@@ -13,16 +13,16 @@ import mimetypes
 from PIL import Image
 import io
 
-from backend.modules.whitelabel.domain.models import (
+from modules.whitelabel.domain.models import (
     BrandingAsset,
     LogoType
 )
-from backend.modules.whitelabel.domain.schemas import (
+from modules.whitelabel.domain.schemas import (
     BrandingAssetUpload,
     BrandingAssetResponse
 )
-from backend.core.exceptions import NotFoundException, BadRequestException
-from backend.core.config import settings
+from core.exceptions import NotFoundException, BadRequestException
+from core.config import settings
 
 
 class BrandingService:

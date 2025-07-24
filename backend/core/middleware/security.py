@@ -13,8 +13,8 @@ import re
 from datetime import datetime, timedelta
 import logging
 
-from backend.core.config import settings
-from backend.core.redis import redis_client
+from core.config import settings
+from core.redis import redis_client
 
 logger = logging.getLogger(__name__)
 

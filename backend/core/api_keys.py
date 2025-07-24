@@ -14,10 +14,10 @@ from cryptography.fernet import Fernet
 import base64
 import json
 
-from backend.core.database import Base
-from backend.core.redis import redis_client
-from backend.core.config import settings
-from backend.core.audit import audit_logger, AuditEventType
+from core.database import Base
+from core.redis import redis_client
+from core.config import settings
+from core.audit import audit_logger, AuditEventType
 import logging
 
 logger = logging.getLogger(__name__)

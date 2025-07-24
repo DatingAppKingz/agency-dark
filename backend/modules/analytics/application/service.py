@@ -10,8 +10,8 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, text
 
-from backend.core.redis import redis_client
-from backend.modules.analytics.domain.models import (
+from core.redis import redis_client
+from modules.analytics.domain.models import (
     MetricSnapshot,
     RevenueTransaction,
     ContentPerformance,
@@ -19,7 +19,7 @@ from backend.modules.analytics.domain.models import (
     CategoryPerformance,
     AnalyticsCache
 )
-from backend.modules.analytics.domain.schemas import (
+from modules.analytics.domain.schemas import (
     TimeGranularity,
     ChartType,
     TimeSeriesDataPoint,
@@ -37,7 +37,7 @@ from backend.modules.analytics.domain.schemas import (
     ChartRequest,
     ChartResponse
 )
-from backend.core.domain.models import ModelProfile, Fan
+from core.domain.models import ModelProfile, Fan
 
 
 logger = logging.getLogger(__name__)

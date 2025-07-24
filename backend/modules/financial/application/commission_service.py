@@ -9,21 +9,21 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 
-from backend.modules.financial.domain.models import (
+from modules.financial.domain.models import (
     CommissionRule,
     CommissionTier,
     BillingCycle,
     FinancialTransaction,
     TransactionType
 )
-from backend.modules.financial.domain.schemas import (
+from modules.financial.domain.schemas import (
     CommissionRuleCreate,
     CommissionRuleUpdate,
     CommissionRuleResponse,
     CommissionOverrideRequest,
     CommissionCalculation
 )
-from backend.core.domain.models import Agency, ModelProfile, User
+from core.domain.models import Agency, ModelProfile, User
 
 
 logger = logging.getLogger(__name__)

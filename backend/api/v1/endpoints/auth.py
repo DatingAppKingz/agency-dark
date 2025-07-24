@@ -6,8 +6,8 @@ from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from backend.core.database import get_db
-from backend.core.security import (
+from core.database import get_db
+from core.security import (
     verify_password,
     get_password_hash,
     create_access_token,
@@ -15,9 +15,9 @@ from backend.core.security import (
     decode_token,
     generate_verification_token
 )
-from backend.core.config import settings
-from backend.core.domain.models import User, Session, Agency, UserRole
-from backend.core.domain.schemas import (
+from core.config import settings
+from core.domain.models import User, Session, Agency, UserRole
+from core.domain.schemas import (
     LoginRequest,
     Token,
     TokenData,
@@ -27,7 +27,7 @@ from backend.core.domain.schemas import (
     PasswordResetConfirm,
     RefreshTokenRequest
 )
-from backend.core.dependencies import CurrentUser, CurrentUserOptional
+from core.dependencies import CurrentUser, CurrentUserOptional
 
 
 router = APIRouter()

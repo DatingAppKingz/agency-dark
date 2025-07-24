@@ -2,7 +2,7 @@ import redis.asyncio as redis
 from typing import Optional, Any
 import json
 import logging
-from backend.core.config import settings
+from core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +125,21 @@ class RedisClient:
     def make_key(self, tenant_id: str, prefix: str, *args) -> str:
         parts = [tenant_id, prefix] + list(args)
         return ":".join(str(part) for part in parts)
+    
+    async def info(self) -> dict:
+        """Get Redis server information."""
+        if not self._redis:
+            return {}
+        
+        try:
+            return await self._redis.info()
+        except Exception as e:
+            logger.error(f"Redis info error: {e}")
+            return {}
+    
+    async def incr(self, key: str) -> Optional[int]:
+        """Increment a key by 1."""
+        return await self.increment(key, 1)
 
 
 redis_client = RedisClient()

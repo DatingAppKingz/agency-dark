@@ -9,16 +9,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from backend.core.database import get_db
-from backend.core.dependencies import get_current_user, RoleChecker
-from backend.core.domain.models import User, UserRole, ModelProfile
-from backend.modules.onlyfans_wrapper.application.service import OnlyFansService
-from backend.modules.onlyfans_wrapper.domain.schemas import (
+from core.database import get_db
+from core.dependencies import get_current_user, RoleChecker
+from core.domain.models import User, UserRole, ModelProfile
+from modules.onlyfans_wrapper.application.service import OnlyFansService
+from modules.onlyfans_wrapper.domain.schemas import (
     OnlyFansProfile,
     OnlyFansFan,
     OnlyFansMessage,
     OnlyFansPost,
-    OnlyFansStats,
+    OnlyFansStatistics,
     MessageCreateRequest,
     PostCreateRequest
 )
@@ -51,7 +51,7 @@ async def get_model_profile_with_of_key(
     elif user.role == UserRole.MODEL:
         if model_profile.user_id != user.id:
             raise HTTPException(status_code=403, detail="Not your model profile")
-    elif user.role in [UserRole.MANAGER, UserRole.CHATTER, UserRole.ANALYST]:
+    elif user.role in [UserRole.AGENCY_MEMBER, UserRole.CHATTER, UserRole.AGENCY_MEMBER]:
         if model_profile.agency_id != user.agency_id:
             raise HTTPException(status_code=403, detail="Model not in your agency")
     else:
@@ -76,9 +76,9 @@ async def get_profile(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER,
-            UserRole.ANALYST
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -102,7 +102,7 @@ async def sync_profile(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -130,7 +130,7 @@ async def get_fans(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -160,7 +160,7 @@ async def sync_fans(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -186,7 +186,7 @@ async def get_fan_details(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -216,7 +216,7 @@ async def get_messages(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -246,7 +246,7 @@ async def send_message(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -281,8 +281,8 @@ async def get_posts(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
-            UserRole.ANALYST
+            UserRole.AGENCY_MEMBER,
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -310,7 +310,7 @@ async def create_post(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -332,7 +332,7 @@ async def create_post(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/statistics/{model_id}", response_model=OnlyFansStats)
+@router.get("/statistics/{model_id}", response_model=OnlyFansStatistics)
 async def get_statistics(
     model_id: str,
     start_date: date = Query(...),
@@ -343,8 +343,8 @@ async def get_statistics(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
-            UserRole.ANALYST
+            UserRole.AGENCY_MEMBER,
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)

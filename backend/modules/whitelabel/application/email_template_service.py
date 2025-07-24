@@ -8,17 +8,17 @@ from sqlalchemy import select, and_
 from jinja2 import Template, Environment, meta, TemplateSyntaxError
 import re
 
-from backend.modules.whitelabel.domain.models import (
+from modules.whitelabel.domain.models import (
     EmailTemplate,
     EmailTemplateType
 )
-from backend.modules.whitelabel.domain.schemas import (
+from modules.whitelabel.domain.schemas import (
     EmailTemplateCreate,
     EmailTemplateUpdate,
     EmailTemplateResponse,
     EmailTemplatePreview
 )
-from backend.core.exceptions import NotFoundException, BadRequestException
+from core.exceptions import NotFoundException, BadRequestException
 
 
 class EmailTemplateService:

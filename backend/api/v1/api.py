@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 
 from .endpoints import auth
-from backend.modules.inflow_wrapper.api import router as inflow_router
-from backend.modules.onlyfans_wrapper.api import router as onlyfans_router
-from backend.modules.api_orchestration.api.endpoints import router as orchestration_router
-from backend.core.webhooks.handlers import router as webhook_router
-from backend.modules.analytics.api import router as analytics_router
-from backend.modules.financial.api import router as financial_router
-from backend.modules.whitelabel.api.routes import router as whitelabel_router
+from modules.inflow_wrapper.api import router as inflow_router
+from modules.onlyfans_wrapper.api import router as onlyfans_router
+from modules.api_orchestration.api.endpoints import router as orchestration_router
+from core.webhooks.handlers import router as webhook_router
+from modules.analytics.api import router as analytics_router
+from modules.financial.api import router as financial_router
+from modules.whitelabel.api.routes import router as whitelabel_router
 
 api_router = APIRouter()
 

@@ -7,14 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import re
 
-from backend.modules.whitelabel.domain.models import AgencyProfile
-from backend.modules.whitelabel.domain.schemas import (
+from modules.whitelabel.domain.models import AgencyProfile
+from modules.whitelabel.domain.schemas import (
     AgencyProfileCreate,
     AgencyProfileUpdate,
     AgencyProfileResponse
 )
-from backend.core.exceptions import NotFoundException, BadRequestException
-from backend.modules.auth.domain.models import Agency
+from core.exceptions import NotFoundException, BadRequestException
+from core.domain.models import Agency
 
 
 class AgencyProfileService:

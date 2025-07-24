@@ -13,9 +13,9 @@ from sqlalchemy import select
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-from backend.core.config import settings
-from backend.core.domain.models import ModelProfile, Agency
-from backend.modules.api_orchestration.application.orchestrator import APIOrchestrator
+from core.config import settings
+from core.domain.models import ModelProfile, Agency
+from modules.api_orchestration.application.orchestrator import APIOrchestrator
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,9 @@ class SyncScheduler:
     
     def __init__(self):
         self.scheduler = AsyncIOScheduler()
-        self.engine = create_async_engine(settings.DATABASE_URL)
+        self.engine = create_async_engine(
+            settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+        )
         self.async_session = async_sessionmaker(self.engine, expire_on_commit=False)
     
     async def start(self):
@@ -191,7 +193,7 @@ class SyncScheduler:
         logger.info("Starting expired claims cleanup")
         
         try:
-            from backend.modules.chat.application.claim_manager import ClaimManager
+            from modules.chat.application.claim_manager import ClaimManager
             claim_manager = ClaimManager()
             await claim_manager.release_expired_claims()
         except Exception as e:
@@ -203,7 +205,7 @@ class SyncScheduler:
         
         async with self.async_session() as db:
             try:
-                from backend.modules.analytics.application.collector import MetricsCollector
+                from modules.analytics.application.collector import MetricsCollector
                 collector = MetricsCollector(db)
                 
                 # Get all models
@@ -228,7 +230,7 @@ class SyncScheduler:
         
         async with self.async_session() as db:
             try:
-                from backend.modules.financial.application.billing_service import BillingService
+                from modules.financial.application.billing_service import BillingService
                 billing_service = BillingService(db)
                 
                 closed_count = await billing_service.process_auto_close()
@@ -243,7 +245,7 @@ class SyncScheduler:
         
         async with self.async_session() as db:
             try:
-                from backend.modules.financial.application.payout_service import PayoutService
+                from modules.financial.application.payout_service import PayoutService
                 payout_service = PayoutService(db)
                 
                 result = await payout_service.process_scheduled_payouts()
@@ -258,7 +260,7 @@ class SyncScheduler:
         
         async with self.async_session() as db:
             try:
-                from backend.modules.financial.application.invoice_service import InvoiceService
+                from modules.financial.application.invoice_service import InvoiceService
                 invoice_service = InvoiceService(db)
                 
                 overdue_count = await invoice_service.process_overdue_invoices()

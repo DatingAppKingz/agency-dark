@@ -11,11 +11,11 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from backend.core.config import settings
-from backend.core.database import Base
+from core.config import settings
+from core.database import Base
 
 # Import all models to ensure they're registered with Base
-from backend.core.domain.models import *
+from core.domain.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

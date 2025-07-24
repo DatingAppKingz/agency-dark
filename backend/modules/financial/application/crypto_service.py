@@ -12,7 +12,7 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 
-from backend.modules.financial.domain.models import (
+from modules.financial.domain.models import (
     CryptoWallet,
     CryptoNetwork,
     PaymentGatewayConfig,
@@ -20,15 +20,15 @@ from backend.modules.financial.domain.models import (
     FinancialTransaction,
     TransactionType
 )
-from backend.modules.financial.domain.schemas import (
+from modules.financial.domain.schemas import (
     CryptoWalletCreate,
     CryptoWalletResponse,
     CryptoWalletVerification,
     CryptoPaymentRequest,
     CryptoPaymentResponse
 )
-from backend.core.domain.models import User
-from backend.core.config import settings
+from core.domain.models import User
+from core.config import settings
 
 
 logger = logging.getLogger(__name__)
@@ -454,7 +454,7 @@ class CryptoService:
             payout_id = data.get('event', {}).get('data', {}).get('metadata', {}).get('payout_id')
             if payout_id:
                 # Update payout status
-                from backend.modules.financial.application.payout_service import PayoutService
+                from modules.financial.application.payout_service import PayoutService
                 payout_service = PayoutService(self.db)
                 
                 await payout_service.update_payout_status(

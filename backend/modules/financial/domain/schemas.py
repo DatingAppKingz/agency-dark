@@ -92,9 +92,9 @@ class PayoutRequest(BaseModel):
     """Request to create a payout."""
     billing_cycle_id: str
     recipient_id: str
-    recipient_type: str = Field(..., regex="^(model|agency)$")
+    recipient_type: str = Field(..., pattern="^(model|agency)$")
     amount: Decimal = Field(..., gt=0)
-    payment_method: str = Field(..., regex="^(crypto|bank_transfer)$")
+    payment_method: str = Field(..., pattern="^(crypto|bank_transfer)$")
     payment_details: Dict[str, Any]
     scheduled_at: Optional[datetime] = None
 

@@ -11,9 +11,9 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
-from backend.core.database import get_db
-from backend.core.redis import redis_client
-from backend.core.domain.models import ModelProfile, Fan, User, FanClaim
+from core.database import get_db
+from core.redis import redis_client
+from core.domain.models import ModelProfile, Fan, User, FanClaim
 from ..domain.interfaces import IOnlyFansClient
 from ..domain.schemas import (
     OnlyFansConfig,

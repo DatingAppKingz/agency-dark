@@ -11,7 +11,7 @@ import json
 import os
 from datetime import datetime
 
-from backend.core.config import settings
+from core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -230,7 +230,7 @@ encryption_service = EncryptionService()
 
 # Example usage in models:
 """
-from backend.core.encryption import EncryptedStringType, EncryptedJSONType
+from core.encryption import EncryptedStringType, EncryptedJSONType
 
 class SensitiveDataModel(Base):
     __tablename__ = "sensitive_data"

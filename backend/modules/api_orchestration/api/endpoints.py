@@ -11,11 +11,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
-from backend.core.database import get_db
-from backend.core.dependencies import get_current_user, RoleChecker
-from backend.core.domain.models import User, UserRole, ModelProfile
-from backend.modules.api_orchestration.application.orchestrator import APIOrchestrator
-from backend.modules.api_orchestration.domain.schemas import (
+from core.database import get_db
+from core.dependencies import get_current_user, RoleChecker
+from core.domain.models import User, UserRole, ModelProfile
+from modules.api_orchestration.application.orchestrator import APIOrchestrator
+from modules.api_orchestration.domain.schemas import (
     UnifiedFan,
     UnifiedMessage,
     UnifiedAnalytics,
@@ -57,7 +57,7 @@ async def get_model_profile(
         # Model can only access their own profile
         if model_profile.user_id != user.id:
             raise HTTPException(status_code=403, detail="Not your model profile")
-    elif user.role in [UserRole.MANAGER, UserRole.CHATTER, UserRole.ANALYST]:
+    elif user.role in [UserRole.AGENCY_MEMBER, UserRole.CHATTER, UserRole.AGENCY_MEMBER]:
         # Staff can access models in their agency
         if model_profile.agency_id != user.agency_id:
             raise HTTPException(status_code=403, detail="Model not in your agency")
@@ -79,7 +79,7 @@ async def get_unified_fans(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -118,7 +118,7 @@ async def trigger_sync(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -180,9 +180,9 @@ async def get_sync_status(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER,
-            UserRole.ANALYST
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -218,7 +218,7 @@ async def send_message(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -258,7 +258,7 @@ async def send_mass_message(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -299,8 +299,8 @@ async def get_unified_analytics(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
-            UserRole.ANALYST
+            UserRole.AGENCY_MEMBER,
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -338,7 +338,7 @@ async def create_content_post(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER
+            UserRole.AGENCY_MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -385,7 +385,7 @@ async def get_unified_messages(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.MANAGER,
+            UserRole.AGENCY_MEMBER,
             UserRole.CHATTER
         ])
     ),

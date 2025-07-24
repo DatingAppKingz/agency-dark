@@ -9,12 +9,12 @@ import json
 from socketio import AsyncNamespace
 from sqlalchemy import select, and_
 
-from backend.core.database import AsyncSessionLocal
-from backend.core.domain.models import User, ModelProfile, Fan, Message, UserRole
-from backend.modules.chat.application.claim_manager import ClaimManager
-from backend.modules.chat.application.message_queue import MessageQueue
-from backend.modules.api_orchestration.application.orchestrator import APIOrchestrator
-from backend.modules.api_orchestration.domain.schemas import MessageRequest
+from core.database import AsyncSessionLocal
+from core.domain.models import User, ModelProfile, Fan, UserRole
+from modules.chat.application.claim_manager import ClaimManager
+from modules.chat.application.message_queue import MessageQueue
+from modules.api_orchestration.application.orchestrator import APIOrchestrator
+from modules.api_orchestration.domain.schemas import MessageRequest
 
 
 logger = logging.getLogger(__name__)
@@ -84,7 +84,7 @@ class ChatNamespace(AsyncNamespace):
             
             if user.role == UserRole.SUPER_ADMIN:
                 pass  # Super admin can access any model
-            elif user.role in [UserRole.AGENCY_OWNER, UserRole.MANAGER, UserRole.CHATTER]:
+            elif user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER, UserRole.CHATTER]:
                 if str(model.agency_id) != session['agency_id']:
                     await self.emit('error', {
                         'message': 'Model not in your agency'

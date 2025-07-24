@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: agencydark
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
     container_name: agencydark-backend
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/agencydark
+      DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: redis://redis:6379/0
       SECRET_KEY: ${SECRET_KEY:-development_secret_key_change_in_production}
       ENVIRONMENT: ${ENVIRONMENT:-development}
@@ -61,10 +61,12 @@ services:
         condition: service_healthy
     command: |
       sh -c "
+        echo 'Setting PYTHONPATH...'
+        export PYTHONPATH=/app
         echo 'Running database migrations...'
-        alembic upgrade head
+        cd /app && python -m alembic upgrade head
         echo 'Starting application...'
-        uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+        cd /app && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
       "
 
   # Frontend (placeholder for future)

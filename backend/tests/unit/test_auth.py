@@ -6,11 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 import uuid
 
-from backend.modules.auth.application.auth_service import AuthService
-from backend.modules.auth.domain.schemas import UserCreate, UserLogin
-from backend.modules.auth.domain.models import User, UserRole
-from backend.core.security import verify_password, create_access_token, decode_token
-from backend.core.exceptions import UnauthorizedException, BadRequestException
+from modules.auth.application.auth_service import AuthService
+from modules.auth.domain.schemas import UserCreate, UserLogin
+from modules.auth.domain.models import User, UserRole
+from core.security import verify_password, create_access_token, decode_token
+from core.exceptions import UnauthorizedException, BadRequestException
 
 
 class TestAuthService:

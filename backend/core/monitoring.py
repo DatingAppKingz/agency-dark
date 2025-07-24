@@ -10,9 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from prometheus_client import Counter, Histogram, Gauge, generate_latest
 import time
 
-from backend.core.database import engine
-from backend.core.redis import redis_client
-from backend.core.config import settings
+from core.database import engine
+from core.redis import redis_client
+from core.config import settings
 
 
 # Prometheus metrics
