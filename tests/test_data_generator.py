@@ -8,7 +8,9 @@ import asyncio
 import uuid
 from datetime import datetime, timedelta
 import random
+import json
 import psycopg2
+from psycopg2.extras import Json
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -33,14 +35,14 @@ class TestDataGenerator:
             name,
             slug,
             domain,
-            {
+            Json({
                 "features": {
                     "analytics": True,
                     "financial": True,
                     "whitelabel": True
                 },
                 "commission_rate": 0.25
-            }
+            })
         ))
         return self.cur.fetchone()[0]
     
@@ -91,36 +93,41 @@ class TestDataGenerator:
             profile_id = str(uuid.uuid4())
             stage_names = ["Bella Rose", "Sophia Sky", "Luna Star", "Mia Moon"]
             
-            self.cur.execute("""
-                INSERT INTO model_profiles (
-                    id, user_id, agency_id, display_name, bio,
-                    onlyfans_username, onlyfans_user_id, is_active,
-                    subscriber_count, paying_subscriber_count,
-                    total_earnings, commission_rate,
-                    created_at, updated_at
-                )
-                VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, true,
-                    %s, %s, %s, %s, NOW(), NOW()
-                )
-                ON CONFLICT (user_id) DO UPDATE SET
-                    display_name = EXCLUDED.display_name
-                RETURNING id
-            """, (
-                profile_id,
-                user["id"],
-                agency_id,
-                stage_names[i % len(stage_names)],
-                f"Premium content creator at {user['email'].split('@')[1]}",
-                f"{user['username']}_of",
-                f"of_user_{i+1}",
-                random.randint(500, 5000),  # subscribers
-                random.randint(100, 1000),  # paying subscribers
-                random.randint(10000, 100000),  # total earnings
-                0.25  # commission rate
-            ))
+            # Check if profile already exists
+            self.cur.execute("SELECT id FROM model_profiles WHERE user_id = %s", (user["id"],))
+            existing = self.cur.fetchone()
             
-            profile_id = self.cur.fetchone()[0]
+            if not existing:
+                self.cur.execute("""
+                    INSERT INTO model_profiles (
+                        id, user_id, agency_id, display_name, bio,
+                        onlyfans_username, onlyfans_user_id, is_active,
+                        subscriber_count, paying_subscriber_count,
+                        total_earnings, commission_rate,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, true,
+                        %s, %s, %s, %s, NOW(), NOW()
+                    )
+                    RETURNING id
+                """, (
+                    profile_id,
+                    user["id"],
+                    agency_id,
+                    stage_names[i % len(stage_names)],
+                    f"Premium content creator at {user['email'].split('@')[1]}",
+                    f"{user['username']}_{agency_id[:8]}_of",
+                    f"of_user_{agency_id[:8]}_{i+1}",
+                    random.randint(500, 5000),  # subscribers
+                    random.randint(100, 1000),  # paying subscribers
+                    random.randint(10000, 100000),  # total earnings
+                    0.25  # commission rate
+                ))
+                
+                profile_id = self.cur.fetchone()[0]
+            else:
+                profile_id = existing[0]
             profiles.append({
                 "id": profile_id,
                 "user_id": user["id"],
@@ -139,9 +146,9 @@ class TestDataGenerator:
             for chatter in assigned_chatters:
                 self.cur.execute("""
                     INSERT INTO model_chatters (
-                        model_id, chatter_id, assigned_at, is_active
+                        id, model_id, chatter_id, assigned_at, is_active
                     )
-                    VALUES (%s, %s, NOW(), true)
+                    VALUES (gen_random_uuid(), %s, %s, NOW(), true)
                     ON CONFLICT (model_id, chatter_id) DO NOTHING
                 """, (profile["id"], chatter["id"]))
     
@@ -295,8 +302,9 @@ class TestDataGenerator:
             print(f"  ✅ Created financial data")
             
             # Create white-label config
-            self.create_whitelabel_config(agency_id)
-            print(f"  ✅ Created white-label configuration")
+            # Skipping for now - table structure issues
+            # self.create_whitelabel_config(agency_id)
+            # print(f"  ✅ Created white-label configuration")
         
         # Commit all changes
         self.conn.commit()
