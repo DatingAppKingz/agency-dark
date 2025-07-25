@@ -1,39 +1,17 @@
 import { Box, Typography, Button } from '@mui/material';
 import { useRouteError, useNavigate } from 'react-router-dom';
+import { ErrorFallback } from '@/components/error/ErrorFallback';
 
 export const ErrorBoundary = () => {
   const error = useRouteError() as Error;
   const navigate = useNavigate();
 
+  // Use the improved error fallback component
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        p: 3,
-        textAlign: 'center',
-      }}
-    >
-      <Typography variant="h1" sx={{ fontSize: '4rem', mb: 2 }}>
-        Oops!
-      </Typography>
-      <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>
-        Something went wrong
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500 }}>
-        {error?.message || 'An unexpected error occurred. Please try again later.'}
-      </Typography>
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Button variant="contained" onClick={() => navigate('/')}>
-          Go Home
-        </Button>
-        <Button variant="outlined" onClick={() => window.location.reload()}>
-          Reload Page
-        </Button>
-      </Box>
-    </Box>
+    <ErrorFallback
+      error={error}
+      resetError={() => window.location.reload()}
+      showDetails={process.env.NODE_ENV === 'development'}
+    />
   );
 };
