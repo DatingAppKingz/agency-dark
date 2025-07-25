@@ -16,6 +16,8 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/common/Toaster';
 import { LoginCredentials } from '@/types/auth';
+import { SEOHead } from '@/components/seo/SEOHead';
+import { StructuredData } from '@/components/seo/StructuredData';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -51,6 +53,17 @@ const LoginPage = () => {
 
   return (
     <>
+      <SEOHead
+        title="Login"
+        description="Sign in to your Agency Dark account to manage models, chatters, and agency operations"
+      />
+      <StructuredData
+        type="WebPage"
+        data={{
+          name: 'Login - Agency Dark',
+          description: 'Sign in to access your OnlyFans agency management platform',
+        }}
+      />
       <Typography component="h1" variant="h4" sx={{ mb: 1 }}>
         Welcome Back
       </Typography>

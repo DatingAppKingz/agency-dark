@@ -7,6 +7,7 @@ import { AgencyAdminDashboard } from './AgencyAdminDashboard';
 import { ModelDashboard } from './ModelDashboard';
 import { ChatterDashboard } from './ChatterDashboard';
 import { MemberDashboard } from './MemberDashboard';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const DashboardPage = () => {
   const { user } = useAuthStore();
@@ -20,26 +21,39 @@ const DashboardPage = () => {
   }
 
   // Render role-specific dashboard
-  switch (user.role) {
-    case UserRole.SUPER_ADMIN:
-      return <SuperAdminDashboard />;
-    case UserRole.AGENCY_OWNER:
-      return <AgencyOwnerDashboard />;
-    case UserRole.AGENCY_ADMIN:
-      return <AgencyAdminDashboard />;
-    case UserRole.MODEL:
-      return <ModelDashboard />;
-    case UserRole.CHATTER:
-      return <ChatterDashboard />;
-    case UserRole.AGENCY_MEMBER:
-      return <MemberDashboard />;
-    default:
-      return (
-        <Box>
-          <Typography>Unknown role: {user.role}</Typography>
-        </Box>
-      );
-  }
+  const renderDashboard = () => {
+    switch (user.role) {
+      case UserRole.SUPER_ADMIN:
+        return <SuperAdminDashboard />;
+      case UserRole.AGENCY_OWNER:
+        return <AgencyOwnerDashboard />;
+      case UserRole.AGENCY_ADMIN:
+        return <AgencyAdminDashboard />;
+      case UserRole.MODEL:
+        return <ModelDashboard />;
+      case UserRole.CHATTER:
+        return <ChatterDashboard />;
+      case UserRole.AGENCY_MEMBER:
+        return <MemberDashboard />;
+      default:
+        return (
+          <Box>
+            <Typography>Unknown role: {user.role}</Typography>
+          </Box>
+        );
+    }
+  };
+
+  return (
+    <>
+      <SEOHead
+        title="Dashboard"
+        description="Manage your OnlyFans agency operations, models, and chatters from a centralized dashboard"
+        noindex={true}
+      />
+      {renderDashboard()}
+    </>
+  );
 };
 
 export default DashboardPage;
