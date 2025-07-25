@@ -109,8 +109,8 @@ Comprehensive plan to build the complete frontend for AgencyDark platform using 
 - [x] Message input with attachments
 - [x] Emoji picker
 - [ ] Voice messages
-- [ ] Image/video preview
-- [ ] Message search
+- [x] Image/video preview
+- [x] Message search
 
 #### 4.2 Real-time Features
 - [x] Socket.IO connection manager
@@ -124,10 +124,10 @@ Comprehensive plan to build the complete frontend for AgencyDark platform using 
 #### 4.3 Chat Management
 - [x] Fan assignment
 - [x] Chat filters
-- [ ] Canned responses
+- [x] Canned responses
 - [x] Chat history
 - [ ] Export conversations
-- [ ] Block/report functionality
+- [x] Block/report functionality
 
 ### Phase 5: Financial Module (Days 13-15)
 

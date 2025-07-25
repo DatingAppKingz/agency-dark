@@ -4,6 +4,7 @@ export interface ChatUser {
   avatar_url?: string;
   is_online: boolean;
   last_seen?: string;
+  subscription_tier?: string;
 }
 
 export interface Message {

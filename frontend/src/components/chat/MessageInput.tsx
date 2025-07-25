@@ -1,4 +1,4 @@
-import { useState, useRef, KeyboardEvent } from 'react';
+import { useState, useRef, KeyboardEvent, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -24,16 +24,24 @@ interface MessageInputProps {
   onSendMessage: (content: string, attachments?: File[]) => void;
   onTyping: (isTyping: boolean) => void;
   disabled?: boolean;
+  value?: string;
+  onValueChange?: (value: string) => void;
 }
 
-export const MessageInput = ({ onSendMessage, onTyping, disabled }: MessageInputProps) => {
+export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValueChange }: MessageInputProps) => {
   const { error } = useToast();
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(value || '');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    if (value !== undefined && value !== message) {
+      setMessage(value);
+    }
+  }, [value]);
 
   const handleSend = () => {
     if (message.trim() || attachments.length > 0) {
@@ -41,6 +49,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled }: MessageInput
       setMessage('');
       setAttachments([]);
       onTyping(false);
+      onValueChange?.(''); // Clear external value
     }
   };
 
@@ -53,6 +62,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled }: MessageInput
 
   const handleMessageChange = (value: string) => {
     setMessage(value);
+    onValueChange?.(value);
     
     // Handle typing indicator
     if (typingTimeoutRef.current) {

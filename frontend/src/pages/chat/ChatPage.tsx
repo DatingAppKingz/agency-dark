@@ -10,6 +10,9 @@ import {
   IconButton,
   Chip,
   Badge,
+  Menu,
+  MenuItem,
+  Divider,
 } from '@mui/material';
 import {
   VideoCall,
@@ -18,11 +21,18 @@ import {
   Star,
   StarBorder,
   ArrowBack,
+  Search,
+  MoreVert,
+  Block,
+  Report,
 } from '@mui/icons-material';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageThread } from '@/components/chat/MessageThread';
 import { MessageInput } from '@/components/chat/MessageInput';
 import { ChatFilters } from '@/components/chat/ChatFilters';
+import { MessageSearch } from '@/components/chat/MessageSearch';
+import { CannedResponses } from '@/components/chat/CannedResponses';
+import { BlockReportDialog } from '@/components/chat/BlockReportDialog';
 import { useChatStore } from '@/store/chatStore';
 import { useSocket } from '@/providers/SocketProvider';
 import { chatApi } from '@/services/api/chat';
@@ -54,6 +64,10 @@ const ChatPage = () => {
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [messageInputValue, setMessageInputValue] = useState('');
+  const [blockReportOpen, setBlockReportOpen] = useState(false);
+  const [chatMenuAnchor, setChatMenuAnchor] = useState<null | HTMLElement>(null);
 
   const activeConversation = activeConversationId ? getConversation(activeConversationId) : null;
   const messages = activeConversationId ? getMessages(activeConversationId) : [];
@@ -196,6 +210,7 @@ const ChatPage = () => {
       
       // Message will be added via socket event
       success('Message sent');
+      setMessageInputValue(''); // Reset input after sending
     } catch (err) {
       error('Failed to send message');
     } finally {
@@ -228,6 +243,29 @@ const ChatPage = () => {
       updateConversation(updated);
     } catch (err) {
       error('Failed to update conversation');
+    }
+  };
+
+  const handleBlockUser = async (userId: string, reason: string) => {
+    try {
+      await chatApi.blockUser(userId, reason);
+      // Remove conversation from list
+      if (activeConversation) {
+        setConversations(conversations.filter(c => c.id !== activeConversation.id));
+        setActiveConversation(null);
+      }
+    } catch (err) {
+      error('Failed to block user');
+      throw err;
+    }
+  };
+
+  const handleReportUser = async (userId: string, reason: string, details: string) => {
+    try {
+      await chatApi.reportUser(userId, reason, details);
+    } catch (err) {
+      error('Failed to report user');
+      throw err;
     }
   };
 
@@ -307,14 +345,19 @@ const ChatPage = () => {
                         <StarBorder />
                       )}
                     </IconButton>
+                    <IconButton onClick={() => setSearchOpen(true)}>
+                      <Search />
+                    </IconButton>
                     <IconButton>
                       <Call />
                     </IconButton>
                     <IconButton>
                       <VideoCall />
                     </IconButton>
-                    <IconButton>
-                      <Info />
+                    <IconButton
+                      onClick={(e) => setChatMenuAnchor(e.currentTarget)}
+                    >
+                      <MoreVert />
                     </IconButton>
                   </Toolbar>
                 </AppBar>
@@ -329,11 +372,20 @@ const ChatPage = () => {
                 </Box>
 
                 {/* Message Input */}
-                <MessageInput
-                  onSendMessage={handleSendMessage}
-                  onTyping={handleTyping}
-                  disabled={isSendingMessage}
-                />
+                <Box sx={{ position: 'relative' }}>
+                  <MessageInput
+                    onSendMessage={handleSendMessage}
+                    onTyping={handleTyping}
+                    disabled={isSendingMessage}
+                    value={messageInputValue}
+                    onValueChange={setMessageInputValue}
+                  />
+                  <CannedResponses
+                    onSelectResponse={(response) => {
+                      setMessageInputValue(response);
+                    }}
+                  />
+                </Box>
               </>
             ) : (
               <Box
@@ -352,6 +404,53 @@ const ChatPage = () => {
           </Box>
         </Grid>
       </Grid>
+      
+      {/* Message Search Dialog */}
+      <MessageSearch
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        conversationId={activeConversationId || undefined}
+        onMessageSelect={(message) => {
+          // TODO: Implement scroll to message in thread
+          setSearchOpen(false);
+        }}
+      />
+
+      {/* Chat Menu */}
+      <Menu
+        anchorEl={chatMenuAnchor}
+        open={Boolean(chatMenuAnchor)}
+        onClose={() => setChatMenuAnchor(null)}
+      >
+        <MenuItem onClick={() => {
+          setChatMenuAnchor(null);
+          // TODO: Implement conversation info
+        }}>
+          <Info sx={{ mr: 1 }} /> Conversation Info
+        </MenuItem>
+        <MenuItem onClick={() => {
+          setChatMenuAnchor(null);
+          // TODO: Implement export conversation
+        }}>
+          <Info sx={{ mr: 1 }} /> Export Conversation
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => {
+          setChatMenuAnchor(null);
+          setBlockReportOpen(true);
+        }} sx={{ color: 'error.main' }}>
+          <Block sx={{ mr: 1 }} /> Block or Report User
+        </MenuItem>
+      </Menu>
+
+      {/* Block/Report Dialog */}
+      <BlockReportDialog
+        open={blockReportOpen}
+        onClose={() => setBlockReportOpen(false)}
+        user={activeConversation?.fan || null}
+        onBlock={handleBlockUser}
+        onReport={handleReportUser}
+      />
     </Box>
   );
 };

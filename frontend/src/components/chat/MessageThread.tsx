@@ -17,11 +17,13 @@ import {
   AttachFile,
   Image,
   VideoFile,
+  PlayCircleOutline,
 } from '@mui/icons-material';
 import { format, isToday, isYesterday } from 'date-fns';
 import { Message, MessageAttachment } from '@/types/chat';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
+import { MediaPreview } from './MediaPreview';
 
 interface MessageThreadProps {
   messages: Message[];
@@ -35,6 +37,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [previewAttachment, setPreviewAttachment] = useState<MessageAttachment | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -80,12 +83,15 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
               borderRadius: 1,
               cursor: 'pointer',
             }}
-            onClick={() => window.open(attachment.url, '_blank')}
+            onClick={() => setPreviewAttachment(attachment)}
           />
         );
       case 'video':
         return (
-          <Box sx={{ position: 'relative', cursor: 'pointer' }}>
+          <Box 
+            sx={{ position: 'relative', cursor: 'pointer' }}
+            onClick={() => setPreviewAttachment(attachment)}
+          >
             <Box
               component="img"
               src={attachment.thumbnail_url}
@@ -96,15 +102,15 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
                 borderRadius: 1,
               }}
             />
-            <VideoFile
+            <PlayCircleOutline
               sx={{
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                fontSize: 48,
+                fontSize: 64,
                 color: 'white',
-                filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))',
+                filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))',
               }}
             />
           </Box>
@@ -114,7 +120,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
           <Chip
             icon={<AttachFile />}
             label={attachment.filename}
-            onClick={() => window.open(attachment.url, '_blank')}
+            onClick={() => setPreviewAttachment(attachment)}
             sx={{ cursor: 'pointer' }}
           />
         );
@@ -314,6 +320,14 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
           }
         `}
       </style>
+      
+      {previewAttachment && (
+        <MediaPreview
+          attachment={previewAttachment}
+          open={Boolean(previewAttachment)}
+          onClose={() => setPreviewAttachment(null)}
+        />
+      )}
     </Box>
   );
 };

@@ -111,4 +111,17 @@ export const chatApi = {
   async createCannedResponse(title: string, content: string): Promise<void> {
     await apiClient.post('/chat/canned-responses', { title, content });
   },
+
+  // Block/Report
+  async blockUser(userId: string, reason: string): Promise<void> {
+    await apiClient.post(`/users/${userId}/block`, { reason });
+  },
+
+  async reportUser(userId: string, reason: string, details: string): Promise<void> {
+    await apiClient.post(`/users/${userId}/report`, { 
+      reason,
+      details,
+      reported_from: 'chat',
+    });
+  },
 };
