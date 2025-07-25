@@ -11,12 +11,20 @@ import {
   Receipt,
   Calculate,
   CreditCard,
+  Assessment,
+  Description,
+  AttachMoney,
+  AccountBalanceWallet,
 } from '@mui/icons-material';
 import { RevenueOverview } from '@/components/financial/RevenueOverview';
 import { PayoutManagement } from '@/components/financial/PayoutManagement';
 import { TransactionHistory } from '@/components/financial/TransactionHistory';
 import { CommissionCalculator } from '@/components/financial/CommissionCalculator';
 import { PaymentMethods } from '@/components/financial/PaymentMethods';
+import { FinancialReports } from '@/components/financial/FinancialReports';
+import { TaxDocuments } from '@/components/financial/TaxDocuments';
+import { EarningsStatements } from '@/components/financial/EarningsStatements';
+import { CommissionBreakdown } from '@/components/financial/CommissionBreakdown';
 import { useAuth } from '@/hooks/useAuth';
 
 interface TabPanelProps {
@@ -88,6 +96,26 @@ const FinancialPage = () => {
             iconPosition="start"
             label="Payment Methods"
           />
+          <Tab
+            icon={<Assessment />}
+            iconPosition="start"
+            label="Reports"
+          />
+          <Tab
+            icon={<Description />}
+            iconPosition="start"
+            label="Tax Documents"
+          />
+          <Tab
+            icon={<AttachMoney />}
+            iconPosition="start"
+            label="Earnings"
+          />
+          <Tab
+            icon={<AccountBalanceWallet />}
+            iconPosition="start"
+            label="Commissions"
+          />
         </Tabs>
       </Paper>
 
@@ -105,6 +133,18 @@ const FinancialPage = () => {
       </TabPanel>
       <TabPanel value={tab} index={4}>
         <PaymentMethods />
+      </TabPanel>
+      <TabPanel value={tab} index={5}>
+        <FinancialReports modelId={modelId} agencyId={agencyId} />
+      </TabPanel>
+      <TabPanel value={tab} index={6}>
+        <TaxDocuments modelId={modelId} agencyId={agencyId} />
+      </TabPanel>
+      <TabPanel value={tab} index={7}>
+        <EarningsStatements modelId={modelId} agencyId={agencyId} />
+      </TabPanel>
+      <TabPanel value={tab} index={8}>
+        <CommissionBreakdown agencyId={agencyId} />
       </TabPanel>
     </Box>
   );

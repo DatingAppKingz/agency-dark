@@ -141,10 +141,10 @@ Comprehensive plan to build the complete frontend for AgencyDark platform using 
 - [x] Payment methods
 
 #### 5.2 Reporting
-- [ ] Financial reports
-- [ ] Tax documents
-- [ ] Earnings statements
-- [ ] Commission breakdown
+- [x] Financial reports
+- [x] Tax documents
+- [x] Earnings statements
+- [x] Commission breakdown
 - [x] Export to CSV/PDF (integrated in components)
 - [x] Date range filters (integrated in components)
 
