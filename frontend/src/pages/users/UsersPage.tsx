@@ -29,6 +29,7 @@ import {
   Delete,
   Block,
   CheckCircle,
+  Download,
 } from '@mui/icons-material';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -65,6 +66,7 @@ const UsersPage = () => {
   const deleteUser = useDeleteUser();
   const deleteUsers = useDeleteUsers();
   const toggleStatus = useToggleUserStatus();
+  const [bulkActionAnchor, setBulkActionAnchor] = useState<null | HTMLElement>(null);
 
   const users = data?.items || [];
   const totalCount = data?.total || 0;
@@ -145,10 +147,54 @@ const UsersPage = () => {
   };
 
   const handleBulkDelete = async () => {
-    if (selected.length > 0) {
+    if (selected.length > 0 && window.confirm(`Delete ${selected.length} users?`)) {
       await deleteUsers.mutateAsync(selected);
       setSelected([]);
     }
+  };
+
+  const handleBulkStatusToggle = async (activate: boolean) => {
+    if (selected.length > 0) {
+      await Promise.all(
+        selected.map((userId) => 
+          toggleStatus.mutateAsync({ userId, isActive: activate })
+        )
+      );
+      setSelected([]);
+    }
+    setBulkActionAnchor(null);
+  };
+
+  const handleExportUsers = () => {
+    // Create CSV data
+    const csvData = users
+      .filter(user => selected.includes(user.id))
+      .map(user => ({
+        Name: user.full_name,
+        Email: user.email,
+        Role: user.role,
+        Status: user.is_active ? 'Active' : 'Inactive',
+        Created: new Date(user.created_at).toLocaleDateString(),
+      }));
+    
+    // Convert to CSV string
+    const headers = Object.keys(csvData[0] || {});
+    const csvString = [
+      headers.join(','),
+      ...csvData.map(row => headers.map(header => row[header]).join(','))
+    ].join('\n');
+    
+    // Download file
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    setBulkActionAnchor(null);
   };
 
   const handleSubmit = async (data: any) => {
@@ -214,9 +260,36 @@ const UsersPage = () => {
             <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1">
               {selected.length} selected
             </Typography>
-            <Button color="inherit" onClick={handleBulkDelete}>
-              Delete Selected
-            </Button>
+            <Box display="flex" gap={1}>
+              <Button 
+                color="inherit" 
+                onClick={(e) => setBulkActionAnchor(e.currentTarget)}
+                endIcon={<MoreVert />}
+              >
+                Bulk Actions
+              </Button>
+              <Menu
+                anchorEl={bulkActionAnchor}
+                open={Boolean(bulkActionAnchor)}
+                onClose={() => setBulkActionAnchor(null)}
+              >
+                <MenuItem onClick={() => handleBulkStatusToggle(true)}>
+                  <CheckCircle fontSize="small" sx={{ mr: 1 }} /> Activate Selected
+                </MenuItem>
+                <MenuItem onClick={() => handleBulkStatusToggle(false)}>
+                  <Block fontSize="small" sx={{ mr: 1 }} /> Deactivate Selected
+                </MenuItem>
+                <MenuItem onClick={handleExportUsers}>
+                  <Download fontSize="small" sx={{ mr: 1 }} /> Export Selected
+                </MenuItem>
+                <MenuItem onClick={handleBulkDelete} sx={{ color: 'error.main' }}>
+                  <Delete fontSize="small" sx={{ mr: 1 }} /> Delete Selected
+                </MenuItem>
+              </Menu>
+              <Button color="inherit" onClick={() => setSelected([])}>
+                Clear Selection
+              </Button>
+            </Box>
           </Toolbar>
         )}
 

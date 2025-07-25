@@ -22,12 +22,16 @@ import {
   Message,
   Schedule,
   Settings,
+  Analytics,
 } from '@mui/icons-material';
 import { StatsCard } from '@/components/dashboard/StatsCard';
-import { ModelPreferences } from './components/ModelPreferences';
-import { ModelAvailability } from './components/ModelAvailability';
-import { ModelEarnings } from './components/ModelEarnings';
-import { ModelPerformance } from './components/ModelPerformance';
+import { 
+  ModelPerformance, 
+  ModelEarnings, 
+  ModelAvailability, 
+  ModelPreferences,
+  ModelAnalytics 
+} from './components';
 import { useModel, useModelStats } from '@/hooks/useModels';
 
 interface TabPanelProps {
@@ -213,6 +217,7 @@ const ModelDetailPage = () => {
       {/* Tabs */}
       <Paper>
         <Tabs value={activeTab} onChange={handleTabChange}>
+          <Tab label="Analytics" icon={<Analytics />} iconPosition="start" />
           <Tab label="Performance" icon={<TrendingUp />} iconPosition="start" />
           <Tab label="Earnings" icon={<AttachMoney />} iconPosition="start" />
           <Tab label="Availability" icon={<Schedule />} iconPosition="start" />
@@ -220,15 +225,18 @@ const ModelDetailPage = () => {
         </Tabs>
 
         <TabPanel value={activeTab} index={0}>
-          <ModelPerformance modelId={model.id} />
+          <ModelAnalytics modelId={model.id} />
         </TabPanel>
         <TabPanel value={activeTab} index={1}>
-          <ModelEarnings modelId={model.id} />
+          <ModelPerformance modelId={model.id} />
         </TabPanel>
         <TabPanel value={activeTab} index={2}>
-          <ModelAvailability modelId={model.id} />
+          <ModelEarnings modelId={model.id} />
         </TabPanel>
         <TabPanel value={activeTab} index={3}>
+          <ModelAvailability modelId={model.id} />
+        </TabPanel>
+        <TabPanel value={activeTab} index={4}>
           <ModelPreferences modelId={model.id} />
         </TabPanel>
       </Paper>

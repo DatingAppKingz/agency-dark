@@ -19,6 +19,8 @@ const ChatPage = lazy(() => import('@/pages/chat/ChatPage'));
 const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'));
 const FinancialPage = lazy(() => import('@/pages/financial/FinancialPage'));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
+const UserProfilePage = lazy(() => import('@/pages/profile/UserProfilePage'));
+const AgencySettingsPage = lazy(() => import('@/pages/agency/AgencySettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 // Wrapper for lazy loaded components
@@ -135,6 +137,22 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <SettingsPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'profile',
+            element: (
+              <LazyPage>
+                <UserProfilePage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'agency',
+            element: (
+              <LazyPage>
+                <AgencySettingsPage />
               </LazyPage>
             ),
           },

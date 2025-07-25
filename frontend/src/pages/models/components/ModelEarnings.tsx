@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Box,
   Grid,
@@ -14,20 +14,25 @@ import {
   Button,
   TextField,
   InputAdornment,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Download, Search, TrendingUp, TrendingDown } from '@mui/icons-material';
+import { ChartWidget } from '@/components/dashboard/ChartWidget';
+import { format, subDays } from 'date-fns';
 
 interface ModelEarningsProps {
   modelId: string;
 }
 
 export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
-  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [startDate, setStartDate] = useState<Date | null>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [searchTerm, setSearchTerm] = useState('');
+  const [chartPeriod, setChartPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   // Mock earnings data - replace with real API data
   const earnings = [
@@ -73,6 +78,31 @@ export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
     messages: 43.40,
     pendingPayout: 327.80,
   };
+
+  // Mock revenue chart data
+  const revenueChartData = useMemo(() => {
+    const days = chartPeriod === 'daily' ? 30 : chartPeriod === 'weekly' ? 12 : 12;
+    return Array.from({ length: days }, (_, i) => {
+      const date = subDays(new Date(), days - i - 1);
+      const baseValue = 50 + Math.random() * 100;
+      return {
+        label: format(date, chartPeriod === 'daily' ? 'MMM d' : chartPeriod === 'weekly' ? 'MMM d' : 'MMM'),
+        subscriptions: baseValue * 0.6,
+        tips: baseValue * 0.25,
+        content: baseValue * 0.1,
+        messages: baseValue * 0.05,
+        total: baseValue,
+      };
+    });
+  }, [chartPeriod]);
+
+  // Mock earnings breakdown pie chart data
+  const earningsBreakdownData = [
+    { label: 'Subscriptions', value: summary.subscriptions },
+    { label: 'Tips', value: summary.tips },
+    { label: 'Content', value: summary.content },
+    { label: 'Messages', value: summary.messages },
+  ];
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -145,6 +175,51 @@ export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
                   <Typography variant="body2">Messages</Typography>
                   <Typography variant="body2">${summary.messages}</Typography>
                 </Box>
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Revenue Charts */}
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid item xs={12} lg={8}>
+            <Paper>
+              <Box sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6">Revenue Trend</Typography>
+                  <ToggleButtonGroup
+                    value={chartPeriod}
+                    exclusive
+                    onChange={(_, newPeriod) => newPeriod && setChartPeriod(newPeriod)}
+                    size="small"
+                  >
+                    <ToggleButton value="daily">Daily</ToggleButton>
+                    <ToggleButton value="weekly">Weekly</ToggleButton>
+                    <ToggleButton value="monthly">Monthly</ToggleButton>
+                  </ToggleButtonGroup>
+                </Box>
+                <ChartWidget
+                  title=""
+                  data={revenueChartData}
+                  type="area"
+                  height={300}
+                  dataKey="total"
+                  valueFormatter={(value) => `$${value.toFixed(2)}`}
+                />
+              </Box>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} lg={4}>
+            <Paper>
+              <Box sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>Earnings Breakdown</Typography>
+                <ChartWidget
+                  title=""
+                  data={earningsBreakdownData}
+                  type="pie"
+                  height={300}
+                  valueFormatter={(value) => `$${value.toFixed(2)}`}
+                />
               </Box>
             </Paper>
           </Grid>
