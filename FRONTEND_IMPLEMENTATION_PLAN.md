@@ -126,7 +126,7 @@ Comprehensive plan to build the complete frontend for AgencyDark platform using 
 - [x] Chat filters
 - [x] Canned responses
 - [x] Chat history
-- [ ] Export conversations
+- [x] Export conversations
 - [x] Block/report functionality
 
 ### Phase 5: Financial Module (Days 13-15)

@@ -25,6 +25,7 @@ import {
   MoreVert,
   Block,
   Report,
+  Download,
 } from '@mui/icons-material';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageThread } from '@/components/chat/MessageThread';
@@ -33,6 +34,7 @@ import { ChatFilters } from '@/components/chat/ChatFilters';
 import { MessageSearch } from '@/components/chat/MessageSearch';
 import { CannedResponses } from '@/components/chat/CannedResponses';
 import { BlockReportDialog } from '@/components/chat/BlockReportDialog';
+import { ExportConversation } from '@/components/chat/ExportConversation';
 import { useChatStore } from '@/store/chatStore';
 import { useSocket } from '@/providers/SocketProvider';
 import { chatApi } from '@/services/api/chat';
@@ -68,6 +70,7 @@ const ChatPage = () => {
   const [messageInputValue, setMessageInputValue] = useState('');
   const [blockReportOpen, setBlockReportOpen] = useState(false);
   const [chatMenuAnchor, setChatMenuAnchor] = useState<null | HTMLElement>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const activeConversation = activeConversationId ? getConversation(activeConversationId) : null;
   const messages = activeConversationId ? getMessages(activeConversationId) : [];
@@ -430,9 +433,9 @@ const ChatPage = () => {
         </MenuItem>
         <MenuItem onClick={() => {
           setChatMenuAnchor(null);
-          // TODO: Implement export conversation
+          setExportOpen(true);
         }}>
-          <Info sx={{ mr: 1 }} /> Export Conversation
+          <Download sx={{ mr: 1 }} /> Export Conversation
         </MenuItem>
         <Divider />
         <MenuItem onClick={() => {
@@ -450,6 +453,13 @@ const ChatPage = () => {
         user={activeConversation?.fan || null}
         onBlock={handleBlockUser}
         onReport={handleReportUser}
+      />
+
+      {/* Export Conversation Dialog */}
+      <ExportConversation
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        conversation={activeConversation}
       />
     </Box>
   );
