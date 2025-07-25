@@ -40,10 +40,14 @@ import { useSocket } from '@/providers/SocketProvider';
 import { chatApi } from '@/services/api/chat';
 import { useToast } from '@/components/common/Toaster';
 import { Conversation, Message, NewMessage } from '@/types/chat';
+import { usePushNotifications } from '@/providers/PushNotificationProvider';
+import { useAuthStore } from '@/store/authStore';
 
 const ChatPage = () => {
   const { error, success } = useToast();
   const socket = useSocket();
+  const { user } = useAuthStore();
+  const { permission, isSubscribed } = usePushNotifications();
   const {
     conversations,
     activeConversationId,
@@ -146,6 +150,33 @@ const ChatPage = () => {
               : conversation.unread_count + 1,
         });
       }
+
+      // Send push notification if message is from another user and tab is not active
+      if (
+        message.sender_id !== user?.id &&
+        message.conversation_id !== activeConversationId &&
+        permission === 'granted' &&
+        isSubscribed &&
+        document.hidden
+      ) {
+        const notificationTitle = conversation?.fan.name || 'New Message';
+        const notificationBody = message.content.substring(0, 100);
+        
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification(notificationTitle, {
+              body: notificationBody,
+              icon: '/icon-192x192.png',
+              badge: '/icon-72x72.png',
+              tag: `message-${message.id}`,
+              data: {
+                url: `/chat?conversation=${message.conversation_id}`,
+                conversationId: message.conversation_id,
+              },
+            });
+          });
+        }
+      }
     });
 
     socket.on('message_updated', (message: Message) => {
@@ -216,6 +247,37 @@ const ChatPage = () => {
       setMessageInputValue(''); // Reset input after sending
     } catch (err) {
       error('Failed to send message');
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
+  const handleSendVoiceMessage = async (audioBlob: Blob, duration: number) => {
+    if (!activeConversationId || !activeConversation) return;
+
+    try {
+      setIsSendingMessage(true);
+
+      // Convert blob to file
+      const audioFile = new File([audioBlob], `voice_${Date.now()}.webm`, {
+        type: 'audio/webm',
+      });
+
+      const attachments = await uploadAttachments([audioFile]);
+
+      const newMessage: NewMessage = {
+        conversation_id: activeConversationId,
+        content: `🎤 Voice message (${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')})`,
+        attachments,
+        message_type: 'voice',
+      };
+
+      const message = await chatApi.sendMessage(newMessage);
+      
+      // Message will be added via socket event
+      success('Voice message sent');
+    } catch (err) {
+      error('Failed to send voice message');
     } finally {
       setIsSendingMessage(false);
     }
@@ -382,6 +444,7 @@ const ChatPage = () => {
                     disabled={isSendingMessage}
                     value={messageInputValue}
                     onValueChange={setMessageInputValue}
+                    onSendVoiceMessage={handleSendVoiceMessage}
                   />
                   <CannedResponses
                     onSelectResponse={(response) => {

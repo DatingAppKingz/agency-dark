@@ -19,6 +19,7 @@ import {
   EmojiEmotions,
 } from '@mui/icons-material';
 import { useToast } from '@/components/common/Toaster';
+import { VoiceRecorder } from './VoiceRecorder';
 
 interface MessageInputProps {
   onSendMessage: (content: string, attachments?: File[]) => void;
@@ -26,9 +27,10 @@ interface MessageInputProps {
   disabled?: boolean;
   value?: string;
   onValueChange?: (value: string) => void;
+  onSendVoiceMessage?: (audioBlob: Blob, duration: number) => void;
 }
 
-export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValueChange }: MessageInputProps) => {
+export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValueChange, onSendVoiceMessage }: MessageInputProps) => {
   const { error } = useToast();
   const [message, setMessage] = useState(value || '');
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -150,7 +152,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValue
       )}
       
       <Box 
-        sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}
+        sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', position: 'relative' }}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
@@ -170,6 +172,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValue
           onChange={(e) => handleMessageChange(e.target.value)}
           onKeyPress={handleKeyPress}
           disabled={disabled}
+          sx={{ pr: onSendVoiceMessage ? 8 : 0 }}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -181,10 +184,18 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValue
           }}
         />
         
+        {onSendVoiceMessage && !message.trim() && attachments.length === 0 && (
+          <VoiceRecorder
+            onSendAudio={onSendVoiceMessage}
+            disabled={disabled}
+          />
+        )}
+        
         <IconButton
           color="primary"
           onClick={handleSend}
           disabled={disabled || (!message.trim() && attachments.length === 0)}
+          sx={{ visibility: (!message.trim() && attachments.length === 0 && onSendVoiceMessage) ? 'hidden' : 'visible' }}
         >
           <Send />
         </IconButton>

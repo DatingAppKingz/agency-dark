@@ -108,7 +108,7 @@ Comprehensive plan to build the complete frontend for AgencyDark platform using 
 - [x] Message thread view
 - [x] Message input with attachments
 - [x] Emoji picker
-- [ ] Voice messages
+- [x] Voice messages
 - [x] Image/video preview
 - [x] Message search
 
@@ -117,7 +117,7 @@ Comprehensive plan to build the complete frontend for AgencyDark platform using 
 - [x] Typing indicators
 - [x] Online status
 - [x] Message delivery status
-- [ ] Push notifications
+- [x] Push notifications
 - [x] Unread counts
 - [x] Real-time updates
 

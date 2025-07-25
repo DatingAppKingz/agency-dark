@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
 import theme from './theme';
 import { Toaster } from './components/common/Toaster';
+import { PushNotificationProvider } from './providers/PushNotificationProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,8 +22,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <RouterProvider router={router} />
-        <Toaster />
+        <PushNotificationProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </PushNotificationProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -13,6 +13,7 @@ export interface Message {
   sender_id: string;
   sender_type: 'model' | 'fan' | 'chatter';
   content: string;
+  message_type?: 'text' | 'voice' | 'image' | 'video';
   attachments?: MessageAttachment[];
   created_at: string;
   read_at?: string;
@@ -71,6 +72,7 @@ export interface SendMessageData {
 export interface NewMessage {
   conversation_id: string;
   content: string;
+  message_type?: 'text' | 'voice' | 'image' | 'video';
   attachments?: any[];
 }
 

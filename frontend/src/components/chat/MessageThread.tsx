@@ -18,12 +18,14 @@ import {
   Image,
   VideoFile,
   PlayCircleOutline,
+  Mic,
 } from '@mui/icons-material';
 import { format, isToday, isYesterday } from 'date-fns';
 import { Message, MessageAttachment } from '@/types/chat';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 import { MediaPreview } from './MediaPreview';
+import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 
 interface MessageThreadProps {
   messages: Message[];
@@ -115,6 +117,8 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
             />
           </Box>
         );
+      case 'audio':
+        return <VoiceMessagePlayer attachment={attachment} />;
       default:
         return (
           <Chip
@@ -213,9 +217,18 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
                         />
                       )}
                       
-                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                        {message.content}
-                      </Typography>
+                      {message.message_type === 'voice' ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Mic sx={{ fontSize: 20 }} />
+                          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                            {message.content}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                          {message.content}
+                        </Typography>
+                      )}
                       
                       {message.attachments && message.attachments.length > 0 && (
                         <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
