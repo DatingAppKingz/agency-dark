@@ -30,12 +30,14 @@ import {
   TrendingDown,
   SwapHoriz,
   Receipt,
+  Description,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useQuery } from '@tanstack/react-query';
 import { financialApi } from '@/services/api/financial';
+import { InvoiceGenerator } from './InvoiceGenerator';
 import type { Transaction } from '@/types/financial';
 
 interface TransactionHistoryProps {
@@ -52,6 +54,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['transactions', page, rowsPerPage, typeFilter, statusFilter, searchTerm, startDate, endDate, modelId, agencyId],
@@ -165,6 +168,13 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5">Transaction History</Typography>
         <Box display="flex" gap={1}>
+          <Button
+            variant="outlined"
+            startIcon={<Description />}
+            onClick={() => setInvoiceOpen(true)}
+          >
+            Generate Invoice
+          </Button>
           <Button
             variant="outlined"
             startIcon={<Download />}
@@ -340,6 +350,15 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
           )}
         </CardContent>
       </Card>
+
+      <InvoiceGenerator
+        open={invoiceOpen}
+        onClose={() => setInvoiceOpen(false)}
+        onSave={async (invoice) => {
+          // TODO: Implement invoice save
+          console.log('Saving invoice:', invoice);
+        }}
+      />
     </Box>
   );
 };

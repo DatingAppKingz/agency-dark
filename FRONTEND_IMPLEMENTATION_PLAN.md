@@ -137,7 +137,7 @@ Comprehensive plan to build the complete frontend for AgencyDark platform using 
 - [x] Payout management
 - [x] Transaction history
 - [x] Commission calculator
-- [ ] Invoice generation
+- [x] Invoice generation
 - [x] Payment methods
 
 #### 5.2 Reporting
