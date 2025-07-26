@@ -136,18 +136,25 @@ export const analyticsService = {
 
   // Legacy methods - map to new endpoints
   async getDashboardStats(): Promise<DashboardStats> {
-    console.warn('getDashboardStats requires a model ID, use getDashboardSummary instead');
-    // Return mock data for compatibility
-    return {
-      total_users: 0,
-      active_models: 0,
-      total_revenue: 0,
-      total_messages: 0,
-      new_users_today: 0,
-      revenue_today: 0,
-      messages_today: 0,
-      active_chats: 0,
-    };
+    console.log('📊 Fetching dashboard stats...');
+    try {
+      const { data } = await apiClient.get('/analytics/agency/dashboard-stats');
+      console.log('✅ Dashboard stats received:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Failed to fetch dashboard stats:', error);
+      // Return default values on error
+      return {
+        total_users: 0,
+        active_models: 0,
+        total_revenue: 0,
+        total_messages: 0,
+        new_users_today: 0,
+        revenue_today: 0,
+        messages_today: 0,
+        active_chats: 0,
+      };
+    }
   },
 
   async getAgencyStats(): Promise<AgencyStats[]> {
@@ -156,29 +163,50 @@ export const analyticsService = {
   },
 
   async getModelPerformance(period: 'day' | 'week' | 'month' = 'month'): Promise<ModelPerformance[]> {
-    console.warn('Model performance requires specific model IDs');
-    return [];
+    console.log('📊 Fetching model performance...');
+    try {
+      const { data } = await apiClient.get('/analytics/agency/model-performance', {
+        params: { period }
+      });
+      console.log('✅ Model performance received:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Failed to fetch model performance:', error);
+      return [];
+    }
   },
 
   async getRevenueChart(period: 'day' | 'week' | 'month' = 'month') {
-    // Map to revenue timeline for compatibility
-    const endDate = new Date();
-    const startDate = new Date();
-    
-    switch(period) {
-      case 'day':
-        startDate.setDate(endDate.getDate() - 1);
-        break;
-      case 'week':
-        startDate.setDate(endDate.getDate() - 7);
-        break;
-      case 'month':
-        startDate.setMonth(endDate.getMonth() - 1);
-        break;
+    try {
+      const { data } = await apiClient.get('/analytics/agency/revenue-chart', {
+        params: { period }
+      });
+      
+      // Transform data for chart format
+      return {
+        labels: data.data.map((d: any) => d.date),
+        datasets: [
+          {
+            label: 'Total Revenue',
+            data: data.data.map((d: any) => d.revenue),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          },
+          {
+            label: 'Tips',
+            data: data.data.map((d: any) => d.tips),
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+          }
+        ]
+      };
+    } catch (error) {
+      console.error('Failed to fetch revenue chart:', error);
+      return {
+        labels: [],
+        datasets: []
+      };
     }
-    
-    console.warn('getRevenueChart requires a model ID, returning empty data');
-    return { labels: [], datasets: [] };
   },
 
   async getMessageChart(period: 'day' | 'week' | 'month' = 'month') {

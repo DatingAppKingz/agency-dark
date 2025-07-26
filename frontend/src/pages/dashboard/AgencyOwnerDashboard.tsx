@@ -8,6 +8,13 @@ export const AgencyOwnerDashboard = () => {
   const navigate = useNavigate();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: models, isLoading: modelsLoading } = useModelPerformance('month');
+  
+  console.log('📊 Dashboard Data:', {
+    stats,
+    statsLoading,
+    models,
+    modelsLoading
+  });
 
   return (
     <Box>

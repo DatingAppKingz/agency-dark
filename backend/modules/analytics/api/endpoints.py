@@ -31,6 +31,10 @@ from modules.analytics.domain.schemas import (
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
+# Import agency stats router
+from .agency_stats import router as agency_router
+router.include_router(agency_router)
+
 
 async def get_model_profile_for_analytics(
     model_id: str,

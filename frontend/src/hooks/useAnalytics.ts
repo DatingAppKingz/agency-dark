@@ -2,9 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '@/services/api/analytics';
 
 export const useDashboardStats = () => {
+  console.log('🎣 useDashboardStats hook called');
   return useQuery({
     queryKey: ['analytics', 'dashboard'],
-    queryFn: () => analyticsService.getDashboardStats(),
+    queryFn: () => {
+      console.log('🔄 Query function executing...');
+      return analyticsService.getDashboardStats();
+    },
     refetchInterval: 60000, // Refresh every minute
   });
 };

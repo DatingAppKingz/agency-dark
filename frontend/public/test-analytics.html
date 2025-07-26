@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics API Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      overflow: auto;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Analytics API Test</h1>
+  
+  <div>
+    <h2>Step 1: Login</h2>
+    <button onclick="login()">Login</button>
+    <div id="login-result"></div>
+  </div>
+  
+  <div>
+    <h2>Step 2: Test Analytics</h2>
+    <button onclick="testAnalytics()">Test Dashboard Stats</button>
+    <div id="analytics-result"></div>
+  </div>
+  
+  <div>
+    <h2>Debug Info</h2>
+    <pre id="debug-info"></pre>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:8000/api/v1';
+    let accessToken = null;
+    
+    // Check for existing token
+    window.onload = () => {
+      accessToken = localStorage.getItem('access_token');
+      updateDebugInfo();
+    };
+    
+    function updateDebugInfo() {
+      document.getElementById('debug-info').textContent = JSON.stringify({
+        'API_BASE': API_BASE,
+        'Has Token': !!accessToken,
+        'Token Preview': accessToken ? accessToken.substring(0, 20) + '...' : 'None',
+        'LocalStorage Keys': Object.keys(localStorage)
+      }, null, 2);
+    }
+    
+    async function login() {
+      const resultDiv = document.getElementById('login-result');
+      resultDiv.innerHTML = 'Logging in...';
+      
+      try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: 'test@example.com',
+            password: 'password123'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          accessToken = data.access_token;
+          localStorage.setItem('access_token', accessToken);
+          resultDiv.innerHTML = '<span class="success">✅ Login successful!</span>';
+          updateDebugInfo();
+        } else {
+          resultDiv.innerHTML = `<span class="error">❌ Login failed: ${data.detail}</span>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+      }
+    }
+    
+    async function testAnalytics() {
+      const resultDiv = document.getElementById('analytics-result');
+      
+      if (!accessToken) {
+        resultDiv.innerHTML = '<span class="error">❌ Please login first!</span>';
+        return;
+      }
+      
+      resultDiv.innerHTML = 'Testing analytics...';
+      
+      try {
+        const response = await fetch(`${API_BASE}/analytics/agency/dashboard-stats`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          resultDiv.innerHTML = `
+            <span class="success">✅ Analytics API works!</span>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        } else {
+          resultDiv.innerHTML = `
+            <span class="error">❌ API Error: ${response.status}</span>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+      }
+    }
+  </script>
+</body>
+</html>
