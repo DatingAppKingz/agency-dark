@@ -22,6 +22,7 @@ const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 const UserProfilePage = lazy(() => import('@/pages/profile/UserProfilePage'));
 const AgencySettingsPage = lazy(() => import('@/pages/agency/AgencySettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const ApiTestPage = lazy(() => import('@/pages/ApiTestPage'));
 
 // Wrapper for lazy loaded components
 const LazyPage = ({ children }: { children: React.ReactNode }) => (
@@ -153,6 +154,14 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <AgencySettingsPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'api-test',
+            element: (
+              <LazyPage>
+                <ApiTestPage />
               </LazyPage>
             ),
           },

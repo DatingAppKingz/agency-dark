@@ -21,17 +21,17 @@ class AuthService {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const formData = new URLSearchParams();
-    formData.append('username', credentials.email);
-    formData.append('password', credentials.password);
-
+    // Backend expects JSON with email and password
     const response = await axios.post<AuthResponse>(
       `${API_URL}/auth/login`,
-      formData,
+      {
+        email: credentials.email,
+        password: credentials.password,
+      },
       { 
         withCredentials: true,
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
       }
     );
@@ -126,7 +126,7 @@ class AuthService {
 
   async forgotPassword(email: string): Promise<void> {
     await axios.post(
-      `${API_URL}/auth/forgot-password`,
+      `${API_URL}/auth/password-reset/request`,
       { email },
       { withCredentials: true }
     );
@@ -134,7 +134,7 @@ class AuthService {
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
     await axios.post(
-      `${API_URL}/auth/reset-password`,
+      `${API_URL}/auth/password-reset/confirm`,
       { token, new_password: newPassword },
       { withCredentials: true }
     );
