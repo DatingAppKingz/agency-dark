@@ -12,7 +12,7 @@ export const SEOProvider = ({ children }: SEOProviderProps) => {
   useEffect(() => {
     // Track page views with analytics (if configured)
     if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('config', process.env.NEXT_PUBLIC_GA_ID || '', {
+      window.gtag('config', import.meta.env.VITE_PUBLIC_GA_ID || '', {
         page_path: location.pathname,
       });
     }

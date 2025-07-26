@@ -1,4 +1,4 @@
-import Head from 'next/head';
+import { useEffect } from 'react';
 
 interface StructuredDataProps {
   type: 'Organization' | 'WebSite' | 'WebPage' | 'BreadcrumbList' | 'FAQPage' | 'SoftwareApplication';
@@ -12,14 +12,22 @@ export const StructuredData = ({ type, data }: StructuredDataProps) => {
     ...data,
   };
 
-  return (
-    <Head>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-    </Head>
-  );
+  useEffect(() => {
+    // Create script element
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.innerHTML = JSON.stringify(structuredData);
+    
+    // Add to head
+    document.head.appendChild(script);
+    
+    // Cleanup
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, [type, data]);
+
+  return null;
 };
 
 // Organization schema for the main website

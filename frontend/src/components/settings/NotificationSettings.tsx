@@ -24,7 +24,7 @@ import {
 import { pushNotifications } from '@/services/pushNotifications';
 import { useToast } from '@/components/common/Toaster';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiClient } from '@/services/api/client';
+import apiClient from '@/services/api/client';
 
 interface NotificationPreferences {
   push_enabled: boolean;

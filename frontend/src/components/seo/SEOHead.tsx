@@ -1,5 +1,5 @@
-import Head from 'next/head';
-import { useRouter } from 'next/router';
+import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 
 interface SEOHeadProps {
   title?: string;
@@ -38,14 +38,15 @@ export const SEOHead = ({
   noindex = false,
   canonical,
 }: SEOHeadProps) => {
-  const router = useRouter();
+  const location = useLocation();
   const pageTitle = title ? `${title} | ${DEFAULT_TITLE}` : DEFAULT_TITLE;
-  const currentUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://app.agencydark.com'}${router.asPath}`;
+  const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL || 'https://app.agencydark.com';
+  const currentUrl = `${siteUrl}${location.pathname}`;
   const canonicalUrl = canonical || currentUrl;
-  const imageUrl = image.startsWith('http') ? image : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://app.agencydark.com'}${image}`;
+  const imageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
   return (
-    <Head>
+    <Helmet>
       {/* Basic Meta Tags */}
       <title>{pageTitle}</title>
       <meta name="description" content={description} />
@@ -104,9 +105,9 @@ export const SEOHead = ({
       {/* Preconnect to external domains */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      {process.env.NEXT_PUBLIC_API_URL && (
-        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL} />
+      {import.meta.env.VITE_API_URL && (
+        <link rel="preconnect" href={import.meta.env.VITE_API_URL} />
       )}
-    </Head>
+    </Helmet>
   );
 };

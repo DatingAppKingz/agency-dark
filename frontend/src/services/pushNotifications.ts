@@ -1,6 +1,6 @@
-import { apiClient } from './api/client';
+import apiClient from './api/client';
 
-const PUBLIC_VAPID_KEY = process.env.NEXT_PUBLIC_VAPID_KEY || '';
+const PUBLIC_VAPID_KEY = import.meta.env.VITE_PUBLIC_VAPID_KEY || '';
 
 export interface PushSubscriptionData {
   endpoint: string;
