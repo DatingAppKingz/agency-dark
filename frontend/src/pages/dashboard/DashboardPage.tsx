@@ -1,4 +1,6 @@
-import { Grid, Box, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Grid, Box, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { ViewModule, Dashboard } from '@mui/icons-material';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types/auth';
 import { SuperAdminDashboard } from './SuperAdminDashboard';
@@ -7,10 +9,13 @@ import { AgencyAdminDashboard } from './AgencyAdminDashboard';
 import { ModelDashboard } from './ModelDashboard';
 import { ChatterDashboard } from './ChatterDashboard';
 import { MemberDashboard } from './MemberDashboard';
+import { CustomizableDashboard } from '@/components/dashboard/CustomizableDashboard';
 import { SEOHead } from '@/components/seo/SEOHead';
 
 const DashboardPage = () => {
   const { user } = useAuthStore();
+  const [viewMode, setViewMode] = useState<'classic' | 'custom'>('custom');
+  const [editMode, setEditMode] = useState(false);
 
   if (!user) {
     return (
@@ -21,7 +26,7 @@ const DashboardPage = () => {
   }
 
   // Render role-specific dashboard
-  const renderDashboard = () => {
+  const renderClassicDashboard = () => {
     switch (user.role) {
       case UserRole.SUPER_ADMIN:
         return <SuperAdminDashboard />;
@@ -51,7 +56,35 @@ const DashboardPage = () => {
         description="Manage your OnlyFans agency operations, models, and chatters from a centralized dashboard"
         noindex={true}
       />
-      {renderDashboard()}
+      
+      {/* View mode toggle */}
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={(e, newMode) => newMode && setViewMode(newMode)}
+          size="small"
+        >
+          <ToggleButton value="classic">
+            <ViewModule sx={{ mr: 1 }} />
+            Classic View
+          </ToggleButton>
+          <ToggleButton value="custom">
+            <Dashboard sx={{ mr: 1 }} />
+            Custom View
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      {/* Render dashboard based on view mode */}
+      {viewMode === 'classic' ? (
+        renderClassicDashboard()
+      ) : (
+        <CustomizableDashboard 
+          editMode={editMode} 
+          onEditModeChange={setEditMode} 
+        />
+      )}
     </>
   );
 };
