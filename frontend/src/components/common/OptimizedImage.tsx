@@ -1,232 +1,229 @@
-import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect, useRef, ImgHTMLAttributes } from 'react';
 import { Box, Skeleton } from '@mui/material';
-import { BrokenImage } from '@mui/icons-material';
 
-interface OptimizedImageProps {
+interface OptimizedImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt: string;
-  width?: number;
-  height?: number;
-  fill?: boolean;
-  priority?: boolean;
-  quality?: number;
-  placeholder?: 'blur' | 'empty';
+  width?: number | string;
+  height?: number | string;
+  aspectRatio?: string;
+  lazy?: boolean;
+  placeholder?: 'blur' | 'skeleton' | 'none';
   blurDataURL?: string;
   onLoad?: () => void;
   onError?: () => void;
-  className?: string;
-  style?: React.CSSProperties;
-  sizes?: string;
-  objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
-  objectPosition?: string;
-  lazy?: boolean;
+  quality?: number;
+  priority?: boolean;
 }
 
-export const OptimizedImage = ({
+export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
   alt,
   width,
   height,
-  fill = false,
-  priority = false,
-  quality = 75,
-  placeholder,
+  aspectRatio = '16/9',
+  lazy = true,
+  placeholder = 'skeleton',
   blurDataURL,
   onLoad,
   onError,
+  quality = 85,
+  priority = false,
   className,
   style,
-  sizes,
-  objectFit = 'cover',
-  objectPosition = 'center',
-  lazy = true,
-}: OptimizedImageProps) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [isInView, setIsInView] = useState(!lazy);
-  const imgRef = useRef<HTMLDivElement>(null);
+  ...rest
+}) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string>('');
+  const imgRef = useRef<HTMLImageElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Generate optimized image URL (in production, this would use a CDN)
+  const getOptimizedUrl = (url: string, width?: number) => {
+    // This is a placeholder - in production, use a real image optimization service
+    if (width && typeof width === 'number') {
+      return `${url}?w=${width}&q=${quality}`;
+    }
+    return url;
+  };
 
   useEffect(() => {
-    if (!lazy || !imgRef.current) {
-      setIsInView(true);
+    if (!lazy || priority) {
+      // Load immediately
+      setImageSrc(getOptimizedUrl(src, typeof width === 'number' ? width : undefined));
       return;
     }
 
+    // Set up IntersectionObserver for lazy loading
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setIsInView(true);
-            observer.disconnect();
+            setImageSrc(getOptimizedUrl(src, typeof width === 'number' ? width : undefined));
+            observer.unobserve(entry.target);
           }
         });
       },
       {
-        rootMargin: '50px',
+        rootMargin: '50px', // Start loading 50px before entering viewport
       }
     );
 
-    observer.observe(imgRef.current);
+    observerRef.current = observer;
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
 
     return () => {
-      observer.disconnect();
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
-  }, [lazy]);
+  }, [src, lazy, priority, width, quality]);
 
   const handleLoad = () => {
-    setIsLoading(false);
+    setLoading(false);
+    setError(false);
     onLoad?.();
   };
 
   const handleError = () => {
-    setIsLoading(false);
-    setHasError(true);
+    setLoading(false);
+    setError(true);
     onError?.();
   };
 
-  // Generate responsive sizes if not provided
-  const generateSizes = () => {
-    if (sizes) return sizes;
-    if (fill) return '100vw';
-    if (width) {
-      return `(max-width: ${width}px) 100vw, ${width}px`;
+  // Preload priority images
+  useEffect(() => {
+    if (priority && src) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = getOptimizedUrl(src, typeof width === 'number' ? width : undefined);
+      document.head.appendChild(link);
+      
+      return () => {
+        document.head.removeChild(link);
+      };
     }
-    return '100vw';
+  }, [src, priority, width, quality]);
+
+  const containerStyle = {
+    position: 'relative' as const,
+    width,
+    height,
+    aspectRatio,
+    overflow: 'hidden',
+    ...style,
   };
 
-  // Fallback for non-Next.js environments or development
-  const renderFallbackImage = () => (
-    <img
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      onLoad={handleLoad}
-      onError={handleError}
-      className={className}
-      style={{
-        width: fill ? '100%' : width,
-        height: fill ? '100%' : height,
-        objectFit,
-        objectPosition,
-        ...style,
-      }}
-      loading={lazy ? 'lazy' : 'eager'}
-    />
-  );
+  const imageStyle = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover' as const,
+    opacity: loading ? 0 : 1,
+    transition: 'opacity 0.3s ease-in-out',
+  };
 
-  if (hasError) {
-    return (
-      <Box
-        sx={{
-          width: fill ? '100%' : width,
-          height: fill ? '100%' : height,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'grey.100',
-          ...style,
-        }}
-        className={className}
-      >
-        <BrokenImage sx={{ color: 'grey.400', fontSize: 40 }} />
-      </Box>
-    );
-  }
-
-  const imageContent = (
-    <>
-      {isLoading && (
+  return (
+    <Box sx={containerStyle} className={className}>
+      {/* Placeholder */}
+      {loading && placeholder === 'skeleton' && (
         <Skeleton
           variant="rectangular"
-          width={fill ? '100%' : width}
-          height={fill ? '100%' : height}
-          sx={{ position: 'absolute', top: 0, left: 0 }}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+          }}
         />
       )}
       
-      {isInView && (
-        <>
-          {typeof window !== 'undefined' && window.location.hostname === 'localhost' ? (
-            renderFallbackImage()
-          ) : (
-            <Image
-              src={src}
-              alt={alt}
-              width={!fill ? width : undefined}
-              height={!fill ? height : undefined}
-              fill={fill}
-              priority={priority}
-              quality={quality}
-              placeholder={placeholder}
-              blurDataURL={blurDataURL}
-              onLoad={handleLoad}
-              onError={handleError}
-              className={className}
-              style={{
-                objectFit,
-                objectPosition,
-                ...style,
-              }}
-              sizes={generateSizes()}
-            />
-          )}
-        </>
+      {/* Blur placeholder */}
+      {loading && placeholder === 'blur' && blurDataURL && (
+        <img
+          src={blurDataURL}
+          alt=""
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            filter: 'blur(20px)',
+            transform: 'scale(1.1)',
+          }}
+        />
       )}
-    </>
-  );
 
-  return (
-    <Box
-      ref={imgRef}
-      sx={{
-        position: 'relative',
-        width: fill ? '100%' : width,
-        height: fill ? '100%' : height,
-        overflow: 'hidden',
-      }}
-    >
-      {imageContent}
+      {/* Main image */}
+      {!error && (
+        <img
+          ref={imgRef}
+          src={imageSrc}
+          alt={alt}
+          onLoad={handleLoad}
+          onError={handleError}
+          loading={lazy && !priority ? 'lazy' : undefined}
+          style={imageStyle}
+          {...rest}
+        />
+      )}
+
+      {/* Error state */}
+      {error && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'grey.200',
+            color: 'text.secondary',
+          }}
+        >
+          Failed to load image
+        </Box>
+      )}
     </Box>
   );
 };
 
-// Preload critical images
-export const preloadImage = (src: string) => {
-  if (typeof window === 'undefined') return;
-  
-  const link = document.createElement('link');
-  link.rel = 'preload';
-  link.as = 'image';
-  link.href = src;
-  document.head.appendChild(link);
-};
+// Hook for responsive images
+export const useResponsiveImage = (
+  baseSrc: string,
+  sizes: { [breakpoint: string]: number }
+) => {
+  const [currentSrc, setCurrentSrc] = useState(baseSrc);
 
-// Generate blur data URL for placeholder
-export const generateBlurDataURL = async (src: string): Promise<string> => {
-  if (typeof window === 'undefined') return '';
-  
-  return new Promise((resolve) => {
-    const img = new window.Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Create a small canvas for blur
-      canvas.width = 20;
-      canvas.height = 20;
-      
-      if (ctx) {
-        ctx.filter = 'blur(10px)';
-        ctx.drawImage(img, 0, 0, 20, 20);
-        resolve(canvas.toDataURL());
-      } else {
-        resolve('');
+  useEffect(() => {
+    const updateSrc = () => {
+      const width = window.innerWidth;
+      let selectedSize = 0;
+
+      // Find the appropriate size based on viewport
+      Object.entries(sizes).forEach(([breakpoint, size]) => {
+        const bp = parseInt(breakpoint);
+        if (width >= bp && size > selectedSize) {
+          selectedSize = size;
+        }
+      });
+
+      if (selectedSize > 0) {
+        setCurrentSrc(`${baseSrc}?w=${selectedSize}`);
       }
     };
-    img.onerror = () => resolve('');
-    img.src = src;
-  });
+
+    updateSrc();
+    window.addEventListener('resize', updateSrc);
+    
+    return () => window.removeEventListener('resize', updateSrc);
+  }, [baseSrc, sizes]);
+
+  return currentSrc;
 };

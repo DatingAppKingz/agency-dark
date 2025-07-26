@@ -31,8 +31,10 @@
       "@store/*": ["src/store/*"],
       "@utils/*": ["src/utils/*"],
       "@types/*": ["src/types/*"]
-    }
+    },
+    "types": ["vite/client"]
   },
   "include": ["src"],
+  "exclude": ["src/**/__tests__/**/*", "src/**/*.test.*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
