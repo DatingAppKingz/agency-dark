@@ -14,6 +14,7 @@ from core.dependencies import get_current_user, RoleChecker
 from core.domain.models import User, UserRole, ModelProfile
 from modules.analytics.application.service import AnalyticsService
 from modules.analytics.application.exporter import AnalyticsExporter
+from modules.analytics.application.data_sync_service import AnalyticsDataSyncService
 from modules.analytics.domain.schemas import (
     TimeGranularity,
     ChartRequest,
@@ -423,3 +424,102 @@ async def get_generic_chart(
         )
     else:
         raise HTTPException(status_code=400, detail=f"Unknown chart type: {request.chart_type}")
+
+
+@router.post("/sync/{model_id}")
+async def sync_analytics_data(
+    model_id: str,
+    force: bool = Query(False, description="Force resync even if data exists"),
+    lookback_days: int = Query(90, description="Days to look back for metrics"),
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([
+            UserRole.SUPER_ADMIN,
+            UserRole.AGENCY_OWNER,
+            UserRole.MODEL,
+            UserRole.AGENCY_MEMBER
+        ])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Sync analytics data from financial transactions.
+    
+    This endpoint:
+    - Syncs revenue transactions from financial transactions
+    - Updates metric snapshots
+    - Updates content performance data
+    - Updates fan spending history
+    - Updates category performance
+    
+    - **model_id**: Model profile ID to sync
+    - **force**: Force resync even if data already exists
+    - **lookback_days**: Number of days to look back for metrics (default: 90)
+    """
+    model_profile = await get_model_profile_for_analytics(model_id, current_user, db)
+    
+    sync_service = AnalyticsDataSyncService(db)
+    
+    try:
+        # Start full sync
+        await sync_service.sync_all_model_data(model_id, force=force)
+        
+        # Update metrics for specified lookback period
+        await sync_service.update_metric_snapshots(model_id, lookback_days=lookback_days)
+        
+        return {
+            "status": "success",
+            "message": f"Analytics data synced for model {model_id}",
+            "model_id": model_id,
+            "lookback_days": lookback_days,
+            "force": force
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to sync analytics data: {str(e)}"
+        )
+
+
+@router.post("/sync/{model_id}/revenue")
+async def sync_revenue_data(
+    model_id: str,
+    start_date: Optional[datetime] = Query(None, description="Start date for sync"),
+    force: bool = Query(False, description="Force resync"),
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([
+            UserRole.SUPER_ADMIN,
+            UserRole.AGENCY_OWNER,
+            UserRole.MODEL,
+            UserRole.AGENCY_MEMBER
+        ])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Sync only revenue transaction data.
+    
+    - **model_id**: Model profile ID
+    - **start_date**: Only sync transactions after this date
+    - **force**: Force resync even if data exists
+    """
+    model_profile = await get_model_profile_for_analytics(model_id, current_user, db)
+    
+    sync_service = AnalyticsDataSyncService(db)
+    
+    try:
+        await sync_service.sync_revenue_transactions(model_id, force=force, start_date=start_date)
+        
+        return {
+            "status": "success",
+            "message": f"Revenue data synced for model {model_id}",
+            "model_id": model_id,
+            "start_date": start_date,
+            "force": force
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to sync revenue data: {str(e)}"
+        )

@@ -51,6 +51,15 @@ class SyncScheduler:
             replace_existing=True
         )
         
+        # Schedule real-time analytics sync
+        self.scheduler.add_job(
+            self.sync_recent_analytics,
+            IntervalTrigger(minutes=15),  # Run every 15 minutes
+            id="sync_recent_analytics",
+            name="Sync recent analytics data",
+            replace_existing=True
+        )
+        
         # Schedule claim cleanup
         self.scheduler.add_job(
             self.cleanup_expired_claims,
@@ -176,17 +185,85 @@ class SyncScheduler:
         
         async with self.async_session() as db:
             try:
-                # Get all agencies
-                result = await db.execute(select(Agency))
-                agencies = result.scalars().all()
+                from modules.analytics.application.data_sync_service import AnalyticsDataSyncService
+                sync_service = AnalyticsDataSyncService(db)
                 
-                logger.info(f"Found {len(agencies)} agencies to refresh analytics")
+                # Get all active models
+                result = await db.execute(
+                    select(ModelProfile).where(ModelProfile.is_active == True)
+                )
+                models = result.scalars().all()
                 
-                # TODO: Implement analytics refresh logic
-                # This would calculate and cache analytics data
+                logger.info(f"Found {len(models)} active models to refresh analytics")
+                
+                # Sync analytics for each model
+                for model in models:
+                    try:
+                        # Sync revenue transactions from the past day
+                        start_date = datetime.utcnow() - timedelta(days=1)
+                        await sync_service.sync_revenue_transactions(
+                            str(model.id),
+                            start_date=start_date
+                        )
+                        
+                        # Update metric snapshots for the past 7 days
+                        await sync_service.update_metric_snapshots(
+                            str(model.id),
+                            lookback_days=7
+                        )
+                        
+                        await db.commit()
+                        logger.info(f"Refreshed analytics for model {model.id}")
+                    except Exception as e:
+                        logger.error(f"Failed to refresh analytics for model {model.id}: {e}")
+                        await db.rollback()
+                        continue
                 
             except Exception as e:
                 logger.error(f"Failed to refresh analytics: {e}")
+    
+    async def sync_recent_analytics(self):
+        """Sync recent analytics data for real-time updates."""
+        logger.info("Starting recent analytics sync")
+        
+        async with self.async_session() as db:
+            try:
+                from modules.analytics.application.data_sync_service import AnalyticsDataSyncService
+                sync_service = AnalyticsDataSyncService(db)
+                
+                # Get all active models
+                result = await db.execute(
+                    select(ModelProfile).where(ModelProfile.is_active == True)
+                )
+                models = result.scalars().all()
+                
+                logger.info(f"Found {len(models)} active models for recent sync")
+                
+                # Sync recent transactions for each model
+                for model in models:
+                    try:
+                        # Sync transactions from the past hour
+                        start_date = datetime.utcnow() - timedelta(hours=1)
+                        await sync_service.sync_revenue_transactions(
+                            str(model.id),
+                            start_date=start_date
+                        )
+                        
+                        # Update today's snapshot
+                        await sync_service._create_daily_snapshot(
+                            str(model.id),
+                            datetime.utcnow()
+                        )
+                        
+                        await db.commit()
+                        logger.info(f"Synced recent analytics for model {model.id}")
+                    except Exception as e:
+                        logger.error(f"Failed to sync recent analytics for model {model.id}: {e}")
+                        await db.rollback()
+                        continue
+                
+            except Exception as e:
+                logger.error(f"Failed to sync recent analytics: {e}")
     
     async def cleanup_expired_claims(self):
         """Clean up expired fan claims."""
