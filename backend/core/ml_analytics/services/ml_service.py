@@ -235,6 +235,37 @@ class MLAnalyticsService:
                 predictions.append(prediction)
                 session.add(prediction)
         
+        elif prediction_type == PredictionType.ANOMALY_DETECTION:
+            # Detect anomalies in recent activity
+            anomalies = await predictor.detect_anomalies(
+                agency_id=agency_id,
+                session=session,
+                time_window_hours=horizon_days * 24,  # Convert days to hours
+                anomaly_types=['transaction', 'behavior', 'velocity']
+            )
+            
+            # Convert to prediction records
+            for anomaly in anomalies[:horizon_days * 10]:  # Limit number of anomalies
+                prediction = Prediction(
+                    model_id=model.id,
+                    prediction_type=prediction_type,
+                    target_date=anomaly['detected_at'],
+                    prediction_horizon=0,  # Real-time detection
+                    predicted_value=anomaly['severity_score'],
+                    probability=min(anomaly['severity_score'] / 10, 1.0),  # Normalize to 0-1
+                    confidence_score=0.9,  # High confidence in anomaly detection
+                    entity_type=anomaly['entity_type'],
+                    entity_id=anomaly['entity_id'],
+                    predictions_json={
+                        'anomaly_type': anomaly['type'],
+                        'details': anomaly['details'],
+                        'reasons': anomaly['reasons'],
+                        'recommended_actions': anomaly['recommended_actions']
+                    }
+                )
+                predictions.append(prediction)
+                session.add(prediction)
+        
         else:
             raise NotImplementedError(f"Predictions not implemented for {prediction_type.value}")
         
@@ -326,6 +357,57 @@ class MLAnalyticsService:
             return analysis
         elif prediction_type == PredictionType.CHURN_PREDICTION:
             analysis = await predictor.analyze_churn_patterns(agency_id, session)
+            
+            # Cache results
+            cache_key = f"ml_trends:{agency_id}:{prediction_type.value}"
+            await cache_service.set(cache_key, analysis, ttl=3600)
+            
+            return analysis
+        elif prediction_type == PredictionType.ANOMALY_DETECTION:
+            # Get risk analysis
+            risk_scores = await predictor.get_risk_scores(
+                agency_id=agency_id,
+                session=session,
+                entity_type='fan',
+                limit=50
+            )
+            
+            # Get recent anomalies
+            recent_anomalies = await predictor.detect_anomalies(
+                agency_id=agency_id,
+                session=session,
+                time_window_hours=168,  # Last week
+                anomaly_types=['transaction', 'behavior', 'velocity']
+            )
+            
+            # Categorize anomalies
+            anomaly_summary = {
+                'transaction': 0,
+                'behavior': 0,
+                'velocity': 0,
+                'pattern': 0
+            }
+            
+            for anomaly in recent_anomalies:
+                anomaly_type = anomaly['type'].replace('_anomaly', '')
+                if anomaly_type in anomaly_summary:
+                    anomaly_summary[anomaly_type] += 1
+            
+            analysis = {
+                'risk_summary': {
+                    'high_risk_entities': len([s for s in risk_scores if s['risk_score'] >= 60]),
+                    'medium_risk_entities': len([s for s in risk_scores if 30 <= s['risk_score'] < 60]),
+                    'low_risk_entities': len([s for s in risk_scores if s['risk_score'] < 30])
+                },
+                'anomaly_summary': anomaly_summary,
+                'recent_anomalies': recent_anomalies[:10],  # Top 10 recent
+                'top_risk_entities': risk_scores[:5],  # Top 5 highest risk
+                'insights': [
+                    f"Detected {len(recent_anomalies)} anomalies in the past week",
+                    f"{anomaly_summary['transaction']} transaction anomalies require review",
+                    "Anomaly detection helps prevent fraud and identify unusual patterns"
+                ]
+            }
             
             # Cache results
             cache_key = f"ml_trends:{agency_id}:{prediction_type.value}"
@@ -675,6 +757,47 @@ class MLAnalyticsService:
                             "Schedule posts in advance for peak times",
                             "Monitor engagement metrics closely",
                             "Test different content types during optimal hours"
+                        ]
+                    )
+                    session.add(alert)
+                    await session.commit()
+        
+        elif model.prediction_type == PredictionType.ANOMALY_DETECTION:
+            # Analyze anomaly patterns
+            if predictions:
+                # Group by anomaly type
+                anomaly_types = {}
+                high_severity_count = 0
+                
+                for pred in predictions:
+                    anomaly_type = pred.predictions_json.get('anomaly_type', 'unknown')
+                    if anomaly_type not in anomaly_types:
+                        anomaly_types[anomaly_type] = 0
+                    anomaly_types[anomaly_type] += 1
+                    
+                    if pred.predicted_value > 5:  # High severity threshold
+                        high_severity_count += 1
+                
+                if high_severity_count > 5:
+                    alert = InsightAlert(
+                        alert_type='anomaly',
+                        severity='critical',
+                        title=f"Multiple High-Severity Anomalies Detected",
+                        description=f"Found {high_severity_count} high-severity anomalies requiring immediate attention",
+                        model_id=model.id,
+                        entity_type='agency',
+                        entity_id=model.agency_id,
+                        agency_id=model.agency_id,
+                        metrics={
+                            'high_severity_count': high_severity_count,
+                            'total_anomalies': len(predictions),
+                            'anomaly_breakdown': anomaly_types
+                        },
+                        recommendations=[
+                            "Review all high-severity anomalies immediately",
+                            "Check for potential security breaches",
+                            "Implement additional verification measures",
+                            "Monitor affected accounts closely"
                         ]
                     )
                     session.add(alert)

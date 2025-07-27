@@ -9,7 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from core.dependencies import get_db, get_current_user
-from core.domain.models import User, UserRole
+from core.domain.models import User, UserRole, Fan, Model, Transaction
 from core.ml_analytics.models import PredictionType, ModelStatus
 from core.ml_analytics.services.ml_service import ml_service
 from core.domain.schemas import BaseResponse
@@ -554,6 +554,210 @@ async def analyze_content_performance(
         )
 
 
+@router.get("/anomalies/detect")
+async def detect_anomalies(
+    time_window_hours: int = Query(24, ge=1, le=168),
+    anomaly_types: Optional[List[str]] = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> List[Dict[str, Any]]:
+    """Detect anomalies in recent activity."""
+    # Check if anomaly detection model exists
+    from sqlalchemy import select, and_
+    from core.ml_analytics.models import MLModel
+    
+    result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.ANOMALY_DETECTION,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active anomaly detection model. Please train a model first."
+        )
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.ANOMALY_DETECTION)
+    predictor.load_model(model.model_path)
+    
+    # Detect anomalies
+    if anomaly_types is None:
+        anomaly_types = ['transaction', 'behavior', 'velocity']
+    
+    try:
+        anomalies = await predictor.detect_anomalies(
+            agency_id=current_user.agency_id,
+            session=db,
+            time_window_hours=time_window_hours,
+            anomaly_types=anomaly_types
+        )
+        
+        # Limit results
+        return anomalies[:limit]
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Anomaly detection failed: {str(e)}"
+        )
+
+
+@router.get("/anomalies/risk-scores")
+async def get_risk_scores(
+    entity_type: str = Query("fan", enum=["fan", "model"]),
+    limit: int = Query(100, ge=1, le=500),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> List[Dict[str, Any]]:
+    """Get risk scores for entities."""
+    # Check if model exists
+    from sqlalchemy import select, and_
+    from core.ml_analytics.models import MLModel
+    
+    result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.ANOMALY_DETECTION,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active anomaly detection model. Please train a model first."
+        )
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.ANOMALY_DETECTION)
+    predictor.load_model(model.model_path)
+    
+    # Get risk scores
+    try:
+        risk_scores = await predictor.get_risk_scores(
+            agency_id=current_user.agency_id,
+            session=db,
+            entity_type=entity_type,
+            limit=limit
+        )
+        
+        return risk_scores
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Risk score calculation failed: {str(e)}"
+        )
+
+
+@router.post("/anomalies/analyze/{entity_type}/{entity_id}")
+async def analyze_entity(
+    entity_type: str,
+    entity_id: UUID,
+    lookback_days: int = Query(30, ge=1, le=180),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Analyze a specific entity for anomalous behavior."""
+    # Validate entity type
+    if entity_type not in ['fan', 'model', 'transaction']:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid entity type. Must be 'fan', 'model', or 'transaction'"
+        )
+    
+    # Check if model exists
+    from sqlalchemy import select, and_
+    from core.ml_analytics.models import MLModel
+    
+    result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.ANOMALY_DETECTION,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active anomaly detection model. Please train a model first."
+        )
+    
+    # Verify entity belongs to agency
+    if entity_type == 'fan':
+        entity_result = await db.execute(
+            select(Fan).where(
+                and_(
+                    Fan.id == entity_id,
+                    Fan.agency_id == current_user.agency_id
+                )
+            )
+        )
+        if not entity_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Fan not found")
+    elif entity_type == 'model':
+        entity_result = await db.execute(
+            select(Model).where(
+                and_(
+                    Model.id == entity_id,
+                    Model.agency_id == current_user.agency_id
+                )
+            )
+        )
+        if not entity_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Model not found")
+    elif entity_type == 'transaction':
+        entity_result = await db.execute(
+            select(Transaction).where(
+                and_(
+                    Transaction.id == entity_id,
+                    Transaction.agency_id == current_user.agency_id
+                )
+            )
+        )
+        if not entity_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.ANOMALY_DETECTION)
+    predictor.load_model(model.model_path)
+    
+    # Analyze entity
+    try:
+        analysis = await predictor.analyze_entity(
+            entity_type=entity_type,
+            entity_id=str(entity_id),
+            session=db,
+            lookback_days=lookback_days
+        )
+        
+        return analysis
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Entity analysis failed: {str(e)}"
+        )
+
+
 @router.get("/dashboard")
 async def ml_dashboard(
     current_user: User = Depends(get_current_user),
@@ -640,6 +844,11 @@ async def ml_dashboard(
                 PredictionType.CONTENT_OPTIMIZATION,
                 current_user.agency_id,
                 db
-            ) if any(m.prediction_type == PredictionType.CONTENT_OPTIMIZATION for m in active_models) else None
+            ) if any(m.prediction_type == PredictionType.CONTENT_OPTIMIZATION for m in active_models) else None,
+            'anomaly': await ml_service.analyze_trends(
+                PredictionType.ANOMALY_DETECTION,
+                current_user.agency_id,
+                db
+            ) if any(m.prediction_type == PredictionType.ANOMALY_DETECTION for m in active_models) else None
         }
     }
