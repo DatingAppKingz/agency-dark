@@ -1,25 +1,32 @@
 """
-Payment gateway integration service for multiple providers.
+Payment gateway management service.
+
+Coordinates payment operations across different gateways,
+handles webhook processing, and manages gateway configurations.
 """
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Type
 from datetime import datetime
-from decimal import Decimal
-from abc import ABC, abstractmethod
-import hmac
-import hashlib
 import json
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_
 
+from modules.financial.infrastructure.payment_gateway_base import (
+    PaymentGatewayBase,
+    PaymentRequest,
+    PaymentResponse,
+    PaymentStatus
+)
+from modules.financial.infrastructure.stripe_gateway import StripeGateway
+from modules.financial.infrastructure.coinbase_gateway import CoinbaseCommerceGateway
 from modules.financial.domain.models import (
     PaymentGatewayConfig,
     CryptoPayment,
     CryptoPaymentStatus,
-    Payout,
-    PayoutStatus,
-    BillingCycle
+    FinancialTransaction,
+    TransactionType
 )
 from modules.financial.domain.schemas import (
     PaymentGatewayConfigCreate,
@@ -33,550 +40,482 @@ from core.domain.models import Agency
 logger = logging.getLogger(__name__)
 
 
-class PaymentProvider(ABC):
-    """Abstract base class for payment providers."""
-    
-    @abstractmethod
-    async def create_payment(
-        self,
-        amount: Decimal,
-        currency: str,
-        description: str,
-        metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Create a payment request."""
-        pass
-    
-    @abstractmethod
-    async def verify_webhook(
-        self,
-        headers: Dict[str, str],
-        body: bytes
-    ) -> bool:
-        """Verify webhook signature."""
-        pass
-    
-    @abstractmethod
-    async def process_webhook(
-        self,
-        data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Process webhook data."""
-        pass
-    
-    @abstractmethod
-    async def get_payment_status(
-        self,
-        payment_id: str
-    ) -> Dict[str, Any]:
-        """Get payment status."""
-        pass
-
-
-class CoinbaseCommerceProvider(PaymentProvider):
-    """Coinbase Commerce payment provider."""
-    
-    def __init__(self, config: PaymentGatewayConfig):
-        self.config = config
-        self.api_key = config.api_key
-        self.webhook_secret = config.webhook_secret
-        self.base_url = "https://api.commerce.coinbase.com"
-        
-    async def create_payment(
-        self,
-        amount: Decimal,
-        currency: str,
-        description: str,
-        metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Create a Coinbase Commerce charge."""
-        import aiohttp
-        
-        headers = {
-            "X-CC-Api-Key": self.api_key,
-            "X-CC-Version": "2018-03-22",
-            "Content-Type": "application/json"
-        }
-        
-        data = {
-            "name": description,
-            "description": description,
-            "pricing_type": "fixed_price",
-            "local_price": {
-                "amount": str(amount),
-                "currency": currency.upper()
-            },
-            "metadata": metadata
-        }
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{self.base_url}/charges",
-                headers=headers,
-                json=data
-            ) as response:
-                if response.status != 201:
-                    error = await response.text()
-                    raise Exception(f"Coinbase Commerce error: {error}")
-                
-                result = await response.json()
-                return {
-                    "payment_id": result["data"]["id"],
-                    "payment_url": result["data"]["hosted_url"],
-                    "expires_at": result["data"]["expires_at"],
-                    "addresses": result["data"]["addresses"],
-                    "pricing": result["data"]["pricing"]
-                }
-    
-    async def verify_webhook(
-        self,
-        headers: Dict[str, str],
-        body: bytes
-    ) -> bool:
-        """Verify Coinbase Commerce webhook signature."""
-        signature = headers.get("X-CC-Webhook-Signature", "")
-        
-        expected_signature = hmac.new(
-            self.webhook_secret.encode(),
-            body,
-            hashlib.sha256
-        ).hexdigest()
-        
-        return hmac.compare_digest(signature, expected_signature)
-    
-    async def process_webhook(
-        self,
-        data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Process Coinbase Commerce webhook."""
-        event_type = data.get("event", {}).get("type")
-        charge_data = data.get("event", {}).get("data", {})
-        
-        status_mapping = {
-            "charge:created": CryptoPaymentStatus.PENDING,
-            "charge:confirmed": CryptoPaymentStatus.CONFIRMED,
-            "charge:failed": CryptoPaymentStatus.FAILED,
-            "charge:delayed": CryptoPaymentStatus.PENDING,
-            "charge:resolved": CryptoPaymentStatus.COMPLETED
-        }
-        
-        return {
-            "payment_id": charge_data.get("id"),
-            "status": status_mapping.get(event_type, CryptoPaymentStatus.PENDING),
-            "transaction_hash": charge_data.get("payments", [{}])[0].get("transaction_id"),
-            "amount_paid": charge_data.get("payments", [{}])[0].get("value", {}).get("local", {}).get("amount"),
-            "metadata": charge_data.get("metadata", {})
-        }
-    
-    async def get_payment_status(
-        self,
-        payment_id: str
-    ) -> Dict[str, Any]:
-        """Get Coinbase Commerce charge status."""
-        import aiohttp
-        
-        headers = {
-            "X-CC-Api-Key": self.api_key,
-            "X-CC-Version": "2018-03-22"
-        }
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{self.base_url}/charges/{payment_id}",
-                headers=headers
-            ) as response:
-                if response.status != 200:
-                    error = await response.text()
-                    raise Exception(f"Coinbase Commerce error: {error}")
-                
-                result = await response.json()
-                charge = result["data"]
-                
-                # Map timeline events to our status
-                timeline = charge.get("timeline", [])
-                latest_status = timeline[-1]["status"] if timeline else "NEW"
-                
-                status_mapping = {
-                    "NEW": CryptoPaymentStatus.PENDING,
-                    "PENDING": CryptoPaymentStatus.PENDING,
-                    "COMPLETED": CryptoPaymentStatus.COMPLETED,
-                    "EXPIRED": CryptoPaymentStatus.EXPIRED,
-                    "UNRESOLVED": CryptoPaymentStatus.FAILED,
-                    "RESOLVED": CryptoPaymentStatus.COMPLETED,
-                    "CANCELED": CryptoPaymentStatus.FAILED
-                }
-                
-                return {
-                    "status": status_mapping.get(latest_status, CryptoPaymentStatus.PENDING),
-                    "amount_paid": charge.get("payments", [{}])[0].get("value", {}).get("local", {}).get("amount"),
-                    "transaction_hash": charge.get("payments", [{}])[0].get("transaction_id")
-                }
-
-
-class BitPayProvider(PaymentProvider):
-    """BitPay payment provider."""
-    
-    def __init__(self, config: PaymentGatewayConfig):
-        self.config = config
-        self.api_key = config.api_key
-        self.base_url = "https://bitpay.com/api" if not config.is_test_mode else "https://test.bitpay.com/api"
-        
-    async def create_payment(
-        self,
-        amount: Decimal,
-        currency: str,
-        description: str,
-        metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Create a BitPay invoice."""
-        import aiohttp
-        
-        headers = {
-            "X-BitPay-Token": self.api_key,
-            "Content-Type": "application/json"
-        }
-        
-        data = {
-            "price": float(amount),
-            "currency": currency.upper(),
-            "itemDesc": description,
-            "notificationURL": metadata.get("webhook_url"),
-            "redirectURL": metadata.get("redirect_url"),
-            "posData": json.dumps(metadata)
-        }
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{self.base_url}/invoice",
-                headers=headers,
-                json=data
-            ) as response:
-                if response.status != 200:
-                    error = await response.text()
-                    raise Exception(f"BitPay error: {error}")
-                
-                result = await response.json()
-                return {
-                    "payment_id": result["data"]["id"],
-                    "payment_url": result["data"]["url"],
-                    "expires_at": result["data"]["expirationTime"],
-                    "addresses": {
-                        currency: result["data"]["bitcoinAddress"]
-                        for currency in result["data"]["supportedTransactionCurrencies"]
-                    }
-                }
-    
-    async def verify_webhook(
-        self,
-        headers: Dict[str, str],
-        body: bytes
-    ) -> bool:
-        """Verify BitPay webhook signature."""
-        # BitPay uses a different verification method
-        # This is a simplified version
-        return True  # Implement proper verification
-    
-    async def process_webhook(
-        self,
-        data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Process BitPay webhook."""
-        status = data.get("status")
-        
-        status_mapping = {
-            "new": CryptoPaymentStatus.PENDING,
-            "paid": CryptoPaymentStatus.PENDING,
-            "confirmed": CryptoPaymentStatus.CONFIRMED,
-            "complete": CryptoPaymentStatus.COMPLETED,
-            "expired": CryptoPaymentStatus.EXPIRED,
-            "invalid": CryptoPaymentStatus.FAILED
-        }
-        
-        pos_data = json.loads(data.get("posData", "{}"))
-        
-        return {
-            "payment_id": data.get("id"),
-            "status": status_mapping.get(status, CryptoPaymentStatus.PENDING),
-            "transaction_hash": data.get("transactionId"),
-            "amount_paid": data.get("amountPaid"),
-            "metadata": pos_data
-        }
-    
-    async def get_payment_status(
-        self,
-        payment_id: str
-    ) -> Dict[str, Any]:
-        """Get BitPay invoice status."""
-        import aiohttp
-        
-        headers = {
-            "X-BitPay-Token": self.api_key
-        }
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{self.base_url}/invoice/{payment_id}",
-                headers=headers
-            ) as response:
-                if response.status != 200:
-                    error = await response.text()
-                    raise Exception(f"BitPay error: {error}")
-                
-                result = await response.json()
-                invoice = result["data"]
-                
-                status_mapping = {
-                    "new": CryptoPaymentStatus.PENDING,
-                    "paid": CryptoPaymentStatus.PENDING,
-                    "confirmed": CryptoPaymentStatus.CONFIRMED,
-                    "complete": CryptoPaymentStatus.COMPLETED,
-                    "expired": CryptoPaymentStatus.EXPIRED,
-                    "invalid": CryptoPaymentStatus.FAILED
-                }
-                
-                return {
-                    "status": status_mapping.get(invoice["status"], CryptoPaymentStatus.PENDING),
-                    "amount_paid": invoice.get("amountPaid"),
-                    "transaction_hash": invoice.get("transactionId")
-                }
-
-
 class PaymentGatewayService:
-    """Manages payment gateway integrations."""
+    """Manages payment gateways and payment processing."""
     
-    SUPPORTED_PROVIDERS = {
-        "coinbase_commerce": CoinbaseCommerceProvider,
-        "bitpay": BitPayProvider
+    # Registry of available gateway implementations
+    GATEWAY_REGISTRY: Dict[str, Type[PaymentGatewayBase]] = {
+        'stripe': StripeGateway,
+        'coinbase_commerce': CoinbaseCommerceGateway
     }
     
     def __init__(self, db: AsyncSession):
         self.db = db
-        self._providers: Dict[str, PaymentProvider] = {}
-    
+        self._gateway_cache: Dict[str, PaymentGatewayBase] = {}
+        
     async def create_gateway_config(
         self,
-        config_data: PaymentGatewayConfigCreate,
-        agency_id: Optional[str] = None
+        config_data: PaymentGatewayConfigCreate
     ) -> PaymentGatewayConfigResponse:
-        """Create payment gateway configuration."""
-        if config_data.provider not in self.SUPPORTED_PROVIDERS:
-            raise ValueError(f"Unsupported provider: {config_data.provider}")
+        """
+        Create a new payment gateway configuration.
         
-        # Check for existing config
+        Args:
+            config_data: Gateway configuration details
+            
+        Returns:
+            Created configuration
+        """
+        # Verify gateway type is supported
+        if config_data.gateway_type not in self.GATEWAY_REGISTRY:
+            raise ValueError(f"Unsupported gateway type: {config_data.gateway_type}")
+            
+        # Verify agency exists if specified
+        if config_data.agency_id:
+            agency = await self.db.get(Agency, config_data.agency_id)
+            if not agency:
+                raise ValueError("Agency not found")
+                
+        # Check for duplicate active config
         existing = await self.db.execute(
             select(PaymentGatewayConfig).where(
                 and_(
-                    PaymentGatewayConfig.provider == config_data.provider,
-                    PaymentGatewayConfig.agency_id == agency_id,
+                    PaymentGatewayConfig.gateway_type == config_data.gateway_type,
+                    PaymentGatewayConfig.agency_id == config_data.agency_id,
                     PaymentGatewayConfig.is_active == True
                 )
             )
         )
-        
         if existing.scalar_one_or_none():
-            raise ValueError(f"Active {config_data.provider} configuration already exists")
-        
-        # Create config
+            raise ValueError(f"Active {config_data.gateway_type} configuration already exists")
+            
+        # Create configuration
         config = PaymentGatewayConfig(
-            agency_id=agency_id,
-            provider=config_data.provider,
-            api_key=config_data.api_key,
-            api_secret=config_data.api_secret,
-            webhook_secret=config_data.webhook_secret,
-            merchant_id=config_data.merchant_id,
-            is_test_mode=config_data.is_test_mode,
-            supported_currencies=config_data.supported_currencies,
+            gateway_type=config_data.gateway_type,
+            agency_id=config_data.agency_id,
             config=config_data.config,
-            is_active=True
+            is_active=config_data.is_active,
+            is_test_mode=config_data.is_test_mode
         )
         
         self.db.add(config)
         await self.db.commit()
         await self.db.refresh(config)
         
-        logger.info(f"Payment gateway config created for {config_data.provider}")
+        logger.info(f"Created {config_data.gateway_type} gateway config for agency {config_data.agency_id}")
         
         return PaymentGatewayConfigResponse.model_validate(config)
-    
-    async def get_provider(
-        self,
-        provider_name: str,
-        agency_id: Optional[str] = None
-    ) -> PaymentProvider:
-        """Get payment provider instance."""
-        cache_key = f"{provider_name}:{agency_id or 'global'}"
         
-        if cache_key in self._providers:
-            return self._providers[cache_key]
-        
-        # Get config from database
-        result = await self.db.execute(
-            select(PaymentGatewayConfig).where(
-                and_(
-                    PaymentGatewayConfig.provider == provider_name,
-                    PaymentGatewayConfig.agency_id == agency_id,
-                    PaymentGatewayConfig.is_active == True
-                )
-            )
-        )
-        
-        config = result.scalar_one_or_none()
-        if not config:
-            raise ValueError(f"No active configuration for {provider_name}")
-        
-        # Create provider instance
-        provider_class = self.SUPPORTED_PROVIDERS[provider_name]
-        provider = provider_class(config)
-        
-        # Cache it
-        self._providers[cache_key] = provider
-        
-        return provider
-    
-    async def create_payment(
-        self,
-        payment_request: CryptoPaymentRequest,
-        provider_name: str,
-        agency_id: Optional[str] = None
-    ) -> CryptoPaymentResponse:
-        """Create a payment with specified provider."""
-        provider = await self.get_provider(provider_name, agency_id)
-        
-        # Create payment with provider
-        result = await provider.create_payment(
-            amount=payment_request.amount,
-            currency=payment_request.currency,
-            description=payment_request.description,
-            metadata=payment_request.metadata
-        )
-        
-        # Store payment record
-        payment = CryptoPayment(
-            provider=provider_name,
-            payment_id=result["payment_id"],
-            amount=payment_request.amount,
-            currency=payment_request.currency,
-            recipient_wallet_id=payment_request.recipient_wallet_id,
-            payment_url=result.get("payment_url"),
-            expires_at=datetime.fromisoformat(result["expires_at"]) if result.get("expires_at") else None,
-            addresses=result.get("addresses", {}),
-            metadata=payment_request.metadata,
-            status=CryptoPaymentStatus.PENDING
-        )
-        
-        self.db.add(payment)
-        await self.db.commit()
-        await self.db.refresh(payment)
-        
-        return CryptoPaymentResponse(
-            payment_id=payment.payment_id,
-            amount=payment.amount,
-            currency=payment.currency,
-            network=None,  # Will be determined by actual payment
-            recipient_address=None,  # Will be set from addresses
-            status=payment.status.value,
-            transaction_hash=None,
-            expires_at=payment.expires_at,
-            payment_url=payment.payment_url
-        )
-    
-    async def process_webhook(
-        self,
-        provider_name: str,
-        headers: Dict[str, str],
-        body: bytes
-    ) -> Dict[str, Any]:
-        """Process payment webhook from provider."""
-        provider = await self.get_provider(provider_name)
-        
-        # Verify webhook signature
-        if not await provider.verify_webhook(headers, body):
-            raise ValueError("Invalid webhook signature")
-        
-        # Parse webhook data
-        data = json.loads(body)
-        
-        # Process webhook
-        result = await provider.process_webhook(data)
-        
-        # Update payment record
-        payment = await self.db.execute(
-            select(CryptoPayment).where(
-                CryptoPayment.payment_id == result["payment_id"]
-            )
-        )
-        payment = payment.scalar_one_or_none()
-        
-        if payment:
-            payment.status = result["status"]
-            payment.transaction_hash = result.get("transaction_hash")
-            payment.confirmed_at = datetime.utcnow() if result["status"] == CryptoPaymentStatus.CONFIRMED else None
-            payment.completed_at = datetime.utcnow() if result["status"] == CryptoPaymentStatus.COMPLETED else None
-            
-            # Update associated payout if exists
-            if payment.metadata and payment.metadata.get("payout_id"):
-                payout = await self.db.get(Payout, payment.metadata["payout_id"])
-                if payout:
-                    if result["status"] == CryptoPaymentStatus.COMPLETED:
-                        payout.status = PayoutStatus.COMPLETED
-                        payout.completed_at = datetime.utcnow()
-                        payout.transaction_hash = result.get("transaction_hash")
-                    elif result["status"] == CryptoPaymentStatus.FAILED:
-                        payout.status = PayoutStatus.FAILED
-                        payout.failure_reason = "Payment failed"
-            
-            await self.db.commit()
-        
-        return {
-            "success": True,
-            "payment_id": result["payment_id"],
-            "status": result["status"].value if hasattr(result["status"], "value") else result["status"]
-        }
-    
-    async def check_payment_status(
-        self,
-        payment_id: str
-    ) -> CryptoPaymentStatus:
-        """Check payment status with provider."""
-        # Get payment record
-        result = await self.db.execute(
-            select(CryptoPayment).where(
-                CryptoPayment.payment_id == payment_id
-            )
-        )
-        payment = result.scalar_one_or_none()
-        
-        if not payment:
-            raise ValueError("Payment not found")
-        
-        # Get provider
-        provider = await self.get_provider(payment.provider)
-        
-        # Check status
-        status_result = await provider.get_payment_status(payment_id)
-        
-        # Update payment record
-        payment.status = status_result["status"]
-        if status_result.get("transaction_hash"):
-            payment.transaction_hash = status_result["transaction_hash"]
-        
-        await self.db.commit()
-        
-        return payment.status
-    
     async def get_active_configs(
         self,
         agency_id: Optional[str] = None
     ) -> List[PaymentGatewayConfigResponse]:
-        """Get active payment gateway configurations."""
+        """Get active gateway configurations."""
         query = select(PaymentGatewayConfig).where(
             PaymentGatewayConfig.is_active == True
         )
         
         if agency_id:
-            query = query.where(PaymentGatewayConfig.agency_id == agency_id)
-        
+            query = query.where(
+                or_(
+                    PaymentGatewayConfig.agency_id == agency_id,
+                    PaymentGatewayConfig.agency_id.is_(None)  # Global configs
+                )
+            )
+            
         result = await self.db.execute(query)
         configs = result.scalars().all()
         
         return [PaymentGatewayConfigResponse.model_validate(c) for c in configs]
+        
+    async def get_gateway(
+        self,
+        gateway_type: str,
+        agency_id: Optional[str] = None
+    ) -> PaymentGatewayBase:
+        """
+        Get initialized gateway instance.
+        
+        Args:
+            gateway_type: Type of gateway (stripe, coinbase_commerce)
+            agency_id: Optional agency ID for agency-specific config
+            
+        Returns:
+            Initialized gateway instance
+        """
+        cache_key = f"{gateway_type}:{agency_id or 'global'}"
+        
+        # Check cache
+        if cache_key in self._gateway_cache:
+            return self._gateway_cache[cache_key]
+            
+        # Get configuration
+        query = select(PaymentGatewayConfig).where(
+            and_(
+                PaymentGatewayConfig.gateway_type == gateway_type,
+                PaymentGatewayConfig.is_active == True
+            )
+        )
+        
+        if agency_id:
+            # Try agency-specific first, then global
+            query = query.where(
+                or_(
+                    PaymentGatewayConfig.agency_id == agency_id,
+                    PaymentGatewayConfig.agency_id.is_(None)
+                )
+            ).order_by(PaymentGatewayConfig.agency_id.desc())  # Agency-specific first
+        else:
+            query = query.where(PaymentGatewayConfig.agency_id.is_(None))
+            
+        result = await self.db.execute(query.limit(1))
+        config = result.scalar_one_or_none()
+        
+        if not config:
+            raise ValueError(f"No active configuration found for {gateway_type}")
+            
+        # Get gateway class
+        gateway_class = self.GATEWAY_REGISTRY.get(gateway_type)
+        if not gateway_class:
+            raise ValueError(f"Unknown gateway type: {gateway_type}")
+            
+        # Initialize gateway
+        gateway_config = config.config.copy()
+        gateway_config['is_test_mode'] = config.is_test_mode
+        
+        gateway = gateway_class(gateway_config)
+        
+        # Cache it
+        self._gateway_cache[cache_key] = gateway
+        
+        return gateway
+        
+    async def create_payment(
+        self,
+        payment_request: CryptoPaymentRequest,
+        provider: str,
+        agency_id: Optional[str] = None
+    ) -> CryptoPaymentResponse:
+        """
+        Create a payment using specified provider.
+        
+        Args:
+            payment_request: Payment details
+            provider: Payment provider (stripe, coinbase_commerce)
+            agency_id: Optional agency ID
+            
+        Returns:
+            Payment response with payment URL
+        """
+        # Get gateway
+        gateway = await self.get_gateway(provider, agency_id)
+        
+        # Convert to gateway request
+        gateway_request = PaymentRequest(
+            amount=payment_request.amount,
+            currency=payment_request.currency,
+            description=payment_request.description,
+            recipient_email=payment_request.customer_email,
+            metadata={
+                'model_id': payment_request.model_id,
+                'fan_id': payment_request.fan_id,
+                'agency_id': agency_id,
+                'payment_type': payment_request.payment_type
+            },
+            redirect_url=payment_request.redirect_url,
+            webhook_url=payment_request.webhook_url
+        )
+        
+        # Create payment with gateway
+        gateway_response = await gateway.create_payment(gateway_request)
+        
+        # Store payment record
+        crypto_payment = CryptoPayment(
+            provider=provider,
+            provider_payment_id=gateway_response.provider_payment_id,
+            amount=gateway_response.amount,
+            currency=gateway_response.currency,
+            status=self._map_to_crypto_status(gateway_response.status),
+            payment_url=gateway_response.payment_url,
+            expires_at=gateway_response.expires_at,
+            metadata={
+                **gateway_response.metadata,
+                'gateway_payment_id': gateway_response.payment_id
+            },
+            model_id=payment_request.model_id,
+            fan_id=payment_request.fan_id,
+            created_at=datetime.utcnow()
+        )
+        
+        self.db.add(crypto_payment)
+        await self.db.commit()
+        await self.db.refresh(crypto_payment)
+        
+        logger.info(f"Created {provider} payment: {crypto_payment.id}")
+        
+        return CryptoPaymentResponse(
+            id=str(crypto_payment.id),
+            provider=crypto_payment.provider,
+            payment_url=crypto_payment.payment_url,
+            amount=crypto_payment.amount,
+            currency=crypto_payment.currency,
+            status=crypto_payment.status,
+            expires_at=crypto_payment.expires_at
+        )
+        
+    async def get_payment_status(
+        self,
+        payment_id: str
+    ) -> CryptoPaymentResponse:
+        """Get current payment status."""
+        # Get payment record
+        payment = await self.db.get(CryptoPayment, payment_id)
+        if not payment:
+            raise ValueError("Payment not found")
+            
+        # Get gateway
+        gateway = await self.get_gateway(payment.provider)
+        
+        # Get status from gateway
+        gateway_payment_id = payment.metadata.get('gateway_payment_id')
+        if not gateway_payment_id:
+            raise ValueError("Gateway payment ID not found")
+            
+        gateway_response = await gateway.get_payment_status(gateway_payment_id)
+        
+        # Update payment record
+        payment.status = self._map_to_crypto_status(gateway_response.status)
+        
+        # Update transaction hash if completed
+        if gateway_response.metadata.get('transaction_hash'):
+            payment.transaction_hash = gateway_response.metadata['transaction_hash']
+            
+        await self.db.commit()
+        await self.db.refresh(payment)
+        
+        return CryptoPaymentResponse(
+            id=str(payment.id),
+            provider=payment.provider,
+            payment_url=payment.payment_url,
+            amount=payment.amount,
+            currency=payment.currency,
+            status=payment.status,
+            expires_at=payment.expires_at,
+            transaction_hash=payment.transaction_hash
+        )
+        
+    async def process_webhook(
+        self,
+        provider: str,
+        headers: Dict[str, str],
+        body: bytes
+    ) -> Dict[str, Any]:
+        """
+        Process payment webhook from provider.
+        
+        Args:
+            provider: Payment provider
+            headers: Request headers
+            body: Raw request body
+            
+        Returns:
+            Processing result
+        """
+        try:
+            # Get gateway config to get webhook secret
+            result = await self.db.execute(
+                select(PaymentGatewayConfig).where(
+                    and_(
+                        PaymentGatewayConfig.gateway_type == provider,
+                        PaymentGatewayConfig.is_active == True
+                    )
+                ).limit(1)
+            )
+            config = result.scalar_one_or_none()
+            
+            if not config:
+                logger.error(f"No active configuration for {provider}")
+                return {'success': False, 'error': 'Configuration not found'}
+                
+            webhook_secret = config.config.get('webhook_secret')
+            if not webhook_secret:
+                logger.error(f"No webhook secret configured for {provider}")
+                return {'success': False, 'error': 'Webhook secret not configured'}
+                
+            # Get gateway
+            gateway = await self.get_gateway(provider)
+            
+            # Verify webhook
+            if not await gateway.verify_webhook(headers, body, webhook_secret):
+                logger.warning(f"Invalid webhook signature for {provider}")
+                return {'success': False, 'error': 'Invalid signature'}
+                
+            # Parse webhook data
+            webhook_data = await gateway.parse_webhook(json.loads(body))
+            
+            # Find payment by provider payment ID
+            result = await self.db.execute(
+                select(CryptoPayment).where(
+                    CryptoPayment.metadata['gateway_payment_id'].astext == webhook_data.payment_id
+                )
+            )
+            payment = result.scalar_one_or_none()
+            
+            if not payment:
+                logger.warning(f"Payment not found for webhook: {webhook_data.payment_id}")
+                return {'success': False, 'error': 'Payment not found'}
+                
+            # Update payment status
+            old_status = payment.status
+            payment.status = self._map_to_crypto_status(webhook_data.status)
+            
+            if webhook_data.transaction_hash:
+                payment.transaction_hash = webhook_data.transaction_hash
+                
+            if webhook_data.confirmations:
+                payment.confirmations = webhook_data.confirmations
+                
+            # Create transaction if payment completed
+            if (old_status != CryptoPaymentStatus.COMPLETED and 
+                payment.status == CryptoPaymentStatus.COMPLETED):
+                
+                transaction = FinancialTransaction(
+                    agency_id=payment.metadata.get('agency_id'),
+                    model_id=payment.model_id,
+                    fan_id=payment.fan_id,
+                    type=TransactionType.REVENUE,
+                    amount=payment.amount,
+                    crypto_payment_id=payment.id,
+                    description=f"Crypto payment via {provider}",
+                    metadata={
+                        'provider': provider,
+                        'transaction_hash': payment.transaction_hash,
+                        'currency': payment.currency
+                    },
+                    transaction_date=datetime.utcnow()
+                )
+                
+                self.db.add(transaction)
+                logger.info(f"Created transaction for completed payment: {payment.id}")
+                
+            await self.db.commit()
+            
+            logger.info(f"Processed webhook for payment {payment.id}: {old_status} -> {payment.status}")
+            
+            return {'success': True, 'payment_id': str(payment.id)}
+            
+        except Exception as e:
+            logger.error(f"Webhook processing failed: {e}")
+            return {'success': False, 'error': str(e)}
+            
+    async def cancel_payment(
+        self,
+        payment_id: str
+    ) -> bool:
+        """
+        Cancel a pending payment.
+        
+        Args:
+            payment_id: Payment ID to cancel
+            
+        Returns:
+            Success status
+        """
+        payment = await self.db.get(CryptoPayment, payment_id)
+        if not payment:
+            raise ValueError("Payment not found")
+            
+        if payment.status != CryptoPaymentStatus.PENDING:
+            raise ValueError(f"Cannot cancel payment in {payment.status} status")
+            
+        # Get gateway
+        gateway = await self.get_gateway(payment.provider)
+        
+        # Cancel with gateway
+        gateway_payment_id = payment.metadata.get('gateway_payment_id')
+        if gateway_payment_id:
+            success = await gateway.cancel_payment(gateway_payment_id)
+            
+            if success:
+                payment.status = CryptoPaymentStatus.CANCELLED
+                await self.db.commit()
+                logger.info(f"Cancelled payment: {payment_id}")
+                
+            return success
+            
+        return False
+        
+    async def get_supported_currencies(
+        self,
+        provider: str
+    ) -> List[str]:
+        """Get supported currencies for a provider."""
+        gateway = await self.get_gateway(provider)
+        return await gateway.get_supported_currencies()
+        
+    async def get_exchange_rates(
+        self,
+        provider: str,
+        base_currency: str = "USD"
+    ) -> Dict[str, float]:
+        """Get current exchange rates."""
+        gateway = await self.get_gateway(provider)
+        rates = await gateway.get_exchange_rates(base_currency)
+        
+        # Convert Decimal to float for JSON serialization
+        return {currency: float(rate) for currency, rate in rates.items()}
+        
+    def _map_to_crypto_status(self, gateway_status: PaymentStatus) -> CryptoPaymentStatus:
+        """Map gateway status to crypto payment status."""
+        status_map = {
+            PaymentStatus.PENDING: CryptoPaymentStatus.PENDING,
+            PaymentStatus.PROCESSING: CryptoPaymentStatus.PENDING,
+            PaymentStatus.COMPLETED: CryptoPaymentStatus.COMPLETED,
+            PaymentStatus.FAILED: CryptoPaymentStatus.FAILED,
+            PaymentStatus.CANCELLED: CryptoPaymentStatus.CANCELLED,
+            PaymentStatus.EXPIRED: CryptoPaymentStatus.EXPIRED,
+            PaymentStatus.REFUNDED: CryptoPaymentStatus.REFUNDED
+        }
+        
+        return status_map.get(gateway_status, CryptoPaymentStatus.PENDING)
+        
+    async def test_gateway_connection(
+        self,
+        gateway_type: str,
+        config: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Test gateway configuration.
+        
+        Args:
+            gateway_type: Type of gateway
+            config: Configuration to test
+            
+        Returns:
+            Test results
+        """
+        try:
+            # Get gateway class
+            gateway_class = self.GATEWAY_REGISTRY.get(gateway_type)
+            if not gateway_class:
+                return {
+                    'success': False,
+                    'error': f"Unknown gateway type: {gateway_type}"
+                }
+                
+            # Initialize gateway
+            gateway = gateway_class(config)
+            
+            # Test health check
+            health = await gateway.health_check()
+            
+            return {
+                'success': health.get('status') == 'healthy',
+                'details': health
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }

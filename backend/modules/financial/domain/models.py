@@ -37,6 +37,15 @@ class TransactionType(str, enum.Enum):
     ADJUSTMENT = "adjustment"
 
 
+class TransactionStatus(str, enum.Enum):
+    """Transaction status."""
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    REVERSED = "reversed"
+
+
 class CryptoNetwork(str, enum.Enum):
     """Supported cryptocurrency networks."""
     BITCOIN = "bitcoin"
@@ -264,6 +273,7 @@ class FinancialTransaction(Base):
     
     # Transaction details
     type = Column(Enum(TransactionType), nullable=False)
+    status = Column(Enum(TransactionStatus), default=TransactionStatus.PENDING, nullable=False)
     amount = Column(Numeric(12, 2), nullable=False)
     currency = Column(String(10), default='USD')
     
