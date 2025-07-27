@@ -758,6 +758,228 @@ async def analyze_entity(
         )
 
 
+@router.get("/fan-ltv/predictions")
+async def get_fan_ltv_predictions(
+    fan_ids: Optional[List[UUID]] = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> List[Dict[str, Any]]:
+    """Get LTV predictions for specific fans or top fans."""
+    # Check if LTV model exists
+    from sqlalchemy import select, and_
+    from core.ml_analytics.models import MLModel
+    
+    result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.FAN_LTV,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active Fan LTV model. Please train a model first."
+        )
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.FAN_LTV)
+    predictor.load_model(model.model_path)
+    
+    # Get fan IDs to predict
+    if fan_ids:
+        fan_id_strings = [str(fan_id) for fan_id in fan_ids[:limit]]
+    else:
+        # Get top active fans
+        fan_result = await db.execute(
+            select(Fan.id).join(
+                Transaction,
+                and_(
+                    Transaction.fan_id == Fan.id,
+                    Transaction.status == 'completed'
+                )
+            ).where(
+                Fan.agency_id == current_user.agency_id
+            ).group_by(Fan.id).order_by(
+                func.sum(Transaction.amount).desc()
+            ).limit(limit)
+        )
+        fan_id_strings = [str(row.id) for row in fan_result.fetchall()]
+    
+    # Get predictions
+    try:
+        predictions = await predictor.predict_ltv(
+            fan_ids=fan_id_strings,
+            session=db,
+            include_confidence=True
+        )
+        
+        return predictions
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"LTV prediction failed: {str(e)}"
+        )
+
+
+@router.get("/fan-ltv/segments")
+async def get_fan_ltv_segments(
+    num_segments: int = Query(5, ge=3, le=10),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get fan segments based on LTV."""
+    # Check if model exists
+    from sqlalchemy import select, and_
+    from core.ml_analytics.models import MLModel
+    
+    result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.FAN_LTV,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active Fan LTV model. Please train a model first."
+        )
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.FAN_LTV)
+    predictor.load_model(model.model_path)
+    
+    # Get segments
+    try:
+        segments = await predictor.segment_fans_by_ltv(
+            agency_id=current_user.agency_id,
+            session=db,
+            num_segments=num_segments
+        )
+        
+        return segments
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Segmentation failed: {str(e)}"
+        )
+
+
+@router.get("/fan-ltv/analyze/{fan_id}")
+async def analyze_fan_ltv(
+    fan_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get detailed LTV analysis for a specific fan."""
+    # Verify fan belongs to agency
+    fan_result = await db.execute(
+        select(Fan).where(
+            and_(
+                Fan.id == fan_id,
+                Fan.agency_id == current_user.agency_id
+            )
+        )
+    )
+    fan = fan_result.scalar_one_or_none()
+    
+    if not fan:
+        raise HTTPException(status_code=404, detail="Fan not found")
+    
+    # Check if model exists
+    from sqlalchemy import select, and_
+    from core.ml_analytics.models import MLModel
+    
+    result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.FAN_LTV,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active Fan LTV model. Please train a model first."
+        )
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.FAN_LTV)
+    predictor.load_model(model.model_path)
+    
+    # Get prediction and analysis
+    try:
+        predictions = await predictor.predict_ltv(
+            fan_ids=[str(fan_id)],
+            session=db,
+            include_confidence=True
+        )
+        
+        if not predictions:
+            raise HTTPException(
+                status_code=404,
+                detail="Unable to generate LTV prediction for this fan"
+            )
+        
+        prediction = predictions[0]
+        
+        # Add fan details
+        prediction['fan_details'] = {
+            'id': str(fan.id),
+            'username': fan.username,
+            'created_at': fan.created_at.isoformat(),
+            'is_active': fan.is_active
+        }
+        
+        # Add historical data
+        trans_result = await db.execute(
+            select(
+                func.count(Transaction.id).label('total_transactions'),
+                func.sum(Transaction.amount).label('historical_spent'),
+                func.max(Transaction.created_at).label('last_transaction')
+            ).where(
+                and_(
+                    Transaction.fan_id == fan_id,
+                    Transaction.status == 'completed'
+                )
+            )
+        )
+        history = trans_result.first()
+        
+        prediction['historical_data'] = {
+            'total_transactions': history.total_transactions or 0,
+            'historical_spent': float(history.historical_spent or 0),
+            'last_transaction': history.last_transaction.isoformat() if history.last_transaction else None
+        }
+        
+        return prediction
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"LTV analysis failed: {str(e)}"
+        )
+
+
 @router.get("/dashboard")
 async def ml_dashboard(
     current_user: User = Depends(get_current_user),
@@ -849,6 +1071,11 @@ async def ml_dashboard(
                 PredictionType.ANOMALY_DETECTION,
                 current_user.agency_id,
                 db
-            ) if any(m.prediction_type == PredictionType.ANOMALY_DETECTION for m in active_models) else None
+            ) if any(m.prediction_type == PredictionType.ANOMALY_DETECTION for m in active_models) else None,
+            'fan_ltv': await ml_service.analyze_trends(
+                PredictionType.FAN_LTV,
+                current_user.agency_id,
+                db
+            ) if any(m.prediction_type == PredictionType.FAN_LTV for m in active_models) else None
         }
     }

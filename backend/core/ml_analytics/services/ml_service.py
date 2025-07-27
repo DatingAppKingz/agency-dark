@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import asyncio
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func
+from sqlalchemy import select, and_, or_, func, distinct
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -20,6 +20,8 @@ from core.ml_analytics.models import (
 from core.ml_analytics.predictors.revenue_forecast import RevenueForecastPredictor
 from core.ml_analytics.predictors.churn_prediction import ChurnPredictor
 from core.ml_analytics.predictors.content_optimization import ContentOptimizer
+from core.ml_analytics.predictors.anomaly_detection import AnomalyDetector
+from core.ml_analytics.predictors.fan_ltv import FanLTVPredictor
 from core.domain.models import User, Agency, Transaction, Model, Fan, Content
 from core.redis import redis_client
 from core.cache import cache_service
@@ -34,7 +36,9 @@ class MLAnalyticsService:
         self.predictors = {
             PredictionType.REVENUE_FORECAST: RevenueForecastPredictor(),
             PredictionType.CHURN_PREDICTION: ChurnPredictor(),
-            PredictionType.CONTENT_OPTIMIZATION: ContentOptimizer()
+            PredictionType.CONTENT_OPTIMIZATION: ContentOptimizer(),
+            PredictionType.ANOMALY_DETECTION: AnomalyDetector(),
+            PredictionType.FAN_LTV: FanLTVPredictor()
         }
         self.model_storage_path = Path("ml_models")
         self.model_storage_path.mkdir(exist_ok=True)
@@ -100,6 +104,19 @@ class MLAnalyticsService:
                     session=session,
                     lookback_days=config.get('lookback_days', 180) if config else 180
                 )
+            elif prediction_type == PredictionType.ANOMALY_DETECTION:
+                result = await predictor.train(
+                    agency_id=agency_id,
+                    session=session,
+                    lookback_days=config.get('lookback_days', 90) if config else 90,
+                    contamination=config.get('contamination', 0.01) if config else 0.01
+                )
+            elif prediction_type == PredictionType.FAN_LTV:
+                result = await predictor.train(
+                    agency_id=agency_id,
+                    session=session,
+                    lookback_days=config.get('lookback_days', 365) if config else 365
+                )
             else:
                 raise NotImplementedError(f"Training not implemented for {prediction_type.value}")
             
@@ -120,6 +137,12 @@ class MLAnalyticsService:
             elif prediction_type == PredictionType.CONTENT_OPTIMIZATION:
                 ml_model.accuracy_score = result['metrics'].get('overall_accuracy', 0)
                 ml_model.algorithm = "ensemble"
+            elif prediction_type == PredictionType.ANOMALY_DETECTION:
+                ml_model.accuracy_score = result['metrics'].get('overall_accuracy', 0)
+                ml_model.algorithm = "isolation_forest"
+            elif prediction_type == PredictionType.FAN_LTV:
+                ml_model.accuracy_score = result['metrics'].get('overall_accuracy', 0)
+                ml_model.algorithm = "gradient_boosting"
             ml_model.hyperparameters = result['model_metadata']
             ml_model.training_samples = result['training_samples']
             ml_model.last_trained_at = datetime.utcnow()
@@ -266,6 +289,62 @@ class MLAnalyticsService:
                 predictions.append(prediction)
                 session.add(prediction)
         
+        elif prediction_type == PredictionType.FAN_LTV:
+            # Get LTV predictions for fans
+            # If entity_id is provided, predict for specific fan, otherwise top fans
+            if entity_id:
+                fan_ids = [entity_id]
+            else:
+                # Get recent active fans
+                result = await session.execute(
+                    select(Fan.id).join(
+                        Transaction,
+                        and_(
+                            Transaction.fan_id == Fan.id,
+                            Transaction.status == 'completed'
+                        )
+                    ).where(
+                        Fan.agency_id == agency_id
+                    ).group_by(Fan.id).order_by(
+                        func.max(Transaction.created_at).desc()
+                    ).limit(horizon_days * 5)  # Predict for top active fans
+                )
+                fan_ids = [str(row.id) for row in result.fetchall()]
+            
+            ltv_predictions = await predictor.predict_ltv(
+                fan_ids=fan_ids,
+                session=session,
+                include_confidence=True
+            )
+            
+            # Convert to prediction records
+            for ltv_pred in ltv_predictions:
+                # Create predictions for different time horizons
+                for days, ltv_key in [(30, 'ltv_30_days'), (90, 'ltv_90_days'), (365, 'ltv_365_days')]:
+                    prediction = Prediction(
+                        model_id=model.id,
+                        prediction_type=prediction_type,
+                        target_date=datetime.utcnow() + timedelta(days=days),
+                        prediction_horizon=days,
+                        predicted_value=ltv_pred[ltv_key],
+                        confidence_interval_lower=ltv_pred['confidence_intervals'][f'{days}_days'][0],
+                        confidence_interval_upper=ltv_pred['confidence_intervals'][f'{days}_days'][1],
+                        confidence_score=0.85,  # Based on model performance
+                        entity_type="fan",
+                        entity_id=ltv_pred['fan_id'],
+                        predictions_json={
+                            'ltv_predictions': {
+                                '30_days': ltv_pred['ltv_30_days'],
+                                '90_days': ltv_pred['ltv_90_days'],
+                                '365_days': ltv_pred['ltv_365_days']
+                            },
+                            'recommendations': ltv_pred['recommendations'],
+                            'features': ltv_pred['features']
+                        }
+                    )
+                    predictions.append(prediction)
+                    session.add(prediction)
+        
         else:
             raise NotImplementedError(f"Predictions not implemented for {prediction_type.value}")
         
@@ -407,6 +486,34 @@ class MLAnalyticsService:
                     f"{anomaly_summary['transaction']} transaction anomalies require review",
                     "Anomaly detection helps prevent fraud and identify unusual patterns"
                 ]
+            }
+            
+            # Cache results
+            cache_key = f"ml_trends:{agency_id}:{prediction_type.value}"
+            await cache_service.set(cache_key, analysis, ttl=3600)
+            
+            return analysis
+        elif prediction_type == PredictionType.FAN_LTV:
+            # Get LTV segments and trends
+            segments = await predictor.segment_fans_by_ltv(
+                agency_id=agency_id,
+                session=session,
+                num_segments=5
+            )
+            
+            # Get LTV trends
+            trends = await predictor.analyze_ltv_trends(
+                agency_id=agency_id,
+                session=session
+            )
+            
+            analysis = {
+                'segments': segments['segments'],
+                'segment_statistics': segments['statistics'],
+                'trends': trends.get('trends', {}),
+                'insights': trends.get('insights', []),
+                'recommendations': trends.get('recommendations', []),
+                'total_fans': segments['total_fans']
             }
             
             # Cache results
@@ -798,6 +905,53 @@ class MLAnalyticsService:
                             "Check for potential security breaches",
                             "Implement additional verification measures",
                             "Monitor affected accounts closely"
+                        ]
+                    )
+                    session.add(alert)
+                    await session.commit()
+        
+        elif model.prediction_type == PredictionType.FAN_LTV:
+            # Analyze LTV predictions
+            if predictions:
+                # Group by fan and get highest LTV predictions
+                fan_ltvs = {}
+                for pred in predictions:
+                    if pred.entity_id not in fan_ltvs:
+                        fan_ltvs[pred.entity_id] = []
+                    fan_ltvs[pred.entity_id].append(pred)
+                
+                # Find high-value fans
+                high_value_fans = []
+                total_predicted_ltv = 0
+                
+                for fan_id, fan_preds in fan_ltvs.items():
+                    # Get 365-day LTV prediction
+                    ltv_365 = next((p.predicted_value for p in fan_preds if p.prediction_horizon == 365), 0)
+                    if ltv_365 > 1000:  # High value threshold
+                        high_value_fans.append((fan_id, ltv_365))
+                    total_predicted_ltv += ltv_365
+                
+                if high_value_fans:
+                    alert = InsightAlert(
+                        alert_type='opportunity',
+                        severity='medium',
+                        title=f"Identified {len(high_value_fans)} High-Value Fans",
+                        description=f"Found {len(high_value_fans)} fans with predicted LTV > $1000",
+                        model_id=model.id,
+                        entity_type='agency',
+                        entity_id=model.agency_id,
+                        agency_id=model.agency_id,
+                        metrics={
+                            'high_value_count': len(high_value_fans),
+                            'total_predicted_ltv': total_predicted_ltv,
+                            'avg_ltv_365': total_predicted_ltv / len(fan_ltvs) if fan_ltvs else 0,
+                            'top_fan_ltvs': sorted(high_value_fans, key=lambda x: x[1], reverse=True)[:5]
+                        },
+                        recommendations=[
+                            "Prioritize engagement with high-value fans",
+                            "Create VIP programs for top LTV fans",
+                            "Develop retention strategies for valuable segments",
+                            "Monitor and nurture growing LTV fans"
                         ]
                     )
                     session.add(alert)
