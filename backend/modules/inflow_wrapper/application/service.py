@@ -74,7 +74,7 @@ class InflowService:
         synced_count = 0
         for sub in subscribers:
             # Get or create fan record
-            fan = await self._upsert_fan(model_profile.id, sub)
+            fan = await self._upsert_fan(str(model_profile.id), sub, model_profile)
             if fan:
                 synced_count += 1
         
@@ -194,7 +194,8 @@ class InflowService:
     async def _upsert_fan(
         self,
         model_id: str,
-        subscription: InflowSubscription
+        subscription: InflowSubscription,
+        model_profile: ModelProfile
     ) -> Optional[Fan]:
         """Create or update fan record from subscription."""
         try:
