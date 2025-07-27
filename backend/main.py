@@ -13,6 +13,7 @@ from core.middleware.auth import AuthenticationMiddleware
 from core.middleware.security import SecurityMiddleware, RateLimitMiddleware, APIKeyMiddleware
 from core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 from core.realtime.server import socket_app
+from core.cache import initialize_cache, shutdown_cache
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,6 +27,9 @@ async def lifespan(app: FastAPI):
     
     await redis_client.initialize()
     
+    # Initialize cache system
+    await initialize_cache()
+    
     # Start background sync scheduler
     await start_sync_scheduler()
     
@@ -35,6 +39,9 @@ async def lifespan(app: FastAPI):
     
     # Stop background sync scheduler
     await stop_sync_scheduler()
+    
+    # Shutdown cache system
+    await shutdown_cache()
     
     await redis_client.close()
     await engine.dispose()
