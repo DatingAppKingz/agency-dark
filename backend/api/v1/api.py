@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import auth
+from .endpoints import auth, api_keys
 from .monitoring.performance import router as performance_router
 from modules.inflow_wrapper.api import router as inflow_router
 from modules.onlyfans_wrapper.api import router as onlyfans_router
@@ -14,6 +14,7 @@ from modules.whitelabel.api.routes import router as whitelabel_router
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
+api_router.include_router(api_keys.router, tags=["api-keys"])
 api_router.include_router(inflow_router, prefix="/integrations", tags=["integrations"])
 api_router.include_router(onlyfans_router, prefix="/integrations", tags=["integrations"])
 api_router.include_router(orchestration_router, tags=["orchestration"])

@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = Field("uploads", env="UPLOAD_DIR")
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
     
+    # Encryption
+    ENCRYPTION_KEY: Optional[str] = Field(None, env="ENCRYPTION_KEY")
+    
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str], None], info: ValidationInfo) -> List[str]:
