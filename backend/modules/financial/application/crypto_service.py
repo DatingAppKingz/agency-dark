@@ -16,7 +16,10 @@ from modules.financial.domain.models import (
     CryptoWallet,
     CryptoNetwork,
     PaymentGatewayConfig,
+    CryptoPayment,
+    CryptoPaymentStatus,
     Payout,
+    PayoutStatus,
     FinancialTransaction,
     TransactionType
 )
@@ -40,6 +43,16 @@ class CryptoService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self._gateway_clients = {}
+        # Import payment gateway service when needed to avoid circular imports
+        self._payment_gateway_service = None
+    
+    @property
+    def payment_gateway_service(self):
+        """Lazy load payment gateway service."""
+        if self._payment_gateway_service is None:
+            from modules.financial.application.payment_gateway_service import PaymentGatewayService
+            self._payment_gateway_service = PaymentGatewayService(self.db)
+        return self._payment_gateway_service
     
     async def create_wallet(
         self,
@@ -227,12 +240,10 @@ class CryptoService:
         if not wallet.is_active:
             return {'success': False, 'error': 'Wallet is not active'}
         
-        # Get payment gateway
-        gateway = await self._get_payment_gateway(wallet.network)
-        if not gateway:
-            return {'success': False, 'error': 'No payment gateway configured'}
-        
         try:
+            # Determine the best payment provider for this network
+            provider_name = self._get_provider_for_network(wallet.network)
+            
             # Create payment request
             payment_request = CryptoPaymentRequest(
                 amount=payout.amount,
@@ -241,36 +252,64 @@ class CryptoService:
                 recipient_wallet_id=str(wallet.id),
                 metadata={
                     'payout_id': str(payout.id),
-                    'recipient_id': str(payout.recipient_id)
+                    'recipient_id': str(payout.recipient_id),
+                    'wallet_address': wallet.address,
+                    'network': wallet.network.value
                 }
             )
             
-            # Process through gateway
-            result = await self._process_gateway_payment(
-                gateway,
-                wallet,
-                payment_request
+            # Process through payment gateway service
+            payment_response = await self.payment_gateway_service.create_payment(
+                payment_request,
+                provider_name,
+                agency_id=str(payout.billing_cycle.agency_id) if payout.billing_cycle_id else None
             )
             
-            if result['success']:
-                # Record transaction
-                transaction = FinancialTransaction(
-                    user_id=payout.recipient_id,
-                    type=TransactionType.PAYOUT,
-                    amount=payout.amount,
-                    payout_id=payout.id,
-                    external_reference=result.get('transaction_id'),
-                    description=f"Crypto payout to {wallet.address}",
-                    transaction_date=datetime.utcnow()
-                )
-                self.db.add(transaction)
-                await self.db.commit()
+            # Update payout with payment info
+            payout.transaction_id = payment_response.payment_id
+            await self.db.commit()
             
-            return result
+            # Record transaction
+            transaction = FinancialTransaction(
+                user_id=payout.recipient_id,
+                type=TransactionType.PAYOUT,
+                amount=payout.amount,
+                payout_id=payout.id,
+                external_reference=payment_response.payment_id,
+                description=f"Crypto payout to {wallet.address[:10]}...{wallet.address[-6:]}",
+                transaction_date=datetime.utcnow()
+            )
+            self.db.add(transaction)
+            await self.db.commit()
+            
+            return {
+                'success': True,
+                'payment_id': payment_response.payment_id,
+                'payment_url': payment_response.payment_url,
+                'expires_at': payment_response.expires_at.isoformat() if payment_response.expires_at else None
+            }
             
         except Exception as e:
             logger.error(f"Crypto payout failed: {e}")
             return {'success': False, 'error': str(e)}
+    
+    def _get_provider_for_network(self, network: CryptoNetwork) -> str:
+        """
+        Determine the best payment provider for a given crypto network.
+        """
+        # Map networks to preferred providers
+        network_provider_map = {
+            CryptoNetwork.BITCOIN: "coinbase_commerce",
+            CryptoNetwork.ETHEREUM: "coinbase_commerce",
+            CryptoNetwork.BINANCE_SMART_CHAIN: "bitpay",
+            CryptoNetwork.POLYGON: "coinbase_commerce",
+            CryptoNetwork.TRON: "bitpay",
+            CryptoNetwork.USDT_TRC20: "bitpay",
+            CryptoNetwork.USDT_ERC20: "coinbase_commerce",
+            CryptoNetwork.USDC: "coinbase_commerce"
+        }
+        
+        return network_provider_map.get(network, "coinbase_commerce")
     
     async def handle_payment_webhook(
         self,
@@ -289,42 +328,12 @@ class CryptoService:
         Returns:
             Processing result
         """
-        # Get gateway config
-        result = await self.db.execute(
-            select(PaymentGatewayConfig).where(
-                and_(
-                    PaymentGatewayConfig.provider == provider,
-                    PaymentGatewayConfig.is_active == True
-                )
-            )
+        # Delegate to payment gateway service
+        return await self.payment_gateway_service.process_webhook(
+            provider,
+            headers,
+            body
         )
-        gateway = result.scalar_one_or_none()
-        
-        if not gateway:
-            logger.warning(f"No active gateway for provider {provider}")
-            return {'success': False, 'error': 'Unknown provider'}
-        
-        # Verify webhook signature
-        if not self._verify_webhook_signature(gateway, headers, body):
-            logger.warning(f"Invalid webhook signature from {provider}")
-            return {'success': False, 'error': 'Invalid signature'}
-        
-        # Parse webhook data
-        try:
-            data = json.loads(body)
-            
-            # Process based on provider
-            if provider == "coinbase_commerce":
-                return await self._handle_coinbase_webhook(data)
-            elif provider == "bitpay":
-                return await self._handle_bitpay_webhook(data)
-            else:
-                logger.warning(f"Unhandled provider: {provider}")
-                return {'success': False, 'error': 'Unhandled provider'}
-                
-        except Exception as e:
-            logger.error(f"Webhook processing failed: {e}")
-            return {'success': False, 'error': str(e)}
     
     async def _get_payment_gateway(
         self,

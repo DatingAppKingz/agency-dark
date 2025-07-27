@@ -12,7 +12,8 @@ from .models import (
     PayoutStatus,
     TransactionType,
     CryptoNetwork,
-    InvoiceStatus
+    InvoiceStatus,
+    CryptoPaymentStatus
 )
 
 

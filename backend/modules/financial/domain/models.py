@@ -58,6 +58,15 @@ class InvoiceStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
+class CryptoPaymentStatus(str, enum.Enum):
+    """Crypto payment status."""
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    COMPLETED = "completed"
+    EXPIRED = "expired"
+    FAILED = "failed"
+
+
 class CommissionRule(Base):
     """Commission rules for agencies and models."""
     __tablename__ = "commission_rules"
@@ -375,4 +384,45 @@ class PaymentGatewayConfig(Base):
     __table_args__ = (
         Index('idx_payment_gateway_config_agency', 'agency_id'),
         Index('idx_payment_gateway_config_provider', 'provider'),
+    )
+
+
+class CryptoPayment(Base):
+    """Crypto payment records."""
+    __tablename__ = "crypto_payments"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    
+    # Provider info
+    provider = Column(String(50), nullable=False)
+    payment_id = Column(String(255), unique=True, nullable=False)  # Provider's payment ID
+    
+    # Payment details
+    amount = Column(Numeric(12, 8), nullable=False)  # Support for crypto decimals
+    currency = Column(String(10), nullable=False)
+    recipient_wallet_id = Column(UUID(as_uuid=True), ForeignKey("crypto_wallets.id"))
+    
+    # Payment info
+    payment_url = Column(String(500))  # URL for user to complete payment
+    expires_at = Column(DateTime(timezone=True))
+    addresses = Column(JSON)  # Crypto addresses for different currencies
+    
+    # Status tracking
+    status = Column(Enum(CryptoPaymentStatus), default=CryptoPaymentStatus.PENDING)
+    transaction_hash = Column(String(255))
+    confirmations = Column(Integer, default=0)
+    
+    # Metadata
+    metadata = Column(JSON)  # Additional data (payout_id, etc.)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    confirmed_at = Column(DateTime(timezone=True))
+    completed_at = Column(DateTime(timezone=True))
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    __table_args__ = (
+        Index('idx_crypto_payment_provider', 'provider'),
+        Index('idx_crypto_payment_status', 'status'),
+        Index('idx_crypto_payment_wallet', 'recipient_wallet_id'),
     )

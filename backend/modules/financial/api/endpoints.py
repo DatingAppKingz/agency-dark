@@ -853,6 +853,69 @@ async def download_invoice_pdf(
     )
 
 
+# Payment gateway endpoints
+@router.post("/payment-gateways", response_model=PaymentGatewayConfigResponse)
+async def create_payment_gateway(
+    config_data: PaymentGatewayConfigCreate,
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create payment gateway configuration (super admin only)."""
+    from modules.financial.application.payment_gateway_service import PaymentGatewayService
+    service = PaymentGatewayService(db)
+    
+    try:
+        config = await service.create_gateway_config(config_data)
+        return config
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/payment-gateways", response_model=List[PaymentGatewayConfigResponse])
+async def get_payment_gateways(
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get active payment gateway configurations."""
+    from modules.financial.application.payment_gateway_service import PaymentGatewayService
+    service = PaymentGatewayService(db)
+    
+    agency_id = None
+    if current_user.role == UserRole.AGENCY_OWNER:
+        agency_id = str(current_user.agency_id)
+    
+    configs = await service.get_active_configs(agency_id)
+    return configs
+
+
+@router.post("/payments/crypto", response_model=CryptoPaymentResponse)
+async def create_crypto_payment(
+    payment_request: CryptoPaymentRequest,
+    provider: str = Query(..., description="Payment provider (coinbase_commerce, bitpay)"),
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a crypto payment request."""
+    from modules.financial.application.payment_gateway_service import PaymentGatewayService
+    service = PaymentGatewayService(db)
+    
+    try:
+        agency_id = str(current_user.agency_id) if current_user.agency_id else None
+        payment = await service.create_payment(payment_request, provider, agency_id)
+        return payment
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 # Webhook endpoints
 @router.post("/webhooks/{provider}")
 async def handle_payment_webhook(
@@ -861,14 +924,15 @@ async def handle_payment_webhook(
     db: AsyncSession = Depends(get_db)
 ):
     """Handle payment webhooks from crypto providers."""
-    service = CryptoService(db)
+    from modules.financial.application.payment_gateway_service import PaymentGatewayService
+    service = PaymentGatewayService(db)
     
     # Get raw body for signature verification
     body = await request.body()
     headers = dict(request.headers)
     
     try:
-        result = await service.handle_payment_webhook(provider, headers, body)
+        result = await service.process_webhook(provider, headers, body)
         
         if result['success']:
             return {"status": "ok"}
