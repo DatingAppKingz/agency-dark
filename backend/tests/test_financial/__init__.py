@@ -1,0 +1,3 @@
+"""
+Financial module tests package.
+"""
