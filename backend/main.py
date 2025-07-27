@@ -15,6 +15,8 @@ from core.middleware.fraud_detection import FraudDetectionMiddleware
 from core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 from core.realtime.server import socket_app
 from core.cache import initialize_cache, shutdown_cache
+from core.monitoring import monitoring_service
+from core.middleware.monitoring import monitoring_middleware
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -34,9 +36,16 @@ async def lifespan(app: FastAPI):
     # Start background sync scheduler
     await start_sync_scheduler()
     
+    # Start monitoring service
+    await monitoring_service.start()
+    logger.info("Monitoring service started")
+    
     yield
     
     logger.info("Shutting down AgencyDark API...")
+    
+    # Stop monitoring service
+    await monitoring_service.stop()
     
     # Stop background sync scheduler
     await stop_sync_scheduler()
@@ -59,6 +68,7 @@ app = FastAPI(
 
 # Add middleware in reverse order (last added is first executed)
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(monitoring_middleware)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60)
 app.add_middleware(FraudDetectionMiddleware)
 app.add_middleware(APIKeyMiddleware)

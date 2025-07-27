@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     
     ENVIRONMENT: str = Field("development", env="ENVIRONMENT")
     DEBUG: bool = Field(True, env="DEBUG")
+    HOSTNAME: str = Field("localhost", env="HOSTNAME")
     
     UPLOAD_DIR: str = Field("uploads", env="UPLOAD_DIR")
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
