@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import auth, api_keys, rate_limits, fraud_detection, bulk_operations
+from .endpoints import auth, api_keys, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics
 from .monitoring.performance import router as performance_router
 from modules.inflow_wrapper.api import router as inflow_router
 from modules.onlyfans_wrapper.api import router as onlyfans_router
@@ -27,3 +27,5 @@ api_router.include_router(analytics_router, tags=["analytics"])
 api_router.include_router(financial_router, tags=["financial"])
 api_router.include_router(whitelabel_router, tags=["whitelabel"])
 api_router.include_router(performance_router, prefix="/monitoring", tags=["monitoring"])
+api_router.include_router(reports.router, tags=["reports"])
+api_router.include_router(ml_analytics.router, tags=["ml-analytics"])
