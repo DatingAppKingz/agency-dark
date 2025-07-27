@@ -307,6 +307,46 @@ class OnlyFansService:
         
         return statistics
     
+    async def get_fan_details(
+        self,
+        model_profile: ModelProfile,
+        fan_id: str
+    ) -> Optional[OnlyFansFan]:
+        """Get detailed information about a specific fan."""
+        client = await self.get_client(model_profile)
+        
+        # Get fan from local database first
+        result = await self.db.execute(
+            select(Fan).where(
+                and_(
+                    Fan.id == fan_id,
+                    Fan.model_id == model_profile.id
+                )
+            )
+        )
+        fan = result.scalar_one_or_none()
+        
+        if not fan or not fan.onlyfans_user_id:
+            return None
+        
+        # Get fresh data from OnlyFans
+        return await client.get_fan(fan.onlyfans_user_id)
+    
+    async def get_posts(
+        self,
+        model_profile: ModelProfile,
+        limit: int = 100,
+        offset: int = 0
+    ) -> List[OnlyFansPost]:
+        """Get posts from OnlyFans."""
+        client = await self.get_client(model_profile)
+        
+        return await client.get_posts(
+            limit=limit,
+            offset=offset,
+            include_archived=False
+        )
+    
     async def get_transactions(
         self,
         model_profile: ModelProfile,

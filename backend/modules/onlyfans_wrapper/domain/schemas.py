@@ -3,6 +3,7 @@ OnlyFans API domain schemas.
 
 These schemas define the data structures for OnlyFansAPI.com requests and responses.
 """
+from __future__ import annotations
 from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional, List, Dict, Any, Union
 from datetime import datetime
@@ -110,9 +111,10 @@ class OnlyFansPost(BaseModel):
     id: str
     text: Optional[str] = None
     preview: Optional[str] = None
+    link: Optional[str] = None
     
     # Media
-    media: List[Dict[str, Any]] = Field(default_factory=list)
+    media: Optional[List[Union[OnlyFansMedia, Dict[str, Any]]]] = Field(default_factory=list)
     media_count: int = 0
     
     # Monetization
@@ -123,9 +125,10 @@ class OnlyFansPost(BaseModel):
     # Engagement
     favorites_count: int = 0
     comments_count: int = 0
+    likes_count: int = 0
     
     # Metadata
-    posted_at: datetime
+    posted_at: Optional[datetime] = None
     is_archived: bool = False
     is_pinned: bool = False
     
@@ -167,7 +170,8 @@ class OnlyFansTransaction(BaseModel):
     currency: str = "USD"
     
     # Participants
-    user_id: str
+    from_user: Optional[Union[OnlyFansFan, Dict[str, Any]]] = None
+    user_id: Optional[str] = None
     user_name: Optional[str] = None
     
     # Context
@@ -188,29 +192,35 @@ class OnlyFansStatistics(BaseModel):
     
     # Revenue
     total_earnings: Decimal
-    subscription_earnings: Decimal
-    tip_earnings: Decimal
-    post_earnings: Decimal
-    message_earnings: Decimal
-    stream_earnings: Decimal
-    referral_earnings: Decimal
+    subscription_earnings: Optional[Decimal] = Decimal("0.00")
+    tip_earnings: Optional[Decimal] = Decimal("0.00")
+    post_earnings: Optional[Decimal] = Decimal("0.00")
+    message_earnings: Optional[Decimal] = Decimal("0.00")
+    stream_earnings: Optional[Decimal] = Decimal("0.00")
+    referral_earnings: Optional[Decimal] = Decimal("0.00")
+    
+    # Additional revenue fields used in sync
+    tips_sum: Optional[Decimal] = Decimal("0.00")
+    ppv_sum: Optional[Decimal] = Decimal("0.00")
+    messages_sum: Optional[Decimal] = Decimal("0.00")
     
     # Subscribers
-    new_subscribers: int
-    lost_subscribers: int
-    total_subscribers: int
-    expired_subscribers: int
+    new_subscribers: int = 0
+    lost_subscribers: Optional[int] = 0
+    total_subscribers: Optional[int] = 0
+    expired_subscribers: int = 0
+    subscribers_count: Optional[int] = 0  # Alternative field name
     
     # Content
-    posts_count: int
-    photos_count: int
-    videos_count: int
+    posts_count: Optional[int] = 0
+    photos_count: Optional[int] = 0
+    videos_count: Optional[int] = 0
     
     # Engagement
-    messages_sent: int
-    messages_received: int
-    likes_received: int
-    comments_received: int
+    messages_sent: Optional[int] = 0
+    messages_received: Optional[int] = 0
+    likes_received: Optional[int] = 0
+    comments_received: Optional[int] = 0
     
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
