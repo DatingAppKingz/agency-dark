@@ -177,22 +177,18 @@ class MessageRequest(BaseModel):
 
 class MassMessageRequest(BaseModel):
     """Request to send mass messages."""
-    fan_ids: List[str]
     text: Optional[str] = None
     media_ids: Optional[List[str]] = None
     price: Optional[Decimal] = None
     
-    # Targeting
-    filter_by_spent: Optional[Decimal] = None
-    filter_by_subscriber_status: Optional[bool] = None
-    filter_by_last_active_days: Optional[int] = None
+    # Targeting - use either fan_ids or criteria
+    fan_ids: Optional[List[str]] = None  # Specific fans
+    recipient_criteria: Optional[Dict[str, Any]] = None  # Filter criteria
     
-    # Routing
-    preferred_source: Optional[DataSource] = None
-    
-    # Scheduling
-    send_immediately: bool = True
-    scheduled_at: Optional[datetime] = None
+    # Additional fields
+    model_id: Optional[str] = None  # Required for agency users
+    limit: Optional[int] = None  # Maximum number of recipients
+    fallback_enabled: bool = True
     
     # Metadata
     campaign_name: Optional[str] = None
@@ -218,3 +214,26 @@ class ContentPost(BaseModel):
     
     # Metadata
     tags: List[str] = Field(default_factory=list)
+
+
+class MassMessageStatus(BaseModel):
+    """Status of a mass messaging campaign."""
+    campaign_id: str
+    total_recipients: int
+    sent: int = 0
+    failed: int = 0
+    pending: int = 0
+    status: str  # running, completed, cancelled, failed
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+    error: Optional[str] = None
+
+
+class MassMessageResult(BaseModel):
+    """Result of a mass message send to individual recipient."""
+    fan_id: str
+    success: bool
+    source: Optional[DataSource] = None
+    message_id: Optional[str] = None
+    error: Optional[str] = None
+    sent_at: Optional[datetime] = None

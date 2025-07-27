@@ -5,6 +5,7 @@ from .monitoring.performance import router as performance_router
 from modules.inflow_wrapper.api import router as inflow_router
 from modules.onlyfans_wrapper.api import router as onlyfans_router
 from modules.api_orchestration.api.endpoints import router as orchestration_router
+from modules.api_orchestration.api.endpoints_v2 import router as orchestration_v2_router
 from core.webhooks.handlers import router as webhook_router
 from modules.analytics.api import router as analytics_router
 from modules.financial.api import router as financial_router
@@ -21,6 +22,7 @@ api_router.include_router(bulk_operations.router, tags=["bulk-operations"])
 api_router.include_router(inflow_router, prefix="/integrations", tags=["integrations"])
 api_router.include_router(onlyfans_router, prefix="/integrations", tags=["integrations"])
 api_router.include_router(orchestration_router, tags=["orchestration"])
+api_router.include_router(orchestration_v2_router, tags=["orchestration-v2"])
 api_router.include_router(webhook_router, tags=["webhooks"])
 api_router.include_router(payment_webhook_router, prefix="/payments", tags=["payment-webhooks"])
 api_router.include_router(analytics_router, tags=["analytics"])
