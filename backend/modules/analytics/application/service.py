@@ -17,7 +17,8 @@ from modules.analytics.domain.models import (
     ContentPerformance,
     FanSpendingHistory,
     CategoryPerformance,
-    AnalyticsCache
+    AnalyticsCache,
+    AggregationPeriod
 )
 from modules.analytics.domain.schemas import (
     TimeGranularity,
@@ -35,8 +36,12 @@ from modules.analytics.domain.schemas import (
     ContentPerformanceData,
     DashboardSummary,
     ChartRequest,
-    ChartResponse
+    ChartResponse,
+    TimeSeriesData
 )
+from modules.analytics.application.analytics_aggregator import AnalyticsAggregator
+from modules.analytics.application.time_series_calculator import TimeSeriesCalculator
+from modules.analytics.infrastructure.cache_strategy import cache_strategy, CacheTier
 from core.domain.models import ModelProfile, Fan
 
 
@@ -59,62 +64,114 @@ class AnalyticsService:
         granularity: TimeGranularity = TimeGranularity.DAY
     ) -> ChartResponse:
         """
-        Get subscriber growth chart data.
+        Get subscriber growth chart data using real-time aggregated data.
         
         Returns data for:
         - Total subscribers
         - Paying subscribers
         - Non-paying fans
         """
-        # Check cache
-        cache_key = f"chart:subscriber_growth:{model_id}:{period_start}:{period_end}:{granularity}"
-        cached = await self._get_from_cache(cache_key)
-        if cached:
-            return ChartResponse(**cached)
-        
+        # Get model's agency ID
+        result = await self.db.execute(
+            select(ModelProfile.agency_id).where(ModelProfile.id == model_id)
+        )
+        agency_id = result.scalar_one_or_none()
+        if not agency_id:
+            raise ValueError(f"Model {model_id} not found")
+            
         # Convert dates to datetime
         start_dt = datetime.combine(period_start, datetime.min.time())
         end_dt = datetime.combine(period_end, datetime.max.time())
         
-        # Get time series data
-        snapshots = await self._get_metric_snapshots(
+        # Map granularity to aggregation period
+        period_map = {
+            TimeGranularity.HOUR: AggregationPeriod.HOURLY,
+            TimeGranularity.DAY: AggregationPeriod.DAILY,
+            TimeGranularity.WEEK: AggregationPeriod.WEEKLY,
+            TimeGranularity.MONTH: AggregationPeriod.MONTHLY
+        }
+        aggregation_period = period_map.get(granularity, AggregationPeriod.DAILY)
+        
+        # Check cache
+        cache_key = cache_strategy.generate_cache_key(
+            'subscriber_growth',
+            str(agency_id),
             model_id,
             start_dt,
             end_dt,
-            granularity
+            aggregation_period
         )
+        
+        cached = await cache_strategy.get(cache_key, CacheTier.HOT)
+        if cached:
+            return ChartResponse(**cached)
+            
+        # Get aggregated metrics using AnalyticsAggregator
+        aggregator = AnalyticsAggregator(self.db)
+        metrics = await aggregator.aggregate_metrics(
+            agency_id=str(agency_id),
+            model_id=model_id,
+            start_date=start_dt,
+            end_date=end_dt,
+            period=aggregation_period
+        )
+        
+        # Extract fan time series
+        fan_data = metrics.get('fans', {})
+        time_series_data = fan_data.get('time_series', [])
+        
+        # Build chart series
+        total_series_data = []
+        paying_series_data = []
+        non_paying_series_data = []
+        
+        for point in time_series_data:
+            timestamp = datetime.fromisoformat(point['period'])
+            total = point.get('total_fans', 0)
+            paying = point.get('subscribers', 0)
+            non_paying = total - paying
+            
+            total_series_data.append(
+                TimeSeriesDataPoint(
+                    timestamp=timestamp,
+                    value=total
+                )
+            )
+            paying_series_data.append(
+                TimeSeriesDataPoint(
+                    timestamp=timestamp,
+                    value=paying
+                )
+            )
+            non_paying_series_data.append(
+                TimeSeriesDataPoint(
+                    timestamp=timestamp,
+                    value=non_paying
+                )
+            )
+        
+        # Use TimeSeriesCalculator for trend analysis
+        if total_series_data:
+            calculator = TimeSeriesCalculator()
+            trend = calculator.calculate_trend(total_series_data)
+            growth = calculator.calculate_growth_rate(total_series_data)
         
         # Build chart series
         total_series = ChartSeries(
             name="Total Subscribers",
-            data=[
-                TimeSeriesDataPoint(
-                    timestamp=s.timestamp,
-                    value=s.total_subscribers
-                ) for s in snapshots
-            ],
+            data=total_series_data,
             color="#8884d8"
         )
         
         paying_series = ChartSeries(
             name="Paying Subscribers",
-            data=[
-                TimeSeriesDataPoint(
-                    timestamp=s.timestamp,
-                    value=s.paying_subscribers
-                ) for s in snapshots
-            ],
+            data=paying_series_data,
             color="#82ca9d"
         )
         
         non_paying_series = ChartSeries(
             name="Non-Paying Fans",
-            data=[
-                TimeSeriesDataPoint(
-                    timestamp=s.timestamp,
-                    value=s.non_paying_fans
-                ) for s in snapshots
-            ],
+            data=non_paying_series_data,
             color="#ffc658"
         )
         
@@ -131,6 +188,12 @@ class AnalyticsService:
             yAxis={
                 "label": "Subscribers",
                 "type": "number"
+            },
+            metadata={
+                'trend': trend.direction if 'trend' in locals() else None,
+                'growth_rate': growth.percentage_growth if 'growth' in locals() else None,
+                'total_growth': fan_data.get('subscriber_growth', 0),
+                'churn_rate': fan_data.get('churn_rate', 0)
             }
         )
         
@@ -143,7 +206,12 @@ class AnalyticsService:
         )
         
         # Cache the response
-        await self._save_to_cache(cache_key, response.model_dump(), self.CACHE_TTL)
+        await cache_strategy.set(
+            cache_key,
+            response.model_dump(),
+            CacheTier.HOT,
+            period=aggregation_period
+        )
         
         return response
     
@@ -155,7 +223,7 @@ class AnalyticsService:
         granularity: TimeGranularity = TimeGranularity.DAY
     ) -> ChartResponse:
         """
-        Get revenue timeline chart data.
+        Get revenue timeline chart data using real-time aggregated data.
         
         Returns data for:
         - Total revenue
@@ -163,23 +231,94 @@ class AnalyticsService:
         - Tip revenue
         - PPV revenue
         """
-        # Check cache
-        cache_key = f"chart:revenue_timeline:{model_id}:{period_start}:{period_end}:{granularity}"
-        cached = await self._get_from_cache(cache_key)
-        if cached:
-            return ChartResponse(**cached)
-        
+        # Get model's agency ID
+        result = await self.db.execute(
+            select(ModelProfile.agency_id).where(ModelProfile.id == model_id)
+        )
+        agency_id = result.scalar_one_or_none()
+        if not agency_id:
+            raise ValueError(f"Model {model_id} not found")
+            
         # Convert dates to datetime
         start_dt = datetime.combine(period_start, datetime.min.time())
         end_dt = datetime.combine(period_end, datetime.max.time())
         
-        # Get revenue data
-        revenue_data = await self._get_revenue_time_series(
+        # Map granularity to aggregation period
+        period_map = {
+            TimeGranularity.HOUR: AggregationPeriod.HOURLY,
+            TimeGranularity.DAY: AggregationPeriod.DAILY,
+            TimeGranularity.WEEK: AggregationPeriod.WEEKLY,
+            TimeGranularity.MONTH: AggregationPeriod.MONTHLY
+        }
+        aggregation_period = period_map.get(granularity, AggregationPeriod.DAILY)
+        
+        # Check cache
+        cache_key = cache_strategy.generate_cache_key(
+            'revenue_timeline',
+            str(agency_id),
             model_id,
             start_dt,
             end_dt,
-            granularity
+            aggregation_period
         )
+        
+        cached = await cache_strategy.get(cache_key, CacheTier.HOT)
+        if cached:
+            return ChartResponse(**cached)
+            
+        # Get aggregated metrics using AnalyticsAggregator
+        aggregator = AnalyticsAggregator(self.db)
+        metrics = await aggregator.aggregate_metrics(
+            agency_id=str(agency_id),
+            model_id=model_id,
+            start_date=start_dt,
+            end_date=end_dt,
+            period=aggregation_period
+        )
+        
+        # Extract revenue time series
+        revenue_data = metrics.get('revenue', {})
+        time_series_data = revenue_data.get('time_series', [])
+        
+        # Organize data by revenue type
+        revenue_by_type = {
+            'total': [],
+            'subscription': [],
+            'tip': [],
+            'ppv': []
+        }
+        
+        for point in time_series_data:
+            timestamp = datetime.fromisoformat(point['period'])
+            
+            # Total revenue
+            revenue_by_type['total'].append(
+                TimeSeriesDataPoint(
+                    timestamp=timestamp,
+                    value=float(point.get('revenue', 0))
+                )
+            )
+            
+            # Revenue by type
+            by_type = point.get('revenue_by_type', {})
+            revenue_by_type['subscription'].append(
+                TimeSeriesDataPoint(
+                    timestamp=timestamp,
+                    value=float(by_type.get('subscription', 0))
+                )
+            )
+            revenue_by_type['tip'].append(
+                TimeSeriesDataPoint(
+                    timestamp=timestamp,
+                    value=float(by_type.get('tip', 0))
+                )
+            )
+            revenue_by_type['ppv'].append(
+                TimeSeriesDataPoint(
+                    timestamp=timestamp,
+                    value=float(by_type.get('ppv_message', 0) + by_type.get('ppv_post', 0))
+                )
+            )
         
         # Build chart series
         series = []
@@ -187,7 +326,7 @@ class AnalyticsService:
         # Total revenue
         series.append(ChartSeries(
             name="Total Revenue",
-            data=revenue_data['total'],
+            data=revenue_by_type['total'],
             color="#8884d8",
             type=ChartType.AREA
         ))
@@ -195,23 +334,29 @@ class AnalyticsService:
         # Subscription revenue
         series.append(ChartSeries(
             name="Subscriptions",
-            data=revenue_data['subscription'],
+            data=revenue_by_type['subscription'],
             color="#82ca9d"
         ))
         
         # Tip revenue
         series.append(ChartSeries(
             name="Tips",
-            data=revenue_data['tip'],
+            data=revenue_by_type['tip'],
             color="#ffc658"
         ))
         
         # PPV revenue
         series.append(ChartSeries(
             name="PPV",
-            data=revenue_data['ppv'],
+            data=revenue_by_type['ppv'],
             color="#ff7c7c"
         ))
+        
+        # Use TimeSeriesCalculator for trend analysis
+        if revenue_by_type['total']:
+            calculator = TimeSeriesCalculator()
+            trend = calculator.calculate_trend(revenue_by_type['total'])
+            growth = calculator.calculate_growth_rate(revenue_by_type['total'])
         
         # Create chart data
         chart_data = ChartData(
@@ -227,6 +372,10 @@ class AnalyticsService:
                 "label": "Revenue ($)",
                 "type": "number",
                 "tickFormatter": "currency"
+            },
+            metadata={
+                'trend': trend.direction if 'trend' in locals() else None,
+                'growth_rate': growth.percentage_growth if 'growth' in locals() else None
             }
         )
         
@@ -239,7 +388,12 @@ class AnalyticsService:
         )
         
         # Cache the response
-        await self._save_to_cache(cache_key, response.model_dump(), self.CACHE_TTL)
+        await cache_strategy.set(
+            cache_key,
+            response.model_dump(),
+            CacheTier.HOT,
+            period=aggregation_period
+        )
         
         return response
     
@@ -252,7 +406,7 @@ class AnalyticsService:
         granularity: TimeGranularity = TimeGranularity.DAY
     ) -> ChartResponse:
         """
-        Get revenue chart for specific fans (up to 10).
+        Get revenue chart for specific fans using real-time aggregated data.
         
         Args:
             model_id: Model ID
@@ -267,18 +421,47 @@ class AnalyticsService:
         # Limit to 10 fans
         fan_ids = fan_ids[:10]
         
-        # Check cache
-        cache_key = f"chart:fan_revenue:{model_id}:{'-'.join(fan_ids)}:{period_start}:{period_end}"
-        cached = await self._get_from_cache(cache_key)
-        if cached:
-            return ChartResponse(**cached)
-        
+        # Get model's agency ID
+        result = await self.db.execute(
+            select(ModelProfile.agency_id).where(ModelProfile.id == model_id)
+        )
+        agency_id = result.scalar_one_or_none()
+        if not agency_id:
+            raise ValueError(f"Model {model_id} not found")
+            
         # Convert dates to datetime
         start_dt = datetime.combine(period_start, datetime.min.time())
         end_dt = datetime.combine(period_end, datetime.max.time())
         
+        # Map granularity to aggregation period
+        period_map = {
+            TimeGranularity.HOUR: AggregationPeriod.HOURLY,
+            TimeGranularity.DAY: AggregationPeriod.DAILY,
+            TimeGranularity.WEEK: AggregationPeriod.WEEKLY,
+            TimeGranularity.MONTH: AggregationPeriod.MONTHLY
+        }
+        aggregation_period = period_map.get(granularity, AggregationPeriod.DAILY)
+        
+        # Check cache
+        cache_key = cache_strategy.generate_cache_key(
+            'fan_revenue',
+            str(agency_id),
+            model_id,
+            start_dt,
+            end_dt,
+            aggregation_period,
+            fan_ids=','.join(sorted(fan_ids))
+        )
+        
+        cached = await cache_strategy.get(cache_key, CacheTier.HOT)
+        if cached:
+            return ChartResponse(**cached)
+            
         # Get fan details
         fans = await self._get_fans_by_ids(fan_ids)
+        
+        # Get aggregated metrics using AnalyticsAggregator
+        aggregator = AnalyticsAggregator(self.db)
         
         # Build series for each fan
         series = []
@@ -288,18 +471,34 @@ class AnalyticsService:
         ]
         
         for i, fan in enumerate(fans):
-            # Get revenue data for this fan
-            revenue_data = await self._get_fan_revenue_time_series(
-                fan.id,
-                start_dt,
-                end_dt,
-                granularity
+            # Get aggregated data for this specific fan
+            fan_metrics = await aggregator.aggregate_fan_metrics(
+                fan_id=str(fan.id),
+                model_id=model_id,
+                start_date=start_dt,
+                end_date=end_dt,
+                period=aggregation_period
             )
+            
+            # Extract time series data
+            time_series_data = fan_metrics.get('time_series', [])
+            revenue_data = [
+                TimeSeriesDataPoint(
+                    timestamp=datetime.fromisoformat(point['period']),
+                    value=float(point.get('total_spent', 0))
+                )
+                for point in time_series_data
+            ]
             
             series.append(ChartSeries(
                 name=fan.username,
                 data=revenue_data,
-                color=colors[i % len(colors)]
+                color=colors[i % len(colors)],
+                metadata={
+                    'total_spent': fan_metrics.get('total_spent', 0),
+                    'subscription_months': fan_metrics.get('subscription_months', 0),
+                    'average_monthly_spend': fan_metrics.get('average_monthly_spend', 0)
+                }
             ))
         
         # Create chart data
@@ -328,7 +527,12 @@ class AnalyticsService:
         )
         
         # Cache the response
-        await self._save_to_cache(cache_key, response.model_dump(), self.CACHE_TTL)
+        await cache_strategy.set(
+            cache_key,
+            response.model_dump(),
+            CacheTier.HOT,
+            period=aggregation_period
+        )
         
         return response
     
@@ -339,69 +543,73 @@ class AnalyticsService:
         period_end: date
     ) -> CategoryPopularityData:
         """
-        Get content category popularity metrics.
+        Get content category popularity metrics using real-time aggregated data.
         
         Returns:
         - Category performance metrics
         - Most profitable/viewed/engaging categories
         """
+        # Get model's agency ID
+        result = await self.db.execute(
+            select(ModelProfile.agency_id).where(ModelProfile.id == model_id)
+        )
+        agency_id = result.scalar_one_or_none()
+        if not agency_id:
+            raise ValueError(f"Model {model_id} not found")
+            
         # Convert dates to datetime
         start_dt = datetime.combine(period_start, datetime.min.time())
         end_dt = datetime.combine(period_end, datetime.max.time())
         
-        # Get category performance data
-        result = await self.db.execute(
-            select(CategoryPerformance)
-            .where(
-                and_(
-                    CategoryPerformance.model_id == model_id,
-                    CategoryPerformance.period_start >= start_dt,
-                    CategoryPerformance.period_end <= end_dt
-                )
-            )
-            .order_by(CategoryPerformance.total_revenue.desc())
+        # Check cache
+        cache_key = cache_strategy.generate_cache_key(
+            'category_popularity',
+            str(agency_id),
+            model_id,
+            start_dt,
+            end_dt
         )
         
-        performances = result.scalars().all()
-        
-        # Aggregate by category
-        category_data = {}
-        for perf in performances:
-            if perf.category_name not in category_data:
-                category_data[perf.category_name] = {
-                    'content_count': 0,
-                    'total_revenue': Decimal('0'),
-                    'total_views': 0,
-                    'total_likes': 0,
-                    'total_comments': 0
-                }
+        cached = await cache_strategy.get(cache_key, CacheTier.WARM)
+        if cached:
+            return CategoryPopularityData(**cached)
             
-            data = category_data[perf.category_name]
-            data['content_count'] += perf.content_count
-            data['total_revenue'] += perf.total_revenue
-            data['total_views'] += perf.total_views
-            data['total_likes'] += perf.total_likes
-            data['total_comments'] += perf.total_comments
+        # Get aggregated metrics using AnalyticsAggregator
+        aggregator = AnalyticsAggregator(self.db)
+        metrics = await aggregator.aggregate_metrics(
+            agency_id=str(agency_id),
+            model_id=model_id,
+            start_date=start_dt,
+            end_date=end_dt,
+            period=AggregationPeriod.DAILY
+        )
+        
+        # Get content performance data from aggregated metrics
+        content_data = metrics.get('content', {})
+        category_metrics = content_data.get('by_category', {})
         
         # Build category performance list
         categories = []
-        for name, data in category_data.items():
-            engagement_rate = (
-                (data['total_likes'] + data['total_comments']) / 
-                max(1, data['total_views']) * 100
-            )
+        for category_name, data in category_metrics.items():
+            total_views = data.get('views', 0)
+            total_likes = data.get('likes', 0)
+            total_comments = data.get('comments', 0)
+            
+            engagement_rate = 0.0
+            if total_views > 0:
+                engagement_rate = ((total_likes + total_comments) / total_views) * 100
             
             categories.append(ContentCategoryPerformance(
-                category_name=name,
-                content_count=data['content_count'],
-                total_revenue=data['total_revenue'],
-                avg_revenue_per_content=(
-                    data['total_revenue'] / max(1, data['content_count'])
-                ),
-                total_views=data['total_views'],
-                total_likes=data['total_likes'],
+                category_name=category_name,
+                content_count=data.get('count', 0),
+                total_revenue=Decimal(str(data.get('revenue', 0))),
+                avg_revenue_per_content=Decimal(str(
+                    data.get('revenue', 0) / max(1, data.get('count', 0))
+                )),
+                total_views=total_views,
+                total_likes=total_likes,
                 engagement_rate=engagement_rate,
-                top_performing_content=[]  # TODO: Add top content
+                top_performing_content=data.get('top_content', [])
             ))
         
         # Sort to find top categories
@@ -409,7 +617,7 @@ class AnalyticsService:
         by_views = sorted(categories, key=lambda x: x.total_views, reverse=True)
         by_engagement = sorted(categories, key=lambda x: x.engagement_rate, reverse=True)
         
-        return CategoryPopularityData(
+        response = CategoryPopularityData(
             period_start=start_dt,
             period_end=end_dt,
             categories=categories,
@@ -417,43 +625,85 @@ class AnalyticsService:
             most_viewed_category=by_views[0].category_name if by_views else "",
             highest_engagement_category=by_engagement[0].category_name if by_engagement else ""
         )
+        
+        # Cache the response
+        await cache_strategy.set(
+            cache_key,
+            response.model_dump(),
+            CacheTier.WARM,
+            period=AggregationPeriod.DAILY
+        )
+        
+        return response
     
     async def get_content_performance_data(
         self,
         model_id: str,
         content_ids: List[str]
     ) -> List[ContentPerformanceData]:
-        """Get performance data for specific content pieces."""
+        """Get performance data for specific content pieces using real-time data."""
+        # Get model's agency ID
         result = await self.db.execute(
-            select(ContentPerformance)
-            .where(
-                and_(
-                    ContentPerformance.model_id == model_id,
-                    ContentPerformance.content_id.in_(content_ids)
+            select(ModelProfile.agency_id).where(ModelProfile.id == model_id)
+        )
+        agency_id = result.scalar_one_or_none()
+        if not agency_id:
+            raise ValueError(f"Model {model_id} not found")
+            
+        # Check cache for each content
+        performance_data = []
+        uncached_ids = []
+        
+        for content_id in content_ids:
+            cache_key = f"content_performance:{agency_id}:{model_id}:{content_id}"
+            cached = await cache_strategy.get(cache_key, CacheTier.HOT)
+            if cached:
+                performance_data.append(ContentPerformanceData(**cached))
+            else:
+                uncached_ids.append(content_id)
+        
+        # Get uncached content performance from database
+        if uncached_ids:
+            result = await self.db.execute(
+                select(ContentPerformance)
+                .where(
+                    and_(
+                        ContentPerformance.model_id == model_id,
+                        ContentPerformance.content_id.in_(uncached_ids)
+                    )
                 )
             )
-        )
+            
+            performances = result.scalars().all()
+            
+            for perf in performances:
+                data = ContentPerformanceData(
+                    content_id=perf.content_id,
+                    content_type=perf.content_type,
+                    title=perf.title,
+                    published_at=perf.published_at,
+                    categories=perf.categories or [],
+                    views=perf.views,
+                    likes=perf.likes,
+                    comments=perf.comments,
+                    engagement_rate=(
+                        (perf.likes + perf.comments) / max(1, perf.views) * 100
+                    ),
+                    total_revenue=perf.total_revenue,
+                    revenue_per_view=perf.total_revenue / max(1, perf.views)
+                )
+                performance_data.append(data)
+                
+                # Cache the data
+                cache_key = f"content_performance:{agency_id}:{model_id}:{perf.content_id}"
+                await cache_strategy.set(
+                    cache_key,
+                    data.model_dump(),
+                    CacheTier.HOT,
+                    ttl=300  # 5 minutes
+                )
         
-        performances = result.scalars().all()
-        
-        return [
-            ContentPerformanceData(
-                content_id=perf.content_id,
-                content_type=perf.content_type,
-                title=perf.title,
-                published_at=perf.published_at,
-                categories=perf.categories or [],
-                views=perf.views,
-                likes=perf.likes,
-                comments=perf.comments,
-                engagement_rate=(
-                    (perf.likes + perf.comments) / max(1, perf.views) * 100
-                ),
-                total_revenue=perf.total_revenue,
-                revenue_per_view=perf.total_revenue / max(1, perf.views)
-            )
-            for perf in performances
-        ]
+        return performance_data
     
     async def get_dashboard_summary(
         self,
@@ -461,7 +711,7 @@ class AnalyticsService:
         period: str = "today"
     ) -> DashboardSummary:
         """
-        Get high-level dashboard metrics.
+        Get high-level dashboard metrics using real-time aggregated data.
         
         Args:
             model_id: Model ID
@@ -470,85 +720,125 @@ class AnalyticsService:
         Returns:
             Dashboard summary data
         """
+        # Get model's agency ID
+        result = await self.db.execute(
+            select(ModelProfile.agency_id).where(ModelProfile.id == model_id)
+        )
+        agency_id = result.scalar_one_or_none()
+        if not agency_id:
+            raise ValueError(f"Model {model_id} not found")
+            
         # Calculate date ranges
         now = datetime.utcnow()
         if period == "today":
             current_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
             prev_start = current_start - timedelta(days=1)
             prev_end = current_start
+            aggregation_period = AggregationPeriod.HOURLY
         elif period == "week":
             current_start = now - timedelta(days=now.weekday())
             current_start = current_start.replace(hour=0, minute=0, second=0, microsecond=0)
             prev_start = current_start - timedelta(days=7)
             prev_end = current_start
+            aggregation_period = AggregationPeriod.DAILY
         else:  # month
             current_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             prev_start = (current_start - timedelta(days=1)).replace(day=1)
             prev_end = current_start
-        
-        # Get current period snapshot
-        current_snapshot = await self._get_latest_snapshot_in_range(
+            aggregation_period = AggregationPeriod.DAILY
+            
+        # Check cache
+        cache_key = cache_strategy.generate_cache_key(
+            'dashboard',
+            str(agency_id),
             model_id,
             current_start,
-            now
+            now,
+            aggregation_period
         )
         
-        # Get previous period snapshot
-        prev_snapshot = await self._get_latest_snapshot_in_range(
-            model_id,
-            prev_start,
-            prev_end
+        cached = await cache_strategy.get(cache_key, CacheTier.HOT)
+        if cached:
+            return DashboardSummary(**cached)
+            
+        # Get aggregated metrics using AnalyticsAggregator
+        aggregator = AnalyticsAggregator(self.db)
+        
+        # Get current period metrics
+        current_metrics = await aggregator.aggregate_metrics(
+            agency_id=str(agency_id),
+            model_id=model_id,
+            start_date=current_start,
+            end_date=now,
+            period=aggregation_period
         )
+        
+        # Get previous period metrics for comparison
+        prev_metrics = await aggregator.aggregate_metrics(
+            agency_id=str(agency_id),
+            model_id=model_id,
+            start_date=prev_start,
+            end_date=prev_end,
+            period=aggregation_period
+        )
+        
+        # Extract values with defaults
+        current_revenue = current_metrics.get('revenue', {}).get('total_revenue', 0)
+        prev_revenue = prev_metrics.get('revenue', {}).get('total_revenue', 0)
+        
+        current_fans = current_metrics.get('fans', {})
+        prev_fans = prev_metrics.get('fans', {})
+        
+        current_subscribers = current_fans.get('subscribers', 0)
+        prev_subscribers = prev_fans.get('subscribers', 0)
+        
+        current_total_fans = current_fans.get('total_fans', 0)
+        prev_total_fans = prev_fans.get('total_fans', 0)
         
         # Calculate changes
         revenue_change = 0.0
+        if prev_revenue > 0:
+            revenue_change = ((current_revenue - prev_revenue) / prev_revenue) * 100
+            
         subscriber_change = 0.0
+        if prev_total_fans > 0:
+            subscriber_change = ((current_total_fans - prev_total_fans) / prev_total_fans) * 100
+            
         paying_subscriber_change = 0.0
-        
-        if current_snapshot and prev_snapshot:
-            if prev_snapshot.total_revenue > 0:
-                revenue_change = (
-                    (current_snapshot.total_revenue - prev_snapshot.total_revenue) /
-                    prev_snapshot.total_revenue * 100
-                )
+        if prev_subscribers > 0:
+            paying_subscriber_change = ((current_subscribers - prev_subscribers) / prev_subscribers) * 100
             
-            if prev_snapshot.total_subscribers > 0:
-                subscriber_change = (
-                    (current_snapshot.total_subscribers - prev_snapshot.total_subscribers) /
-                    prev_snapshot.total_subscribers * 100
-                )
+        # Calculate average revenue per subscriber
+        avg_revenue_per_subscriber = Decimal('0')
+        if current_subscribers > 0:
+            avg_revenue_per_subscriber = Decimal(str(current_revenue)) / current_subscribers
             
-            if prev_snapshot.paying_subscribers > 0:
-                paying_subscriber_change = (
-                    (current_snapshot.paying_subscribers - prev_snapshot.paying_subscribers) /
-                    prev_snapshot.paying_subscribers * 100
-                )
-        
-        # Default values if no snapshot
-        if not current_snapshot:
-            return DashboardSummary(
-                period=period,
-                total_revenue=Decimal('0'),
-                revenue_change=0,
-                total_subscribers=0,
-                subscriber_change=0,
-                paying_subscribers=0,
-                paying_subscriber_change=0,
-                avg_revenue_per_subscriber=Decimal('0'),
-                conversion_rate=0
-            )
-        
-        return DashboardSummary(
+        # Calculate conversion rate
+        conversion_rate = 0.0
+        if current_total_fans > 0:
+            conversion_rate = (current_subscribers / current_total_fans) * 100
+            
+        summary = DashboardSummary(
             period=period,
-            total_revenue=current_snapshot.total_revenue,
+            total_revenue=Decimal(str(current_revenue)),
             revenue_change=float(revenue_change),
-            total_subscribers=current_snapshot.total_subscribers,
+            total_subscribers=current_total_fans,
             subscriber_change=float(subscriber_change),
-            paying_subscribers=current_snapshot.paying_subscribers,
+            paying_subscribers=current_subscribers,
             paying_subscriber_change=float(paying_subscriber_change),
-            avg_revenue_per_subscriber=current_snapshot.avg_fan_spend,
-            conversion_rate=current_snapshot.conversion_rate
+            avg_revenue_per_subscriber=avg_revenue_per_subscriber,
+            conversion_rate=float(conversion_rate)
         )
+        
+        # Cache the result
+        await cache_strategy.set(
+            cache_key,
+            summary.model_dump(),
+            CacheTier.HOT,
+            period=aggregation_period
+        )
+        
+        return summary
     
     async def _get_metric_snapshots(
         self,
@@ -557,7 +847,11 @@ class AnalyticsService:
         end_dt: datetime,
         granularity: TimeGranularity
     ) -> List[MetricSnapshot]:
-        """Get metric snapshots for a time range."""
+        """Get metric snapshots for a time range.
+        
+        Note: This method is kept for backwards compatibility but should be replaced
+        with AnalyticsAggregator calls in the future.
+        """
         result = await self.db.execute(
             select(MetricSnapshot)
             .where(
@@ -579,7 +873,11 @@ class AnalyticsService:
         end_dt: datetime,
         granularity: TimeGranularity
     ) -> Dict[str, List[TimeSeriesDataPoint]]:
-        """Get revenue time series data."""
+        """Get revenue time series data.
+        
+        Note: This method is kept for backwards compatibility but should be replaced
+        with AnalyticsAggregator calls in the future.
+        """
         # Determine time bucket based on granularity
         if granularity == TimeGranularity.HOUR:
             time_bucket = "date_trunc('hour', transaction_date)"
@@ -723,7 +1021,10 @@ class AnalyticsService:
         return result.scalar_one_or_none()
     
     async def _get_from_cache(self, key: str) -> Optional[Dict[str, Any]]:
-        """Get data from cache."""
+        """Get data from cache.
+        
+        Note: This method is deprecated. Use cache_strategy directly instead.
+        """
         try:
             data = await redis_client.get(f"analytics:{key}")
             if data:
@@ -733,7 +1034,10 @@ class AnalyticsService:
         return None
     
     async def _save_to_cache(self, key: str, data: Dict[str, Any], ttl: int):
-        """Save data to cache."""
+        """Save data to cache.
+        
+        Note: This method is deprecated. Use cache_strategy directly instead.
+        """
         try:
             await redis_client.setex(
                 f"analytics:{key}",
