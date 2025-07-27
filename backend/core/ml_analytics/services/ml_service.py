@@ -18,6 +18,7 @@ from core.ml_analytics.models import (
     PredictionType, ModelStatus
 )
 from core.ml_analytics.predictors.revenue_forecast import RevenueForecastPredictor
+from core.ml_analytics.predictors.churn_prediction import ChurnPredictor
 from core.domain.models import User, Agency, Transaction, Model, Fan
 from core.redis import redis_client
 from core.cache import cache_service
@@ -30,7 +31,8 @@ class MLAnalyticsService:
     
     def __init__(self):
         self.predictors = {
-            PredictionType.REVENUE_FORECAST: RevenueForecastPredictor()
+            PredictionType.REVENUE_FORECAST: RevenueForecastPredictor(),
+            PredictionType.CHURN_PREDICTION: ChurnPredictor()
         }
         self.model_storage_path = Path("ml_models")
         self.model_storage_path.mkdir(exist_ok=True)
@@ -83,6 +85,13 @@ class MLAnalyticsService:
                     session=session,
                     lookback_days=config.get('lookback_days', 365) if config else 365
                 )
+            elif prediction_type == PredictionType.CHURN_PREDICTION:
+                result = await predictor.train(
+                    agency_id=agency_id,
+                    session=session,
+                    lookback_days=config.get('lookback_days', 180) if config else 180,
+                    churn_days=config.get('churn_days', 30) if config else 30
+                )
             else:
                 raise NotImplementedError(f"Training not implemented for {prediction_type.value}")
             
@@ -94,8 +103,12 @@ class MLAnalyticsService:
             ml_model.status = ModelStatus.TRAINED
             ml_model.model_path = str(model_path)
             ml_model.metrics = result['metrics']
-            ml_model.accuracy_score = 1 - result['metrics'].get('mape', 0)
-            ml_model.algorithm = "prophet"
+            if prediction_type == PredictionType.REVENUE_FORECAST:
+                ml_model.accuracy_score = 1 - result['metrics'].get('mape', 0)
+                ml_model.algorithm = "prophet"
+            elif prediction_type == PredictionType.CHURN_PREDICTION:
+                ml_model.accuracy_score = result['metrics'].get('roc_auc', 0)
+                ml_model.algorithm = "random_forest"
             ml_model.hyperparameters = result['model_metadata']
             ml_model.training_samples = result['training_samples']
             ml_model.last_trained_at = datetime.utcnow()
@@ -180,6 +193,37 @@ class MLAnalyticsService:
                     predictions.append(prediction)
                     session.add(prediction)
         
+        elif prediction_type == PredictionType.CHURN_PREDICTION:
+            # Get high-risk fans
+            churn_predictions = await predictor.predict_all_fans(
+                agency_id=agency_id,
+                session=session,
+                min_probability=0.3  # Include medium to high risk fans
+            )
+            
+            # Convert to prediction records
+            for churn_pred in churn_predictions[:horizon_days]:  # Limit to requested number
+                prediction = Prediction(
+                    model_id=model.id,
+                    prediction_type=prediction_type,
+                    target_date=datetime.utcnow() + timedelta(days=30),  # 30-day churn prediction
+                    prediction_horizon=30,
+                    predicted_value=churn_pred['churn_probability'],
+                    probability=churn_pred['churn_probability'],
+                    confidence_score=0.85,  # Based on model performance
+                    entity_type="fan",
+                    entity_id=churn_pred['fan_id'],
+                    predictions_json={
+                        'risk_level': churn_pred['risk_level'],
+                        'top_risk_factors': churn_pred['top_risk_factors'],
+                        'recommended_actions': churn_pred['recommended_actions'],
+                        'days_since_last_transaction': churn_pred['days_since_last_transaction'],
+                        'total_spent': churn_pred['total_spent']
+                    }
+                )
+                predictions.append(prediction)
+                session.add(prediction)
+        
         else:
             raise NotImplementedError(f"Predictions not implemented for {prediction_type.value}")
         
@@ -263,6 +307,14 @@ class MLAnalyticsService:
         # Get trend analysis
         if prediction_type == PredictionType.REVENUE_FORECAST:
             analysis = await predictor.analyze_trends()
+            
+            # Cache results
+            cache_key = f"ml_trends:{agency_id}:{prediction_type.value}"
+            await cache_service.set(cache_key, analysis, ttl=3600)
+            
+            return analysis
+        elif prediction_type == PredictionType.CHURN_PREDICTION:
+            analysis = await predictor.analyze_churn_patterns(agency_id, session)
             
             # Cache results
             cache_key = f"ml_trends:{agency_id}:{prediction_type.value}"
@@ -515,6 +567,62 @@ class MLAnalyticsService:
                             "Review upcoming content schedule",
                             "Consider promotional campaigns" if change_percentage < 0 else "Prepare for increased activity",
                             "Monitor daily performance closely"
+                        ]
+                    )
+                    session.add(alert)
+                    await session.commit()
+        
+        elif model.prediction_type == PredictionType.CHURN_PREDICTION:
+            # Analyze churn predictions
+            high_risk_fans = [p for p in predictions if p.predicted_value >= 0.6]
+            medium_risk_fans = [p for p in predictions if 0.4 <= p.predicted_value < 0.6]
+            
+            if high_risk_fans:
+                # Create alert for high-risk fans
+                alert = InsightAlert(
+                    alert_type='prediction',
+                    severity='critical',
+                    title=f"{len(high_risk_fans)} Fans at High Risk of Churning",
+                    description=f"Immediate action required for {len(high_risk_fans)} fans with >60% churn probability",
+                    model_id=model.id,
+                    entity_type='agency',
+                    entity_id=model.agency_id,
+                    agency_id=model.agency_id,
+                    metrics={
+                        'high_risk_count': len(high_risk_fans),
+                        'medium_risk_count': len(medium_risk_fans),
+                        'total_at_risk': len(high_risk_fans) + len(medium_risk_fans),
+                        'average_churn_probability': np.mean([p.predicted_value for p in predictions])
+                    },
+                    recommendations=[
+                        "Send immediate personalized retention offers",
+                        "Initiate direct outreach to high-value fans",
+                        "Create exclusive content for at-risk segments",
+                        "Review and address common churn factors"
+                    ]
+                )
+                session.add(alert)
+                await session.commit()
+            
+            # Additional insight for churn trends
+            if predictions:
+                avg_churn_prob = np.mean([p.predicted_value for p in predictions])
+                if avg_churn_prob > 0.3:
+                    alert = InsightAlert(
+                        alert_type='trend',
+                        severity='high',
+                        title="Elevated Churn Risk Across Fan Base",
+                        description=f"Average churn probability is {avg_churn_prob:.1%}, indicating systemic issues",
+                        model_id=model.id,
+                        entity_type='agency',
+                        entity_id=model.agency_id,
+                        agency_id=model.agency_id,
+                        metrics={'average_churn_probability': avg_churn_prob},
+                        recommendations=[
+                            "Review recent content strategy",
+                            "Analyze competitor activities",
+                            "Survey fans for feedback",
+                            "Implement loyalty program"
                         ]
                     )
                     session.add(alert)

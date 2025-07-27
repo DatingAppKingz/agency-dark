@@ -337,6 +337,60 @@ async def get_model_performance(
         raise HTTPException(status_code=404, detail=str(e))
 
 
+@router.get("/predictions/churn/high-risk-fans")
+async def get_high_risk_fans(
+    min_probability: float = Query(0.5, ge=0.0, le=1.0),
+    limit: int = Query(50, ge=1, le=500),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> List[Dict[str, Any]]:
+    """Get fans with high churn risk."""
+    # Get churn predictions
+    predictions = await ml_service.get_predictions(
+        agency_id=current_user.agency_id,
+        session=db,
+        prediction_type=PredictionType.CHURN_PREDICTION,
+        start_date=datetime.utcnow() - timedelta(days=7),  # Recent predictions
+        end_date=datetime.utcnow() + timedelta(days=30)
+    )
+    
+    # Filter by risk level
+    high_risk = [
+        p for p in predictions
+        if p['predicted_value'] >= min_probability
+    ]
+    
+    # Sort by risk level
+    high_risk.sort(key=lambda x: x['predicted_value'], reverse=True)
+    
+    # Get fan details for top risks
+    results = []
+    for pred in high_risk[:limit]:
+        if pred.get('entity_id') and pred.get('entity_type') == 'fan':
+            # Get fan details
+            from core.domain.models import Fan
+            result = await db.execute(
+                select(Fan).where(Fan.id == pred['entity_id'])
+            )
+            fan = result.scalar_one_or_none()
+            
+            if fan:
+                pred_json = pred.get('predictions_json', {})
+                results.append({
+                    'fan_id': pred['entity_id'],
+                    'fan_username': fan.username,
+                    'churn_probability': pred['predicted_value'],
+                    'risk_level': pred_json.get('risk_level', 'unknown'),
+                    'top_risk_factors': pred_json.get('top_risk_factors', []),
+                    'recommended_actions': pred_json.get('recommended_actions', []),
+                    'days_since_last_transaction': pred_json.get('days_since_last_transaction'),
+                    'total_spent': pred_json.get('total_spent'),
+                    'prediction_date': pred['target_date']
+                })
+    
+    return results
+
+
 @router.get("/dashboard")
 async def ml_dashboard(
     current_user: User = Depends(get_current_user),
@@ -351,6 +405,18 @@ async def ml_dashboard(
         start_date=datetime.utcnow(),
         end_date=datetime.utcnow() + timedelta(days=7)
     )
+    
+    # Get churn predictions
+    churn_predictions = await ml_service.get_predictions(
+        agency_id=current_user.agency_id,
+        session=db,
+        prediction_type=PredictionType.CHURN_PREDICTION,
+        start_date=datetime.utcnow(),
+        end_date=datetime.utcnow() + timedelta(days=30)
+    )
+    
+    # Count high-risk fans
+    high_risk_fans = len([p for p in churn_predictions if p['predicted_value'] >= 0.6])
     
     # Get recent insights
     insights = await ml_service.get_insights(
@@ -383,7 +449,8 @@ async def ml_dashboard(
         'summary': {
             'active_models': len(active_models),
             'unread_insights': len(insights),
-            'next_week_revenue_forecast': next_week_revenue
+            'next_week_revenue_forecast': next_week_revenue,
+            'high_risk_fans': high_risk_fans
         },
         'models': [
             {
@@ -400,6 +467,11 @@ async def ml_dashboard(
                 PredictionType.REVENUE_FORECAST,
                 current_user.agency_id,
                 db
-            ) if any(m.prediction_type == PredictionType.REVENUE_FORECAST for m in active_models) else None
+            ) if any(m.prediction_type == PredictionType.REVENUE_FORECAST for m in active_models) else None,
+            'churn': await ml_service.analyze_trends(
+                PredictionType.CHURN_PREDICTION,
+                current_user.agency_id,
+                db
+            ) if any(m.prediction_type == PredictionType.CHURN_PREDICTION for m in active_models) else None
         }
     }
