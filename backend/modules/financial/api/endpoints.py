@@ -1,12 +1,15 @@
 """
 Financial API endpoints for commission, payouts, and invoicing.
 """
+import logging
 from typing import List, Optional
 from datetime import date, datetime
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from core.database import get_db
 from core.dependencies import get_current_user, RoleChecker
@@ -23,6 +26,10 @@ from modules.financial.domain.schemas import (
     CommissionRuleResponse,
     CommissionOverrideRequest,
     CommissionCalculation,
+    CommissionAdjustmentCreate,
+    CommissionAdjustmentResponse,
+    CommissionReport,
+    CommissionReportFilter,
     # Billing
     BillingCycleSummary,
     BillingCycleDetails,
@@ -30,6 +37,10 @@ from modules.financial.domain.schemas import (
     PayoutRequest,
     PayoutResponse,
     PayoutStatus,
+    PayoutScheduleCreate,
+    PayoutScheduleResponse,
+    PayoutBatchResponse,
+    PayoutApprovalRequest,
     # Crypto
     CryptoWalletCreate,
     CryptoWalletResponse,
@@ -48,6 +59,10 @@ from modules.financial.domain.schemas import (
 
 
 router = APIRouter(prefix="/financial", tags=["financial"])
+
+# Include transaction endpoints
+from .transaction_endpoints import router as transaction_router
+router.include_router(transaction_router)
 
 
 # Commission endpoints
@@ -220,6 +235,110 @@ async def calculate_commission(
             calculation_date
         )
         return calculation
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/commission/calculate-tiered", response_model=CommissionCalculation)
+async def calculate_tiered_commission(
+    gross_amount: Decimal = Query(..., gt=0),
+    model_id: str = Query(...),
+    total_revenue: Optional[Decimal] = Query(None),
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([
+            UserRole.SUPER_ADMIN,
+            UserRole.AGENCY_OWNER,
+            UserRole.AGENCY_MEMBER
+        ])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Calculate commission with automatic tier upgrades based on revenue."""
+    service = CommissionService(db)
+    
+    try:
+        calculation = await service.calculate_tiered_commission(
+            gross_amount,
+            model_id,
+            total_revenue
+        )
+        return calculation
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/commission/bulk-calculate", response_model=List[CommissionCalculation])
+async def bulk_calculate_commission(
+    billing_cycle_id: str,
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([
+            UserRole.SUPER_ADMIN,
+            UserRole.AGENCY_OWNER,
+            UserRole.AGENCY_MEMBER
+        ])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Calculate commission for all transactions in a billing cycle."""
+    service = CommissionService(db)
+    
+    try:
+        calculations = await service.bulk_calculate_commission(billing_cycle_id)
+        return calculations
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/commission/adjustments", response_model=CommissionAdjustmentResponse)
+async def create_commission_adjustment(
+    adjustment_data: CommissionAdjustmentCreate,
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a commission adjustment (credit or debit)."""
+    service = CommissionService(db)
+    
+    try:
+        adjustment = await service.create_commission_adjustment(
+            adjustment_data,
+            current_user
+        )
+        return adjustment
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/commission/report", response_model=CommissionReport)
+async def generate_commission_report(
+    filter_params: CommissionReportFilter,
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([
+            UserRole.SUPER_ADMIN,
+            UserRole.AGENCY_OWNER,
+            UserRole.AGENCY_MEMBER
+        ])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Generate a detailed commission report."""
+    service = CommissionService(db)
+    
+    try:
+        # Apply permission filters
+        if current_user.role != UserRole.SUPER_ADMIN:
+            filter_params.agency_id = str(current_user.agency_id)
+        
+        report = await service.generate_commission_report(
+            filter_params,
+            current_user
+        )
+        return report
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -397,6 +516,153 @@ async def get_payouts(
     )
     
     return payouts
+
+
+@router.post("/payouts/schedules", response_model=PayoutScheduleResponse)
+async def create_payout_schedule(
+    schedule_data: PayoutScheduleCreate,
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create automatic payout schedule for a recipient."""
+    service = PayoutService(db)
+    
+    try:
+        schedule = await service.create_payout_schedule(schedule_data, current_user)
+        return schedule
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/payouts/batch/process", response_model=PayoutBatchResponse)
+async def process_scheduled_payouts_batch(
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Process all scheduled payouts in batch (super admin only)."""
+    service = PayoutService(db)
+    
+    try:
+        result = await service.process_scheduled_payouts_batch()
+        return result
+    except Exception as e:
+        logger.error(f"Batch payout processing failed: {e}")
+        raise HTTPException(status_code=500, detail="Batch processing failed")
+
+
+@router.post("/payouts/retry-failed")
+async def retry_failed_payouts(
+    max_age_hours: int = Query(24, ge=1, le=168),  # Max 1 week
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Retry failed payouts within specified age."""
+    service = PayoutService(db)
+    
+    try:
+        result = await service.retry_failed_payouts(max_age_hours)
+        return result
+    except Exception as e:
+        logger.error(f"Failed payout retry failed: {e}")
+        raise HTTPException(status_code=500, detail="Retry processing failed")
+
+
+@router.post("/payouts/{payout_id}/approve", response_model=PayoutResponse)
+async def approve_payout(
+    payout_id: str,
+    approval: PayoutApprovalRequest,
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Approve or reject a pending payout."""
+    service = PayoutService(db)
+    
+    try:
+        payout = await service.approve_payout(payout_id, approval, current_user)
+        return payout
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/payouts/schedules", response_model=List[PayoutScheduleResponse])
+async def get_payout_schedules(
+    recipient_id: Optional[str] = Query(None),
+    is_active: Optional[bool] = Query(None),
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([
+            UserRole.SUPER_ADMIN,
+            UserRole.AGENCY_OWNER,
+            UserRole.MODEL,
+            UserRole.AGENCY_MEMBER
+        ])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get payout schedules with optional filters."""
+    # Apply permission filters
+    if current_user.role == UserRole.MODEL:
+        recipient_id = str(current_user.id)
+    
+    from modules.financial.domain.models import PayoutSchedule
+    from sqlalchemy import select, and_
+    
+    query = select(PayoutSchedule)
+    
+    conditions = []
+    if recipient_id:
+        conditions.append(PayoutSchedule.recipient_id == recipient_id)
+    if is_active is not None:
+        conditions.append(PayoutSchedule.is_active == is_active)
+    
+    if conditions:
+        query = query.where(and_(*conditions))
+    
+    result = await db.execute(query)
+    schedules = result.scalars().all()
+    
+    return [PayoutScheduleResponse.model_validate(s) for s in schedules]
+
+
+@router.put("/payouts/schedules/{schedule_id}/pause")
+async def pause_payout_schedule(
+    schedule_id: str,
+    reason: str = Query(..., min_length=10),
+    current_user: User = Depends(get_current_user),
+    role_checker: RoleChecker = Depends(
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER])
+    ),
+    db: AsyncSession = Depends(get_db)
+):
+    """Pause an active payout schedule."""
+    from modules.financial.domain.models import PayoutSchedule
+    
+    schedule = await db.get(PayoutSchedule, schedule_id)
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    if not schedule.is_active:
+        raise HTTPException(status_code=400, detail="Schedule is already inactive")
+    
+    schedule.is_active = False
+    schedule.paused_at = datetime.utcnow()
+    schedule.paused_reason = reason
+    
+    await db.commit()
+    
+    return {"status": "paused", "schedule_id": schedule_id}
 
 
 # Crypto wallet endpoints

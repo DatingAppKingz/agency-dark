@@ -153,6 +153,9 @@ class Payout(Base):
     failure_reason = Column(String(500))
     retry_count = Column(Integer, default=0)
     
+    # Additional metadata (approvals, etc)
+    metadata = Column(JSON)
+    
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -161,6 +164,47 @@ class Payout(Base):
         Index('idx_payout_cycle', 'billing_cycle_id'),
         Index('idx_payout_recipient', 'recipient_id'),
         Index('idx_payout_status', 'status'),
+    )
+
+
+class PayoutSchedule(Base):
+    """Automatic payout schedules for recipients."""
+    __tablename__ = "payout_schedules"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    recipient_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    recipient_type = Column(String(20), nullable=False)  # 'model', 'agency'
+    
+    # Schedule configuration
+    frequency = Column(String(20), nullable=False)  # 'daily', 'weekly', 'biweekly', 'monthly'
+    minimum_amount = Column(Numeric(12, 2), nullable=False)  # Minimum amount to trigger payout
+    
+    # Payment settings
+    payment_method = Column(String(50), nullable=False)
+    payment_details = Column(JSON)
+    
+    # Schedule tracking
+    next_payout_date = Column(DateTime(timezone=True), nullable=False)
+    last_payout_date = Column(DateTime(timezone=True))
+    last_payout_amount = Column(Numeric(12, 2))
+    
+    # Status
+    is_active = Column(Boolean, default=True)
+    paused_at = Column(DateTime(timezone=True))
+    paused_reason = Column(String(500))
+    
+    # Audit
+    created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    __table_args__ = (
+        Index('idx_payout_schedule_recipient', 'recipient_id'),
+        Index('idx_payout_schedule_active', 'is_active'),
+        Index('idx_payout_schedule_next', 'next_payout_date'),
+        # Unique active schedule per recipient
+        Index('idx_payout_schedule_unique_active', 'recipient_id', 'is_active', unique=True,
+              postgresql_where='is_active = true'),
     )
 
 
@@ -226,6 +270,14 @@ class FinancialTransaction(Base):
     # Balance tracking
     balance_before = Column(Numeric(12, 2))
     balance_after = Column(Numeric(12, 2))
+    
+    # Commission fields (for revenue transactions)
+    commission_rate = Column(Numeric(5, 2))  # Percentage
+    commission_amount = Column(Numeric(12, 2))
+    
+    # Additional metadata
+    metadata = Column(JSON)
+    created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     
     # Timestamps
     transaction_date = Column(DateTime(timezone=True), nullable=False)

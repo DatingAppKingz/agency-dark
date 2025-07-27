@@ -5,6 +5,7 @@ import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from decimal import Decimal
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func, update
@@ -20,7 +21,11 @@ from modules.financial.domain.models import (
 from modules.financial.domain.schemas import (
     PayoutRequest,
     PayoutResponse,
-    PayoutStatusUpdate
+    PayoutStatusUpdate,
+    PayoutScheduleCreate,
+    PayoutScheduleResponse,
+    PayoutBatchResponse,
+    PayoutApprovalRequest
 )
 from core.domain.models import User, Agency, ModelProfile
 from modules.financial.application.crypto_service import CryptoService
@@ -31,6 +36,21 @@ logger = logging.getLogger(__name__)
 
 class PayoutService:
     """Manages payouts for models and agencies."""
+    
+    # Maximum retry attempts for failed payouts
+    MAX_RETRY_ATTEMPTS = 3
+    
+    # Minimum payout amounts by currency
+    MIN_PAYOUT_AMOUNTS = {
+        'USD': Decimal('50.00'),
+        'BTC': Decimal('0.001'),
+        'ETH': Decimal('0.01'),
+        'USDT': Decimal('50.00'),
+        'USDC': Decimal('50.00')
+    }
+    
+    # Payout schedule frequencies
+    SCHEDULE_FREQUENCIES = ['daily', 'weekly', 'biweekly', 'monthly']
     
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -425,3 +445,364 @@ class PayoutService:
         logger.info(f"Processed {processed} payouts, {failed} failed")
         
         return {'processed': processed, 'failed': failed}
+    
+    async def create_payout_schedule(
+        self,
+        schedule_data: PayoutScheduleCreate,
+        created_by: User
+    ) -> PayoutScheduleResponse:
+        """
+        Create an automatic payout schedule for a recipient.
+        
+        Args:
+            schedule_data: Schedule configuration
+            created_by: User creating the schedule
+            
+        Returns:
+            Created schedule
+        """
+        # Verify recipient
+        recipient = await self.db.get(User, schedule_data.recipient_id)
+        if not recipient:
+            raise ValueError("Recipient not found")
+        
+        # Verify payment method
+        if schedule_data.payment_method == "crypto":
+            wallet = await self.db.get(CryptoWallet, schedule_data.payment_details.get('wallet_id'))
+            if not wallet or str(wallet.user_id) != schedule_data.recipient_id:
+                raise ValueError("Invalid crypto wallet")
+        
+        # Check for existing active schedule
+        from modules.financial.domain.models import PayoutSchedule
+        
+        existing = await self.db.execute(
+            select(PayoutSchedule).where(
+                and_(
+                    PayoutSchedule.recipient_id == schedule_data.recipient_id,
+                    PayoutSchedule.is_active == True
+                )
+            )
+        )
+        
+        if existing.scalar_one_or_none():
+            raise ValueError("Active payout schedule already exists for this recipient")
+        
+        # Create schedule
+        schedule = PayoutSchedule(
+            recipient_id=schedule_data.recipient_id,
+            recipient_type=schedule_data.recipient_type,
+            frequency=schedule_data.frequency,
+            minimum_amount=schedule_data.minimum_amount,
+            payment_method=schedule_data.payment_method,
+            payment_details=schedule_data.payment_details,
+            next_payout_date=schedule_data.next_payout_date or self._calculate_next_payout_date(schedule_data.frequency),
+            is_active=True,
+            created_by_id=created_by.id
+        )
+        
+        self.db.add(schedule)
+        await self.db.commit()
+        await self.db.refresh(schedule)
+        
+        logger.info(f"Payout schedule created for recipient {schedule_data.recipient_id}")
+        
+        return PayoutScheduleResponse.model_validate(schedule)
+    
+    async def process_scheduled_payouts_batch(self) -> PayoutBatchResponse:
+        """
+        Process all scheduled payouts in batch mode.
+        
+        Returns:
+            Batch processing results
+        """
+        batch_id = str(uuid.uuid4())
+        start_time = datetime.utcnow()
+        
+        # Get all active schedules due for payout
+        from modules.financial.domain.models import PayoutSchedule
+        
+        result = await self.db.execute(
+            select(PayoutSchedule).where(
+                and_(
+                    PayoutSchedule.is_active == True,
+                    PayoutSchedule.next_payout_date <= datetime.utcnow()
+                )
+            )
+        )
+        
+        schedules = result.scalars().all()
+        
+        created_payouts = []
+        errors = []
+        
+        for schedule in schedules:
+            try:
+                # Calculate amount to payout
+                amount = await self._calculate_payout_amount(schedule)
+                
+                if amount < schedule.minimum_amount:
+                    logger.info(f"Skipping payout for {schedule.recipient_id}: amount {amount} below minimum {schedule.minimum_amount}")
+                    continue
+                
+                # Create payout
+                payout_data = PayoutRequest(
+                    billing_cycle_id=None,  # Scheduled payouts may not have billing cycle
+                    recipient_id=str(schedule.recipient_id),
+                    recipient_type=schedule.recipient_type,
+                    amount=amount,
+                    payment_method=schedule.payment_method,
+                    payment_details=schedule.payment_details,
+                    scheduled_at=datetime.utcnow()
+                )
+                
+                # Use system user for automatic payouts
+                system_user = await self._get_system_user()
+                payout = await self.create_payout(payout_data, system_user)
+                
+                created_payouts.append(payout)
+                
+                # Update schedule next payout date
+                schedule.next_payout_date = self._calculate_next_payout_date(schedule.frequency)
+                schedule.last_payout_date = datetime.utcnow()
+                schedule.last_payout_amount = amount
+                
+            except Exception as e:
+                logger.error(f"Failed to create scheduled payout for {schedule.recipient_id}: {e}")
+                errors.append({
+                    'recipient_id': str(schedule.recipient_id),
+                    'error': str(e)
+                })
+        
+        await self.db.commit()
+        
+        # Process created payouts
+        processed = 0
+        failed = 0
+        
+        for payout in created_payouts:
+            try:
+                await self.process_payout(str(payout.id))
+                processed += 1
+            except Exception as e:
+                logger.error(f"Failed to process payout {payout.id}: {e}")
+                failed += 1
+        
+        end_time = datetime.utcnow()
+        
+        return PayoutBatchResponse(
+            batch_id=batch_id,
+            total_schedules=len(schedules),
+            payouts_created=len(created_payouts),
+            payouts_processed=processed,
+            payouts_failed=failed,
+            errors=errors,
+            start_time=start_time,
+            end_time=end_time,
+            duration_seconds=(end_time - start_time).total_seconds()
+        )
+    
+    async def retry_failed_payouts(self, max_age_hours: int = 24) -> Dict[str, int]:
+        """
+        Retry failed payouts within specified age.
+        
+        Args:
+            max_age_hours: Maximum age of failed payouts to retry
+            
+        Returns:
+            Summary of retry results
+        """
+        cutoff_time = datetime.utcnow() - timedelta(hours=max_age_hours)
+        
+        result = await self.db.execute(
+            select(Payout).where(
+                and_(
+                    Payout.status == PayoutStatus.FAILED,
+                    Payout.retry_count < self.MAX_RETRY_ATTEMPTS,
+                    Payout.created_at >= cutoff_time
+                )
+            )
+        )
+        
+        failed_payouts = result.scalars().all()
+        
+        retried = 0
+        succeeded = 0
+        still_failed = 0
+        
+        for payout in failed_payouts:
+            try:
+                # Exponential backoff based on retry count
+                wait_time = 2 ** payout.retry_count * 60  # Minutes
+                time_since_last_attempt = (datetime.utcnow() - payout.processed_at).total_seconds() / 60
+                
+                if time_since_last_attempt < wait_time:
+                    continue
+                
+                await self.process_payout(str(payout.id))
+                retried += 1
+                
+                if payout.status == PayoutStatus.COMPLETED:
+                    succeeded += 1
+                else:
+                    still_failed += 1
+                    
+            except Exception as e:
+                logger.error(f"Failed to retry payout {payout.id}: {e}")
+                still_failed += 1
+        
+        return {
+            'total_failed': len(failed_payouts),
+            'retried': retried,
+            'succeeded': succeeded,
+            'still_failed': still_failed
+        }
+    
+    async def approve_payout(
+        self,
+        payout_id: str,
+        approval: PayoutApprovalRequest,
+        approver: User
+    ) -> PayoutResponse:
+        """
+        Approve or reject a payout.
+        
+        Args:
+            payout_id: Payout to approve/reject
+            approval: Approval decision and notes
+            approver: User making the decision
+            
+        Returns:
+            Updated payout
+        """
+        payout = await self.db.get(Payout, payout_id)
+        if not payout:
+            raise ValueError("Payout not found")
+        
+        if payout.status != PayoutStatus.PENDING:
+            raise ValueError(f"Cannot approve payout in {payout.status} status")
+        
+        # Check approver permissions
+        if approver.role not in ['super_admin', 'agency_owner', 'agency_admin']:
+            raise ValueError("Insufficient permissions to approve payouts")
+        
+        # Update payout metadata
+        if not payout.metadata:
+            payout.metadata = {}
+        
+        payout.metadata['approval'] = {
+            'approved': approval.approved,
+            'approver_id': str(approver.id),
+            'approver_name': approver.full_name,
+            'approval_date': datetime.utcnow().isoformat(),
+            'notes': approval.notes
+        }
+        
+        if not approval.approved:
+            payout.status = PayoutStatus.CANCELLED
+            payout.failure_reason = f"Rejected by {approver.full_name}: {approval.notes}"
+        else:
+            # If approved and scheduled for immediate processing
+            if approval.process_immediately:
+                payout.scheduled_at = datetime.utcnow()
+        
+        await self.db.commit()
+        await self.db.refresh(payout)
+        
+        logger.info(f"Payout {payout_id} {'approved' if approval.approved else 'rejected'} by {approver.username}")
+        
+        # If approved for immediate processing, process it
+        if approval.approved and approval.process_immediately:
+            await self.process_payout(payout_id)
+        
+        return PayoutResponse.model_validate(payout)
+    
+    def _calculate_next_payout_date(self, frequency: str) -> datetime:
+        """Calculate next payout date based on frequency."""
+        now = datetime.utcnow()
+        
+        if frequency == 'daily':
+            return now + timedelta(days=1)
+        elif frequency == 'weekly':
+            return now + timedelta(weeks=1)
+        elif frequency == 'biweekly':
+            return now + timedelta(weeks=2)
+        elif frequency == 'monthly':
+            # Next month, same day or last day if shorter month
+            next_month = now.replace(day=1) + timedelta(days=32)
+            next_month = next_month.replace(day=1)
+            
+            try:
+                return next_month.replace(day=now.day)
+            except ValueError:
+                # Handle months with fewer days
+                import calendar
+                last_day = calendar.monthrange(next_month.year, next_month.month)[1]
+                return next_month.replace(day=last_day)
+        else:
+            raise ValueError(f"Invalid frequency: {frequency}")
+    
+    async def _calculate_payout_amount(self, schedule) -> Decimal:
+        """Calculate amount to payout based on schedule."""
+        # Get unpaid balance for recipient
+        result = await self.db.execute(
+            select(func.sum(FinancialTransaction.amount))
+            .where(
+                and_(
+                    FinancialTransaction.user_id == schedule.recipient_id,
+                    FinancialTransaction.type.in_([
+                        TransactionType.REVENUE,
+                        TransactionType.ADJUSTMENT
+                    ]),
+                    # Only transactions since last payout
+                    FinancialTransaction.created_at > (
+                        schedule.last_payout_date or datetime.min
+                    )
+                )
+            )
+        )
+        
+        gross_amount = result.scalar() or Decimal('0')
+        
+        # Calculate net amount after commission
+        if schedule.recipient_type == 'model' and gross_amount > 0:
+            # Get model profile
+            model_result = await self.db.execute(
+                select(ModelProfile).where(
+                    ModelProfile.user_id == schedule.recipient_id
+                )
+            )
+            model = model_result.scalar_one_or_none()
+            
+            if model:
+                from modules.financial.application.commission_service import CommissionService
+                commission_service = CommissionService(self.db)
+                
+                calc = await commission_service.calculate_commission(
+                    gross_amount,
+                    str(model.id)
+                )
+                
+                return calc.net_amount
+        
+        return gross_amount
+    
+    async def _get_system_user(self) -> User:
+        """Get or create system user for automatic operations."""
+        result = await self.db.execute(
+            select(User).where(User.email == 'system@agencydark.com')
+        )
+        
+        system_user = result.scalar_one_or_none()
+        
+        if not system_user:
+            system_user = User(
+                email='system@agencydark.com',
+                username='system',
+                full_name='System User',
+                role='super_admin',
+                is_active=True
+            )
+            self.db.add(system_user)
+            await self.db.commit()
+        
+        return system_user
