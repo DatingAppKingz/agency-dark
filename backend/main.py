@@ -11,6 +11,7 @@ from core.middleware.tenant import TenantMiddleware
 from core.middleware.logging import LoggingMiddleware
 from core.middleware.auth import AuthenticationMiddleware
 from core.middleware.security import SecurityMiddleware, RateLimitMiddleware, APIKeyMiddleware
+from core.middleware.fraud_detection import FraudDetectionMiddleware
 from core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 from core.realtime.server import socket_app
 from core.cache import initialize_cache, shutdown_cache
@@ -59,6 +60,7 @@ app = FastAPI(
 # Add middleware in reverse order (last added is first executed)
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60)
+app.add_middleware(FraudDetectionMiddleware)
 app.add_middleware(APIKeyMiddleware)
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(AuthenticationMiddleware)
