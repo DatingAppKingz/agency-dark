@@ -417,3 +417,36 @@ class DashboardNamespace(AsyncNamespace):
                 })
         
         return summary
+
+
+async def send_notification(event_type: str, data: Dict[str, Any]):
+    """
+    Send a notification via Redis pub/sub.
+    
+    This is a helper function for other modules to send notifications.
+    """
+    try:
+        # Determine channel based on data
+        channel = None
+        if 'agency_id' in data:
+            channel = f"notifications:{data['agency_id']}"
+        elif 'model_id' in data:
+            # Look up agency_id from model_id
+            async with AsyncSessionLocal() as db:
+                model = await db.get(ModelProfile, data['model_id'])
+                if model:
+                    channel = f"notifications:{model.agency_id}"
+        
+        if channel:
+            notification = {
+                'type': event_type,
+                'timestamp': datetime.utcnow().isoformat(),
+                **data
+            }
+            await redis_client.publish(channel, json.dumps(notification))
+            logger.info(f"Sent notification: {event_type} to {channel}")
+        else:
+            logger.warning(f"Could not determine channel for notification: {event_type}")
+            
+    except Exception as e:
+        logger.error(f"Failed to send notification: {e}")

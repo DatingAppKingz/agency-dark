@@ -14,6 +14,7 @@ from sqlalchemy.orm import selectinload
 from modules.financial.domain.models import (
     FinancialTransaction,
     TransactionType,
+    TransactionStatus,
     BillingCycle,
     Payout,
     Invoice
@@ -413,3 +414,69 @@ class TransactionService:
         last_transaction = result.scalar_one_or_none()
         
         return last_transaction.balance_after if last_transaction else Decimal("0.00")
+    
+    async def create_transaction(
+        self,
+        model_id: UUID,
+        amount: Decimal,
+        currency: str,
+        type: TransactionType,
+        description: str,
+        billing_cycle_id: Optional[UUID] = None,
+        user_id: Optional[UUID] = None,
+        external_reference: Optional[str] = None,
+        transaction_date: Optional[datetime] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> FinancialTransaction:
+        """
+        Create a transaction with minimal parameters (used by sync services).
+        
+        Args:
+            model_id: Model profile ID
+            amount: Transaction amount
+            currency: Currency code
+            type: Transaction type
+            description: Transaction description
+            billing_cycle_id: Optional billing cycle ID
+            user_id: Optional user ID
+            external_reference: External system reference
+            transaction_date: When the transaction occurred
+            metadata: Additional metadata
+            
+        Returns:
+            Created transaction
+        """
+        # Get model to verify it exists and get agency_id
+        model = await self.db.get(ModelProfile, model_id)
+        if not model:
+            raise ValidationError(f"Model {model_id} not found")
+        
+        # Create transaction
+        transaction = FinancialTransaction(
+            agency_id=model.agency_id,
+            model_id=model_id,
+            user_id=user_id,
+            type=type,
+            amount=amount,
+            currency=currency,
+            status=TransactionStatus.PENDING,
+            billing_cycle_id=billing_cycle_id,
+            external_reference=external_reference,
+            description=description,
+            transaction_date=transaction_date or datetime.utcnow(),
+            metadata=metadata or {}
+        )
+        
+        self.db.add(transaction)
+        await self.db.flush()
+        
+        return transaction
+    
+    async def get_transaction_by_external_ref(self, external_ref: str) -> Optional[FinancialTransaction]:
+        """Get a transaction by external reference."""
+        result = await self.db.execute(
+            select(FinancialTransaction).where(
+                FinancialTransaction.external_reference == external_ref
+            )
+        )
+        return result.scalar_one_or_none()
