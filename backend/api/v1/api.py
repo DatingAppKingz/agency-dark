@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from .endpoints import auth
+from .monitoring.performance import router as performance_router
 from modules.inflow_wrapper.api import router as inflow_router
 from modules.onlyfans_wrapper.api import router as onlyfans_router
 from modules.api_orchestration.api.endpoints import router as orchestration_router
@@ -21,3 +22,4 @@ api_router.include_router(payment_webhook_router, prefix="/payments", tags=["pay
 api_router.include_router(analytics_router, tags=["analytics"])
 api_router.include_router(financial_router, tags=["financial"])
 api_router.include_router(whitelabel_router, tags=["whitelabel"])
+api_router.include_router(performance_router, prefix="/monitoring", tags=["monitoring"])
