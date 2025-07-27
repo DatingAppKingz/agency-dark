@@ -25,7 +25,8 @@ from ..domain.schemas import (
     OnlyFansStatistics,
     OnlyFansMedia
 )
-from ..infrastructure.client import OnlyFansClient
+from ..infrastructure.factory import create_onlyfans_client
+from ..infrastructure.client_v2 import OnlyFansClient
 
 
 logger = logging.getLogger(__name__)

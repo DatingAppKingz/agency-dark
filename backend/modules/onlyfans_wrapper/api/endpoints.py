@@ -29,6 +29,10 @@ from modules.onlyfans_wrapper.domain.schemas import (
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/onlyfans", tags=["onlyfans"])
 
+# Import webhook router
+from .webhooks import router as webhook_router
+router.include_router(webhook_router)
+
 
 async def get_model_profile_with_of_key(
     model_id: str,

@@ -22,7 +22,8 @@ from ..domain.schemas import (
     InflowTransaction,
     InflowAnalytics
 )
-from ..infrastructure.client import InflowClient
+from ..infrastructure.factory import create_inflow_client
+from ..infrastructure.client_v2 import InflowClient
 
 
 logger = logging.getLogger(__name__)

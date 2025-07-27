@@ -29,6 +29,10 @@ from .domain.schemas import (
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/inflow", tags=["inflow"])
 
+# Import webhook router
+from .api.webhooks import router as webhook_router
+router.include_router(webhook_router)
+
 
 async def get_model_profile(
     model_id: UUID,
