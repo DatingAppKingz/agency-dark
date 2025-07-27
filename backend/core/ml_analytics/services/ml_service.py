@@ -19,7 +19,8 @@ from core.ml_analytics.models import (
 )
 from core.ml_analytics.predictors.revenue_forecast import RevenueForecastPredictor
 from core.ml_analytics.predictors.churn_prediction import ChurnPredictor
-from core.domain.models import User, Agency, Transaction, Model, Fan
+from core.ml_analytics.predictors.content_optimization import ContentOptimizer
+from core.domain.models import User, Agency, Transaction, Model, Fan, Content
 from core.redis import redis_client
 from core.cache import cache_service
 
@@ -32,7 +33,8 @@ class MLAnalyticsService:
     def __init__(self):
         self.predictors = {
             PredictionType.REVENUE_FORECAST: RevenueForecastPredictor(),
-            PredictionType.CHURN_PREDICTION: ChurnPredictor()
+            PredictionType.CHURN_PREDICTION: ChurnPredictor(),
+            PredictionType.CONTENT_OPTIMIZATION: ContentOptimizer()
         }
         self.model_storage_path = Path("ml_models")
         self.model_storage_path.mkdir(exist_ok=True)
@@ -92,6 +94,12 @@ class MLAnalyticsService:
                     lookback_days=config.get('lookback_days', 180) if config else 180,
                     churn_days=config.get('churn_days', 30) if config else 30
                 )
+            elif prediction_type == PredictionType.CONTENT_OPTIMIZATION:
+                result = await predictor.train(
+                    agency_id=agency_id,
+                    session=session,
+                    lookback_days=config.get('lookback_days', 180) if config else 180
+                )
             else:
                 raise NotImplementedError(f"Training not implemented for {prediction_type.value}")
             
@@ -109,6 +117,9 @@ class MLAnalyticsService:
             elif prediction_type == PredictionType.CHURN_PREDICTION:
                 ml_model.accuracy_score = result['metrics'].get('roc_auc', 0)
                 ml_model.algorithm = "random_forest"
+            elif prediction_type == PredictionType.CONTENT_OPTIMIZATION:
+                ml_model.accuracy_score = result['metrics'].get('overall_accuracy', 0)
+                ml_model.algorithm = "ensemble"
             ml_model.hyperparameters = result['model_metadata']
             ml_model.training_samples = result['training_samples']
             ml_model.last_trained_at = datetime.utcnow()
@@ -623,6 +634,47 @@ class MLAnalyticsService:
                             "Analyze competitor activities",
                             "Survey fans for feedback",
                             "Implement loyalty program"
+                        ]
+                    )
+                    session.add(alert)
+                    await session.commit()
+        
+        elif model.prediction_type == PredictionType.CONTENT_OPTIMIZATION:
+            # Analyze content optimization insights
+            if predictions:
+                # Group predictions by day
+                daily_scores = {}
+                for pred in predictions:
+                    date_key = pred.target_date.date()
+                    if date_key not in daily_scores:
+                        daily_scores[date_key] = []
+                    daily_scores[date_key].append(pred.predicted_value)
+                
+                # Find days with exceptional opportunities
+                high_potential_days = [
+                    date for date, scores in daily_scores.items()
+                    if max(scores) > 0.8
+                ]
+                
+                if high_potential_days:
+                    alert = InsightAlert(
+                        alert_type='opportunity',
+                        severity='medium',
+                        title=f"High Engagement Opportunities Detected",
+                        description=f"Found {len(high_potential_days)} days with exceptional posting opportunities",
+                        model_id=model.id,
+                        entity_type='agency',
+                        entity_id=model.agency_id,
+                        agency_id=model.agency_id,
+                        metrics={
+                            'high_potential_days': len(high_potential_days),
+                            'avg_opportunity_score': float(np.mean([max(daily_scores[d]) for d in high_potential_days]))
+                        },
+                        recommendations=[
+                            "Prepare high-quality content for optimal time slots",
+                            "Schedule posts in advance for peak times",
+                            "Monitor engagement metrics closely",
+                            "Test different content types during optimal hours"
                         ]
                     )
                     session.add(alert)

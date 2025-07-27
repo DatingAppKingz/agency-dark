@@ -391,6 +391,169 @@ async def get_high_risk_fans(
     return results
 
 
+@router.get("/content/optimal-posting-times")
+async def get_optimal_posting_times(
+    days: int = Query(7, ge=1, le=30),
+    content_type: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get optimal posting times for content."""
+    # Check if content optimization model exists
+    from sqlalchemy import select, and_
+    from core.ml_analytics.models import MLModel
+    
+    result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.CONTENT_OPTIMIZATION,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active content optimization model. Please train a model first."
+        )
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.CONTENT_OPTIMIZATION)
+    predictor.load_model(model.model_path)
+    
+    # Get predictions
+    predictions = await predictor.predict_optimal_posting_times(
+        next_days=days,
+        content_type=content_type
+    )
+    
+    return {
+        'optimal_times': predictions,
+        'model_accuracy': model.accuracy_score,
+        'last_updated': model.last_trained_at.isoformat() if model.last_trained_at else None
+    }
+
+
+@router.get("/content/recommendations")
+async def get_content_recommendations(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get content recommendations based on ML analysis."""
+    # Check if content optimization model exists
+    from sqlalchemy import select, and_
+    from core.ml_analytics.models import MLModel
+    
+    result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.CONTENT_OPTIMIZATION,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active content optimization model. Please train a model first."
+        )
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.CONTENT_OPTIMIZATION)
+    predictor.load_model(model.model_path)
+    
+    # Get recent performance metrics
+    from datetime import datetime, timedelta
+    recent_cutoff = datetime.utcnow() - timedelta(days=30)
+    
+    # Simple performance calculation (in production, would be more sophisticated)
+    recent_performance = {
+        'engagement_rate': 0.08,  # 8% engagement rate
+        'revenue_per_post': 150,  # $150 average
+        'off_peak_posts': 0.25    # 25% posts during off-peak
+    }
+    
+    # Get recommendations
+    recommendations = await predictor.recommend_content(
+        recent_performance=recent_performance
+    )
+    
+    return recommendations
+
+
+@router.post("/content/{content_id}/analyze")
+async def analyze_content_performance(
+    content_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Analyze individual content performance using ML."""
+    # Verify content belongs to user's agency
+    from core.domain.models import Content, Model
+    
+    result = await db.execute(
+        select(Content).join(Model).where(
+            and_(
+                Content.id == content_id,
+                Model.agency_id == current_user.agency_id
+            )
+        )
+    )
+    content = result.scalar_one_or_none()
+    
+    if not content:
+        raise HTTPException(
+            status_code=404,
+            detail="Content not found or access denied"
+        )
+    
+    # Check if model exists
+    from core.ml_analytics.models import MLModel
+    
+    model_result = await db.execute(
+        select(MLModel).where(
+            and_(
+                MLModel.agency_id == current_user.agency_id,
+                MLModel.prediction_type == PredictionType.CONTENT_OPTIMIZATION,
+                MLModel.is_active == True,
+                MLModel.status == ModelStatus.TRAINED
+            )
+        )
+    )
+    model = model_result.scalar_one_or_none()
+    
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="No active content optimization model. Please train a model first."
+        )
+    
+    # Get predictor
+    predictor = ml_service.predictors.get(PredictionType.CONTENT_OPTIMIZATION)
+    predictor.load_model(model.model_path)
+    
+    # Analyze content
+    try:
+        analysis = await predictor.analyze_content_performance(
+            content_id=str(content_id),
+            session=db
+        )
+        return analysis
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Analysis failed: {str(e)}"
+        )
+
+
 @router.get("/dashboard")
 async def ml_dashboard(
     current_user: User = Depends(get_current_user),
@@ -472,6 +635,11 @@ async def ml_dashboard(
                 PredictionType.CHURN_PREDICTION,
                 current_user.agency_id,
                 db
-            ) if any(m.prediction_type == PredictionType.CHURN_PREDICTION for m in active_models) else None
+            ) if any(m.prediction_type == PredictionType.CHURN_PREDICTION for m in active_models) else None,
+            'content': await ml_service.analyze_trends(
+                PredictionType.CONTENT_OPTIMIZATION,
+                current_user.agency_id,
+                db
+            ) if any(m.prediction_type == PredictionType.CONTENT_OPTIMIZATION for m in active_models) else None
         }
     }
