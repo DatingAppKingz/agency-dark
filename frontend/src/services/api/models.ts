@@ -50,14 +50,9 @@ export const modelsService = {
   },
 
   // Note: The following are placeholder methods until backend implements full model management
-  async getModels(params?: QueryParams): Promise<PaginatedResponse<ModelProfile>> {
-    console.warn('Model listing not directly available, use orchestration endpoints');
-    return {
-      data: [],
-      total: 0,
-      page: params?.page || 1,
-      pages: 0,
-    };
+  async getModels(params?: QueryParams): Promise<any> {
+    const { data } = await apiClient.get('/api/v1/users/models', { params });
+    return data;
   },
 
   async createModel(modelData: CreateModelProfileData): Promise<ModelProfile> {

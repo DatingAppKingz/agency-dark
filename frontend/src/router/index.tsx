@@ -20,6 +20,7 @@ const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'));
 const FinancialPage = lazy(() => import('@/pages/financial/FinancialPage'));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 const ApiKeysPage = lazy(() => import('@/pages/settings/ApiKeysPage'));
+const SyncDashboardPage = lazy(() => import('@/pages/sync/SyncDashboardPage'));
 const UserProfilePage = lazy(() => import('@/pages/profile/UserProfilePage'));
 const AgencySettingsPage = lazy(() => import('@/pages/agency/AgencySettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -149,6 +150,14 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <ApiKeysPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'sync',
+            element: (
+              <LazyPage>
+                <SyncDashboardPage />
               </LazyPage>
             ),
           },
