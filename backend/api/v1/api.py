@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from .endpoints import auth, api_keys, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring
+from .secure_api_keys import router as secure_api_keys_router
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
 from .analytics_dashboard import router as analytics_dashboard_router
@@ -23,6 +24,7 @@ api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(api_keys.router, tags=["api-keys"])
+api_router.include_router(secure_api_keys_router, tags=["api-keys-secure"])
 api_router.include_router(rate_limits.router, tags=["rate-limits"])
 api_router.include_router(fraud_detection.router, tags=["fraud-detection"])
 api_router.include_router(bulk_operations.router, tags=["bulk-operations"])
@@ -59,3 +61,7 @@ api_router.include_router(performance_optimization_router, tags=["performance"])
 
 # Database Partitioning
 api_router.include_router(partitions_router, tags=["partitions"])
+
+# Materialized Views
+from .materialized_views import router as materialized_views_router
+api_router.include_router(materialized_views_router, tags=["materialized-views"])

@@ -1,332 +1,303 @@
 """
-Rate limiting middleware for FastAPI.
+Rate Limiting Middleware with Advanced Features
+
+Integrates with the advanced rate limiter to provide:
+- Multiple strategy support
+- Distributed rate limiting
+- Automatic blocking
+- Detailed headers
 """
-from fastapi import Request, Response, HTTPException
-from fastapi.responses import JSONResponse
+import time
+import json
+from typing import Optional, Dict, List
 from starlette.middleware.base import BaseHTTPMiddleware
-from typing import Optional, Callable
-import logging
+from starlette.responses import JSONResponse
+from starlette.requests import Request
+from fastapi import status
 
-from datetime import datetime, timedelta
-from sqlalchemy import select
+from core.security.rate_limiter import rate_limiter, RateLimitStrategy, RateLimitConfig
+from core.logging import get_logger
+from core.config import settings
 
-from core.rate_limiting.rate_limiter import rate_limiter, RateLimitTier
-from core.dependencies import get_current_user_optional
-from core.domain.models import UserRole
-
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    """
-    Rate limiting middleware that applies to all requests.
-    """
+class AdvancedRateLimitMiddleware(BaseHTTPMiddleware):
+    """Advanced rate limiting middleware with multiple strategies"""
     
-    def __init__(self, app, calls: int = 100, period: int = 60):
-        super().__init__(app)
-        self.calls = calls
-        self.period = period
+    # Paths exempt from rate limiting
+    EXEMPT_PATHS = [
+        "/health",
+        "/metrics",
+        "/docs",
+        "/openapi.json",
+        "/redoc"
+    ]
     
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Skip rate limiting for excluded paths
-        excluded_paths = [
-            "/health",
-            "/health/live",
-            "/health/ready",
-            "/metrics",
-            "/docs",
-            "/redoc",
-            "/openapi.json"
-        ]
+    # Paths that use specific strategies
+    PATH_STRATEGIES = {
+        "/api/v1/auth": [RateLimitStrategy.IP],
+        "/api/v1/integrations": [RateLimitStrategy.API_KEY, RateLimitStrategy.USER],
+        "/api/v1/financial": [RateLimitStrategy.USER, RateLimitStrategy.IP],
+        "/api/v1/analytics": [RateLimitStrategy.USER, RateLimitStrategy.API_KEY],
+        "/api/v1/bulk": [RateLimitStrategy.USER],
+        "/api/v1/webhooks": [RateLimitStrategy.IP, RateLimitStrategy.GLOBAL]
+    }
+    
+    async def dispatch(self, request: Request, call_next):
+        """Apply rate limiting based on multiple strategies"""
         
-        if any(request.url.path.startswith(path) for path in excluded_paths):
+        # Check if path is exempt
+        if any(request.url.path.startswith(path) for path in self.EXEMPT_PATHS):
             return await call_next(request)
         
-        # Extract identifiers
-        client_ip = request.client.host if request.client else "unknown"
+        # Skip rate limiting in development if configured
+        if settings.ENVIRONMENT == "development" and getattr(settings, "DISABLE_RATE_LIMIT_DEV", False):
+            return await call_next(request)
         
-        # Try to get user info
-        user_id = None
-        api_key_id = None
-        tier = RateLimitTier.FREE
+        # Determine strategies to apply
+        strategies = self._get_applicable_strategies(request)
+        if not strategies:
+            return await call_next(request)
         
-        # Check if this is an API key request
-        auth_header = request.headers.get("Authorization", "")
-        x_api_key = request.headers.get("X-API-Key")
+        # Extract identifiers for each strategy
+        identifiers = await self._extract_identifiers(request, strategies)
         
-        if auth_header.startswith("Bearer ") and ":" in auth_header:
-            # API key authentication
-            identifier = f"api_key:{auth_header}"
-            # TODO: Extract api_key_id from validated key
-        elif x_api_key:
-            # API key in custom header
-            identifier = f"api_key:{x_api_key}"
+        # Check rate limits
+        if len(identifiers) > 1:
+            # Combined check for multiple strategies
+            result = await rate_limiter.check_combined_rate_limit(
+                identifiers=identifiers,
+                endpoint=request.url.path
+            )
         else:
-            # Try to get JWT user
-            try:
-                user = await get_current_user_optional(request)
-                if user:
-                    user_id = str(user.id)
-                    identifier = f"user:{user_id}"
-                    
-                    # Determine tier based on user role
-                    if user.role == UserRole.SUPER_ADMIN:
-                        tier = RateLimitTier.ENTERPRISE
-                    elif user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
-                        tier = RateLimitTier.PROFESSIONAL
-                    elif user.role in [UserRole.AGENCY_MEMBER, UserRole.MODEL]:
-                        tier = RateLimitTier.BASIC
-                    else:
-                        tier = RateLimitTier.FREE
-                else:
-                    # Anonymous user
-                    identifier = f"ip:{client_ip}"
-            except:
-                # Fall back to IP-based limiting
-                identifier = f"ip:{client_ip}"
+            # Single strategy check
+            strategy, identifier = next(iter(identifiers.items()))
+            result = await rate_limiter.check_rate_limit(
+                identifier=identifier,
+                strategy=strategy,
+                endpoint=request.url.path
+            )
         
-        # Check rate limit
-        result = await rate_limiter.check_rate_limit(
-            identifier=identifier,
-            endpoint=request.url.path,
-            method=request.method,
-            user_id=user_id,
-            api_key_id=api_key_id,
-            ip_address=client_ip,
-            tier=tier
-        )
+        # Handle rate limit result
+        if not result.allowed:
+            return self._create_rate_limit_response(result, identifiers)
         
-        # Add rate limit headers to response
+        # Process request
         response = await call_next(request)
         
         # Add rate limit headers
-        for header, value in result.to_headers().items():
-            response.headers[header] = value
+        response.headers["X-RateLimit-Limit"] = str(result.remaining + 1)  # Include current request
+        response.headers["X-RateLimit-Remaining"] = str(result.remaining)
+        response.headers["X-RateLimit-Reset"] = str(result.reset_at)
         
-        # If rate limit exceeded, return 429
-        if not result.allowed:
-            return JSONResponse(
-                status_code=429,
-                content={
-                    "error": "Rate limit exceeded",
-                    "message": f"Too many requests. Please retry after {result.retry_after} seconds.",
-                    "retry_after": result.retry_after
-                },
-                headers=result.to_headers()
-            )
+        # Add strategy information
+        response.headers["X-RateLimit-Strategy"] = ",".join(s.value for s in identifiers.keys())
+        
+        return response
+    
+    def _get_applicable_strategies(self, request: Request) -> List[RateLimitStrategy]:
+        """Determine which rate limiting strategies to apply"""
+        strategies = []
+        
+        # Check path-specific strategies
+        for path_prefix, path_strategies in self.PATH_STRATEGIES.items():
+            if request.url.path.startswith(path_prefix):
+                strategies.extend(path_strategies)
+                break
+        
+        # Default strategies if none specified
+        if not strategies:
+            # Always apply IP-based limiting as baseline
+            strategies.append(RateLimitStrategy.IP)
+            
+            # Add user-based if authenticated
+            if hasattr(request.state, "user"):
+                strategies.append(RateLimitStrategy.USER)
+            
+            # Add API key-based if using API key
+            if hasattr(request.state, "api_key"):
+                strategies.append(RateLimitStrategy.API_KEY)
+        
+        # Add global rate limiting for public endpoints
+        if not hasattr(request.state, "user") and not hasattr(request.state, "api_key"):
+            strategies.append(RateLimitStrategy.GLOBAL)
+        
+        return list(set(strategies))  # Remove duplicates
+    
+    async def _extract_identifiers(
+        self,
+        request: Request,
+        strategies: List[RateLimitStrategy]
+    ) -> Dict[RateLimitStrategy, str]:
+        """Extract identifiers for each rate limiting strategy"""
+        identifiers = {}
+        
+        for strategy in strategies:
+            if strategy == RateLimitStrategy.IP:
+                identifier = self._get_client_ip(request)
+            elif strategy == RateLimitStrategy.USER:
+                identifier = self._get_user_id(request)
+            elif strategy == RateLimitStrategy.API_KEY:
+                identifier = self._get_api_key_id(request)
+            elif strategy == RateLimitStrategy.GLOBAL:
+                identifier = "global"
+            else:
+                continue
+            
+            if identifier:
+                identifiers[strategy] = identifier
+        
+        return identifiers
+    
+    def _get_client_ip(self, request: Request) -> Optional[str]:
+        """Extract client IP address"""
+        # Check for IP in headers (reverse proxy)
+        forwarded_for = request.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            # Take the first IP in the chain
+            return forwarded_for.split(",")[0].strip()
+        
+        real_ip = request.headers.get("X-Real-IP")
+        if real_ip:
+            return real_ip
+        
+        # Fallback to direct client IP
+        if request.client:
+            return request.client.host
+        
+        return "unknown"
+    
+    def _get_user_id(self, request: Request) -> Optional[str]:
+        """Extract user ID from request"""
+        if hasattr(request.state, "user") and request.state.user:
+            return f"user:{request.state.user.get('user_id', 'unknown')}"
+        return None
+    
+    def _get_api_key_id(self, request: Request) -> Optional[str]:
+        """Extract API key ID from request"""
+        if hasattr(request.state, "api_key") and request.state.api_key:
+            return f"api_key:{request.state.api_key.get('id', 'unknown')}"
+        return None
+    
+    def _create_rate_limit_response(
+        self,
+        result,
+        identifiers: Dict[RateLimitStrategy, str]
+    ) -> JSONResponse:
+        """Create rate limit exceeded response"""
+        
+        # Determine primary reason
+        if result.blocked_until:
+            message = "Access temporarily blocked due to repeated violations"
+            status_code = status.HTTP_403_FORBIDDEN
+        else:
+            message = "Rate limit exceeded"
+            status_code = status.HTTP_429_TOO_MANY_REQUESTS
+        
+        # Build detailed error response
+        error_detail = {
+            "error": "rate_limit_exceeded",
+            "message": message,
+            "strategies": [s.value for s in identifiers.keys()],
+            "retry_after": result.retry_after,
+            "reset_at": result.reset_at
+        }
+        
+        if result.blocked_until:
+            error_detail["blocked_until"] = result.blocked_until
+            error_detail["blocked_for_seconds"] = result.retry_after
+        
+        response = JSONResponse(
+            status_code=status_code,
+            content=error_detail
+        )
+        
+        # Add headers
+        response.headers["X-RateLimit-Limit"] = "0"
+        response.headers["X-RateLimit-Remaining"] = "0"
+        response.headers["X-RateLimit-Reset"] = str(result.reset_at)
+        response.headers["Retry-After"] = str(result.retry_after)
+        
+        if result.blocked_until:
+            response.headers["X-RateLimit-Blocked-Until"] = str(result.blocked_until)
         
         return response
 
 
-def rate_limit(
-    requests_per_minute: Optional[int] = None,
-    requests_per_hour: Optional[int] = None,
-    requests_per_day: Optional[int] = None,
-    burst_size: int = 0,
-    key_func: Optional[Callable] = None
-):
-    """
-    Decorator for endpoint-specific rate limiting.
+class CustomRateLimitMiddleware(BaseHTTPMiddleware):
+    """Custom rate limit middleware for specific use cases"""
     
-    Usage:
-        @router.get("/expensive-endpoint")
-        @rate_limit(requests_per_minute=10, burst_size=3)
-        async def expensive_endpoint():
-            return {"data": "expensive"}
-    """
-    def decorator(func: Callable) -> Callable:
-        async def wrapper(request: Request, *args, **kwargs):
-            # Extract identifier
-            if key_func:
-                identifier = key_func(request, *args, **kwargs)
-            else:
-                # Default identifier
-                client_ip = request.client.host if request.client else "unknown"
-                identifier = f"endpoint:{func.__name__}:{client_ip}"
-            
-            # Create custom config
-            config = {}
-            if requests_per_minute:
-                config['requests_per_minute'] = requests_per_minute
-            if requests_per_hour:
-                config['requests_per_hour'] = requests_per_hour
-            if requests_per_day:
-                config['requests_per_day'] = requests_per_day
-            if burst_size:
-                config['burst_size'] = burst_size
-            
-            # Apply custom rate limit
-            results = []
-            
-            if requests_per_minute:
-                result = await rate_limiter._check_window_limit(
-                    identifier=identifier,
-                    endpoint=func.__name__,
-                    window_seconds=60,
-                    limit=requests_per_minute,
-                    burst_size=burst_size
-                )
-                results.append(result)
-            
-            if requests_per_hour:
-                result = await rate_limiter._check_window_limit(
-                    identifier=identifier,
-                    endpoint=func.__name__,
-                    window_seconds=3600,
-                    limit=requests_per_hour,
-                    burst_size=0
-                )
-                results.append(result)
-            
-            if requests_per_day:
-                result = await rate_limiter._check_window_limit(
-                    identifier=identifier,
-                    endpoint=func.__name__,
-                    window_seconds=86400,
-                    limit=requests_per_day,
-                    burst_size=0
-                )
-                results.append(result)
-            
-            # Combine results
-            final_result = rate_limiter._combine_results(results)
-            
-            if not final_result.allowed:
-                raise HTTPException(
-                    status_code=429,
-                    detail={
-                        "error": "Rate limit exceeded",
-                        "retry_after": final_result.retry_after
-                    },
-                    headers=final_result.to_headers()
-                )
-            
-            # Add headers to response
-            response = await func(request, *args, **kwargs)
-            if isinstance(response, Response):
-                for header, value in final_result.to_headers().items():
-                    response.headers[header] = value
-            
-            return response
-        
-        return wrapper
-    return decorator
-
-
-class DynamicRateLimiter:
-    """
-    Dynamic rate limiter that can be configured at runtime.
-    """
+    def __init__(self, app, config: RateLimitConfig, strategy: RateLimitStrategy = RateLimitStrategy.IP):
+        super().__init__(app)
+        self.config = config
+        self.strategy = strategy
     
-    @staticmethod
-    async def set_user_limit(
-        user_id: str,
-        limit_multiplier: float = 1.0,
-        custom_limits: Optional[dict] = None,
-        valid_days: int = 30,
-        reason: str = ""
-    ):
-        """Set custom rate limit for a user."""
-        from core.database import AsyncSessionLocal
-        from core.rate_limiting.models import UserRateLimit
+    async def dispatch(self, request: Request, call_next):
+        """Apply custom rate limiting"""
         
-        async with AsyncSessionLocal() as db:
-            # Check if user already has custom limit
-            existing = await db.execute(
-                select(UserRateLimit).where(UserRateLimit.user_id == user_id)
+        # Extract identifier based on strategy
+        if self.strategy == RateLimitStrategy.IP:
+            identifier = self._get_client_ip(request)
+        elif self.strategy == RateLimitStrategy.USER:
+            identifier = self._get_user_id(request)
+        elif self.strategy == RateLimitStrategy.API_KEY:
+            identifier = self._get_api_key_id(request)
+        else:
+            identifier = "custom"
+        
+        if not identifier:
+            return await call_next(request)
+        
+        # Check rate limit
+        result = await rate_limiter.check_rate_limit(
+            identifier=identifier,
+            strategy=self.strategy,
+            custom_config=self.config
+        )
+        
+        if not result.allowed:
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={
+                    "error": "rate_limit_exceeded",
+                    "message": "Too many requests",
+                    "retry_after": result.retry_after
+                },
+                headers={
+                    "Retry-After": str(result.retry_after),
+                    "X-RateLimit-Reset": str(result.reset_at)
+                }
             )
-            user_limit = existing.scalar_one_or_none()
-            
-            if user_limit:
-                # Update existing
-                user_limit.limit_multiplier = limit_multiplier
-                user_limit.custom_limits = custom_limits or {}
-                user_limit.valid_until = datetime.utcnow() + timedelta(days=valid_days)
-                user_limit.reason = reason
-            else:
-                # Create new
-                user_limit = UserRateLimit(
-                    user_id=user_id,
-                    limit_multiplier=limit_multiplier,
-                    custom_limits=custom_limits or {},
-                    valid_until=datetime.utcnow() + timedelta(days=valid_days),
-                    reason=reason
-                )
-                db.add(user_limit)
-            
-            await db.commit()
+        
+        # Process request
+        response = await call_next(request)
+        
+        # Add rate limit headers
+        response.headers["X-RateLimit-Remaining"] = str(result.remaining)
+        response.headers["X-RateLimit-Reset"] = str(result.reset_at)
+        
+        return response
     
-    @staticmethod
-    async def block_ip(
-        ip_address: str,
-        duration_hours: int = 24,
-        reason: str = ""
-    ):
-        """Block an IP address for a specified duration."""
-        from core.database import AsyncSessionLocal
-        from core.rate_limiting.models import IPRateLimit
+    def _get_client_ip(self, request: Request) -> Optional[str]:
+        """Extract client IP address"""
+        forwarded_for = request.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            return forwarded_for.split(",")[0].strip()
         
-        async with AsyncSessionLocal() as db:
-            ip_limit = IPRateLimit(
-                ip_address=ip_address,
-                action="block",
-                reason=reason,
-                expires_at=datetime.utcnow() + timedelta(hours=duration_hours)
-            )
-            db.add(ip_limit)
-            await db.commit()
+        if request.client:
+            return request.client.host
         
-        # Clear cache
-        await rate_limiter.redis.delete(f"ip_block:{ip_address}")
+        return "unknown"
     
-    @staticmethod
-    async def whitelist_user(
-        user_id: str,
-        endpoint_pattern: str = "*",
-        valid_days: int = 30,
-        reason: str = "",
-        approved_by_id: str = None
-    ):
-        """Add user to rate limit whitelist."""
-        from core.database import AsyncSessionLocal
-        from core.rate_limiting.models import RateLimitWhitelist
-        
-        async with AsyncSessionLocal() as db:
-            whitelist = RateLimitWhitelist(
-                user_id=user_id,
-                endpoint_pattern=endpoint_pattern,
-                valid_until=datetime.utcnow() + timedelta(days=valid_days),
-                reason=reason,
-                approved_by_id=approved_by_id
-            )
-            db.add(whitelist)
-            await db.commit()
-        
-        # Clear cache
-        await rate_limiter.redis.delete(f"whitelist:{user_id}:::")
+    def _get_user_id(self, request: Request) -> Optional[str]:
+        """Extract user ID from request"""
+        if hasattr(request.state, "user") and request.state.user:
+            return str(request.state.user.get("user_id", "unknown"))
+        return None
     
-    @staticmethod
-    async def get_violations(
-        user_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        hours: int = 24
-    ) -> list:
-        """Get recent rate limit violations."""
-        from core.database import AsyncSessionLocal
-        from core.rate_limiting.models import RateLimitViolation
-        from sqlalchemy import select, and_
-        
-        async with AsyncSessionLocal() as db:
-            query = select(RateLimitViolation).where(
-                RateLimitViolation.violated_at > datetime.utcnow() - timedelta(hours=hours)
-            )
-            
-            if user_id:
-                query = query.where(RateLimitViolation.user_id == user_id)
-            if ip_address:
-                query = query.where(RateLimitViolation.ip_address == ip_address)
-            
-            query = query.order_by(RateLimitViolation.violated_at.desc())
-            
-            result = await db.execute(query)
-            return result.scalars().all()
+    def _get_api_key_id(self, request: Request) -> Optional[str]:
+        """Extract API key ID from request"""
+        if hasattr(request.state, "api_key") and request.state.api_key:
+            return str(request.state.api_key.get("id", "unknown"))
+        return None

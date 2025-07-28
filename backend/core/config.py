@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     
     # Encryption
     ENCRYPTION_KEY: Optional[str] = Field(None, env="ENCRYPTION_KEY")
+    API_KEY_SALT: str = Field(default_factory=lambda: secrets.token_urlsafe(16), env="API_KEY_SALT")
     
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod

@@ -80,6 +80,7 @@ class User(Base):
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user")
+    api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")
 
 
 class Session(Base):

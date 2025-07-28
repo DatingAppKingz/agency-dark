@@ -10,7 +10,9 @@ from api.v1.api import api_router
 from core.middleware.tenant import TenantMiddleware
 from core.middleware.logging import LoggingMiddleware
 from core.middleware.auth import AuthenticationMiddleware
-from core.middleware.security import SecurityMiddleware, RateLimitMiddleware, APIKeyMiddleware
+from core.middleware.security import SecurityMiddleware, APIKeyMiddleware
+from core.middleware.enhanced_security import EnhancedAPIKeyMiddleware, APIKeyRateLimitMiddleware, SecurityHeadersMiddleware
+from core.middleware.rate_limit import AdvancedRateLimitMiddleware
 from core.middleware.fraud_detection import FraudDetectionMiddleware
 from core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 from core.realtime.server import socket_app
@@ -85,9 +87,11 @@ setup_api_docs(app)
 # Add middleware in reverse order (last added is first executed)
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(monitoring_middleware)
-app.add_middleware(RateLimitMiddleware, calls=100, period=60)
+app.add_middleware(AdvancedRateLimitMiddleware)  # New advanced rate limiting
+app.add_middleware(APIKeyRateLimitMiddleware)  # API key specific rate limiting
 app.add_middleware(FraudDetectionMiddleware)
-app.add_middleware(APIKeyMiddleware)
+app.add_middleware(EnhancedAPIKeyMiddleware)  # Enhanced API key validation
+app.add_middleware(SecurityHeadersMiddleware)  # Security headers
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(AuthenticationMiddleware)
 app.add_middleware(TenantMiddleware)
