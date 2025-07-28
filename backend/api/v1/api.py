@@ -15,6 +15,7 @@ from modules.financial.api import router as financial_router
 from modules.financial.api.webhook_endpoints import router as payment_webhook_router
 from modules.whitelabel.api.routes import router as whitelabel_router
 from .docs import router as docs_router
+from .experiments import router as experiments_router
 
 api_router = APIRouter()
 
@@ -47,3 +48,6 @@ api_router.include_router(mobile_notifications.router, tags=["mobile"])
 
 # Analytics dashboard
 api_router.include_router(analytics_dashboard_router, tags=["analytics-dashboard"])
+
+# A/B Testing
+api_router.include_router(experiments_router, tags=["experiments"])
