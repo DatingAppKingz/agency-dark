@@ -1,11 +1,13 @@
 """
 Time-series data models for analytics.
 """
-from sqlalchemy import Column, String, DateTime, Numeric, Integer, ForeignKey, Index, JSON, Boolean
+from sqlalchemy import Column, String, DateTime, Numeric, Integer, ForeignKey, Index, JSON, Boolean, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from datetime import datetime
 import uuid
+from typing import Dict, Any, Optional
+from pydantic import BaseModel, Field
 
 from core.database import Base
 
@@ -222,3 +224,45 @@ class AnalyticsCache(Base):
         Index('idx_analytics_cache_lookup', 'cache_type', 'entity_type', 'entity_id', 'period_start', 'period_end'),
         Index('idx_analytics_cache_expires', 'expires_at'),
     )
+
+
+class Analytics(Base):
+    """Generic analytics event storage"""
+    __tablename__ = "analytics"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    agency_id = Column(String, ForeignKey("agencies.id"), nullable=False)
+    model_id = Column(UUID(as_uuid=True), ForeignKey("model_profiles.id"), nullable=True)
+    fan_id = Column(UUID(as_uuid=True), ForeignKey("fans.id"), nullable=True)
+    
+    # Event data
+    metric_type = Column(String(50), nullable=False)
+    event_type = Column(String(50), nullable=False)
+    value = Column(Numeric(12, 2), default=0)
+    data = Column(JSON, default=dict)
+    
+    # Timestamps
+    date = Column(Date, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    __table_args__ = (
+        Index('idx_analytics_agency_date', 'agency_id', 'date'),
+        Index('idx_analytics_model_date', 'model_id', 'date'),
+        Index('idx_analytics_metric_type', 'metric_type'),
+    )
+
+
+# Pydantic models for real-time processing
+class AnalyticsEvent(BaseModel):
+    """Analytics event for real-time processing"""
+    event_type: str
+    agency_id: str
+    model_id: Optional[str] = None
+    fan_id: Optional[str] = None
+    data: Dict[str, Any] = Field(default_factory=dict)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }

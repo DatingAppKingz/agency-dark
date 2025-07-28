@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from .endpoints import auth, api_keys, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
+from .analytics_dashboard import router as analytics_dashboard_router
 from modules.inflow_wrapper.api import router as inflow_router
 from modules.onlyfans_wrapper.api import router as onlyfans_router
 from modules.api_orchestration.api.endpoints import router as orchestration_router
@@ -43,3 +44,6 @@ api_router.include_router(mobile_auth.router, tags=["mobile"])
 api_router.include_router(mobile_messages.router, tags=["mobile"])
 api_router.include_router(mobile_analytics.router, tags=["mobile"])
 api_router.include_router(mobile_notifications.router, tags=["mobile"])
+
+# Analytics dashboard
+api_router.include_router(analytics_dashboard_router, tags=["analytics-dashboard"])

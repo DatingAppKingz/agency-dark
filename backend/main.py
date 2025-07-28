@@ -41,9 +41,17 @@ async def lifespan(app: FastAPI):
     await monitoring_service.start()
     logger.info("Monitoring service started")
     
+    # Start real-time analytics engine
+    from modules.analytics.realtime.engine import realtime_engine
+    await realtime_engine.start()
+    logger.info("Real-time analytics engine started")
+    
     yield
     
     logger.info("Shutting down AgencyDark API...")
+    
+    # Stop real-time analytics engine
+    await realtime_engine.stop()
     
     # Stop monitoring service
     await monitoring_service.stop()
