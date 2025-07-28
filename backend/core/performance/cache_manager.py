@@ -1,11 +1,15 @@
 """
-Advanced caching strategies for performance optimization
+Advanced caching strategies for performance optimization with intelligent tiering
 """
 import json
 import hashlib
-from typing import Any, Dict, List, Optional, Union, Callable, TypeVar
+import pickle
+import zlib
+from typing import Any, Dict, List, Optional, Union, Callable, TypeVar, Tuple
 from datetime import datetime, timedelta
 from functools import wraps
+from collections import defaultdict
+from enum import Enum
 import asyncio
 from redis import asyncio as aioredis
 from redis.exceptions import RedisError
@@ -19,8 +23,16 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
+class CacheTier(str, Enum):
+    """Cache tier levels"""
+    HOT = "hot"           # Frequently accessed, 5 min TTL
+    WARM = "warm"         # Moderate access, 1 hour TTL
+    COLD = "cold"         # Infrequent access, 24 hour TTL
+    PERSISTENT = "persist" # Long-term cache, 7 days TTL
+
+
 class CacheManager:
-    """Advanced cache management with multiple strategies"""
+    """Advanced cache management with intelligent tiering and optimization"""
     
     def __init__(self, redis_url: str = None):
         self.redis_url = redis_url or settings.REDIS_URL
@@ -28,13 +40,51 @@ class CacheManager:
         
         # Cache configuration
         self.default_ttl = 3600  # 1 hour
-        self.max_ttl = 86400  # 24 hours
+        self.max_ttl = 604800    # 7 days
         
-        # Cache tiers
+        # Enhanced cache tiers with compression settings
         self.tiers = {
-            "hot": {"ttl": 300, "prefix": "hot:"},      # 5 minutes
-            "warm": {"ttl": 3600, "prefix": "warm:"},   # 1 hour
-            "cold": {"ttl": 86400, "prefix": "cold:"}   # 24 hours
+            CacheTier.HOT: {
+                "ttl": 300,
+                "prefix": "hot:",
+                "compress": False,
+                "max_size": 1000000,  # 1MB
+                "serialize": "json"
+            },
+            CacheTier.WARM: {
+                "ttl": 3600,
+                "prefix": "warm:",
+                "compress": True,
+                "max_size": 5000000,  # 5MB
+                "serialize": "json"
+            },
+            CacheTier.COLD: {
+                "ttl": 86400,
+                "prefix": "cold:",
+                "compress": True,
+                "max_size": 10000000,  # 10MB
+                "serialize": "pickle"
+            },
+            CacheTier.PERSISTENT: {
+                "ttl": 604800,
+                "prefix": "persist:",
+                "compress": True,
+                "max_size": 50000000,  # 50MB
+                "serialize": "pickle"
+            }
+        }
+        
+        # Access tracking for intelligent promotion
+        self._access_counts = defaultdict(int)
+        self._access_times = defaultdict(list)
+        
+        # Statistics
+        self._stats = {
+            "hits": 0,
+            "misses": 0,
+            "promotions": 0,
+            "evictions": 0,
+            "compression_saved": 0
         }
     
     async def connect(self):
@@ -42,8 +92,7 @@ class CacheManager:
         if not self._redis:
             self._redis = await aioredis.from_url(
                 self.redis_url,
-                encoding="utf-8",
-                decode_responses=True
+                decode_responses=False  # We handle encoding/decoding ourselves
             )
     
     async def disconnect(self):
@@ -75,21 +124,45 @@ class CacheManager:
     async def get(
         self,
         key: str,
-        namespace: str = "default"
+        namespace: str = "default",
+        tier: Optional[CacheTier] = None
     ) -> Optional[Any]:
-        """Get value from cache"""
+        """Get value from cache with intelligent tier checking"""
         try:
             redis = await self.redis
-            cache_key = self._generate_key(namespace, key)
             
-            value = await redis.get(cache_key)
-            if value:
-                try:
-                    return json.loads(value)
-                except json.JSONDecodeError:
-                    return value
+            # Check specific tier or all tiers
+            tiers_to_check = [tier] if tier else [
+                CacheTier.HOT, CacheTier.WARM, CacheTier.COLD, CacheTier.PERSISTENT
+            ]
             
+            for check_tier in tiers_to_check:
+                tier_config = self.tiers[check_tier]
+                cache_key = self._generate_key(
+                    f"{tier_config['prefix']}{namespace}", key
+                )
+                
+                value = await redis.get(cache_key)
+                if value:
+                    self._stats["hits"] += 1
+                    
+                    # Track access for promotion
+                    self._track_access(key, check_tier)
+                    
+                    # Deserialize and decompress
+                    deserialized = await self._deserialize_value(
+                        value, tier_config
+                    )
+                    
+                    # Promote if frequently accessed
+                    if check_tier != CacheTier.HOT:
+                        await self._promote_if_hot(key, deserialized, check_tier)
+                    
+                    return deserialized
+            
+            self._stats["misses"] += 1
             return None
+            
         except RedisError as e:
             logger.error(f"Redis get error: {e}")
             return None
@@ -99,24 +172,113 @@ class CacheManager:
         key: str,
         value: Any,
         ttl: Optional[int] = None,
-        namespace: str = "default"
+        namespace: str = "default",
+        tier: CacheTier = CacheTier.WARM
     ) -> bool:
-        """Set value in cache"""
+        """Set value in cache with intelligent tiering and compression"""
         try:
             redis = await self.redis
-            cache_key = self._generate_key(namespace, key)
+            tier_config = self.tiers[tier]
             
-            if not isinstance(value, str):
-                value = json.dumps(value)
+            cache_key = self._generate_key(
+                f"{tier_config['prefix']}{namespace}", key
+            )
             
-            ttl = ttl or self.default_ttl
+            # Serialize and compress
+            serialized = await self._serialize_value(value, tier_config)
+            
+            # Check size limits
+            if len(serialized) > tier_config["max_size"]:
+                logger.warning(f"Value too large for tier {tier}: {len(serialized)} bytes")
+                # Try next tier
+                if tier == CacheTier.HOT:
+                    return await self.set(key, value, ttl, namespace, CacheTier.WARM)
+                elif tier == CacheTier.WARM:
+                    return await self.set(key, value, ttl, namespace, CacheTier.COLD)
+                else:
+                    return False
+            
+            ttl = ttl or tier_config["ttl"]
             ttl = min(ttl, self.max_ttl)
             
-            await redis.setex(cache_key, ttl, value)
+            await redis.setex(cache_key, ttl, serialized)
+            
+            # Track for statistics
+            if tier_config["compress"]:
+                original_size = len(str(value).encode())
+                self._stats["compression_saved"] += original_size - len(serialized)
+            
             return True
+            
         except RedisError as e:
             logger.error(f"Redis set error: {e}")
             return False
+    
+    async def _serialize_value(self, value: Any, tier_config: Dict[str, Any]) -> bytes:
+        """Serialize and optionally compress value"""
+        # Choose serialization method
+        if tier_config["serialize"] == "json":
+            serialized = json.dumps(value).encode()
+        else:  # pickle
+            serialized = pickle.dumps(value)
+        
+        # Compress if needed
+        if tier_config["compress"] and len(serialized) > 1000:  # Only compress larger values
+            compressed = zlib.compress(serialized, level=6)
+            # Only use compressed if it's actually smaller
+            if len(compressed) < len(serialized):
+                return b"COMPRESSED:" + compressed
+        
+        return serialized
+    
+    async def _deserialize_value(self, data: Union[str, bytes], tier_config: Dict[str, Any]) -> Any:
+        """Deserialize and decompress value"""
+        # Handle string data from Redis
+        if isinstance(data, str):
+            data = data.encode()
+        
+        # Check if compressed
+        if data.startswith(b"COMPRESSED:"):
+            data = zlib.decompress(data[11:])  # Skip "COMPRESSED:" prefix
+        
+        # Deserialize
+        if tier_config["serialize"] == "json":
+            return json.loads(data.decode())
+        else:  # pickle
+            return pickle.loads(data)
+    
+    def _track_access(self, key: str, tier: CacheTier):
+        """Track access patterns for cache optimization"""
+        self._access_counts[key] += 1
+        
+        # Keep only recent access times (last 100)
+        access_times = self._access_times[key]
+        access_times.append(datetime.utcnow())
+        if len(access_times) > 100:
+            access_times.pop(0)
+    
+    async def _promote_if_hot(self, key: str, value: Any, current_tier: CacheTier):
+        """Promote frequently accessed items to hotter tiers"""
+        access_count = self._access_counts.get(key, 0)
+        access_times = self._access_times.get(key, [])
+        
+        # Calculate access frequency (accesses per hour)
+        if len(access_times) >= 5:
+            time_span = (access_times[-1] - access_times[0]).total_seconds() / 3600
+            if time_span > 0:
+                access_frequency = len(access_times) / time_span
+                
+                # Promotion thresholds
+                if current_tier == CacheTier.COLD and access_frequency > 10:
+                    # Promote to WARM
+                    await self.set(key, value, tier=CacheTier.WARM)
+                    self._stats["promotions"] += 1
+                    logger.info(f"Promoted key {key} from COLD to WARM tier")
+                elif current_tier == CacheTier.WARM and access_frequency > 50:
+                    # Promote to HOT
+                    await self.set(key, value, tier=CacheTier.HOT)
+                    self._stats["promotions"] += 1
+                    logger.info(f"Promoted key {key} from WARM to HOT tier")
     
     async def delete(
         self,
@@ -248,14 +410,175 @@ class CacheManager:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
     
-    # Cache statistics
+    # Batch operations
+    async def mget(
+        self,
+        keys: List[str],
+        namespace: str = "default"
+    ) -> Dict[str, Any]:
+        """Get multiple values from cache efficiently"""
+        try:
+            redis = await self.redis
+            results = {}
+            
+            # Check all tiers
+            for tier in [CacheTier.HOT, CacheTier.WARM, CacheTier.COLD, CacheTier.PERSISTENT]:
+                tier_config = self.tiers[tier]
+                
+                # Build cache keys
+                cache_keys = [
+                    self._generate_key(f"{tier_config['prefix']}{namespace}", key)
+                    for key in keys if key not in results
+                ]
+                
+                if cache_keys:
+                    # Batch get
+                    values = await redis.mget(cache_keys)
+                    
+                    # Process results
+                    for i, value in enumerate(values):
+                        if value is not None:
+                            key = keys[i]
+                            try:
+                                results[key] = await self._deserialize_value(value, tier_config)
+                                self._track_access(key, tier)
+                                self._stats["hits"] += 1
+                            except Exception as e:
+                                logger.error(f"Error deserializing {key}: {e}")
+            
+            # Track misses
+            for key in keys:
+                if key not in results:
+                    self._stats["misses"] += 1
+            
+            return results
+            
+        except RedisError as e:
+            logger.error(f"Redis mget error: {e}")
+            return {}
+    
+    async def mset(
+        self,
+        items: Dict[str, Any],
+        ttl: Optional[int] = None,
+        namespace: str = "default",
+        tier: CacheTier = CacheTier.WARM
+    ) -> bool:
+        """Set multiple values in cache efficiently"""
+        try:
+            redis = await self.redis
+            tier_config = self.tiers[tier]
+            
+            # Prepare pipeline
+            pipe = redis.pipeline()
+            successful_keys = []
+            
+            for key, value in items.items():
+                try:
+                    cache_key = self._generate_key(
+                        f"{tier_config['prefix']}{namespace}", key
+                    )
+                    
+                    # Serialize value
+                    serialized = await self._serialize_value(value, tier_config)
+                    
+                    # Check size limit
+                    if len(serialized) <= tier_config["max_size"]:
+                        pipe.setex(
+                            cache_key,
+                            ttl or tier_config["ttl"],
+                            serialized
+                        )
+                        successful_keys.append(key)
+                    else:
+                        logger.warning(f"Value too large for key {key}")
+                        
+                except Exception as e:
+                    logger.error(f"Error serializing {key}: {e}")
+            
+            # Execute pipeline
+            if successful_keys:
+                await pipe.execute()
+                
+                # Update statistics
+                if tier_config["compress"]:
+                    for key in successful_keys:
+                        original_size = len(str(items[key]).encode())
+                        self._stats["compression_saved"] += original_size // 2  # Approximate
+            
+            return len(successful_keys) == len(items)
+            
+        except RedisError as e:
+            logger.error(f"Redis mset error: {e}")
+            return False
+    
+    async def mdelete(
+        self,
+        keys: List[str],
+        namespace: str = "default"
+    ) -> int:
+        """Delete multiple keys from cache"""
+        try:
+            redis = await self.redis
+            deleted_count = 0
+            
+            # Delete from all tiers
+            for tier in [CacheTier.HOT, CacheTier.WARM, CacheTier.COLD, CacheTier.PERSISTENT]:
+                tier_config = self.tiers[tier]
+                
+                cache_keys = [
+                    self._generate_key(f"{tier_config['prefix']}{namespace}", key)
+                    for key in keys
+                ]
+                
+                if cache_keys:
+                    deleted_count += await redis.delete(*cache_keys)
+            
+            # Clear access tracking
+            for key in keys:
+                self._access_counts.pop(key, None)
+                self._access_times.pop(key, None)
+            
+            return deleted_count
+            
+        except RedisError as e:
+            logger.error(f"Redis mdelete error: {e}")
+            return 0
+    
+    # Enhanced statistics
     async def get_stats(self) -> Dict[str, Any]:
-        """Get cache statistics"""
+        """Get comprehensive cache statistics"""
         try:
             redis = await self.redis
             info = await redis.info()
             
+            # Calculate tier-specific stats
+            tier_stats = {}
+            for tier in CacheTier:
+                tier_config = self.tiers[tier]
+                pattern = self._generate_key(f"{tier_config['prefix']}*", "")
+                
+                # Count keys per tier
+                keys_count = 0
+                async for _ in redis.scan_iter(match=pattern):
+                    keys_count += 1
+                
+                tier_stats[tier.value] = {
+                    "keys": keys_count,
+                    "ttl": tier_config["ttl"],
+                    "compress": tier_config["compress"],
+                    "max_size": tier_config["max_size"]
+                }
+            
+            # Calculate access patterns
+            hot_keys = sorted(
+                self._access_counts.items(),
+                key=lambda x: x[1],
+                reverse=True
+            )[:10]
+            
             return {
+                # Redis stats
                 "connected_clients": info.get("connected_clients", 0),
                 "used_memory": info.get("used_memory_human", "0"),
                 "total_commands": info.get("total_commands_processed", 0),
@@ -266,11 +589,37 @@ class CacheManager:
                     info.get("keyspace_misses", 0)
                 ),
                 "evicted_keys": info.get("evicted_keys", 0),
-                "expired_keys": info.get("expired_keys", 0)
+                "expired_keys": info.get("expired_keys", 0),
+                
+                # Custom stats
+                "tier_stats": tier_stats,
+                "hot_keys": [{"key": k, "accesses": v} for k, v in hot_keys],
+                "custom_stats": self._stats,
+                "compression_ratio": self._calculate_compression_ratio(),
+                
+                # Performance metrics
+                "avg_access_per_key": (
+                    sum(self._access_counts.values()) / len(self._access_counts)
+                    if self._access_counts else 0
+                ),
+                "total_keys_tracked": len(self._access_counts)
             }
         except RedisError as e:
             logger.error(f"Redis stats error: {e}")
             return {}
+    
+    def _calculate_compression_ratio(self) -> float:
+        """Calculate overall compression ratio"""
+        if self._stats["compression_saved"] == 0:
+            return 0.0
+        
+        # Estimate based on saved bytes
+        estimated_original = self._stats["compression_saved"] * 2
+        if estimated_original > 0:
+            return round(
+                self._stats["compression_saved"] / estimated_original * 100, 2
+            )
+        return 0.0
     
     def _calculate_hit_rate(self, hits: int, misses: int) -> float:
         """Calculate cache hit rate"""
