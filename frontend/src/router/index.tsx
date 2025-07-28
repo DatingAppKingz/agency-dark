@@ -24,6 +24,9 @@ const WebhooksPage = lazy(() => import('@/pages/settings/WebhooksPage'));
 const BulkOperationsPage = lazy(() => import('@/pages/bulk/BulkOperationsPage'));
 const SyncDashboardPage = lazy(() => import('@/pages/sync/SyncDashboardPage'));
 const UserProfilePage = lazy(() => import('@/pages/profile/UserProfilePage'));
+const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'));
+const ReportBuilderPage = lazy(() => import('@/pages/reports/ReportBuilderPage'));
+const ReportViewerPage = lazy(() => import('@/pages/reports/ReportViewerPage'));
 const AgencySettingsPage = lazy(() => import('@/pages/agency/AgencySettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const ApiTestPage = lazy(() => import('@/pages/ApiTestPage'));
@@ -176,6 +179,38 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <SyncDashboardPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'reports',
+            element: (
+              <LazyPage>
+                <ReportsPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'reports/builder',
+            element: (
+              <LazyPage>
+                <ReportBuilderPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'reports/builder/:templateId',
+            element: (
+              <LazyPage>
+                <ReportBuilderPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'reports/view/:templateId',
+            element: (
+              <LazyPage>
+                <ReportViewerPage />
               </LazyPage>
             ),
           },
