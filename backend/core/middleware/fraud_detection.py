@@ -1,109 +1,167 @@
 """
-Fraud detection middleware.
+Advanced Fraud Detection Middleware
+
+Integrates with the advanced fraud detection system to provide:
+- Real-time fraud scoring
+- Multiple detection strategies
+- Automatic blocking for high-risk activities
 """
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 import json
-import logging
-from typing import Optional
+from typing import Optional, Dict, Any
 
-from core.fraud_detection.fraud_detector import fraud_detector
-from core.dependencies import get_current_user_optional
-from core.database import get_db
+from core.security.fraud_detector import fraud_detector, FraudRiskLevel
+from core.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FraudDetectionMiddleware(BaseHTTPMiddleware):
-    """Middleware for fraud detection on sensitive endpoints."""
+    """Advanced fraud detection middleware for sensitive operations"""
     
     # Endpoints to monitor for fraud
     MONITORED_ENDPOINTS = [
+        "/api/v1/financial",
         "/api/v1/transactions",
-        "/api/v1/payouts",
         "/api/v1/payments",
         "/api/v1/withdrawals",
-        "/api/v1/transfers"
+        "/api/v1/transfers",
+        "/api/v1/auth/login",
+        "/api/v1/auth/register",
+        "/api/v1/auth/reset-password",
+        "/api/v1/api-keys",
+        "/api/v1/bulk"
     ]
     
+    # Action mapping for endpoints
+    ACTION_MAPPING = {
+        "/login": "login",
+        "/register": "register",
+        "/reset-password": "password_reset",
+        "/withdrawals": "withdrawal",
+        "/transfers": "transfer",
+        "/api-keys": "api_key_create",
+        "/bulk": "bulk_operation"
+    }
+    
     async def dispatch(self, request: Request, call_next):
-        """Process request with fraud detection."""
-        # Only check monitored endpoints
+        """Process request with advanced fraud detection"""
+        
+        # Check if endpoint should be monitored
         if not any(request.url.path.startswith(ep) for ep in self.MONITORED_ENDPOINTS):
             return await call_next(request)
         
-        # Only check POST/PUT requests
-        if request.method not in ["POST", "PUT"]:
+        # Skip GET requests (except for certain auth endpoints)
+        if request.method == "GET" and "/auth/" not in request.url.path:
             return await call_next(request)
         
         try:
-            # Get user info
-            user = await self._get_user(request)
-            if not user:
-                return await call_next(request)
-            
-            # Get request data
-            body = await self._get_request_body(request)
-            if not body:
-                return await call_next(request)
-            
-            # Parse JSON body
-            try:
-                data = json.loads(body)
-            except json.JSONDecodeError:
-                return await call_next(request)
+            # Extract context information
+            user_id = None
+            if hasattr(request.state, "user") and request.state.user:
+                user_id = request.state.user.get("user_id")
             
             # Get IP address
             ip_address = self._get_client_ip(request)
             
-            # Perform fraud check
-            async for db in get_db():
-                fraud_result = await fraud_detector.check_transaction(
-                    transaction_data=data,
-                    user_id=str(user.id),
-                    ip_address=ip_address,
-                    session=db
-                )
-                break
+            # Determine action from endpoint
+            action = self._get_action_from_endpoint(request.url.path)
             
-            # Handle fraud detection result
-            if not fraud_result["allowed"]:
+            # Extract amount if present
+            amount = None
+            metadata = {
+                "method": request.method,
+                "endpoint": request.url.path,
+                "user_agent": request.headers.get("User-Agent", ""),
+                "device_fingerprint": request.headers.get("X-Device-Fingerprint")
+            }
+            
+            # Get request body for POST/PUT
+            if request.method in ["POST", "PUT", "PATCH"]:
+                body = await self._get_request_body(request)
+                if body:
+                    try:
+                        data = json.loads(body)
+                        amount = data.get("amount")
+                        metadata["request_data"] = data
+                    except json.JSONDecodeError:
+                        pass
+            
+            # Perform fraud check
+            fraud_score = await fraud_detector.check_fraud(
+                user_id=user_id,
+                ip_address=ip_address,
+                action=action,
+                amount=amount,
+                metadata=metadata
+            )
+            
+            # Log high-risk activities
+            if fraud_score.risk_level in [FraudRiskLevel.HIGH, FraudRiskLevel.CRITICAL]:
                 logger.warning(
-                    f"Fraud detected for user {user.id}: "
-                    f"Risk level: {fraud_result['risk_level']}, "
-                    f"Reasons: {fraud_result['reasons']}"
+                    f"High fraud risk detected - User: {user_id}, "
+                    f"IP: {ip_address}, Action: {action}, "
+                    f"Score: {fraud_score.score}, Risk: {fraud_score.risk_level}"
+                )
+            
+            # Block if necessary
+            if fraud_score.block_transaction:
+                logger.error(
+                    f"Transaction blocked - User: {user_id}, "
+                    f"Score: {fraud_score.score}, "
+                    f"Indicators: {[i['type'] for i in fraud_score.indicators]}"
                 )
                 
                 return JSONResponse(
                     status_code=403,
                     content={
-                        "detail": "Transaction blocked due to security concerns",
-                        "risk_level": fraud_result["risk_level"].value,
-                        "action": fraud_result["action"].value
+                        "error": "security_check_failed",
+                        "message": "This action has been blocked for security reasons",
+                        "risk_level": fraud_score.risk_level.value,
+                        "recommendations": fraud_score.recommendations[:2]  # Limit exposed recommendations
+                    },
+                    headers={
+                        "X-Fraud-Score": str(int(fraud_score.score)),
+                        "X-Risk-Level": fraud_score.risk_level.value
                     }
                 )
             
-            # Add fraud check headers
+            # Add fraud info to request state for downstream use
+            request.state.fraud_score = fraud_score
+            
+            # Process request
             response = await call_next(request)
-            response.headers["X-Fraud-Score"] = str(fraud_result["risk_score"])
-            response.headers["X-Risk-Level"] = fraud_result["risk_level"].value
+            
+            # Add fraud headers to response
+            response.headers["X-Fraud-Score"] = str(int(fraud_score.score))
+            response.headers["X-Risk-Level"] = fraud_score.risk_level.value
+            
+            # Add verification requirement header if needed
+            if fraud_score.require_verification:
+                response.headers["X-Verification-Required"] = "true"
             
             return response
             
         except Exception as e:
-            logger.error(f"Fraud detection error: {str(e)}")
-            # On error, allow request but log
+            logger.error(f"Fraud detection error: {e}")
+            # On error, allow request but log the issue
             return await call_next(request)
     
-    async def _get_user(self, request: Request):
-        """Get current user from request."""
-        try:
-            # Try to get user from auth
-            user = await get_current_user_optional(request)
-            return user
-        except:
-            return None
+    def _get_action_from_endpoint(self, path: str) -> str:
+        """Determine action from endpoint path"""
+        for pattern, action in self.ACTION_MAPPING.items():
+            if pattern in path:
+                return action
+        
+        # Default action based on path segments
+        if "financial" in path:
+            return "financial_operation"
+        elif "auth" in path:
+            return "authentication"
+        else:
+            return "general"
     
     async def _get_request_body(self, request: Request) -> Optional[bytes]:
         """Get request body safely."""
