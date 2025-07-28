@@ -1,0 +1,31 @@
+# Copy this file to terraform.tfvars and fill in the values
+
+# AWS Configuration
+aws_region = "us-east-1"
+
+# Domain Configuration
+domain_name            = "agencydark.com"
+create_route53_records = true
+
+# Database Configuration
+db_master_username = "postgres"
+db_master_password = "CHANGE_ME_STRONG_PASSWORD"  # Change this!
+
+# Redis Configuration
+redis_auth_token = "CHANGE_ME_STRONG_REDIS_PASSWORD"  # Change this!
+
+# Application Scaling
+backend_desired_count = 2
+backend_min_capacity  = 2
+backend_max_capacity  = 10
+
+# Monitoring
+alert_email_addresses = [
+  "alerts@agencydark.com"
+]
+
+# Optional: Override instance sizes for production
+rds_instance_class    = "db.t3.large"
+redis_node_type       = "cache.t3.medium"
+backend_cpu           = 2048
+backend_memory        = 4096

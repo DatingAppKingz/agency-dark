@@ -102,6 +102,7 @@ class TokenData(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+    remember_me: bool = False
     user_agent: Optional[str] = None
     ip_address: Optional[str] = None
 
@@ -169,3 +170,36 @@ class ErrorResponse(BaseModel):
     detail: str
     code: Optional[str] = None
     request_id: Optional[str] = None
+
+
+# Session Management Schemas
+class SessionInfo(BaseModel):
+    id: str
+    device_name: str
+    browser: str
+    os: str
+    ip_address: Optional[str]
+    location: Optional[str]
+    last_activity: Optional[str]
+    created_at: str
+    is_active: bool
+    is_current: bool = False
+    remember_me: bool = False
+
+
+class SessionListResponse(BaseModel):
+    sessions: List[SessionInfo]
+    total: int
+    max_allowed: int
+
+
+class SessionRevokeRequest(BaseModel):
+    session_id: str
+    reason: Optional[str] = None
+
+
+class SessionStats(BaseModel):
+    total_active_sessions: int
+    recently_active: int
+    device_breakdown: Dict[str, int]
+    timestamp: str

@@ -28,11 +28,14 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = Field("http://localhost:3000", env="FRONTEND_URL")
     ALLOWED_ORIGINS: Union[str, List[str]] = Field(default="", env="ALLOWED_ORIGINS")
     
-    SMTP_HOST: Optional[str] = None
-    SMTP_PORT: Optional[int] = 587
-    SMTP_USER: Optional[str] = None
-    SMTP_PASSWORD: Optional[str] = None
-    SMTP_FROM: Optional[str] = None
+    # Email configuration
+    SMTP_HOST: str = Field("localhost", env="SMTP_HOST")
+    SMTP_PORT: int = Field(587, env="SMTP_PORT")
+    SMTP_USERNAME: Optional[str] = Field(None, env="SMTP_USERNAME")
+    SMTP_PASSWORD: Optional[str] = Field(None, env="SMTP_PASSWORD")
+    SMTP_USE_TLS: bool = Field(True, env="SMTP_USE_TLS")
+    FROM_EMAIL: str = Field("noreply@agencydark.com", env="FROM_EMAIL")
+    FROM_NAME: str = Field("AgencyDark", env="FROM_NAME")
     
     SENTRY_DSN: Optional[str] = None
     

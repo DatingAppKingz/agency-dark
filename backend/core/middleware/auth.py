@@ -5,9 +5,10 @@ from fastapi.responses import JSONResponse
 from jose import JWTError
 import logging
 
-from core.security import decode_token
+from core.security import decode_token, verify_token_fingerprint
 from core.database import get_db_sync
-from core.domain.models import User
+from core.domain.models import User, Session
+from core.auth.token_blacklist import token_blacklist_service
 
 logger = logging.getLogger(__name__)
 
@@ -41,15 +42,47 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             # Verify token and extract user data
             payload = decode_token(token)
             if payload:
+                # Check if token is blacklisted
+                jti = payload.get("jti")
+                if jti:
+                    with get_db_sync() as db:
+                        if await token_blacklist_service.is_token_blacklisted(jti, db):
+                            return JSONResponse(
+                                status_code=status.HTTP_401_UNAUTHORIZED,
+                                content={"detail": "Token has been revoked"}
+                            )
+                
+                # Verify fingerprint if present
+                fingerprint_hash = payload.get("fingerprint")
+                if fingerprint_hash:
+                    fingerprint_cookie = request.cookies.get("__Secure-Fgp")
+                    if not fingerprint_cookie or not verify_token_fingerprint(fingerprint_cookie, fingerprint_hash):
+                        logger.warning("Token fingerprint mismatch")
+                        return JSONResponse(
+                            status_code=status.HTTP_401_UNAUTHORIZED,
+                            content={"detail": "Invalid token fingerprint"}
+                        )
+                
                 request.state.user_id = payload.get("user_id")
                 request.state.user_email = payload.get("email")
                 request.state.user_role = payload.get("role")
+                request.state.token_jti = jti
                 
-                # For tenant isolation
+                # For tenant isolation and session tracking
                 with get_db_sync() as db:
                     user = db.query(User).filter(User.id == payload.get("user_id")).first()
                     if user and user.agency_id:
                         request.state.tenant_id = str(user.agency_id)
+                    
+                    # Try to find active session
+                    if fingerprint_hash:
+                        session = db.query(Session).filter(
+                            Session.user_id == payload.get("user_id"),
+                            Session.fingerprint == fingerprint_hash,
+                            Session.is_active == True
+                        ).first()
+                        if session:
+                            request.state.session_id = str(session.id)
                 
                 logger.debug(f"Authenticated user: {request.state.user_email}")
         except JWTError as e:

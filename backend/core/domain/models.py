@@ -68,6 +68,11 @@ class User(Base):
     password_reset_expires = Column(DateTime)
     last_login = Column(DateTime)
     verified_at = Column(DateTime)
+    failed_login_attempts = Column(Integer, default=0)
+    last_failed_login = Column(DateTime)
+    two_factor_secret = Column(String(255))  # Encrypted TOTP secret
+    two_factor_enabled = Column(Boolean, default=False)
+    backup_codes = Column(JSON)  # Encrypted backup codes
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -87,7 +92,11 @@ class Session(Base):
     is_active = Column(Boolean, default=True)
     user_agent = Column(Text)
     ip_address = Column(INET)
+    fingerprint = Column(String(64))  # Token fingerprint hash
+    device_name = Column(String(255))  # User-friendly device name
+    remember_me = Column(Boolean, default=False)  # Remember me flag
     refreshed_at = Column(DateTime)
+    last_activity = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     user = relationship("User", back_populates="sessions")

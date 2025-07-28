@@ -17,6 +17,7 @@ from core.realtime.server import socket_app
 from core.cache import initialize_cache, shutdown_cache
 from core.monitoring import monitoring_service
 from core.middleware.monitoring import monitoring_middleware
+from core.openapi import custom_openapi, setup_api_docs
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -61,10 +62,17 @@ app = FastAPI(
     title="AgencyDark API",
     description="White-label SaaS portal for OnlyFans marketing agencies",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    docs_url=None,  # We'll use custom docs
+    redoc_url=None,  # We'll use custom redoc
+    openapi_url="/api/v1/openapi.json",
     lifespan=lifespan
 )
+
+# Setup custom OpenAPI schema
+app.openapi = lambda: custom_openapi(app)
+
+# Setup custom API documentation
+setup_api_docs(app)
 
 # Add middleware in reverse order (last added is first executed)
 app.add_middleware(LoggingMiddleware)

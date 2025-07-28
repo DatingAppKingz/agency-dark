@@ -1,0 +1,179 @@
+{
+  "common": {
+    "welcome": "Bienvenido",
+    "goodbye": "Adiós",
+    "yes": "Sí",
+    "no": "No",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "register": "Registrarse",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "reset_password": "Restablecer contraseña",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirm_password": "Confirmar contraseña",
+    "remember_me": "Recuérdame",
+    "login_success": "Inicio de sesión exitoso",
+    "logout_success": "Sesión cerrada exitosamente",
+    "invalid_credentials": "Correo electrónico o contraseña inválidos",
+    "account_locked": "La cuenta está bloqueada. Por favor contacta soporte.",
+    "session_expired": "Tu sesión ha expirado. Por favor inicia sesión nuevamente."
+  },
+  "dashboard": {
+    "title": "Panel de control",
+    "overview": "Resumen",
+    "total_models": "Modelos totales",
+    "total_fans": "Fans totales",
+    "revenue_today": "Ingresos hoy",
+    "revenue_month": "Ingresos este mes",
+    "active_chats": "Chats activos",
+    "pending_messages": "Mensajes pendientes",
+    "recent_activity": "Actividad reciente",
+    "performance": "Rendimiento"
+  },
+  "models": {
+    "title": "Modelos",
+    "add_model": "Agregar modelo",
+    "edit_model": "Editar modelo",
+    "model_name": "Nombre del modelo",
+    "onlyfans_id": "ID de OnlyFans",
+    "status": "Estado",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "total_earnings": "Ganancias totales",
+    "fan_count": "Cantidad de fans",
+    "message_count": "Mensajes",
+    "model_added": "Modelo agregado exitosamente",
+    "model_updated": "Modelo actualizado exitosamente",
+    "model_deleted": "Modelo eliminado exitosamente"
+  },
+  "fans": {
+    "title": "Fans",
+    "fan_details": "Detalles del fan",
+    "username": "Nombre de usuario",
+    "subscription_status": "Estado de suscripción",
+    "total_spent": "Total gastado",
+    "last_activity": "Última actividad",
+    "message_history": "Historial de mensajes",
+    "purchase_history": "Historial de compras",
+    "active_subscriber": "Suscriptor activo",
+    "expired_subscriber": "Suscriptor expirado",
+    "never_subscribed": "Nunca suscrito"
+  },
+  "messages": {
+    "title": "Mensajes",
+    "compose": "Redactar",
+    "inbox": "Bandeja de entrada",
+    "sent": "Enviados",
+    "drafts": "Borradores",
+    "send_message": "Enviar mensaje",
+    "reply": "Responder",
+    "forward": "Reenviar",
+    "delete_message": "Eliminar mensaje",
+    "mark_as_read": "Marcar como leído",
+    "mark_as_unread": "Marcar como no leído",
+    "no_messages": "No hay mensajes",
+    "message_sent": "Mensaje enviado exitosamente",
+    "message_deleted": "Mensaje eliminado exitosamente"
+  },
+  "analytics": {
+    "title": "Análisis",
+    "revenue": "Ingresos",
+    "subscribers": "Suscriptores",
+    "engagement": "Participación",
+    "conversion": "Conversión",
+    "daily": "Diario",
+    "weekly": "Semanal",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "date_range": "Rango de fechas",
+    "export_data": "Exportar datos",
+    "chart_type": "Tipo de gráfico",
+    "line_chart": "Gráfico de líneas",
+    "bar_chart": "Gráfico de barras",
+    "pie_chart": "Gráfico circular"
+  },
+  "payments": {
+    "title": "Pagos",
+    "transaction_history": "Historial de transacciones",
+    "pending_payouts": "Pagos pendientes",
+    "completed_payouts": "Pagos completados",
+    "payment_method": "Método de pago",
+    "amount": "Monto",
+    "status": "Estado",
+    "date": "Fecha",
+    "reference": "Referencia",
+    "payout_scheduled": "Pago programado exitosamente",
+    "payment_failed": "El pago falló. Por favor intenta nuevamente."
+  },
+  "settings": {
+    "title": "Configuración",
+    "general": "General",
+    "profile": "Perfil",
+    "security": "Seguridad",
+    "notifications": "Notificaciones",
+    "billing": "Facturación",
+    "api_keys": "Claves API",
+    "language": "Idioma",
+    "timezone": "Zona horaria",
+    "currency": "Moneda",
+    "save_settings": "Guardar configuración",
+    "settings_saved": "Configuración guardada exitosamente"
+  },
+  "errors": {
+    "not_found": "Página no encontrada",
+    "unauthorized": "Acceso no autorizado",
+    "forbidden": "Acceso prohibido",
+    "server_error": "Error del servidor. Por favor intenta más tarde.",
+    "validation_error": "Por favor verifica tu entrada e intenta nuevamente.",
+    "network_error": "Error de red. Por favor verifica tu conexión.",
+    "rate_limit": "Demasiadas solicitudes. Por favor intenta más tarde."
+  },
+  "validation": {
+    "required": "Este campo es requerido",
+    "email_invalid": "Por favor ingresa un correo electrónico válido",
+    "password_min_length": "La contraseña debe tener al menos {min} caracteres",
+    "password_mismatch": "Las contraseñas no coinciden",
+    "number_min": "Debe ser al menos {min}",
+    "number_max": "Debe ser como máximo {max}",
+    "string_min_length": "Debe tener al menos {min} caracteres",
+    "string_max_length": "Debe tener como máximo {max} caracteres"
+  },
+  "plurals": {
+    "models": {
+      "zero": "Sin modelos",
+      "one": "{count} modelo",
+      "other": "{count} modelos"
+    },
+    "fans": {
+      "zero": "Sin fans",
+      "one": "{count} fan",
+      "other": "{count} fans"
+    },
+    "messages": {
+      "zero": "Sin mensajes",
+      "one": "{count} mensaje",
+      "other": "{count} mensajes"
+    },
+    "days": {
+      "zero": "Hoy",
+      "one": "Hace {count} día",
+      "other": "Hace {count} días"
+    }
+  }
+}

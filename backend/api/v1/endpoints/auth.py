@@ -13,8 +13,11 @@ from core.security import (
     create_access_token,
     create_refresh_token,
     decode_token,
-    generate_verification_token
+    generate_verification_token,
+    generate_token_fingerprint,
+    verify_token_fingerprint
 )
+from core.auth.token_blacklist import token_blacklist_service
 from core.config import settings
 from core.domain.models import User, Session, Agency, UserRole
 from core.domain.schemas import (
@@ -28,6 +31,9 @@ from core.domain.schemas import (
     RefreshTokenRequest
 )
 from core.dependencies import CurrentUser, CurrentUserOptional
+from core.email.email_service import email_service
+from core.middleware.rate_limit import rate_limit
+import asyncio
 
 
 router = APIRouter()
@@ -35,6 +41,7 @@ security = HTTPBearer()
 
 
 @router.post("/register", response_model=UserResponse)
+@rate_limit(requests_per_minute=5, requests_per_hour=20)  # Strict limit for registration
 async def register(
     user_data: UserCreate,
     db: AsyncSession = Depends(get_db)
@@ -77,13 +84,22 @@ async def register(
     await db.commit()
     await db.refresh(user)
     
-    # TODO: Send verification email
+    # Send verification email asynchronously
+    asyncio.create_task(
+        email_service.send_verification_email(
+            to_email=user.email,
+            user_name=user.full_name or user.email,
+            verification_token=user.email_verification_token
+        )
+    )
     
     return user
 
 
 @router.post("/login", response_model=Token)
+@rate_limit(requests_per_minute=10, requests_per_hour=100, burst_size=3)  # Allow some burst for login
 async def login(
+    request: Request,
     response: Response,
     credentials: LoginRequest,
     db: AsyncSession = Depends(get_db)
@@ -96,6 +112,8 @@ async def login(
     user = result.scalar_one_or_none()
     
     if not user or not verify_password(credentials.password, user.hashed_password):
+        # Add failed login attempt tracking
+        await _track_failed_login(credentials.email, request.client.host if request.client else None, db)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -108,37 +126,86 @@ async def login(
             detail="User account is disabled"
         )
     
-    # Create tokens
-    access_token = create_access_token(
-        data={"user_id": str(user.id), "email": user.email, "role": user.role.value}
-    )
-    refresh_token = create_refresh_token(
-        data={"user_id": str(user.id)}
-    )
+    # Check for account lockout
+    if await _is_account_locked(user.id, db):
+        raise HTTPException(
+            status_code=status.HTTP_423_LOCKED,
+            detail="Account temporarily locked due to multiple failed login attempts"
+        )
     
-    # Store refresh token in database
+    # Generate token fingerprint for additional security
+    raw_fingerprint, fingerprint_hash = generate_token_fingerprint()
+    
+    # Create tokens with fingerprint
+    access_token_data = {
+        "user_id": str(user.id),
+        "email": user.email,
+        "role": user.role.value,
+        "fingerprint": fingerprint_hash
+    }
+    
+    refresh_token_data = {
+        "user_id": str(user.id),
+        "fingerprint": fingerprint_hash
+    }
+    
+    # Adjust token expiration based on remember_me
+    access_token_expires = None  # Use default
+    refresh_token_days = settings.REFRESH_TOKEN_EXPIRE_DAYS
+    
+    if credentials.remember_me:
+        # Extend refresh token to 30 days for remember me
+        refresh_token_days = 30
+    else:
+        # Shorter refresh token for non-remember me sessions (7 days)
+        refresh_token_days = 7
+    
+    access_token = create_access_token(data=access_token_data, expires_delta=access_token_expires)
+    refresh_token = create_refresh_token(data=refresh_token_data)
+    
+    # Extract user agent and IP
+    user_agent = request.headers.get("User-Agent", "Unknown")
+    ip_address = request.client.host if request.client else None
+    
+    # Store refresh token in database with remember_me consideration
     session = Session(
         user_id=user.id,
         refresh_token=refresh_token,
-        expires_at=datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
-        user_agent=credentials.user_agent,
-        ip_address=credentials.ip_address
+        expires_at=datetime.utcnow() + timedelta(days=refresh_token_days),
+        user_agent=user_agent,
+        ip_address=ip_address,
+        fingerprint=fingerprint_hash,  # Store fingerprint hash
+        remember_me=credentials.remember_me
     )
     db.add(session)
     
-    # Update last login
+    # Update last login and clear failed attempts
     user.last_login = datetime.utcnow()
+    user.failed_login_attempts = 0
+    user.last_failed_login = None
     
     await db.commit()
     
-    # Set refresh token as HTTP-only cookie
+    # Set cookies with appropriate expiration
+    cookie_max_age = refresh_token_days * 24 * 60 * 60
+    
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
-        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        max_age=cookie_max_age,
         httponly=True,
         secure=settings.ENVIRONMENT == "production",
-        samesite="lax"
+        samesite="strict" if settings.ENVIRONMENT == "production" else "lax"
+    )
+    
+    # Set fingerprint cookie (not httponly, needs to be readable by JS)
+    response.set_cookie(
+        key="__Secure-Fgp",
+        value=raw_fingerprint,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        secure=settings.ENVIRONMENT == "production",
+        samesite="strict" if settings.ENVIRONMENT == "production" else "lax",
+        httponly=False
     )
     
     return Token(
@@ -149,6 +216,7 @@ async def login(
 
 
 @router.post("/refresh", response_model=Token)
+@rate_limit(requests_per_minute=30, burst_size=5)  # Higher limit for refresh as it's needed frequently
 async def refresh_token(
     request: Request,
     response: Response,
@@ -170,11 +238,19 @@ async def refresh_token(
         )
     
     # Verify refresh token
-    payload = decode_token(refresh_token)
+    payload = decode_token(refresh_token, token_type="refresh")
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token"
+        )
+    
+    # Check if token is blacklisted
+    jti = payload.get("jti")
+    if jti and await token_blacklist_service.is_token_blacklisted(jti, db):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked"
         )
     
     # Find session
@@ -235,11 +311,28 @@ async def refresh_token(
 
 @router.post("/logout")
 async def logout(
+    request: Request,
     response: Response,
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Logout current user."""
+    # Get current token to blacklist it
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        payload = decode_token(token)
+        if payload and "jti" in payload:
+            # Blacklist the current access token
+            await token_blacklist_service.blacklist_token(
+                token=token,
+                jti=payload["jti"],
+                user_id=str(current_user.id),
+                expires_at=datetime.fromtimestamp(payload["exp"]),
+                reason="User logout",
+                db=db
+            )
+    
     # Invalidate all user sessions
     result = await db.execute(
         select(Session).where(
@@ -254,8 +347,9 @@ async def logout(
     
     await db.commit()
     
-    # Clear refresh token cookie
+    # Clear cookies
     response.delete_cookie(key="refresh_token")
+    response.delete_cookie(key="__Secure-Fgp")
     
     return {"message": "Successfully logged out"}
 
@@ -296,6 +390,7 @@ async def verify_email(
 
 
 @router.post("/password-reset/request")
+@rate_limit(requests_per_minute=3, requests_per_hour=10)  # Very strict limit to prevent abuse
 async def request_password_reset(
     reset_request: PasswordResetRequest,
     db: AsyncSession = Depends(get_db)
@@ -312,7 +407,14 @@ async def request_password_reset(
         user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)
         await db.commit()
         
-        # TODO: Send password reset email
+        # Send password reset email asynchronously
+        asyncio.create_task(
+            email_service.send_password_reset_email(
+                to_email=user.email,
+                user_name=user.full_name or user.email,
+                reset_token=user.password_reset_token
+            )
+        )
     
     # Always return success to prevent email enumeration
     return {"message": "If the email exists, a reset link has been sent"}
@@ -320,6 +422,7 @@ async def request_password_reset(
 
 @router.post("/password-reset/confirm")
 async def confirm_password_reset(
+    request: Request,
     reset_confirm: PasswordResetConfirm,
     db: AsyncSession = Depends(get_db)
 ):
@@ -357,4 +460,52 @@ async def confirm_password_reset(
     
     await db.commit()
     
+    # Send password changed notification
+    asyncio.create_task(
+        email_service.send_password_changed_email(
+            to_email=user.email,
+            user_name=user.full_name or user.email,
+            ip_address=request.client.host if request.client else None,
+            user_agent=request.headers.get("User-Agent")
+        )
+    )
+    
     return {"message": "Password reset successfully"}
+
+
+async def _track_failed_login(email: str, ip_address: Optional[str], db: AsyncSession):
+    """Track failed login attempts for security."""
+    result = await db.execute(
+        select(User).where(User.email == email)
+    )
+    user = result.scalar_one_or_none()
+    
+    if user:
+        user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+        user.last_failed_login = datetime.utcnow()
+        await db.commit()
+
+
+async def _is_account_locked(user_id: str, db: AsyncSession) -> bool:
+    """Check if account is locked due to failed attempts."""
+    result = await db.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        return False
+    
+    # Lock account after 5 failed attempts for 30 minutes
+    if user.failed_login_attempts and user.failed_login_attempts >= 5:
+        if user.last_failed_login:
+            lockout_duration = timedelta(minutes=30)
+            if datetime.utcnow() - user.last_failed_login < lockout_duration:
+                return True
+            else:
+                # Reset failed attempts after lockout period
+                user.failed_login_attempts = 0
+                user.last_failed_login = None
+                await db.commit()
+    
+    return False

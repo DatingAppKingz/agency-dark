@@ -1,0 +1,179 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "goodbye": "Goodbye",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "forgot_password": "Forgot Password?",
+    "reset_password": "Reset Password",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "remember_me": "Remember Me",
+    "login_success": "Login successful",
+    "logout_success": "Logout successful",
+    "invalid_credentials": "Invalid email or password",
+    "account_locked": "Account is locked. Please contact support.",
+    "session_expired": "Your session has expired. Please login again."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "total_models": "Total Models",
+    "total_fans": "Total Fans",
+    "revenue_today": "Revenue Today",
+    "revenue_month": "Revenue This Month",
+    "active_chats": "Active Chats",
+    "pending_messages": "Pending Messages",
+    "recent_activity": "Recent Activity",
+    "performance": "Performance"
+  },
+  "models": {
+    "title": "Models",
+    "add_model": "Add Model",
+    "edit_model": "Edit Model",
+    "model_name": "Model Name",
+    "onlyfans_id": "OnlyFans ID",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "total_earnings": "Total Earnings",
+    "fan_count": "Fan Count",
+    "message_count": "Messages",
+    "model_added": "Model added successfully",
+    "model_updated": "Model updated successfully",
+    "model_deleted": "Model deleted successfully"
+  },
+  "fans": {
+    "title": "Fans",
+    "fan_details": "Fan Details",
+    "username": "Username",
+    "subscription_status": "Subscription Status",
+    "total_spent": "Total Spent",
+    "last_activity": "Last Activity",
+    "message_history": "Message History",
+    "purchase_history": "Purchase History",
+    "active_subscriber": "Active Subscriber",
+    "expired_subscriber": "Expired Subscriber",
+    "never_subscribed": "Never Subscribed"
+  },
+  "messages": {
+    "title": "Messages",
+    "compose": "Compose",
+    "inbox": "Inbox",
+    "sent": "Sent",
+    "drafts": "Drafts",
+    "send_message": "Send Message",
+    "reply": "Reply",
+    "forward": "Forward",
+    "delete_message": "Delete Message",
+    "mark_as_read": "Mark as Read",
+    "mark_as_unread": "Mark as Unread",
+    "no_messages": "No messages",
+    "message_sent": "Message sent successfully",
+    "message_deleted": "Message deleted successfully"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "revenue": "Revenue",
+    "subscribers": "Subscribers",
+    "engagement": "Engagement",
+    "conversion": "Conversion",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "date_range": "Date Range",
+    "export_data": "Export Data",
+    "chart_type": "Chart Type",
+    "line_chart": "Line Chart",
+    "bar_chart": "Bar Chart",
+    "pie_chart": "Pie Chart"
+  },
+  "payments": {
+    "title": "Payments",
+    "transaction_history": "Transaction History",
+    "pending_payouts": "Pending Payouts",
+    "completed_payouts": "Completed Payouts",
+    "payment_method": "Payment Method",
+    "amount": "Amount",
+    "status": "Status",
+    "date": "Date",
+    "reference": "Reference",
+    "payout_scheduled": "Payout scheduled successfully",
+    "payment_failed": "Payment failed. Please try again."
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "profile": "Profile",
+    "security": "Security",
+    "notifications": "Notifications",
+    "billing": "Billing",
+    "api_keys": "API Keys",
+    "language": "Language",
+    "timezone": "Timezone",
+    "currency": "Currency",
+    "save_settings": "Save Settings",
+    "settings_saved": "Settings saved successfully"
+  },
+  "errors": {
+    "not_found": "Page not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden",
+    "server_error": "Server error. Please try again later.",
+    "validation_error": "Please check your input and try again.",
+    "network_error": "Network error. Please check your connection.",
+    "rate_limit": "Too many requests. Please try again later."
+  },
+  "validation": {
+    "required": "This field is required",
+    "email_invalid": "Please enter a valid email address",
+    "password_min_length": "Password must be at least {min} characters",
+    "password_mismatch": "Passwords do not match",
+    "number_min": "Must be at least {min}",
+    "number_max": "Must be at most {max}",
+    "string_min_length": "Must be at least {min} characters",
+    "string_max_length": "Must be at most {max} characters"
+  },
+  "plurals": {
+    "models": {
+      "zero": "No models",
+      "one": "{count} model",
+      "other": "{count} models"
+    },
+    "fans": {
+      "zero": "No fans",
+      "one": "{count} fan",
+      "other": "{count} fans"
+    },
+    "messages": {
+      "zero": "No messages",
+      "one": "{count} message",
+      "other": "{count} messages"
+    },
+    "days": {
+      "zero": "Today",
+      "one": "{count} day ago",
+      "other": "{count} days ago"
+    }
+  }
+}

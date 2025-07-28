@@ -1,154 +1,279 @@
 #!/bin/bash
 
 # AgencyDark Backup Script
-# This script performs automated backups of the database and application data
+# This script performs manual backups of the application data
 
-set -e
+set -e  # Exit on error
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
 # Configuration
-BACKUP_DIR="${BACKUP_DIR:-/backups}"
-DB_HOST="${DB_HOST:-localhost}"
-DB_PORT="${DB_PORT:-5432}"
-DB_NAME="${DB_NAME:-agencydark}"
-DB_USER="${DB_USER:-agencydark}"
-REDIS_HOST="${REDIS_HOST:-localhost}"
-REDIS_PORT="${REDIS_PORT:-6379}"
-UPLOAD_DIR="${UPLOAD_DIR:-/app/uploads}"
-S3_BUCKET="${S3_BUCKET:-agencydark-backups}"
-RETENTION_DAYS="${RETENTION_DAYS:-30}"
-
-# Create backup directory
-mkdir -p "$BACKUP_DIR"
-
-# Timestamp
+ENVIRONMENT=${1:-production}
+BACKUP_TYPE=${2:-full}
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+PROJECT_NAME="agencydark"
+BACKUP_DIR="/tmp/${PROJECT_NAME}_backup_${TIMESTAMP}"
 
-echo "Starting AgencyDark backup at $(date)"
-
-# Function to upload to S3
-upload_to_s3() {
-    local file=$1
-    if [ -n "$AWS_ACCESS_KEY_ID" ]; then
-        echo "Uploading $file to S3..."
-        aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")"
-    fi
+# Function to print colored output
+print_status() {
+    echo -e "${GREEN}[INFO]${NC} $1"
 }
 
-# 1. Database Backup
-echo "Backing up PostgreSQL database..."
-DB_BACKUP_FILE="$BACKUP_DIR/db_backup_$TIMESTAMP.sql"
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
 
-PGPASSWORD=$DB_PASSWORD pg_dump \
-    -h "$DB_HOST" \
-    -p "$DB_PORT" \
-    -U "$DB_USER" \
-    -d "$DB_NAME" \
-    --verbose \
-    --no-owner \
-    --no-acl \
-    > "$DB_BACKUP_FILE"
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
 
-# Compress database backup
-gzip "$DB_BACKUP_FILE"
-DB_BACKUP_FILE="$DB_BACKUP_FILE.gz"
+# Function to backup database
+backup_database() {
+    print_status "Backing up database..."
+    
+    # Get database credentials from environment or AWS Secrets Manager
+    if [ "$ENVIRONMENT" == "production" ]; then
+        # Get from AWS Secrets Manager
+        DB_SECRET=$(aws secretsmanager get-secret-value --secret-id ${PROJECT_NAME}/db/${ENVIRONMENT} --query SecretString --output text)
+        DB_HOST=$(echo $DB_SECRET | jq -r .host)
+        DB_NAME=$(echo $DB_SECRET | jq -r .database)
+        DB_USER=$(echo $DB_SECRET | jq -r .username)
+        DB_PASSWORD=$(echo $DB_SECRET | jq -r .password)
+    else
+        # Use local environment variables
+        DB_HOST=${DB_HOST:-localhost}
+        DB_NAME=${DB_NAME:-agencydark}
+        DB_USER=${DB_USER:-postgres}
+        DB_PASSWORD=${DB_PASSWORD:-postgres}
+    fi
+    
+    # Create backup directory
+    mkdir -p $BACKUP_DIR
+    
+    # Perform database dump
+    PGPASSWORD=$DB_PASSWORD pg_dump \
+        -h $DB_HOST \
+        -U $DB_USER \
+        -d $DB_NAME \
+        -f $BACKUP_DIR/database_${TIMESTAMP}.sql \
+        --verbose \
+        --no-owner \
+        --no-acl
+    
+    # Compress the dump
+    gzip $BACKUP_DIR/database_${TIMESTAMP}.sql
+    
+    print_status "Database backup completed: database_${TIMESTAMP}.sql.gz"
+}
 
-echo "Database backup completed: $DB_BACKUP_FILE"
-upload_to_s3 "$DB_BACKUP_FILE"
+# Function to backup uploads
+backup_uploads() {
+    print_status "Backing up uploaded files..."
+    
+    if [ "$ENVIRONMENT" == "production" ]; then
+        # Sync from S3
+        S3_BUCKET="${PROJECT_NAME}-uploads-${ENVIRONMENT}"
+        aws s3 sync s3://$S3_BUCKET $BACKUP_DIR/uploads/
+    else
+        # Copy local uploads
+        cp -r backend/uploads $BACKUP_DIR/
+    fi
+    
+    # Create tar archive
+    tar -czf $BACKUP_DIR/uploads_${TIMESTAMP}.tar.gz -C $BACKUP_DIR uploads/
+    rm -rf $BACKUP_DIR/uploads
+    
+    print_status "Uploads backup completed: uploads_${TIMESTAMP}.tar.gz"
+}
 
-# 2. Redis Backup
-echo "Backing up Redis data..."
-REDIS_BACKUP_FILE="$BACKUP_DIR/redis_backup_$TIMESTAMP.rdb"
+# Function to backup configurations
+backup_configs() {
+    print_status "Backing up configurations..."
+    
+    # Create configs directory
+    mkdir -p $BACKUP_DIR/configs
+    
+    # Backup environment variables
+    if [ "$ENVIRONMENT" == "production" ]; then
+        # Export from AWS Systems Manager Parameter Store
+        aws ssm get-parameters-by-path \
+            --path "/${PROJECT_NAME}/${ENVIRONMENT}" \
+            --recursive \
+            --with-decryption \
+            --query "Parameters[*].[Name,Value]" \
+            --output json > $BACKUP_DIR/configs/parameters_${TIMESTAMP}.json
+    else
+        # Copy local .env files
+        cp backend/.env $BACKUP_DIR/configs/backend.env 2>/dev/null || true
+        cp frontend/.env $BACKUP_DIR/configs/frontend.env 2>/dev/null || true
+    fi
+    
+    # Create tar archive
+    tar -czf $BACKUP_DIR/configs_${TIMESTAMP}.tar.gz -C $BACKUP_DIR configs/
+    rm -rf $BACKUP_DIR/configs
+    
+    print_status "Configuration backup completed: configs_${TIMESTAMP}.tar.gz"
+}
 
-# Trigger Redis save
-redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" BGSAVE
+# Function to upload backup to S3
+upload_to_s3() {
+    print_status "Uploading backups to S3..."
+    
+    S3_BACKUP_BUCKET="${PROJECT_NAME}-backups-${ENVIRONMENT}"
+    S3_PREFIX="manual/${TIMESTAMP}"
+    
+    # Upload all backup files
+    for file in $BACKUP_DIR/*.{gz,tar.gz}; do
+        if [ -f "$file" ]; then
+            filename=$(basename "$file")
+            aws s3 cp $file s3://$S3_BACKUP_BUCKET/$S3_PREFIX/$filename \
+                --storage-class STANDARD_IA \
+                --metadata "backup-type=${BACKUP_TYPE},environment=${ENVIRONMENT},timestamp=${TIMESTAMP}"
+            print_status "Uploaded: $filename"
+        fi
+    done
+    
+    print_status "All backups uploaded to S3."
+}
 
-# Wait for save to complete
-while [ $(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" LASTSAVE) -eq $(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" LASTSAVE) ]; do
-    sleep 1
-done
-
-# Copy Redis dump file
-if [ -f "/var/lib/redis/dump.rdb" ]; then
-    cp "/var/lib/redis/dump.rdb" "$REDIS_BACKUP_FILE"
-elif [ -f "/data/dump.rdb" ]; then
-    cp "/data/dump.rdb" "$REDIS_BACKUP_FILE"
-fi
-
-echo "Redis backup completed: $REDIS_BACKUP_FILE"
-upload_to_s3 "$REDIS_BACKUP_FILE"
-
-# 3. Upload Directory Backup
-echo "Backing up upload directory..."
-UPLOAD_BACKUP_FILE="$BACKUP_DIR/uploads_backup_$TIMESTAMP.tar.gz"
-
-tar -czf "$UPLOAD_BACKUP_FILE" -C "$(dirname "$UPLOAD_DIR")" "$(basename "$UPLOAD_DIR")"
-
-echo "Upload directory backup completed: $UPLOAD_BACKUP_FILE"
-upload_to_s3 "$UPLOAD_BACKUP_FILE"
-
-# 4. Configuration Backup
-echo "Backing up configuration..."
-CONFIG_BACKUP_FILE="$BACKUP_DIR/config_backup_$TIMESTAMP.tar.gz"
-
-# Backup important configuration files
-tar -czf "$CONFIG_BACKUP_FILE" \
-    /app/.env \
-    /app/alembic.ini \
-    /app/backend/alembic/versions/ \
-    2>/dev/null || true
-
-echo "Configuration backup completed: $CONFIG_BACKUP_FILE"
-upload_to_s3 "$CONFIG_BACKUP_FILE"
-
-# 5. Create backup manifest
-MANIFEST_FILE="$BACKUP_DIR/manifest_$TIMESTAMP.json"
-cat > "$MANIFEST_FILE" <<EOF
+# Function to create backup manifest
+create_manifest() {
+    print_status "Creating backup manifest..."
+    
+    cat > $BACKUP_DIR/manifest_${TIMESTAMP}.json <<EOF
 {
-    "timestamp": "$TIMESTAMP",
-    "date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-    "backups": {
-        "database": "$(basename "$DB_BACKUP_FILE")",
-        "redis": "$(basename "$REDIS_BACKUP_FILE")",
-        "uploads": "$(basename "$UPLOAD_BACKUP_FILE")",
-        "config": "$(basename "$CONFIG_BACKUP_FILE")"
-    },
-    "environment": {
-        "db_host": "$DB_HOST",
-        "db_name": "$DB_NAME",
-        "app_version": "$(git describe --tags --always 2>/dev/null || echo 'unknown')"
+    "timestamp": "${TIMESTAMP}",
+    "environment": "${ENVIRONMENT}",
+    "backup_type": "${BACKUP_TYPE}",
+    "files": [
+        "database_${TIMESTAMP}.sql.gz",
+        "uploads_${TIMESTAMP}.tar.gz",
+        "configs_${TIMESTAMP}.tar.gz"
+    ],
+    "metadata": {
+        "project": "${PROJECT_NAME}",
+        "created_by": "$(whoami)",
+        "host": "$(hostname)"
     }
 }
 EOF
+    
+    print_status "Manifest created: manifest_${TIMESTAMP}.json"
+}
 
-upload_to_s3 "$MANIFEST_FILE"
+# Function to cleanup local files
+cleanup() {
+    print_status "Cleaning up local backup files..."
+    rm -rf $BACKUP_DIR
+    print_status "Cleanup completed."
+}
 
-# 6. Cleanup old backups
-echo "Cleaning up old backups..."
-find "$BACKUP_DIR" -name "*.gz" -mtime +$RETENTION_DAYS -delete
-find "$BACKUP_DIR" -name "*.rdb" -mtime +$RETENTION_DAYS -delete
-find "$BACKUP_DIR" -name "*.json" -mtime +$RETENTION_DAYS -delete
+# Function to list existing backups
+list_backups() {
+    print_status "Listing existing backups..."
+    
+    S3_BACKUP_BUCKET="${PROJECT_NAME}-backups-${ENVIRONMENT}"
+    
+    aws s3 ls s3://$S3_BACKUP_BUCKET/manual/ --recursive | grep -E '\.(gz|json)$' | sort -r | head -20
+}
 
-# Cleanup S3 (if configured)
-if [ -n "$AWS_ACCESS_KEY_ID" ]; then
-    echo "Cleaning up old S3 backups..."
-    aws s3 ls "s3://$S3_BUCKET/" | while read -r line; do
-        createDate=$(echo "$line" | awk '{print $1" "$2}')
-        createDate=$(date -d "$createDate" +%s)
-        olderThan=$(date -d "$RETENTION_DAYS days ago" +%s)
-        if [[ $createDate -lt $olderThan ]]; then
-            fileName=$(echo "$line" | awk '{print $4}')
-            if [ -n "$fileName" ]; then
-                aws s3 rm "s3://$S3_BUCKET/$fileName"
-            fi
+# Function to restore from backup
+restore_backup() {
+    BACKUP_TIMESTAMP=$1
+    
+    if [ -z "$BACKUP_TIMESTAMP" ]; then
+        print_error "Please provide a backup timestamp to restore"
+        exit 1
+    fi
+    
+    print_warning "Restoring from backup: $BACKUP_TIMESTAMP"
+    print_warning "This will overwrite existing data. Are you sure? (yes/no)"
+    read -r response
+    
+    if [ "$response" != "yes" ]; then
+        print_status "Restore cancelled."
+        exit 0
+    fi
+    
+    # Download backup files from S3
+    S3_BACKUP_BUCKET="${PROJECT_NAME}-backups-${ENVIRONMENT}"
+    S3_PREFIX="manual/${BACKUP_TIMESTAMP}"
+    RESTORE_DIR="/tmp/${PROJECT_NAME}_restore_${BACKUP_TIMESTAMP}"
+    
+    mkdir -p $RESTORE_DIR
+    aws s3 sync s3://$S3_BACKUP_BUCKET/$S3_PREFIX/ $RESTORE_DIR/
+    
+    # Restore database
+    if [ -f "$RESTORE_DIR/database_${BACKUP_TIMESTAMP}.sql.gz" ]; then
+        print_status "Restoring database..."
+        gunzip -c $RESTORE_DIR/database_${BACKUP_TIMESTAMP}.sql.gz | \
+            PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME
+    fi
+    
+    # Restore uploads
+    if [ -f "$RESTORE_DIR/uploads_${BACKUP_TIMESTAMP}.tar.gz" ]; then
+        print_status "Restoring uploads..."
+        tar -xzf $RESTORE_DIR/uploads_${BACKUP_TIMESTAMP}.tar.gz -C /tmp/
+        if [ "$ENVIRONMENT" == "production" ]; then
+            aws s3 sync /tmp/uploads/ s3://${PROJECT_NAME}-uploads-${ENVIRONMENT}/
+        else
+            cp -r /tmp/uploads/* backend/uploads/
         fi
-    done
-fi
+    fi
+    
+    print_status "Restore completed."
+    rm -rf $RESTORE_DIR
+}
 
-echo "Backup completed successfully at $(date)"
+# Main function
+main() {
+    case $BACKUP_TYPE in
+        full)
+            backup_database
+            backup_uploads
+            backup_configs
+            create_manifest
+            upload_to_s3
+            cleanup
+            print_status "Full backup completed successfully!"
+            ;;
+            
+        database)
+            backup_database
+            create_manifest
+            upload_to_s3
+            cleanup
+            print_status "Database backup completed successfully!"
+            ;;
+            
+        uploads)
+            backup_uploads
+            create_manifest
+            upload_to_s3
+            cleanup
+            print_status "Uploads backup completed successfully!"
+            ;;
+            
+        list)
+            list_backups
+            ;;
+            
+        restore)
+            restore_backup $3
+            ;;
+            
+        *)
+            print_error "Unknown backup type: $BACKUP_TYPE"
+            echo "Usage: $0 [environment] [backup_type] [timestamp_for_restore]"
+            echo "Backup types: full, database, uploads, list, restore"
+            exit 1
+            ;;
+    esac
+}
 
-# Send notification (optional)
-if [ -n "$SLACK_WEBHOOK_URL" ]; then
-    curl -X POST "$SLACK_WEBHOOK_URL" \
-        -H 'Content-Type: application/json' \
-        -d "{\"text\":\"AgencyDark backup completed successfully at $(date)\"}"
-fi
+# Run main function
+main
