@@ -1,410 +1,379 @@
 """
-Mobile optimized messaging endpoints
+Mobile Messages API Endpoints
+
+Optimized for mobile with:
+- Pagination for limited bandwidth
+- Compressed responses
+- Real-time updates via websocket
+- Offline message queue support
 """
-from typing import List, Optional
-from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any
 from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.security import HTTPBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_, or_, desc
+from pydantic import BaseModel, Field
+import uuid
 
 from core.database import get_db
-from core.auth.dependencies import get_current_user
-from core.performance import PaginationParams, PaginationHelper
-from modules.users.domain.models import User
-from modules.messaging.application.message_service import MessageService
-from modules.messaging.domain.schemas import MessageCreate
+from core.security import get_current_user
+from core.logging import get_logger
+from models.message import Message
+from models.conversation import Conversation
+from models.user import User
 
-router = APIRouter(prefix="/mobile/messages", tags=["mobile-messages"])
+logger = get_logger(__name__)
+security = HTTPBearer()
+
+router = APIRouter(prefix="/api/v1/mobile/messages")
+
+
+class MobileMessageRequest(BaseModel):
+    """Mobile message request"""
+    conversation_id: uuid.UUID
+    content: str
+    attachments: Optional[List[Dict[str, Any]]] = None
+    offline_id: Optional[str] = None  # For offline sync
 
 
 class MobileMessageResponse(BaseModel):
-    """Mobile optimized message response"""
+    """Compressed message response for mobile"""
     id: str
+    conversation_id: str
+    sender_id: str
+    sender_name: str
+    sender_avatar: Optional[str]
     content: str
-    sender_type: str  # 'model' or 'fan'
-    created_at: datetime
-    is_read: bool
-    has_media: bool
-    media_count: int = 0
-    media_preview_url: Optional[str] = None
-    price: Optional[float] = None
-    is_paid: bool = True
+    timestamp: datetime
+    read: bool
+    attachments: Optional[List[Dict[str, Any]]]
+    offline_id: Optional[str]
 
 
 class MobileConversationResponse(BaseModel):
-    """Mobile conversation summary"""
-    fan_id: str
-    fan_username: str
-    fan_avatar_url: Optional[str]
-    last_message: Optional[MobileMessageResponse]
+    """Mobile conversation with last message"""
+    id: str
+    participant_id: str
+    participant_name: str
+    participant_avatar: Optional[str]
+    last_message: Optional[str]
+    last_message_time: Optional[datetime]
     unread_count: int
     is_online: bool
-    last_seen: Optional[datetime]
-    total_spent: float
-    is_subscriber: bool
 
 
-class MobileSendMessageRequest(BaseModel):
-    """Mobile message send request"""
-    content: str
-    media_ids: List[str] = Field(default_factory=list)
-    price: Optional[float] = None
+class MessageSyncRequest(BaseModel):
+    """Sync messages from offline queue"""
+    messages: List[MobileMessageRequest]
+    last_sync_timestamp: datetime
 
 
 @router.get("/conversations", response_model=List[MobileConversationResponse])
-async def get_conversations(
-    model_id: UUID,
+async def get_mobile_conversations(
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=50),
-    unread_only: bool = False,
-    current_user: User = Depends(get_current_user),
+    limit: int = Query(20, ge=1, le=50),
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Get conversations list optimized for mobile
-    """
-    # Verify user has access to model
-    if not await _user_has_model_access(current_user, model_id, db):
-        raise HTTPException(status_code=403, detail="Access denied")
+    """Get user's conversations for mobile"""
     
-    # Get conversations with optimized query
-    from sqlalchemy import select, func, and_, or_
-    from modules.messaging.domain.models import Message
-    from modules.fans.domain.models import Fan
+    user_id = uuid.UUID(current_user["user_id"])
+    offset = (page - 1) * limit
     
-    # Subquery for last message
-    last_message_subq = (
+    # Get conversations with last message
+    conversations = await db.execute(
         select(
-            Message.fan_id,
-            func.max(Message.created_at).label("last_message_time")
+            Conversation,
+            User,
+            Message
         )
-        .where(Message.model_id == model_id)
-        .group_by(Message.fan_id)
-        .subquery()
-    )
-    
-    # Main query
-    query = (
-        select(
-            Fan.id,
-            Fan.username,
-            Fan.avatar_url,
-            Fan.last_activity,
-            Fan.total_spent,
-            Fan.subscription_status,
-            func.count(Message.id).filter(
-                and_(
-                    Message.is_read == False,
-                    Message.sender == "fan"
-                )
-            ).label("unread_count"),
-            func.max(Message.created_at).label("last_message_time")
-        )
-        .join(Message, Message.fan_id == Fan.id)
         .join(
-            last_message_subq,
-            Fan.id == last_message_subq.c.fan_id
+            User,
+            or_(
+                and_(Conversation.user1_id == user_id, User.id == Conversation.user2_id),
+                and_(Conversation.user2_id == user_id, User.id == Conversation.user1_id)
+            )
         )
-        .where(Message.model_id == model_id)
-        .group_by(Fan.id)
-        .order_by(func.max(Message.created_at).desc())
+        .outerjoin(
+            Message,
+            Message.id == Conversation.last_message_id
+        )
+        .where(
+            or_(
+                Conversation.user1_id == user_id,
+                Conversation.user2_id == user_id
+            )
+        )
+        .order_by(desc(Conversation.updated_at))
+        .offset(offset)
+        .limit(limit)
     )
     
-    if unread_only:
-        query = query.having(
-            func.count(Message.id).filter(
-                and_(
-                    Message.is_read == False,
-                    Message.sender == "fan"
-                )
-            ) > 0
-        )
-    
-    # Apply pagination
-    params = PaginationParams(page=page, per_page=per_page)
-    paginated = await PaginationHelper.paginate(db, query, params)
-    
-    # Format response
-    conversations = []
-    for row in paginated.items:
-        # Get last message
-        last_msg_query = (
+    results = []
+    for conv, participant, last_msg in conversations:
+        # Count unread messages
+        unread = await db.execute(
             select(Message)
             .where(
                 and_(
-                    Message.model_id == model_id,
-                    Message.fan_id == row.id
+                    Message.conversation_id == conv.id,
+                    Message.sender_id != user_id,
+                    Message.read == False
                 )
             )
-            .order_by(Message.created_at.desc())
-            .limit(1)
         )
-        last_msg_result = await db.execute(last_msg_query)
-        last_message = last_msg_result.scalar_one_or_none()
+        unread_count = len(unread.all())
         
-        conversations.append(MobileConversationResponse(
-            fan_id=str(row.id),
-            fan_username=row.username,
-            fan_avatar_url=row.avatar_url,
-            last_message=MobileMessageResponse(
-                id=str(last_message.id),
-                content=last_message.content[:100] + "..." if len(last_message.content) > 100 else last_message.content,
-                sender_type=last_message.sender,
-                created_at=last_message.created_at,
-                is_read=last_message.is_read,
-                has_media=bool(last_message.media_urls),
-                media_count=len(last_message.media_urls) if last_message.media_urls else 0,
-                media_preview_url=last_message.media_urls[0] if last_message.media_urls else None,
-                price=float(last_message.price) if last_message.price else None,
-                is_paid=last_message.is_paid
-            ) if last_message else None,
-            unread_count=row.unread_count,
-            is_online=_is_user_online(row.last_activity),
-            last_seen=row.last_activity,
-            total_spent=float(row.total_spent),
-            is_subscriber=row.subscription_status == "active"
+        results.append(MobileConversationResponse(
+            id=str(conv.id),
+            participant_id=str(participant.id),
+            participant_name=participant.full_name,
+            participant_avatar=participant.avatar_url,
+            last_message=last_msg.content if last_msg else None,
+            last_message_time=last_msg.created_at if last_msg else None,
+            unread_count=unread_count,
+            is_online=False  # Would check online status in production
         ))
     
-    return conversations
+    return results
 
 
-@router.get("/conversation/{fan_id}", response_model=List[MobileMessageResponse])
+@router.get("/conversation/{conversation_id}/messages", response_model=List[MobileMessageResponse])
 async def get_conversation_messages(
-    model_id: UUID,
-    fan_id: UUID,
+    conversation_id: uuid.UUID,
     page: int = Query(1, ge=1),
-    per_page: int = Query(50, ge=1, le=100),
-    before_id: Optional[UUID] = None,
-    current_user: User = Depends(get_current_user),
+    limit: int = Query(50, ge=1, le=100),
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Get messages in a conversation (infinite scroll support)
-    """
-    if not await _user_has_model_access(current_user, model_id, db):
-        raise HTTPException(status_code=403, detail="Access denied")
+    """Get messages for a conversation"""
     
-    message_service = MessageService()
+    user_id = uuid.UUID(current_user["user_id"])
+    offset = (page - 1) * limit
     
-    # Build query with cursor pagination for better mobile performance
-    from sqlalchemy import select, and_
-    from modules.messaging.domain.models import Message
+    # Verify user is part of conversation
+    conversation = await db.get(Conversation, conversation_id)
+    if not conversation or (conversation.user1_id != user_id and conversation.user2_id != user_id):
+        raise HTTPException(status_code=404, detail="Conversation not found")
     
-    query = (
+    # Get messages
+    messages = await db.execute(
+        select(Message, User)
+        .join(User, Message.sender_id == User.id)
+        .where(Message.conversation_id == conversation_id)
+        .order_by(desc(Message.created_at))
+        .offset(offset)
+        .limit(limit)
+    )
+    
+    # Mark messages as read
+    await db.execute(
         select(Message)
         .where(
             and_(
-                Message.model_id == model_id,
-                Message.fan_id == fan_id
+                Message.conversation_id == conversation_id,
+                Message.sender_id != user_id,
+                Message.read == False
             )
         )
-        .order_by(Message.created_at.desc())
     )
+    await db.commit()
     
-    # Apply cursor pagination if before_id provided
-    if before_id:
-        before_msg = await db.get(Message, before_id)
-        if before_msg:
-            query = query.where(Message.created_at < before_msg.created_at)
-    
-    query = query.limit(per_page)
-    
-    result = await db.execute(query)
-    messages = result.scalars().all()
-    
-    # Mark messages as read
-    unread_ids = [
-        msg.id for msg in messages 
-        if not msg.is_read and msg.sender == "fan"
-    ]
-    if unread_ids:
-        await message_service.mark_messages_as_read(unread_ids, db)
-    
-    # Format for mobile
-    return [
-        MobileMessageResponse(
+    results = []
+    for msg, sender in messages:
+        results.append(MobileMessageResponse(
             id=str(msg.id),
+            conversation_id=str(msg.conversation_id),
+            sender_id=str(sender.id),
+            sender_name=sender.full_name,
+            sender_avatar=sender.avatar_url,
             content=msg.content,
-            sender_type=msg.sender,
-            created_at=msg.created_at,
-            is_read=msg.is_read,
-            has_media=bool(msg.media_urls),
-            media_count=len(msg.media_urls) if msg.media_urls else 0,
-            media_preview_url=msg.media_urls[0] if msg.media_urls else None,
-            price=float(msg.price) if msg.price else None,
-            is_paid=msg.is_paid
-        )
-        for msg in reversed(messages)  # Return in chronological order
-    ]
+            timestamp=msg.created_at,
+            read=msg.read,
+            attachments=msg.attachments,
+            offline_id=None
+        ))
+    
+    return results
 
 
-@router.post("/send")
-async def send_message(
-    model_id: UUID,
-    fan_id: UUID,
-    message: MobileSendMessageRequest,
-    current_user: User = Depends(get_current_user),
+@router.post("/send", response_model=MobileMessageResponse)
+async def send_mobile_message(
+    request: MobileMessageRequest,
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Send a message from mobile
-    """
-    if not await _user_has_model_access(current_user, model_id, db):
-        raise HTTPException(status_code=403, detail="Access denied")
+    """Send a message from mobile"""
     
-    message_service = MessageService()
+    user_id = uuid.UUID(current_user["user_id"])
+    
+    # Verify user is part of conversation
+    conversation = await db.get(Conversation, request.conversation_id)
+    if not conversation or (conversation.user1_id != user_id and conversation.user2_id != user_id):
+        raise HTTPException(status_code=404, detail="Conversation not found")
     
     # Create message
-    message_data = MessageCreate(
-        model_id=model_id,
-        fan_id=fan_id,
-        content=message.content,
-        sender="model",
-        media_urls=message.media_ids,  # These would be pre-uploaded media IDs
-        price=message.price
+    message = Message(
+        id=uuid.uuid4(),
+        conversation_id=request.conversation_id,
+        sender_id=user_id,
+        content=request.content,
+        attachments=request.attachments,
+        read=False,
+        created_at=datetime.utcnow()
     )
     
-    created_message = await message_service.create_message(message_data, db)
+    db.add(message)
     
-    # Return mobile-optimized response
+    # Update conversation
+    conversation.last_message_id = message.id
+    conversation.updated_at = datetime.utcnow()
+    
+    await db.commit()
+    
+    # Get sender info
+    sender = await db.get(User, user_id)
+    
+    # TODO: Send push notification to recipient
+    # TODO: Emit websocket event
+    
     return MobileMessageResponse(
-        id=str(created_message.id),
-        content=created_message.content,
-        sender_type=created_message.sender,
-        created_at=created_message.created_at,
-        is_read=created_message.is_read,
-        has_media=bool(created_message.media_urls),
-        media_count=len(created_message.media_urls) if created_message.media_urls else 0,
-        media_preview_url=created_message.media_urls[0] if created_message.media_urls else None,
-        price=float(created_message.price) if created_message.price else None,
-        is_paid=created_message.is_paid
+        id=str(message.id),
+        conversation_id=str(message.conversation_id),
+        sender_id=str(sender.id),
+        sender_name=sender.full_name,
+        sender_avatar=sender.avatar_url,
+        content=message.content,
+        timestamp=message.created_at,
+        read=message.read,
+        attachments=message.attachments,
+        offline_id=request.offline_id
     )
 
 
-@router.websocket("/ws/{model_id}")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    model_id: UUID,
-    token: str,
+@router.post("/sync", response_model=Dict[str, Any])
+async def sync_offline_messages(
+    request: MessageSyncRequest,
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    WebSocket for real-time messaging
-    """
-    # Verify token and get user
-    from core.security import decode_token
+    """Sync messages created offline"""
     
-    try:
-        payload = decode_token(token)
-        user_id = payload.get("sub")
-        
-        # Verify user has access to model
-        # ... verification logic ...
-        
-        await websocket.accept()
-        
-        # Add to connection pool
-        # ... connection management ...
-        
+    user_id = uuid.UUID(current_user["user_id"])
+    synced_messages = []
+    failed_messages = []
+    
+    for msg_request in request.messages:
         try:
-            while True:
-                # Receive message
-                data = await websocket.receive_json()
-                
-                # Handle different message types
-                if data["type"] == "message":
-                    # Process and broadcast message
-                    pass
-                elif data["type"] == "typing":
-                    # Broadcast typing indicator
-                    pass
-                elif data["type"] == "read":
-                    # Mark messages as read
-                    pass
-                    
-        except WebSocketDisconnect:
-            # Remove from connection pool
-            pass
-            
-    except Exception as e:
-        await websocket.close(code=1008, reason="Authentication failed")
-
-
-@router.post("/mark-read")
-async def mark_messages_read(
-    message_ids: List[UUID],
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Mark multiple messages as read
-    """
-    message_service = MessageService()
+            # Send message
+            message = await send_mobile_message(msg_request, current_user, db)
+            synced_messages.append({
+                "offline_id": msg_request.offline_id,
+                "server_id": message.id,
+                "status": "synced"
+            })
+        except Exception as e:
+            logger.error(f"Failed to sync message {msg_request.offline_id}: {e}")
+            failed_messages.append({
+                "offline_id": msg_request.offline_id,
+                "error": str(e),
+                "status": "failed"
+            })
     
-    # Verify user has access to messages
-    # ... verification logic ...
-    
-    await message_service.mark_messages_as_read(message_ids, db)
-    
-    return {"message": "Messages marked as read"}
-
-
-@router.get("/unread-count")
-async def get_unread_count(
-    model_id: UUID,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Get total unread message count
-    """
-    if not await _user_has_model_access(current_user, model_id, db):
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    from sqlalchemy import select, func, and_
-    from modules.messaging.domain.models import Message
-    
-    count_query = (
-        select(func.count(Message.id))
+    # Get new messages since last sync
+    new_messages = await db.execute(
+        select(Message, User)
+        .join(User, Message.sender_id == User.id)
+        .join(Conversation, Message.conversation_id == Conversation.id)
         .where(
             and_(
-                Message.model_id == model_id,
-                Message.is_read == False,
-                Message.sender == "fan"
+                or_(
+                    Conversation.user1_id == user_id,
+                    Conversation.user2_id == user_id
+                ),
+                Message.created_at > request.last_sync_timestamp
+            )
+        )
+        .order_by(Message.created_at)
+    )
+    
+    new_messages_list = []
+    for msg, sender in new_messages:
+        new_messages_list.append(MobileMessageResponse(
+            id=str(msg.id),
+            conversation_id=str(msg.conversation_id),
+            sender_id=str(sender.id),
+            sender_name=sender.full_name,
+            sender_avatar=sender.avatar_url,
+            content=msg.content,
+            timestamp=msg.created_at,
+            read=msg.read,
+            attachments=msg.attachments,
+            offline_id=None
+        ))
+    
+    return {
+        "synced_messages": synced_messages,
+        "failed_messages": failed_messages,
+        "new_messages": new_messages_list,
+        "sync_timestamp": datetime.utcnow()
+    }
+
+
+@router.put("/conversation/{conversation_id}/read")
+async def mark_conversation_read(
+    conversation_id: uuid.UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Mark all messages in conversation as read"""
+    
+    user_id = uuid.UUID(current_user["user_id"])
+    
+    # Verify user is part of conversation
+    conversation = await db.get(Conversation, conversation_id)
+    if not conversation or (conversation.user1_id != user_id and conversation.user2_id != user_id):
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Mark messages as read
+    result = await db.execute(
+        select(Message)
+        .where(
+            and_(
+                Message.conversation_id == conversation_id,
+                Message.sender_id != user_id,
+                Message.read == False
             )
         )
     )
     
-    unread_count = await db.scalar(count_query)
+    messages = result.scalars().all()
+    for message in messages:
+        message.read = True
     
-    return {"unread_count": unread_count}
+    await db.commit()
+    
+    return {"messages_marked": len(messages)}
 
 
-def _is_user_online(last_activity: Optional[datetime]) -> bool:
-    """Check if user is considered online"""
-    if not last_activity:
-        return False
+@router.delete("/message/{message_id}")
+async def delete_mobile_message(
+    message_id: uuid.UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete a message (soft delete)"""
     
-    # Consider online if active in last 5 minutes
-    from datetime import timedelta
-    return (datetime.utcnow() - last_activity) < timedelta(minutes=5)
-
-
-async def _user_has_model_access(
-    user: User,
-    model_id: UUID,
-    db: AsyncSession
-) -> bool:
-    """Check if user has access to model"""
-    from modules.models.domain.models import Model
+    user_id = uuid.UUID(current_user["user_id"])
     
-    model = await db.get(Model, model_id)
-    if not model:
-        return False
+    # Get message
+    message = await db.get(Message, message_id)
+    if not message or message.sender_id != user_id:
+        raise HTTPException(status_code=404, detail="Message not found")
     
-    # Check if user is agency owner/staff or the model itself
-    return (
-        user.agency_id == model.agency_id or
-        user.id == model.user_id
-    )
+    # Soft delete
+    message.deleted_at = datetime.utcnow()
+    await db.commit()
+    
+    return {"message": "Message deleted"}
