@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers
 revision = '007_performance_indexes'
-down_revision = '006_scheduled_reports'
+down_revision = '006_add_rate_limiting_tables'
 branch_labels = None
 depends_on = None
 

@@ -15,6 +15,7 @@ import {
   Palette,
   Language,
   Key,
+  Webhook,
 } from '@mui/icons-material';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
 
@@ -66,6 +67,7 @@ const SettingsPage = () => {
           <Tab icon={<Notifications />} label="Notifications" />
           <Tab icon={<Security />} label="Security" />
           <Tab icon={<Key />} label="API Keys" />
+          <Tab icon={<Webhook />} label="Webhooks" />
           <Tab icon={<Palette />} label="Appearance" />
           <Tab icon={<Language />} label="Language" />
         </Tabs>
@@ -96,20 +98,33 @@ const SettingsPage = () => {
             </Typography>
             <Button 
               variant="contained" 
-              onClick={() => navigate('/settings/api-keys')}
+              onClick={() => navigate('/dashboard/settings/api-keys')}
             >
               Manage API Keys
             </Button>
           </TabPanel>
 
           <TabPanel value={selectedTab} index={4}>
+            <Typography variant="h6">Webhook Configuration</Typography>
+            <Typography color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+              Configure webhooks to receive real-time notifications about events.
+            </Typography>
+            <Button 
+              variant="contained" 
+              onClick={() => navigate('/dashboard/settings/webhooks')}
+            >
+              Manage Webhooks
+            </Button>
+          </TabPanel>
+
+          <TabPanel value={selectedTab} index={5}>
             <Typography variant="h6">Appearance Settings</Typography>
             <Typography color="text.secondary" sx={{ mt: 2 }}>
               Appearance settings coming soon...
             </Typography>
           </TabPanel>
 
-          <TabPanel value={selectedTab} index={5}>
+          <TabPanel value={selectedTab} index={6}>
             <Typography variant="h6">Language Settings</Typography>
             <Typography color="text.secondary" sx={{ mt: 2 }}>
               Language settings coming soon...

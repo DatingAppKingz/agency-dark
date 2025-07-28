@@ -4,12 +4,13 @@ Webhook HTTP sender with retry logic
 import aiohttp
 import asyncio
 import json
-from typing import Dict, Any, Optional
-from datetime import datetime
+from typing import Dict, Any, Optional, Tuple
+from datetime import datetime, timedelta
 import time
+import random
 
 from core.logging import get_logger
-from .webhook_models import Webhook
+from .webhook_models import Webhook, WebhookDelivery, DeliveryStatus
 
 logger = get_logger(__name__)
 
@@ -30,10 +31,15 @@ class WebhookResponse:
 
 
 class WebhookSender:
-    """Send webhooks over HTTP"""
+    """Send webhooks over HTTP with exponential backoff retry"""
     
     def __init__(self):
         self.session: Optional[aiohttp.ClientSession] = None
+        # Exponential backoff configuration
+        self.base_delay = 1  # Initial delay in seconds
+        self.max_delay = 300  # Maximum delay in seconds (5 minutes)
+        self.multiplier = 2  # Exponential multiplier
+        self.jitter = 0.1  # Jitter factor (10%)
     
     async def _get_session(self) -> aiohttp.ClientSession:
         """Get or create aiohttp session"""
@@ -118,6 +124,92 @@ class WebhookSender:
         except Exception as e:
             # Other errors
             raise Exception(f"Webhook delivery failed: {e}")
+    
+    def calculate_delay(self, attempt: int) -> float:
+        """
+        Calculate delay for exponential backoff with jitter
+        
+        Args:
+            attempt: Current attempt number (0-based)
+            
+        Returns:
+            Delay in seconds
+        """
+        # Calculate exponential delay
+        delay = min(
+            self.base_delay * (self.multiplier ** attempt),
+            self.max_delay
+        )
+        
+        # Add jitter to prevent thundering herd
+        jitter_range = delay * self.jitter
+        jitter = random.uniform(-jitter_range, jitter_range)
+        
+        return max(0, delay + jitter)
+    
+    async def send_with_retry(
+        self,
+        webhook: Webhook,
+        payload: Dict[str, Any],
+        delivery: Optional[WebhookDelivery] = None,
+        max_attempts: Optional[int] = None
+    ) -> Tuple[WebhookResponse, int]:
+        """
+        Send webhook with exponential backoff retry
+        
+        Args:
+            webhook: Webhook configuration
+            payload: Payload to send
+            delivery: Optional delivery record to update
+            max_attempts: Maximum number of attempts (uses webhook config if not specified)
+            
+        Returns:
+            Tuple of (response, attempts)
+        """
+        max_attempts = max_attempts or webhook.max_retries + 1
+        attempts = 0
+        last_error = None
+        
+        while attempts < max_attempts:
+            try:
+                response = await self.send(
+                    webhook,
+                    payload,
+                    timeout=webhook.timeout_seconds
+                )
+                
+                # Success!
+                return response, attempts + 1
+                
+            except Exception as e:
+                last_error = str(e)
+                attempts += 1
+                
+                if attempts < max_attempts:
+                    # Calculate delay for next attempt
+                    delay = self.calculate_delay(attempts - 1)
+                    
+                    logger.warning(
+                        f"Webhook {webhook.id} delivery failed (attempt {attempts}/{max_attempts}). "
+                        f"Retrying in {delay:.1f}s. Error: {last_error}"
+                    )
+                    
+                    # Update delivery record if provided
+                    if delivery:
+                        delivery.attempts = attempts
+                        delivery.error_message = last_error
+                        delivery.next_retry_at = datetime.utcnow() + timedelta(seconds=delay)
+                    
+                    # Wait before retry
+                    await asyncio.sleep(delay)
+                else:
+                    # Final failure
+                    logger.error(
+                        f"Webhook {webhook.id} delivery failed after {attempts} attempts. "
+                        f"Error: {last_error}"
+                    )
+                    
+                    raise Exception(f"Webhook delivery failed after {attempts} attempts: {last_error}")
     
     async def test_webhook(
         self,

@@ -247,3 +247,34 @@ class WebhookDeliveryResponse(BaseModel):
     
     class Config:
         orm_mode = True
+
+
+class WebhookDeadLetter(Base):
+    """Dead letter queue for failed webhook deliveries"""
+    __tablename__ = "webhook_dead_letters"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
+    webhook_id = Column(String, ForeignKey("webhooks.id"), nullable=False)
+    delivery_id = Column(String, ForeignKey("webhook_deliveries.id"), nullable=False)
+    
+    # Original event data
+    event_type = Column(String, nullable=False)
+    event_id = Column(String, nullable=False)
+    payload = Column(JSON, nullable=False)
+    
+    # Failure information
+    final_status_code = Column(Integer)
+    total_attempts = Column(Integer, nullable=False)
+    first_attempt_at = Column(DateTime, nullable=False)
+    last_attempt_at = Column(DateTime, nullable=False)
+    error_summary = Column(Text)
+    
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime)  # When to permanently delete
+    is_reprocessed = Column(Boolean, default=False)
+    reprocessed_at = Column(DateTime)
+    
+    # Relationships
+    webhook = relationship("Webhook")
+    delivery = relationship("WebhookDelivery")

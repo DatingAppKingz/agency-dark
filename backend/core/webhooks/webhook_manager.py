@@ -15,7 +15,8 @@ from core.logging import get_logger
 from core.database import get_db
 from .webhook_models import (
     Webhook, WebhookDelivery, WebhookEvent, 
-    WebhookStatus, DeliveryStatus, WebhookPayload
+    WebhookStatus, DeliveryStatus, WebhookPayload,
+    WebhookDeadLetter
 )
 from .webhook_sender import WebhookSender
 
@@ -295,6 +296,16 @@ class WebhookManager:
                 
                 await db.commit()
                 
+                # Move to dead letter queue after final failure
+                if attempt == max_attempts - 1:
+                    await self.move_to_dead_letter_queue(
+                        delivery=delivery,
+                        webhook=webhook,
+                        payload=payload.dict(),
+                        error_summary=str(e),
+                        db=db
+                    )
+                
                 if attempt < max_attempts - 1:
                     await asyncio.sleep(delay)
     
@@ -391,6 +402,131 @@ class WebhookManager:
                     handler(event, data)
             except Exception as e:
                 logger.error(f"Error in event handler for {event.value}: {e}")
+    
+    async def move_to_dead_letter_queue(
+        self,
+        delivery: WebhookDelivery,
+        webhook: Webhook,
+        payload: Dict[str, Any],
+        error_summary: str,
+        db: AsyncSession
+    ) -> WebhookDeadLetter:
+        """
+        Move failed delivery to dead letter queue
+        """
+        # Create dead letter entry
+        dead_letter = WebhookDeadLetter(
+            webhook_id=webhook.id,
+            delivery_id=delivery.id,
+            event_type=delivery.event_type,
+            event_id=delivery.event_id,
+            payload=payload,
+            final_status_code=delivery.response_status_code,
+            total_attempts=delivery.attempts,
+            first_attempt_at=delivery.created_at,
+            last_attempt_at=datetime.utcnow(),
+            error_summary=error_summary,
+            expires_at=datetime.utcnow() + timedelta(days=90)  # Keep for 90 days
+        )
+        
+        db.add(dead_letter)
+        
+        # Update delivery status
+        delivery.status = DeliveryStatus.FAILED.value
+        
+        await db.commit()
+        await db.refresh(dead_letter)
+        
+        logger.warning(
+            f"Moved webhook delivery {delivery.id} to dead letter queue. "
+            f"Event: {delivery.event_type}, Error: {error_summary}"
+        )
+        
+        return dead_letter
+    
+    async def reprocess_dead_letter(
+        self,
+        dead_letter_id: str,
+        db: AsyncSession
+    ) -> bool:
+        """
+        Attempt to reprocess a dead letter webhook
+        """
+        dead_letter = await db.get(WebhookDeadLetter, dead_letter_id)
+        if not dead_letter:
+            raise ValueError(f"Dead letter {dead_letter_id} not found")
+        
+        if dead_letter.is_reprocessed:
+            raise ValueError(f"Dead letter {dead_letter_id} has already been reprocessed")
+        
+        webhook = await db.get(Webhook, dead_letter.webhook_id)
+        if not webhook or not webhook.is_active:
+            raise ValueError("Webhook is not active")
+        
+        try:
+            # Create new delivery
+            delivery = await self._create_delivery(
+                webhook=webhook,
+                event=WebhookEvent(dead_letter.event_type),
+                event_id=dead_letter.event_id,
+                payload=dead_letter.payload,
+                db=db
+            )
+            
+            # Attempt delivery
+            response = await self.sender.send_with_retry(
+                webhook=webhook,
+                payload=dead_letter.payload,
+                delivery=delivery
+            )
+            
+            # Mark as reprocessed
+            dead_letter.is_reprocessed = True
+            dead_letter.reprocessed_at = datetime.utcnow()
+            
+            await db.commit()
+            
+            logger.info(f"Successfully reprocessed dead letter {dead_letter_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to reprocess dead letter {dead_letter_id}: {e}")
+            return False
+    
+    async def get_dead_letters(
+        self,
+        agency_id: Optional[UUID] = None,
+        limit: int = 100,
+        offset: int = 0,
+        db: AsyncSession = None
+    ) -> List[WebhookDeadLetter]:
+        """
+        Get dead letter entries
+        """
+        if db is None:
+            async with get_db() as db:
+                return await self._get_dead_letters(agency_id, limit, offset, db)
+        else:
+            return await self._get_dead_letters(agency_id, limit, offset, db)
+    
+    async def _get_dead_letters(
+        self,
+        agency_id: Optional[UUID],
+        limit: int,
+        offset: int,
+        db: AsyncSession
+    ) -> List[WebhookDeadLetter]:
+        """Internal method to get dead letters"""
+        stmt = select(WebhookDeadLetter).join(Webhook)
+        
+        if agency_id:
+            stmt = stmt.where(Webhook.agency_id == str(agency_id))
+        
+        stmt = stmt.order_by(WebhookDeadLetter.created_at.desc())
+        stmt = stmt.limit(limit).offset(offset)
+        
+        result = await db.execute(stmt)
+        return result.scalars().all()
 
 
 # Global webhook manager instance

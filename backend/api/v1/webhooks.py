@@ -13,7 +13,7 @@ from core.auth.dependencies import get_current_user
 from modules.users.domain.models import User
 from core.webhooks.webhook_models import (
     Webhook, WebhookCreate, WebhookUpdate, WebhookResponse,
-    WebhookDeliveryResponse, WebhookEvent
+    WebhookDeliveryResponse, WebhookEvent, WebhookDeadLetter
 )
 from core.webhooks.webhook_manager import webhook_manager
 
@@ -395,6 +395,109 @@ async def get_webhook_events():
             "fan": FanWebhookPayload.schema()["properties"]["data"]["example"]
         }
     }
+
+
+@router.get("/dead-letters", response_model=List[Dict])
+async def get_dead_letters(
+    limit: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get dead letter queue entries for failed webhooks
+    """
+    # Get dead letters for user's agency
+    dead_letters = await webhook_manager.get_dead_letters(
+        agency_id=current_user.agency_id,
+        limit=limit,
+        offset=offset,
+        db=db
+    )
+    
+    return [
+        {
+            "id": dl.id,
+            "webhook_id": dl.webhook_id,
+            "event_type": dl.event_type,
+            "event_id": dl.event_id,
+            "payload": dl.payload,
+            "final_status_code": dl.final_status_code,
+            "total_attempts": dl.total_attempts,
+            "first_attempt_at": dl.first_attempt_at,
+            "last_attempt_at": dl.last_attempt_at,
+            "error_summary": dl.error_summary,
+            "is_reprocessed": dl.is_reprocessed,
+            "reprocessed_at": dl.reprocessed_at,
+            "created_at": dl.created_at,
+            "expires_at": dl.expires_at
+        }
+        for dl in dead_letters
+    ]
+
+
+@router.post("/dead-letters/{dead_letter_id}/reprocess")
+async def reprocess_dead_letter(
+    dead_letter_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Attempt to reprocess a dead letter webhook
+    """
+    # Get dead letter to verify access
+    dead_letter = await db.get(WebhookDeadLetter, dead_letter_id)
+    if not dead_letter:
+        raise HTTPException(status_code=404, detail="Dead letter not found")
+    
+    # Verify webhook belongs to user's agency
+    webhook = await db.get(Webhook, dead_letter.webhook_id)
+    if not webhook or webhook.agency_id != current_user.agency_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    try:
+        success = await webhook_manager.reprocess_dead_letter(dead_letter_id, db)
+        
+        if success:
+            return {"message": "Dead letter successfully reprocessed"}
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to reprocess dead letter"
+            )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error reprocessing dead letter: {str(e)}"
+        )
+
+
+@router.delete("/dead-letters/{dead_letter_id}")
+async def delete_dead_letter(
+    dead_letter_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete a dead letter entry
+    """
+    # Get dead letter to verify access
+    dead_letter = await db.get(WebhookDeadLetter, dead_letter_id)
+    if not dead_letter:
+        raise HTTPException(status_code=404, detail="Dead letter not found")
+    
+    # Verify webhook belongs to user's agency
+    webhook = await db.get(Webhook, dead_letter.webhook_id)
+    if not webhook or webhook.agency_id != current_user.agency_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Delete the dead letter
+    await db.delete(dead_letter)
+    await db.commit()
+    
+    return {"message": "Dead letter deleted successfully"}
 
 
 @router.get("/docs/signature")
