@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import auth, api_keys, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status
+from .endpoints import auth, api_keys, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced
 from .secure_api_keys import router as secure_api_keys_router
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
@@ -67,3 +67,11 @@ api_router.include_router(partitions_router, tags=["partitions"])
 # Materialized Views
 from .materialized_views import router as materialized_views_router
 api_router.include_router(materialized_views_router, tags=["materialized-views"])
+
+# Advanced ML Insights
+api_router.include_router(ml_insights_advanced.router, prefix="/ml-insights", tags=["ml-insights-advanced"])
+
+# SSO Integration
+from modules.sso.api import router as sso_router, scim_router
+api_router.include_router(sso_router, tags=["sso"])
+api_router.include_router(scim_router, tags=["scim"])
