@@ -229,27 +229,74 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 )
             
             # Validate API key
-            if not await self._validate_api_key(api_key):
-                return JSONResponse(
-                    status_code=401,
-                    content={"detail": "Invalid API key"}
-                )
+            if not await self._validate_api_key(api_key, request):
+                # Check if rate limit exceeded
+                if hasattr(request.state, 'rate_limit_exceeded') and request.state.rate_limit_exceeded:
+                    rate_info = getattr(request.state, 'rate_limit_info', {})
+                    return JSONResponse(
+                        status_code=429,
+                        content={"detail": "Rate limit exceeded", **rate_info},
+                        headers={
+                            "X-RateLimit-Limit": str(rate_info.get('limit', 0)),
+                            "X-RateLimit-Remaining": str(rate_info.get('remaining', 0)),
+                            "X-RateLimit-Reset": str(rate_info.get('reset', 0))
+                        }
+                    )
+                else:
+                    return JSONResponse(
+                        status_code=401,
+                        content={"detail": "Invalid API key"}
+                    )
         
         return await call_next(request)
     
-    async def _validate_api_key(self, api_key: str) -> bool:
+    async def _validate_api_key(self, api_key: str, request: Request) -> bool:
         """Validate API key against stored keys."""
+        from core.domain.api_keys import APIKeyService
+        from core.database import get_db
+        
         # Check in Redis cache first
-        cached = await redis_client.get(f"api_key:{api_key}")
-        if cached:
-            return cached == "valid"
+        cached = await redis_client.get(f"api_key_valid:{api_key[:8]}")
+        if cached == "valid":
+            return True
+        elif cached == "invalid":
+            return False
         
-        # TODO: Implement database lookup for API keys
-        # For now, check against environment variable
-        valid = api_key == settings.INFLOW_API_KEY
+        # Get database session
+        async for db in get_db():
+            try:
+                service = APIKeyService(db)
+                
+                # Get client IP
+                client_ip = request.client.host if request.client else None
+                
+                # Validate key
+                api_key_obj = await service.validate_api_key(api_key, client_ip)
+                
+                if api_key_obj:
+                    # Check rate limit
+                    allowed, rate_info = await service.check_rate_limit(api_key_obj, redis_client)
+                    
+                    if allowed:
+                        # Cache valid result
+                        await redis_client.setex(f"api_key_valid:{api_key[:8]}", 300, "valid")
+                        
+                        # Store API key info in request state
+                        request.state.api_key = api_key_obj
+                        request.state.rate_limit_info = rate_info
+                        
+                        return True
+                    else:
+                        # Rate limit exceeded
+                        request.state.rate_limit_exceeded = True
+                        request.state.rate_limit_info = rate_info
+                        return False
+                else:
+                    # Cache invalid result
+                    await redis_client.setex(f"api_key_valid:{api_key[:8]}", 60, "invalid")
+                    return False
+                    
+            finally:
+                await db.close()
         
-        # Cache result
-        if valid:
-            await redis_client.setex(f"api_key:{api_key}", 3600, "valid")
-        
-        return valid
+        return False

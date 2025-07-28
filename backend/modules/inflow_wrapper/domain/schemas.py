@@ -21,10 +21,33 @@ class InflowConfig(BaseModel):
     base_url: HttpUrl = Field(default="https://api.inflow.com")
     api_key: Optional[str] = None
     auth_method: InflowAuthMethod = InflowAuthMethod.API_KEY
+    
+    # OAuth2 configuration
+    client_id: Optional[str] = None
+    client_secret: Optional[str] = None
+    redirect_uri: Optional[str] = None
+    authorization_url: Optional[str] = None
+    token_url: Optional[str] = None
+    scope: Optional[str] = None
+    
+    # JWT configuration
+    jwt_secret: Optional[str] = None
+    jwt_algorithm: str = "HS256"
+    jwt_expiration: int = Field(default=3600, description="JWT expiration in seconds")
+    
+    # General configuration
     timeout: int = Field(default=30, description="Request timeout in seconds")
     max_retries: int = Field(default=3)
     retry_delay: int = Field(default=1, description="Initial retry delay in seconds")
     verify_ssl: bool = True
+    
+    # Webhook configuration
+    webhook_secret: Optional[str] = None
+    
+    # Token storage (runtime)
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    token_expires_at: Optional[datetime] = None
 
 
 class InflowUser(BaseModel):

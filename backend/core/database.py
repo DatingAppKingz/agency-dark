@@ -4,6 +4,7 @@ from sqlalchemy import MetaData, event, text, create_engine
 from sqlalchemy.pool import NullPool
 from contextlib import contextmanager
 from core.config import settings
+from core.database_pool import DatabasePoolConfig, pool_manager
 import logging
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
@@ -47,21 +48,15 @@ naming_convention = {
 metadata = MetaData(naming_convention=naming_convention)
 Base = declarative_base(metadata=metadata)
 
-if settings.ENVIRONMENT == "test":
-    engine = create_async_engine(
-        DATABASE_URL,
-        echo=settings.DEBUG,
-        poolclass=NullPool,
-        pool_pre_ping=True,
-    )
-else:
-    engine = create_async_engine(
-        DATABASE_URL,
-        echo=settings.DEBUG,
-        pool_size=settings.DATABASE_POOL_SIZE,
-        max_overflow=settings.DATABASE_MAX_OVERFLOW,
-        pool_pre_ping=True,
-    )
+# Use optimized pool configuration
+engine = create_async_engine(
+    DATABASE_URL,
+    **DatabasePoolConfig.get_pool_config()
+)
+
+# Initialize pool manager for advanced use cases
+import asyncio
+asyncio.create_task(pool_manager.initialize(DATABASE_URL))
 
 AsyncSessionLocal = async_sessionmaker(
     engine,
@@ -73,6 +68,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def get_db() -> AsyncSession:
+    """Get database session for general use"""
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -80,6 +76,40 @@ async def get_db() -> AsyncSession:
         except Exception:
             await session.rollback()
             raise
+        finally:
+            await session.close()
+
+
+async def get_read_db() -> AsyncSession:
+    """Get database session optimized for read operations"""
+    read_engine = pool_manager.get_engine("read")
+    async_session = async_sessionmaker(
+        read_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+    async with async_session() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+
+async def get_analytics_db() -> AsyncSession:
+    """Get database session optimized for analytics queries"""
+    analytics_engine = pool_manager.get_engine("analytics")
+    async_session = async_sessionmaker(
+        analytics_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+    async with async_session() as session:
+        try:
+            yield session
         finally:
             await session.close()
 

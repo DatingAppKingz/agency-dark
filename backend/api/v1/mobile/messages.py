@@ -235,8 +235,44 @@ async def send_mobile_message(
     # Get sender info
     sender = await db.get(User, user_id)
     
-    # TODO: Send push notification to recipient
-    # TODO: Emit websocket event
+    # Send push notification to recipient
+    from modules.notifications.push_service import push_service
+    
+    notification_result = await push_service.send_push_notification(
+        db=db,
+        user_id=UUID(recipient_id),
+        title=f"New message from {sender.full_name}",
+        body=content[:100] + "..." if len(content) > 100 else content,
+        data={
+            "type": "message",
+            "conversation_id": str(conversation.id),
+            "sender_id": str(sender.id),
+            "message_id": str(message.id)
+        },
+        image_url=sender.avatar_url,
+        action_url=f"/conversations/{conversation.id}",
+        priority="high"
+    )
+    
+    logger.info(f"Push notification result: {notification_result}")
+    
+    # Emit websocket event
+    from core.realtime.socketio_server import sio
+    
+    await sio.emit(
+        'new_message',
+        {
+            'conversation_id': str(conversation.id),
+            'message': {
+                'id': str(message.id),
+                'sender_id': str(sender.id),
+                'sender_name': sender.full_name,
+                'content': content,
+                'timestamp': message.created_at.isoformat()
+            }
+        },
+        room=f"user_{recipient_id}"
+    )
     
     return MobileMessageResponse(
         id=str(message.id),

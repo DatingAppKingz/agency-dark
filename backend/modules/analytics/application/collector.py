@@ -119,13 +119,56 @@ class MetricsCollector:
         
         # Get transactions from OnlyFans if configured
         if model.onlyfans_api_key:
-            # TODO: Implement OnlyFans transaction collection
-            pass
+            try:
+                from modules.onlyfans_wrapper.application.service import OnlyFansService
+                of_service = OnlyFansService(self.db)
+                
+                of_transactions = await of_service.get_transactions(
+                    model_profile=model,
+                    start_date=since,
+                    end_date=datetime.utcnow()
+                )
+                
+                # Convert OnlyFans transactions to our format
+                for tx in of_transactions:
+                    transactions.append({
+                        'fan_id': tx.user_id or tx.from_user.get('id') if isinstance(tx.from_user, dict) else tx.from_user.id,
+                        'type': tx.type,
+                        'amount': float(tx.amount),
+                        'currency': tx.currency,
+                        'source': 'onlyfans',
+                        'external_id': tx.id,
+                        'date': tx.created_at
+                    })
+            except Exception as e:
+                logger.error(f"Failed to collect OnlyFans transactions: {str(e)}")
         
         # Get transactions from Inflow if configured
         if model.inflow_api_key:
-            # TODO: Implement Inflow transaction collection
-            pass
+            try:
+                from modules.inflow_wrapper.application.service import InflowService
+                inflow_service = InflowService(self.db)
+                inflow_client = await inflow_service.get_client(model)
+                
+                inflow_transactions = await inflow_client.list_transactions(
+                    user_id=model.onlyfans_user_id,
+                    start_date=since,
+                    end_date=datetime.utcnow()
+                )
+                
+                # Convert Inflow transactions to our format
+                for tx in inflow_transactions:
+                    transactions.append({
+                        'fan_id': tx.from_user_id,
+                        'type': tx.type,
+                        'amount': tx.amount,
+                        'currency': tx.currency,
+                        'source': 'inflow',
+                        'external_id': tx.id,
+                        'date': tx.created_at
+                    })
+            except Exception as e:
+                logger.error(f"Failed to collect Inflow transactions: {str(e)}")
         
         # Store transactions
         for tx_data in transactions:
@@ -160,7 +203,88 @@ class MetricsCollector:
         performances = []
         
         # Get content data from APIs
-        # TODO: Implement content data collection from OF/Inflow
+        # Collect from OnlyFans
+        if model.onlyfans_api_key:
+            try:
+                from modules.onlyfans_wrapper.application.service import OnlyFansService
+                of_service = OnlyFansService(self.db)
+                
+                posts = await of_service.get_posts(model_profile=model, limit=100)
+                
+                for post in posts:
+                    # Check if we already have this content
+                    existing = await self.db.query(ContentPerformance).filter(
+                        ContentPerformance.model_id == model.id,
+                        ContentPerformance.external_content_id == post.id
+                    ).first()
+                    
+                    if existing:
+                        # Update metrics
+                        existing.views_count = post.views_count or 0
+                        existing.likes_count = post.favorites_count or 0
+                        existing.comments_count = post.comments_count or 0
+                        existing.revenue_generated = Decimal(str(post.earnings or 0))
+                    else:
+                        # Create new record
+                        perf = ContentPerformance(
+                            model_id=model.id,
+                            content_type=post.type,
+                            external_content_id=post.id,
+                            posted_at=post.created_at,
+                            views_count=post.views_count or 0,
+                            likes_count=post.favorites_count or 0,
+                            comments_count=post.comments_count or 0,
+                            revenue_generated=Decimal(str(post.earnings or 0)),
+                            source='onlyfans',
+                            metadata={
+                                'is_pinned': post.is_pinned,
+                                'is_archived': post.is_archived,
+                                'price': float(post.price) if post.price else 0
+                            }
+                        )
+                        self.db.add(perf)
+                        performances.append(perf)
+            except Exception as e:
+                logger.error(f"Failed to collect OnlyFans content data: {str(e)}")
+        
+        # Collect from Inflow
+        if model.inflow_api_key:
+            try:
+                from modules.inflow_wrapper.application.service import InflowService
+                inflow_service = InflowService(self.db)
+                
+                content_list = await inflow_service.list_content(model_profile=model)
+                
+                for content in content_list:
+                    # Check if we already have this content
+                    existing = await self.db.query(ContentPerformance).filter(
+                        ContentPerformance.model_id == model.id,
+                        ContentPerformance.external_content_id == content.id
+                    ).first()
+                    
+                    if existing:
+                        # Update metrics
+                        existing.views_count = content.metrics.get('views', 0)
+                        existing.likes_count = content.metrics.get('likes', 0)
+                        existing.comments_count = content.metrics.get('comments', 0)
+                    else:
+                        # Create new record
+                        perf = ContentPerformance(
+                            model_id=model.id,
+                            content_type=content.type,
+                            external_content_id=content.id,
+                            posted_at=content.created_at,
+                            views_count=content.metrics.get('views', 0),
+                            likes_count=content.metrics.get('likes', 0),
+                            comments_count=content.metrics.get('comments', 0),
+                            revenue_generated=Decimal('0'),  # Inflow doesn't provide direct revenue per content
+                            source='inflow',
+                            metadata=content.metadata
+                        )
+                        self.db.add(perf)
+                        performances.append(perf)
+            except Exception as e:
+                logger.error(f"Failed to collect Inflow content data: {str(e)}")
         
         # For now, return empty list
         return performances

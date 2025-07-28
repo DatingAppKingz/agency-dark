@@ -82,6 +82,16 @@ class IInflowClient(ABC):
         pass
     
     @abstractmethod
+    async def upload_media(
+        self,
+        file: Any,  # BinaryIO
+        media_type: str,
+        filename: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Upload media file for messages or content."""
+        pass
+    
+    @abstractmethod
     async def list_messages(
         self,
         conversation_id: Optional[str] = None,

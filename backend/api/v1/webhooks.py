@@ -16,6 +16,7 @@ from core.webhooks.webhook_models import (
     WebhookDeliveryResponse, WebhookEvent, WebhookDeadLetter
 )
 from core.webhooks.webhook_manager import webhook_manager
+from core.pagination import PaginatedResponse, get_pagination_params, paginate
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
@@ -93,15 +94,16 @@ async def create_webhook(
     )
 
 
-@router.get("", response_model=List[WebhookResponse])
+@router.get("", response_model=PaginatedResponse[WebhookResponse])
 async def list_webhooks(
     is_active: Optional[bool] = None,
     event: Optional[WebhookEvent] = None,
+    pagination = Depends(get_pagination_params),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    List all webhooks for the agency
+    List all webhooks for the agency with pagination
     """
     if not current_user.agency_id:
         raise HTTPException(status_code=403, detail="Agency membership required")
@@ -117,31 +119,8 @@ async def list_webhooks(
     
     query = query.order_by(Webhook.created_at.desc())
     
-    result = await db.execute(query)
-    webhooks = result.scalars().all()
-    
-    return [
-        WebhookResponse(
-            id=webhook.id,
-            url=webhook.url,
-            events=webhook.events,
-            description=webhook.description,
-            is_active=webhook.is_active,
-            retry_enabled=webhook.retry_enabled,
-            max_retries=webhook.max_retries,
-            timeout_seconds=webhook.timeout_seconds,
-            custom_headers=webhook.custom_headers,
-            total_deliveries=webhook.total_deliveries,
-            successful_deliveries=webhook.successful_deliveries,
-            failed_deliveries=webhook.failed_deliveries,
-            last_delivery_at=webhook.last_delivery_at,
-            last_success_at=webhook.last_success_at,
-            last_failure_at=webhook.last_failure_at,
-            created_at=webhook.created_at,
-            updated_at=webhook.updated_at
-        )
-        for webhook in webhooks
-    ]
+    # Apply pagination
+    return await paginate(db, query, pagination, WebhookResponse)
 
 
 @router.get("/{webhook_id}", response_model=WebhookResponse)

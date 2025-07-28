@@ -6,8 +6,8 @@ This module implements the actual HTTP client for interacting with Inflow API.
 import asyncio
 import json
 import logging
-from typing import List, Optional, Dict, Any
-from datetime import datetime
+from typing import List, Optional, Dict, Any, BinaryIO
+from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 import httpx
@@ -124,8 +124,125 @@ class InflowClient(IInflowClient):
                 logger.error(f"Authentication failed: {e}")
                 return False
         
-        # TODO: Implement OAuth2 and JWT authentication
+        # OAuth2 authentication
+        if self.config.auth_method == "oauth2":
+            return await self._authenticate_oauth2()
+        
+        # JWT authentication
+        if self.config.auth_method == "jwt":
+            return await self._authenticate_jwt()
+        
         raise NotImplementedError(f"Auth method {self.config.auth_method} not implemented")
+    
+    async def _authenticate_oauth2(self) -> bool:
+        """Authenticate using OAuth2."""
+        if not all([self.config.client_id, self.config.client_secret, self.config.token_url]):
+            raise ValueError("OAuth2 requires client_id, client_secret, and token_url")
+        
+        # Check if we have a valid token
+        if self.config.access_token and self.config.token_expires_at:
+            if self.config.token_expires_at > datetime.utcnow():
+                self._auth_headers = {"Authorization": f"Bearer {self.config.access_token}"}
+                return True
+            elif self.config.refresh_token:
+                # Try to refresh the token
+                return await self._refresh_oauth2_token()
+        
+        # Request new token using client credentials
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    self.config.token_url,
+                    data={
+                        "grant_type": "client_credentials",
+                        "client_id": self.config.client_id,
+                        "client_secret": self.config.client_secret,
+                        "scope": self.config.scope or ""
+                    },
+                    headers={"Content-Type": "application/x-www-form-urlencoded"}
+                )
+                response.raise_for_status()
+                
+                token_data = response.json()
+                self.config.access_token = token_data["access_token"]
+                self.config.refresh_token = token_data.get("refresh_token")
+                
+                # Calculate expiration
+                expires_in = token_data.get("expires_in", 3600)
+                self.config.token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+                
+                self._auth_headers = {"Authorization": f"Bearer {self.config.access_token}"}
+                return True
+                
+            except Exception as e:
+                logger.error(f"OAuth2 authentication failed: {e}")
+                return False
+    
+    async def _refresh_oauth2_token(self) -> bool:
+        """Refresh OAuth2 token."""
+        if not self.config.refresh_token:
+            return False
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    self.config.token_url,
+                    data={
+                        "grant_type": "refresh_token",
+                        "refresh_token": self.config.refresh_token,
+                        "client_id": self.config.client_id,
+                        "client_secret": self.config.client_secret
+                    },
+                    headers={"Content-Type": "application/x-www-form-urlencoded"}
+                )
+                response.raise_for_status()
+                
+                token_data = response.json()
+                self.config.access_token = token_data["access_token"]
+                if "refresh_token" in token_data:
+                    self.config.refresh_token = token_data["refresh_token"]
+                
+                expires_in = token_data.get("expires_in", 3600)
+                self.config.token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+                
+                self._auth_headers = {"Authorization": f"Bearer {self.config.access_token}"}
+                return True
+                
+            except Exception as e:
+                logger.error(f"OAuth2 token refresh failed: {e}")
+                return False
+    
+    async def _authenticate_jwt(self) -> bool:
+        """Authenticate using JWT."""
+        if not self.config.jwt_secret:
+            raise ValueError("JWT authentication requires jwt_secret")
+        
+        try:
+            import jwt
+            
+            # Create JWT token
+            payload = {
+                "iss": "agency-dark",
+                "sub": self.config.api_key or "default",
+                "exp": datetime.utcnow() + timedelta(seconds=self.config.jwt_expiration),
+                "iat": datetime.utcnow()
+            }
+            
+            token = jwt.encode(
+                payload,
+                self.config.jwt_secret,
+                algorithm=self.config.jwt_algorithm
+            )
+            
+            self._auth_headers = {"Authorization": f"Bearer {token}"}
+            
+            # Verify by getting current user
+            await self.get_current_user()
+            return True
+            
+        except Exception as e:
+            logger.error(f"JWT authentication failed: {e}")
+            return False
     
     async def get_current_user(self) -> InflowUser:
         """Get the authenticated user's information."""
@@ -199,9 +316,50 @@ class InflowClient(IInflowClient):
         is_ppv: bool = False
     ) -> InflowContent:
         """Create new content."""
-        # TODO: Implement file upload
-        # This would typically involve multipart form data
-        raise NotImplementedError("Content creation not yet implemented")
+        # Open file and prepare multipart data
+        with open(file_path, 'rb') as f:
+            files = {
+                'file': (file_path.split('/')[-1], f, f'application/{content_type}')
+            }
+            data = {
+                'title': title,
+                'content_type': content_type,
+                'description': description or '',
+                'price': price or 0,
+                'is_ppv': is_ppv
+            }
+            
+            response = await self._make_request(
+                "POST",
+                "/api/v1/content",
+                files=files,
+                data=data
+            )
+            
+        return InflowContent(**response.json())
+    
+    async def upload_media(
+        self,
+        file: BinaryIO,
+        media_type: str,
+        filename: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Upload media file for messages or content."""
+        files = {
+            'file': (filename or 'upload', file, f'{media_type}/*')
+        }
+        data = {
+            'type': media_type
+        }
+        
+        response = await self._make_request(
+            "POST",
+            "/api/v1/media/upload",
+            files=files,
+            data=data
+        )
+        
+        return response.json()
     
     async def delete_content(self, content_id: str) -> bool:
         """Delete content by ID."""
@@ -328,9 +486,32 @@ class InflowClient(IInflowClient):
     async def verify_webhook(
         self,
         payload: Dict[str, Any],
-        signature: str
+        signature: str,
+        webhook_secret: Optional[str] = None
     ) -> bool:
-        """Verify webhook signature."""
-        # TODO: Implement webhook signature verification
-        # This typically involves HMAC-SHA256 with the webhook secret
-        raise NotImplementedError("Webhook verification not yet implemented")
+        """Verify webhook signature using HMAC-SHA256."""
+        import hmac
+        import hashlib
+        import json
+        
+        # Use provided secret or config secret
+        secret = webhook_secret or self.config.webhook_secret
+        if not secret:
+            logger.warning("No webhook secret configured, skipping verification")
+            return True
+        
+        # Convert payload to canonical JSON string
+        payload_str = json.dumps(payload, sort_keys=True, separators=(',', ':'))
+        
+        # Calculate expected signature
+        expected_signature = hmac.new(
+            secret.encode('utf-8'),
+            payload_str.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        # Compare signatures (remove any prefix like "sha256=")
+        provided_signature = signature.split('=')[-1] if '=' in signature else signature
+        
+        # Use constant-time comparison to prevent timing attacks
+        return hmac.compare_digest(expected_signature, provided_signature)
