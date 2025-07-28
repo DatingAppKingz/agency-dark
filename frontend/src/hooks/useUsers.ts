@@ -1,19 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { usersService, CreateUserData, UpdateUserData } from '@/services/api/users';
+import { userService, CreateUserData, UpdateUserData } from '@/services/api/users';
 import { QueryParams } from '@/types/api';
 import { useToast } from '@/components/common/Toaster';
 
 export const useUsers = (params?: QueryParams) => {
   return useQuery({
     queryKey: ['users', params],
-    queryFn: () => usersService.getUsers(params),
+    queryFn: () => userService.getUsers(params),
   });
 };
 
 export const useUser = (userId: string) => {
   return useQuery({
     queryKey: ['users', userId],
-    queryFn: () => usersService.getUser(userId),
+    queryFn: () => userService.getUser(userId),
     enabled: !!userId,
   });
 };
@@ -23,7 +23,7 @@ export const useCreateUser = () => {
   const { success, error } = useToast();
 
   return useMutation({
-    mutationFn: (data: CreateUserData) => usersService.createUser(data),
+    mutationFn: (data: CreateUserData) => userService.createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('User created successfully');
@@ -40,7 +40,7 @@ export const useUpdateUser = () => {
 
   return useMutation({
     mutationFn: ({ userId, data }: { userId: string; data: UpdateUserData }) =>
-      usersService.updateUser(userId, data),
+      userService.updateUser(userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('User updated successfully');
@@ -56,7 +56,7 @@ export const useDeleteUser = () => {
   const { success, error } = useToast();
 
   return useMutation({
-    mutationFn: (userId: string) => usersService.deleteUser(userId),
+    mutationFn: (userId: string) => userService.deleteUser(userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('User deleted successfully');
@@ -72,7 +72,7 @@ export const useDeleteUsers = () => {
   const { success, error } = useToast();
 
   return useMutation({
-    mutationFn: (userIds: string[]) => usersService.deleteUsers(userIds),
+    mutationFn: (userIds: string[]) => userService.deleteUsers(userIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('Users deleted successfully');
@@ -89,7 +89,7 @@ export const useToggleUserStatus = () => {
 
   return useMutation({
     mutationFn: ({ userId, isActive }: { userId: string; isActive: boolean }) =>
-      usersService.toggleUserStatus(userId, isActive),
+      userService.toggleUserStatus(userId, isActive),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('User status updated');

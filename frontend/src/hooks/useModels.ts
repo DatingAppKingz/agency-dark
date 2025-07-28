@@ -8,6 +8,7 @@ export const useModels = (params?: QueryParams) => {
   return useQuery({
     queryKey: ['models', params],
     queryFn: () => modelsService.getModels(params),
+    select: (data) => data?.data || [],
   });
 };
 

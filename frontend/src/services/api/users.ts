@@ -1,76 +1,103 @@
 import apiClient from './client';
-import { User } from '@/types/auth';
-import { PaginatedResponse, QueryParams } from '@/types/api';
+import { UserRole } from '@/types/auth';
+
+export interface User {
+  id: string;
+  agency_id?: string;
+  email: string;
+  full_name?: string;
+  username?: string;
+  stage_name?: string;
+  role: UserRole;
+  is_active: boolean;
+  is_verified: boolean;
+  last_login?: string;
+  created_at: string;
+  avatar_url?: string;
+}
+
+export interface PaginatedUsers {
+  data: User[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+}
 
 export interface CreateUserData {
   email: string;
-  password: string;
   full_name: string;
-  role: string;
+  role: UserRole;
+  password: string;
   agency_id?: string;
-  is_active?: boolean;
 }
 
 export interface UpdateUserData {
+  email?: string;
   full_name?: string;
-  role?: string;
+  role?: UserRole;
   is_active?: boolean;
+  is_verified?: boolean;
 }
 
-export const usersService = {
-  // Get current user info
-  async getCurrentUser(): Promise<User> {
-    const { data } = await apiClient.get('/auth/me');
-    return data;
+export const userService = {
+  async getUsers(params?: {
+    role?: UserRole;
+    agency_id?: string;
+    is_active?: boolean;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedUsers> {
+    const response = await apiClient.get('/api/v1/users', {
+      params: {
+        ...params,
+        per_page: params?.limit,
+      }
+    });
+    return response.data;
   },
 
-  // Register new user (only endpoint available)
-  async createUser(userData: CreateUserData): Promise<User> {
-    const { data } = await apiClient.post('/auth/register', userData);
-    return data;
+  async getUser(id: string): Promise<User> {
+    const response = await apiClient.get(`/api/v1/users/${id}`);
+    return response.data;
   },
 
-  // Note: The following methods are placeholders until backend implements user management endpoints
-  // For now, they return mock data or throw not implemented errors
-
-  async getUsers(params?: QueryParams): Promise<PaginatedResponse<User>> {
-    // TODO: Implement when backend provides user listing endpoint
-    console.warn('User listing not yet implemented in backend');
-    return {
-      data: [],
-      total: 0,
-      page: params?.page || 1,
-      pages: 0,
-    };
+  async createUser(data: CreateUserData): Promise<User> {
+    const response = await apiClient.post('/api/v1/users', data);
+    return response.data;
   },
 
-  async getUser(userId: string): Promise<User> {
-    // TODO: Implement when backend provides user detail endpoint
-    throw new Error('User detail endpoint not yet implemented');
+  async updateUser(id: string, data: UpdateUserData): Promise<User> {
+    const response = await apiClient.put(`/api/v1/users/${id}`, data);
+    return response.data;
   },
 
-  async updateUser(userId: string, userData: UpdateUserData): Promise<User> {
-    // TODO: Implement when backend provides user update endpoint
-    throw new Error('User update endpoint not yet implemented');
+  async deleteUser(id: string): Promise<void> {
+    await apiClient.delete(`/api/v1/users/${id}`);
   },
 
-  async deleteUser(userId: string): Promise<void> {
-    // TODO: Implement when backend provides user delete endpoint
-    throw new Error('User delete endpoint not yet implemented');
+  async deleteUsers(ids: string[]): Promise<void> {
+    await apiClient.post('/api/v1/users/bulk-delete', { ids });
   },
 
-  async deleteUsers(userIds: string[]): Promise<void> {
-    // TODO: Implement when backend provides bulk delete endpoint
-    throw new Error('Bulk delete endpoint not yet implemented');
+  async toggleUserStatus(id: string, isActive: boolean): Promise<User> {
+    const response = await apiClient.post(`/api/v1/users/${id}/${isActive ? 'activate' : 'deactivate'}`);
+    return response.data;
   },
 
-  async toggleUserStatus(userId: string, isActive: boolean): Promise<User> {
-    // TODO: Implement when backend provides status toggle endpoint
-    throw new Error('Status toggle endpoint not yet implemented');
+  async activateUser(id: string): Promise<User> {
+    const response = await apiClient.post(`/api/v1/users/${id}/activate`);
+    return response.data;
   },
 
-  async resetUserPassword(userId: string): Promise<{ temporary_password: string }> {
-    // TODO: Implement when backend provides password reset endpoint
-    throw new Error('Password reset endpoint not yet implemented');
+  async deactivateUser(id: string): Promise<User> {
+    const response = await apiClient.post(`/api/v1/users/${id}/deactivate`);
+    return response.data;
+  },
+
+  async verifyUser(id: string): Promise<User> {
+    const response = await apiClient.post(`/api/v1/users/${id}/verify`);
+    return response.data;
   },
 };

@@ -1,5 +1,5 @@
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box, Divider, useTheme, useMediaQuery } from '@mui/material';
-import { Dashboard, People, Person, Chat, Analytics, AttachMoney, Settings, Business, AdminPanelSettings, CloudSync } from '@mui/icons-material';
+import { Dashboard, People, Person, Chat, Analytics, AttachMoney, Settings, Business, AdminPanelSettings, CloudSync, Group } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types/auth';
@@ -51,6 +51,12 @@ const menuItems: MenuItem[] = [
     text: 'Analytics',
     icon: <Analytics />,
     path: '/dashboard/analytics',
+  },
+  {
+    text: 'Bulk Operations',
+    icon: <Group />,
+    path: '/dashboard/bulk-operations',
+    roles: [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN],
   },
   {
     text: 'Data Sync',

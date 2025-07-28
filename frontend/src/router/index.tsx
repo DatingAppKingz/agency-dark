@@ -21,6 +21,7 @@ const FinancialPage = lazy(() => import('@/pages/financial/FinancialPage'));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 const ApiKeysPage = lazy(() => import('@/pages/settings/ApiKeysPage'));
 const WebhooksPage = lazy(() => import('@/pages/settings/WebhooksPage'));
+const BulkOperationsPage = lazy(() => import('@/pages/bulk/BulkOperationsPage'));
 const SyncDashboardPage = lazy(() => import('@/pages/sync/SyncDashboardPage'));
 const UserProfilePage = lazy(() => import('@/pages/profile/UserProfilePage'));
 const AgencySettingsPage = lazy(() => import('@/pages/agency/AgencySettingsPage'));
@@ -159,6 +160,14 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <WebhooksPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'bulk-operations',
+            element: (
+              <LazyPage>
+                <BulkOperationsPage />
               </LazyPage>
             ),
           },
