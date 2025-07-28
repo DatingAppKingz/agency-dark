@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
   Tabs,
   Tab,
   Paper,
+  Button,
 } from '@mui/material';
 import {
   Person,
@@ -12,6 +14,7 @@ import {
   Security,
   Palette,
   Language,
+  Key,
 } from '@mui/icons-material';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
 
@@ -39,6 +42,7 @@ const TabPanel = (props: TabPanelProps) => {
 
 const SettingsPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
+  const navigate = useNavigate();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
@@ -61,6 +65,7 @@ const SettingsPage = () => {
           <Tab icon={<Person />} label="Profile" />
           <Tab icon={<Notifications />} label="Notifications" />
           <Tab icon={<Security />} label="Security" />
+          <Tab icon={<Key />} label="API Keys" />
           <Tab icon={<Palette />} label="Appearance" />
           <Tab icon={<Language />} label="Language" />
         </Tabs>
@@ -85,13 +90,26 @@ const SettingsPage = () => {
           </TabPanel>
 
           <TabPanel value={selectedTab} index={3}>
+            <Typography variant="h6">API Key Management</Typography>
+            <Typography color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+              Manage your external API integrations securely.
+            </Typography>
+            <Button 
+              variant="contained" 
+              onClick={() => navigate('/settings/api-keys')}
+            >
+              Manage API Keys
+            </Button>
+          </TabPanel>
+
+          <TabPanel value={selectedTab} index={4}>
             <Typography variant="h6">Appearance Settings</Typography>
             <Typography color="text.secondary" sx={{ mt: 2 }}>
               Appearance settings coming soon...
             </Typography>
           </TabPanel>
 
-          <TabPanel value={selectedTab} index={4}>
+          <TabPanel value={selectedTab} index={5}>
             <Typography variant="h6">Language Settings</Typography>
             <Typography color="text.secondary" sx={{ mt: 2 }}>
               Language settings coming soon...
