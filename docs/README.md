@@ -1,6 +1,6 @@
-# Claude History - AgencyDark Development
+# AgencyDark Documentation
 
-This directory contains the consolidated development history and documentation for the AgencyDark project.
+This directory contains the complete documentation, development history, and guides for the AgencyDark project.
 
 ## Structure
 
@@ -43,4 +43,11 @@ AgencyDark is a white-label SaaS platform for OnlyFans marketing agencies, built
 - 80%+ test coverage
 - Production-ready infrastructure
 
-For the complete project overview, see [PROJECT_SUMMARY.md](../PROJECT_SUMMARY.md) in the root directory.
+For the complete project overview, see [PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md).
+
+## Quick Navigation
+
+- **[FILE_ORGANIZATION.md](./FILE_ORGANIZATION.md)** - Detailed documentation structure
+- **[setup-guides/](./setup-guides/)** - All setup and debugging guides
+- **[development-logs/](./development-logs/)** - Development progress and logs
+- **[production/](./production/)** - Production deployment documentation
