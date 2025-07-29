@@ -1,0 +1,173 @@
+# Enhanced multi-stage Dockerfile with optimization
+# Build stage 1: Dependencies
+FROM python:3.11-slim as python-deps
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy and install requirements
+WORKDIR /tmp
+COPY requirements.txt requirements-prod.txt* ./
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt && \
+    if [ -f requirements-prod.txt ]; then pip install --no-cache-dir -r requirements-prod.txt; fi
+
+# Build stage 2: Application
+FROM python:3.11-slim as app-build
+
+# Copy virtual environment
+COPY --from=python-deps /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy application code
+WORKDIR /app
+COPY . .
+
+# Compile Python files for optimization
+RUN python -m compileall -b .
+
+# Remove source files to reduce size (keep only .pyc)
+RUN find . -name "*.py" ! -name "__main__.py" -delete && \
+    find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+
+# Runtime stage: Minimal production image
+FROM python:3.11-slim as production
+
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    tini \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -g 1000 agency && \
+    useradd -r -u 1000 -g agency -m -s /sbin/nologin agency
+
+# Copy virtual environment
+COPY --from=python-deps /opt/venv /opt/venv
+
+# Copy compiled application
+WORKDIR /app
+COPY --from=app-build --chown=agency:agency /app .
+
+# Environment variables
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONHASHSEED=random \
+    PYTHONPATH=/app \
+    # Security
+    PYTHONWARNINGS="ignore" \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    # Application
+    APP_HOME=/app \
+    PORT=8000
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/temp && \
+    chown -R agency:agency /app && \
+    chmod -R 755 /app
+
+# Security hardening
+RUN chmod 700 /app/logs && \
+    find /app -type d -name "test*" -exec rm -rf {} + 2>/dev/null || true && \
+    find /app -type d -name "docs" -exec rm -rf {} + 2>/dev/null || true
+
+USER agency
+
+EXPOSE ${PORT}
+
+# Use tini for proper signal handling
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:${PORT}/health').raise_for_status()" || exit 1
+
+# Production server
+CMD ["sh", "-c", "gunicorn main:app \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --workers ${WORKERS:-4} \
+    --bind 0.0.0.0:${PORT} \
+    --max-requests 10000 \
+    --max-requests-jitter 1000 \
+    --timeout 60 \
+    --keepalive 5 \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level ${LOG_LEVEL:-info}"]
+
+# Development stage
+FROM python:3.11-slim as development
+
+# Install development tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    git \
+    vim \
+    postgresql-client \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment
+COPY --from=python-deps /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install development dependencies
+WORKDIR /app
+COPY requirements-dev.txt* ./
+RUN if [ -f requirements-dev.txt ]; then pip install --no-cache-dir -r requirements-dev.txt; fi
+
+# Install additional dev tools
+RUN pip install --no-cache-dir \
+    ipdb \
+    ipython \
+    rich \
+    typer[all]
+
+# Copy application
+COPY . .
+
+# Development server with reload
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+
+# Test stage
+FROM development as test
+
+# Install test dependencies
+COPY requirements-test.txt* ./
+RUN if [ -f requirements-test.txt ]; then pip install --no-cache-dir -r requirements-test.txt; fi
+
+# Copy test configuration
+COPY pytest.ini .coveragerc* ./
+COPY tests ./tests
+
+# Run tests
+CMD ["pytest", "-v", "--cov=backend", "--cov-report=term-missing", "--cov-report=xml", "--cov-report=html"]
+
+# Security scanning stage
+FROM python:3.11-slim as security
+
+RUN pip install --no-cache-dir \
+    bandit \
+    safety \
+    pip-audit
+
+WORKDIR /app
+COPY . .
+
+# Run security scans
+CMD ["sh", "-c", "bandit -r . -f json && safety check --json && pip-audit"]

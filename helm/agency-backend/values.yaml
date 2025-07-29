@@ -1,0 +1,256 @@
+# Default values for agency-backend
+replicaCount: 3
+
+image:
+  repository: agency/backend
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  capabilities:
+    drop:
+    - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: api.agency.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: agency-backend-tls
+      hosts:
+        - api.agency.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - agency-backend
+        topologyKey: kubernetes.io/hostname
+
+env:
+  ENVIRONMENT: production
+  LOG_LEVEL: info
+  WORKERS: "4"
+  PORT: "8000"
+
+config:
+  APP_NAME: "Agency Backend"
+  APP_VERSION: "1.0.0"
+  CORS_ORIGINS: "*"
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_DEFAULT: "100/minute"
+  METRICS_ENABLED: "true"
+  TRACING_ENABLED: "true"
+
+secrets:
+  DATABASE_URL: ""
+  REDIS_URL: ""
+  SECRET_KEY: ""
+  JWT_SECRET_KEY: ""
+  AWS_ACCESS_KEY_ID: ""
+  AWS_SECRET_ACCESS_KEY: ""
+
+postgresql:
+  enabled: false
+  auth:
+    database: agency
+    username: agency
+    password: changeme
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+
+redis:
+  enabled: false
+  auth:
+    enabled: true
+    password: changeme
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+
+elasticsearch:
+  enabled: false
+  replicas: 3
+  minimumMasterNodes: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+  prometheusRule:
+    enabled: true
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High error rate detected
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, http_request_duration_seconds_bucket) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High response time detected
+
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: 30
+
+migrations:
+  enabled: true
+  autoRun: true
+
+healthcheck:
+  enabled: true
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  startup:
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 30
+
+volumes:
+  - name: app-logs
+    emptyDir: {}
+  - name: temp
+    emptyDir: {}
+  - name: cache
+    emptyDir: {}
+
+volumeMounts:
+  - name: app-logs
+    mountPath: /app/logs
+  - name: temp
+    mountPath: /app/temp
+  - name: cache
+    mountPath: /app/cache
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+  maxUnavailable: 1
+
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-nginx
+      ports:
+      - protocol: TCP
+        port: 8000
+  egress:
+    - to:
+      - namespaceSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443
+      - protocol: TCP
+        port: 80
+
+lifecycle:
+  preStop:
+    exec:
+      command: ["/bin/sh", "-c", "sleep 15"]
+
+terminationGracePeriodSeconds: 30
+
+revisionHistoryLimit: 10
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0

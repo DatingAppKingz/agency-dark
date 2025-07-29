@@ -1,0 +1,296 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: 'Version to deploy (leave empty for latest)'
+        required: false
+
+env:
+  KUBECTL_VERSION: "1.27.0"
+  HELM_VERSION: "3.12.0"
+  ARGOCD_VERSION: "2.8.0"
+
+jobs:
+  prepare-deployment:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.get-tag.outputs.tag }}
+      environment: ${{ steps.get-env.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine environment
+        id: get-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get image tag
+        id: get-tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
+            echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: prepare-deployment
+    if: needs.prepare-deployment.outputs.environment == 'staging'
+    environment: staging
+    concurrency:
+      group: staging
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: us-east-1
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name agency-staging --region us-east-1
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install agency-backend ./helm/agency-backend \
+            --namespace staging \
+            --create-namespace \
+            --values ./helm/agency-backend/values-staging.yaml \
+            --set image.tag=${{ needs.prepare-deployment.outputs.image-tag }} \
+            --set-string secrets.DATABASE_URL=${{ secrets.DATABASE_URL_STAGING }} \
+            --set-string secrets.REDIS_URL=${{ secrets.REDIS_URL_STAGING }} \
+            --set-string secrets.SECRET_KEY=${{ secrets.SECRET_KEY_STAGING }} \
+            --wait \
+            --timeout 10m
+
+      - name: Verify deployment
+        run: |
+          kubectl -n staging rollout status deployment/agency-backend
+          kubectl -n staging get pods -l app=agency-backend
+
+      - name: Run smoke tests
+        run: |
+          STAGING_URL=$(kubectl -n staging get ingress agency-backend -o jsonpath='{.spec.rules[0].host}')
+          ./scripts/smoke-tests.sh https://$STAGING_URL
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: prepare-deployment
+    if: needs.prepare-deployment.outputs.environment == 'production'
+    environment: production
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: us-east-1
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name agency-production --region us-east-1
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Create backup
+        run: |
+          kubectl -n production exec deployment/agency-backend -- \
+            pg_dump $DATABASE_URL > backup-$(date +%Y%m%d-%H%M%S).sql
+          aws s3 cp backup-*.sql s3://agency-backups/pre-deployment/
+
+      - name: Deploy with Blue-Green strategy
+        run: |
+          # Deploy to green environment
+          helm upgrade --install agency-backend-green ./helm/agency-backend \
+            --namespace production \
+            --values ./helm/agency-backend/values-production.yaml \
+            --set image.tag=${{ needs.prepare-deployment.outputs.image-tag }} \
+            --set-string secrets.DATABASE_URL=${{ secrets.DATABASE_URL_PROD }} \
+            --set-string secrets.REDIS_URL=${{ secrets.REDIS_URL_PROD }} \
+            --set-string secrets.SECRET_KEY=${{ secrets.SECRET_KEY_PROD }} \
+            --set service.selector.deployment=green \
+            --wait \
+            --timeout 10m
+
+          # Run database migrations
+          kubectl -n production exec deployment/agency-backend-green -- \
+            alembic upgrade head
+
+          # Switch traffic to green
+          kubectl -n production patch service agency-backend \
+            -p '{"spec":{"selector":{"deployment":"green"}}}'
+
+          # Wait for traffic to stabilize
+          sleep 60
+
+          # Delete old blue deployment
+          helm uninstall agency-backend-blue -n production || true
+
+          # Rename green to blue for next deployment
+          helm upgrade --install agency-backend-blue ./helm/agency-backend \
+            --namespace production \
+            --values ./helm/agency-backend/values-production.yaml \
+            --reuse-values \
+            --set service.selector.deployment=blue
+
+      - name: Verify deployment
+        run: |
+          kubectl -n production rollout status deployment/agency-backend-green
+          kubectl -n production get pods -l app=agency-backend
+
+      - name: Run health checks
+        run: |
+          PROD_URL=$(kubectl -n production get ingress agency-backend -o jsonpath='{.spec.rules[0].host}')
+          ./scripts/health-checks.sh https://$PROD_URL
+
+      - name: Update monitoring
+        run: |
+          curl -X POST ${{ secrets.DATADOG_WEBHOOK }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "title": "Deployment to Production",
+              "text": "Version ${{ needs.prepare-deployment.outputs.image-tag }} deployed",
+              "alert_type": "info"
+            }'
+
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: failure()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine environment
+        id: get-env
+        run: |
+          if [[ "${{ needs.deploy-production.result }}" == "failure" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ steps.get-env.outputs.environment == 'production' && secrets.AWS_ACCESS_KEY_ID_PROD || secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ steps.get-env.outputs.environment == 'production' && secrets.AWS_SECRET_ACCESS_KEY_PROD || secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: us-east-1
+
+      - name: Rollback with Helm
+        run: |
+          NAMESPACE=${{ steps.get-env.outputs.environment }}
+          helm rollback agency-backend -n $NAMESPACE
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "Deployment rollback initiated",
+              "attachments": [{
+                "color": "warning",
+                "fields": [
+                  {"title": "Environment", "value": "${{ steps.get-env.outputs.environment }}", "short": true},
+                  {"title": "Triggered by", "value": "${{ github.actor }}", "short": true}
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  post-deployment:
+    name: Post Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run integration tests
+        run: |
+          npm install -g newman
+          newman run ./tests/postman/agency-api.json \
+            --environment ./tests/postman/environment-${{ needs.prepare-deployment.outputs.environment }}.json
+
+      - name: Update documentation
+        if: needs.prepare-deployment.outputs.environment == 'production'
+        run: |
+          # Generate API documentation
+          docker run --rm \
+            -v ${PWD}:/local \
+            swaggerapi/swagger-codegen-cli generate \
+            -i /local/openapi.yaml \
+            -l html2 \
+            -o /local/docs/api
+
+          # Upload to S3
+          aws s3 sync ./docs/api s3://agency-docs/api/
+
+      - name: Notify success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "Deployment successful! :rocket:",
+              "attachments": [{
+                "color": "good",
+                "fields": [
+                  {"title": "Environment", "value": "${{ needs.prepare-deployment.outputs.environment }}", "short": true},
+                  {"title": "Version", "value": "${{ needs.prepare-deployment.outputs.image-tag }}", "short": true},
+                  {"title": "Deployed by", "value": "${{ github.actor }}", "short": true},
+                  {"title": "Time", "value": "${{ github.event.head_commit.timestamp }}", "short": true}
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

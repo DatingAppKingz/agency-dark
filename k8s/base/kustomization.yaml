@@ -1,0 +1,44 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: agency
+
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - configmap.yaml
+  - secret.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - networkpolicy.yaml
+
+commonLabels:
+  app.kubernetes.io/name: agency-backend
+  app.kubernetes.io/instance: production
+  app.kubernetes.io/component: backend
+  app.kubernetes.io/part-of: agency
+  app.kubernetes.io/managed-by: kustomize
+
+images:
+  - name: agency/backend
+    newTag: latest
+
+replicas:
+  - name: agency-backend
+    count: 3
+
+configMapGenerator:
+  - name: agency-backend-config
+    behavior: merge
+    literals:
+      - ENVIRONMENT=production
+
+secretGenerator:
+  - name: agency-backend-secret
+    type: Opaque
+    behavior: merge
+    envs:
+      - secrets.env

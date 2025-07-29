@@ -1,0 +1,35 @@
+apiVersion: v2
+name: agency-backend
+description: Agency Backend API Service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+home: https://agency.com
+icon: https://agency.com/logo.png
+keywords:
+  - agency
+  - backend
+  - api
+  - saas
+sources:
+  - https://github.com/agency/backend
+maintainers:
+  - name: Agency DevOps Team
+    email: devops@agency.com
+    url: https://agency.com
+dependencies:
+  - name: postgresql
+    version: "12.1.9"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: "17.3.14"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: elasticsearch
+    version: "7.17.3"
+    repository: https://helm.elastic.co
+    condition: elasticsearch.enabled
+annotations:
+  category: Backend
+  licenses: MIT

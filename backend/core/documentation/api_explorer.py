@@ -1,0 +1,616 @@
+"""
+Interactive API Explorer for testing and exploring API endpoints
+"""
+from typing import Dict, Any, List, Optional
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
+import json
+import httpx
+from datetime import datetime
+
+from core.logging import logger
+
+
+class APIExplorer:
+    """Interactive API Explorer with request builder and response viewer"""
+    
+    def __init__(self, app: FastAPI, template_dir: Optional[Path] = None):
+        self.app = app
+        self.template_dir = template_dir or Path(__file__).parent / "templates"
+        self.templates = Jinja2Templates(directory=str(self.template_dir))
+    
+    def setup_routes(self):
+        """Setup API Explorer routes"""
+        
+        @self.app.get("/api-explorer", response_class=HTMLResponse, include_in_schema=False)
+        async def api_explorer_home(request: Request):
+            """API Explorer home page"""
+            return self.templates.TemplateResponse(
+                "explorer.html",
+                {
+                    "request": request,
+                    "openapi_url": self.app.openapi_url,
+                    "title": f"{self.app.title} - API Explorer"
+                }
+            )
+        
+        @self.app.post("/api-explorer/execute", include_in_schema=False)
+        async def execute_api_request(request: Request):
+            """Execute API request from explorer"""
+            data = await request.json()
+            
+            # Extract request details
+            method = data.get("method", "GET")
+            url = data.get("url", "")
+            headers = data.get("headers", {})
+            params = data.get("params", {})
+            body = data.get("body", {})
+            
+            # Add authentication if provided
+            auth_type = data.get("auth_type")
+            auth_value = data.get("auth_value")
+            
+            if auth_type == "bearer" and auth_value:
+                headers["Authorization"] = f"Bearer {auth_value}"
+            elif auth_type == "api_key" and auth_value:
+                headers["X-API-Key"] = auth_value
+            
+            # Execute request
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.request(
+                        method=method,
+                        url=url,
+                        headers=headers,
+                        params=params,
+                        json=body if method in ["POST", "PUT", "PATCH"] else None,
+                        timeout=30.0
+                    )
+                
+                # Parse response
+                try:
+                    response_data = response.json()
+                except:
+                    response_data = response.text
+                
+                return {
+                    "success": True,
+                    "status_code": response.status_code,
+                    "headers": dict(response.headers),
+                    "data": response_data,
+                    "elapsed": response.elapsed.total_seconds(),
+                    "timestamp": datetime.now().isoformat()
+                }
+            
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+        
+        @self.app.get("/api-explorer/history", include_in_schema=False)
+        async def get_request_history(request: Request):
+            """Get request history (stored in session/local storage)"""
+            # This would typically be stored in a database or session
+            # For now, return empty history
+            return {"history": []}
+        
+        @self.app.get("/api-explorer/collections", include_in_schema=False)
+        async def get_collections(request: Request):
+            """Get saved request collections"""
+            # Return example collections
+            return {
+                "collections": [
+                    {
+                        "name": "Authentication",
+                        "requests": [
+                            {
+                                "name": "Login",
+                                "method": "POST",
+                                "path": "/api/v1/auth/login",
+                                "body": {
+                                    "email": "user@example.com",
+                                    "password": "password"
+                                }
+                            },
+                            {
+                                "name": "Refresh Token",
+                                "method": "POST",
+                                "path": "/api/v1/auth/refresh",
+                                "body": {
+                                    "refresh_token": "your-refresh-token"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "User Management",
+                        "requests": [
+                            {
+                                "name": "Get Current User",
+                                "method": "GET",
+                                "path": "/api/v1/users/me",
+                                "auth_required": True
+                            },
+                            {
+                                "name": "Update Profile",
+                                "method": "PUT",
+                                "path": "/api/v1/users/me",
+                                "auth_required": True,
+                                "body": {
+                                    "name": "New Name",
+                                    "bio": "Updated bio"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+    
+    def generate_explorer_html(self) -> str:
+        """Generate API Explorer HTML template"""
+        html = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        .json-viewer { 
+            max-height: 500px; 
+            overflow-y: auto; 
+        }
+        .sidebar { 
+            max-height: calc(100vh - 4rem); 
+            overflow-y: auto; 
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">{{ title }}</h1>
+        
+        <div class="grid grid-cols-12 gap-6">
+            <!-- Sidebar -->
+            <div class="col-span-3">
+                <div class="bg-white rounded-lg shadow p-4 sidebar">
+                    <h2 class="text-lg font-semibold mb-4">Endpoints</h2>
+                    <div id="endpoint-list" class="space-y-2">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-4 mt-4">
+                    <h2 class="text-lg font-semibold mb-4">Collections</h2>
+                    <div id="collections-list" class="space-y-2">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-span-9">
+                <!-- Request Builder -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h2 class="text-xl font-semibold mb-4">Request Builder</h2>
+                    
+                    <div class="grid grid-cols-12 gap-4 mb-4">
+                        <div class="col-span-2">
+                            <select id="method" class="w-full px-3 py-2 border rounded-lg">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="PATCH">PATCH</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </div>
+                        <div class="col-span-10">
+                            <input type="text" id="url" placeholder="https://api.agency.com/api/v1/..." 
+                                   class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs -->
+                    <div class="border-b mb-4">
+                        <nav class="-mb-px flex space-x-8">
+                            <button class="tab-button py-2 px-1 border-b-2 font-medium text-sm" 
+                                    data-tab="headers">Headers</button>
+                            <button class="tab-button py-2 px-1 border-b-2 font-medium text-sm" 
+                                    data-tab="params">Query Params</button>
+                            <button class="tab-button py-2 px-1 border-b-2 font-medium text-sm" 
+                                    data-tab="body">Body</button>
+                            <button class="tab-button py-2 px-1 border-b-2 font-medium text-sm" 
+                                    data-tab="auth">Auth</button>
+                        </nav>
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="headers-tab">
+                        <div id="headers-list" class="space-y-2">
+                            <div class="flex gap-2">
+                                <input type="text" placeholder="Header Name" class="flex-1 px-3 py-2 border rounded">
+                                <input type="text" placeholder="Header Value" class="flex-1 px-3 py-2 border rounded">
+                                <button class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600">Remove</button>
+                            </div>
+                        </div>
+                        <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                onclick="addHeader()">Add Header</button>
+                    </div>
+                    
+                    <div class="tab-content hidden" id="params-tab">
+                        <div id="params-list" class="space-y-2">
+                            <div class="flex gap-2">
+                                <input type="text" placeholder="Param Name" class="flex-1 px-3 py-2 border rounded">
+                                <input type="text" placeholder="Param Value" class="flex-1 px-3 py-2 border rounded">
+                                <button class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600">Remove</button>
+                            </div>
+                        </div>
+                        <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                onclick="addParam()">Add Parameter</button>
+                    </div>
+                    
+                    <div class="tab-content hidden" id="body-tab">
+                        <textarea id="request-body" rows="8" 
+                                  class="w-full px-3 py-2 border rounded-lg font-mono text-sm"
+                                  placeholder='{"key": "value"}'></textarea>
+                    </div>
+                    
+                    <div class="tab-content hidden" id="auth-tab">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Auth Type</label>
+                                <select id="auth-type" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="none">No Auth</option>
+                                    <option value="bearer">Bearer Token</option>
+                                    <option value="api_key">API Key</option>
+                                </select>
+                            </div>
+                            <div id="auth-value-container" class="hidden">
+                                <label class="block text-sm font-medium mb-2">Value</label>
+                                <input type="text" id="auth-value" 
+                                       class="w-full px-3 py-2 border rounded-lg"
+                                       placeholder="Enter token or API key">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-between">
+                        <button onclick="executeRequest()" 
+                                class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                            Send Request
+                        </button>
+                        <button onclick="saveToCollection()" 
+                                class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                            Save to Collection
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Response Viewer -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold mb-4">Response</h2>
+                    
+                    <div id="response-status" class="mb-4 hidden">
+                        <span class="font-medium">Status:</span>
+                        <span id="status-code" class="ml-2"></span>
+                        <span class="ml-4 font-medium">Time:</span>
+                        <span id="response-time" class="ml-2"></span>
+                    </div>
+                    
+                    <div class="border-b mb-4">
+                        <nav class="-mb-px flex space-x-8">
+                            <button class="response-tab-button py-2 px-1 border-b-2 font-medium text-sm" 
+                                    data-tab="response-body">Body</button>
+                            <button class="response-tab-button py-2 px-1 border-b-2 font-medium text-sm" 
+                                    data-tab="response-headers">Headers</button>
+                            <button class="response-tab-button py-2 px-1 border-b-2 font-medium text-sm" 
+                                    data-tab="response-raw">Raw</button>
+                        </nav>
+                    </div>
+                    
+                    <div class="response-tab-content" id="response-body-tab">
+                        <pre class="json-viewer"><code id="response-body" class="language-json">Send a request to see the response</code></pre>
+                    </div>
+                    
+                    <div class="response-tab-content hidden" id="response-headers-tab">
+                        <pre class="json-viewer"><code id="response-headers" class="language-json">{}</code></pre>
+                    </div>
+                    
+                    <div class="response-tab-content hidden" id="response-raw-tab">
+                        <pre class="json-viewer"><code id="response-raw">No response yet</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(button.dataset.tab + '-tab').classList.remove('hidden');
+                
+                document.querySelectorAll('.tab-button').forEach(b => {
+                    b.classList.remove('border-blue-500', 'text-blue-600');
+                });
+                button.classList.add('border-blue-500', 'text-blue-600');
+            });
+        });
+        
+        // Response tab switching
+        document.querySelectorAll('.response-tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.response-tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(button.dataset.tab + '-tab').classList.remove('hidden');
+                
+                document.querySelectorAll('.response-tab-button').forEach(b => {
+                    b.classList.remove('border-blue-500', 'text-blue-600');
+                });
+                button.classList.add('border-blue-500', 'text-blue-600');
+            });
+        });
+        
+        // Auth type change
+        document.getElementById('auth-type').addEventListener('change', (e) => {
+            const container = document.getElementById('auth-value-container');
+            if (e.target.value === 'none') {
+                container.classList.add('hidden');
+            } else {
+                container.classList.remove('hidden');
+            }
+        });
+        
+        // Load OpenAPI spec
+        async function loadOpenAPISpec() {
+            try {
+                const response = await fetch('{{ openapi_url }}');
+                const spec = await response.json();
+                populateEndpoints(spec);
+            } catch (error) {
+                console.error('Failed to load OpenAPI spec:', error);
+            }
+        }
+        
+        // Populate endpoints from OpenAPI spec
+        function populateEndpoints(spec) {
+            const endpointList = document.getElementById('endpoint-list');
+            endpointList.innerHTML = '';
+            
+            Object.entries(spec.paths || {}).forEach(([path, methods]) => {
+                Object.entries(methods).forEach(([method, operation]) => {
+                    if (['get', 'post', 'put', 'patch', 'delete'].includes(method)) {
+                        const endpoint = document.createElement('div');
+                        endpoint.className = 'cursor-pointer hover:bg-gray-100 p-2 rounded';
+                        endpoint.innerHTML = `
+                            <span class="text-xs font-semibold text-${getMethodColor(method)}-600">
+                                ${method.toUpperCase()}
+                            </span>
+                            <span class="text-sm ml-2">${path}</span>
+                            <div class="text-xs text-gray-500">${operation.summary || ''}</div>
+                        `;
+                        endpoint.onclick = () => selectEndpoint(method, path, operation);
+                        endpointList.appendChild(endpoint);
+                    }
+                });
+            });
+        }
+        
+        function getMethodColor(method) {
+            const colors = {
+                get: 'green',
+                post: 'blue',
+                put: 'yellow',
+                patch: 'orange',
+                delete: 'red'
+            };
+            return colors[method] || 'gray';
+        }
+        
+        function selectEndpoint(method, path, operation) {
+            document.getElementById('method').value = method.toUpperCase();
+            document.getElementById('url').value = window.location.origin + path;
+            
+            // Pre-fill body if there's a request body example
+            if (operation.requestBody?.content?.['application/json']?.example) {
+                document.getElementById('request-body').value = JSON.stringify(
+                    operation.requestBody.content['application/json'].example,
+                    null,
+                    2
+                );
+            }
+        }
+        
+        async function executeRequest() {
+            const method = document.getElementById('method').value;
+            const url = document.getElementById('url').value;
+            
+            // Collect headers
+            const headers = {};
+            document.querySelectorAll('#headers-list > div').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0].value && inputs[1].value) {
+                    headers[inputs[0].value] = inputs[1].value;
+                }
+            });
+            
+            // Collect params
+            const params = {};
+            document.querySelectorAll('#params-list > div').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0].value && inputs[1].value) {
+                    params[inputs[0].value] = inputs[1].value;
+                }
+            });
+            
+            // Get body
+            let body = {};
+            try {
+                const bodyText = document.getElementById('request-body').value;
+                if (bodyText) {
+                    body = JSON.parse(bodyText);
+                }
+            } catch (e) {
+                alert('Invalid JSON in request body');
+                return;
+            }
+            
+            // Get auth
+            const authType = document.getElementById('auth-type').value;
+            const authValue = document.getElementById('auth-value').value;
+            
+            // Execute request
+            try {
+                const response = await fetch('/api-explorer/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method,
+                        url,
+                        headers,
+                        params,
+                        body,
+                        auth_type: authType,
+                        auth_value: authValue
+                    })
+                });
+                
+                const result = await response.json();
+                displayResponse(result);
+            } catch (error) {
+                displayError(error);
+            }
+        }
+        
+        function displayResponse(result) {
+            document.getElementById('response-status').classList.remove('hidden');
+            
+            if (result.success) {
+                document.getElementById('status-code').textContent = result.status_code;
+                document.getElementById('status-code').className = 
+                    result.status_code < 400 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold';
+                document.getElementById('response-time').textContent = `${(result.elapsed * 1000).toFixed(0)}ms`;
+                
+                // Display body
+                const bodyElement = document.getElementById('response-body');
+                bodyElement.textContent = JSON.stringify(result.data, null, 2);
+                Prism.highlightElement(bodyElement);
+                
+                // Display headers
+                const headersElement = document.getElementById('response-headers');
+                headersElement.textContent = JSON.stringify(result.headers, null, 2);
+                Prism.highlightElement(headersElement);
+                
+                // Display raw
+                document.getElementById('response-raw').textContent = JSON.stringify(result, null, 2);
+            } else {
+                displayError(result.error);
+            }
+        }
+        
+        function displayError(error) {
+            document.getElementById('response-status').classList.add('hidden');
+            document.getElementById('response-body').textContent = `Error: ${error}`;
+        }
+        
+        function addHeader() {
+            const headersList = document.getElementById('headers-list');
+            const newHeader = document.createElement('div');
+            newHeader.className = 'flex gap-2';
+            newHeader.innerHTML = `
+                <input type="text" placeholder="Header Name" class="flex-1 px-3 py-2 border rounded">
+                <input type="text" placeholder="Header Value" class="flex-1 px-3 py-2 border rounded">
+                <button class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600" 
+                        onclick="this.parentElement.remove()">Remove</button>
+            `;
+            headersList.appendChild(newHeader);
+        }
+        
+        function addParam() {
+            const paramsList = document.getElementById('params-list');
+            const newParam = document.createElement('div');
+            newParam.className = 'flex gap-2';
+            newParam.innerHTML = `
+                <input type="text" placeholder="Param Name" class="flex-1 px-3 py-2 border rounded">
+                <input type="text" placeholder="Param Value" class="flex-1 px-3 py-2 border rounded">
+                <button class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600" 
+                        onclick="this.parentElement.remove()">Remove</button>
+            `;
+            paramsList.appendChild(newParam);
+        }
+        
+        // Load collections
+        async function loadCollections() {
+            try {
+                const response = await fetch('/api-explorer/collections');
+                const data = await response.json();
+                displayCollections(data.collections);
+            } catch (error) {
+                console.error('Failed to load collections:', error);
+            }
+        }
+        
+        function displayCollections(collections) {
+            const collectionsList = document.getElementById('collections-list');
+            collectionsList.innerHTML = '';
+            
+            collections.forEach(collection => {
+                const collectionDiv = document.createElement('div');
+                collectionDiv.className = 'mb-4';
+                collectionDiv.innerHTML = `
+                    <h3 class="font-semibold text-sm mb-2">${collection.name}</h3>
+                    <div class="space-y-1">
+                        ${collection.requests.map(req => `
+                            <div class="text-xs hover:bg-gray-100 p-1 rounded cursor-pointer"
+                                 onclick='loadCollectionRequest(${JSON.stringify(req)})'>
+                                <span class="font-semibold">${req.method}</span>
+                                <span>${req.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                collectionsList.appendChild(collectionDiv);
+            });
+        }
+        
+        function loadCollectionRequest(request) {
+            document.getElementById('method').value = request.method;
+            document.getElementById('url').value = window.location.origin + request.path;
+            
+            if (request.body) {
+                document.getElementById('request-body').value = JSON.stringify(request.body, null, 2);
+            }
+            
+            if (request.auth_required) {
+                document.getElementById('auth-type').value = 'bearer';
+                document.getElementById('auth-value-container').classList.remove('hidden');
+            }
+        }
+        
+        // Initialize
+        loadOpenAPISpec();
+        loadCollections();
+        
+        // Set initial tab
+        document.querySelector('.tab-button').click();
+        document.querySelector('.response-tab-button').click();
+    </script>
+</body>
+</html>'''
+        
+        # Save template
+        self.template_dir.mkdir(parents=True, exist_ok=True)
+        (self.template_dir / "explorer.html").write_text(html)
+        
+        return html

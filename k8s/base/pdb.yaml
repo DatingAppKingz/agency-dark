@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: agency-backend-pdb
+  namespace: agency
+  labels:
+    app: agency-backend
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: agency-backend
+  maxUnavailable: 1

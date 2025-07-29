@@ -5,6 +5,16 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from typing import Dict, Any
+from pathlib import Path
+
+# Import new documentation features
+from core.documentation import (
+    setup_documentation_routes,
+    generate_api_docs,
+    APIExplorer,
+    DeveloperGuide,
+    SDKGenerator
+)
 
 
 def custom_openapi(app: FastAPI) -> Dict[str, Any]:
@@ -391,3 +401,83 @@ def setup_api_docs(app: FastAPI):
             redoc_favicon_url="https://fastapi.tiangolo.com/img/favicon.png",
             with_google_fonts=True
         )
+    
+    # Setup enhanced documentation features
+    setup_documentation_routes(app)
+    
+    # Setup API Explorer
+    explorer = APIExplorer(app)
+    explorer.setup_routes()
+    explorer.generate_explorer_html()
+    
+    # Generate developer guides
+    guide = DeveloperGuide()
+    guide.generate_all_guides()
+    
+    # Generate SDKs
+    @app.post("/api/v1/sdk/generate", include_in_schema=False)
+    async def generate_sdks():
+        """Generate client SDKs for all supported languages"""
+        schema = get_openapi_schema(app)
+        generator = SDKGenerator(schema)
+        sdks = generator.generate_all_sdks()
+        return {"status": "success", "sdks": sdks}
+    
+    # Export OpenAPI spec in different formats
+    @app.get("/api/v1/openapi.yaml", include_in_schema=False)
+    async def get_openapi_yaml():
+        """Get OpenAPI spec in YAML format"""
+        import yaml
+        from fastapi.responses import Response
+        
+        schema = get_openapi_schema(app)
+        yaml_content = yaml.dump(schema, default_flow_style=False)
+        return Response(content=yaml_content, media_type="application/x-yaml")
+    
+    @app.get("/api/v1/postman-collection.json", include_in_schema=False)
+    async def get_postman_collection():
+        """Get Postman collection from OpenAPI spec"""
+        from core.documentation.openapi import get_openapi_schema
+        
+        schema = get_openapi_schema(app)
+        
+        # Convert to Postman format
+        collection = {
+            "info": {
+                "name": schema["info"]["title"],
+                "description": schema["info"]["description"],
+                "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+            },
+            "item": []
+        }
+        
+        # Convert paths
+        for path, methods in schema.get("paths", {}).items():
+            for method, operation in methods.items():
+                if method in ["get", "post", "put", "delete", "patch"]:
+                    item = {
+                        "name": operation.get("summary", path),
+                        "request": {
+                            "method": method.upper(),
+                            "url": {
+                                "raw": f"{{{{base_url}}}}{path}",
+                                "host": ["{{base_url}}"],
+                                "path": path.strip("/").split("/")
+                            },
+                            "description": operation.get("description", ""),
+                            "header": [
+                                {
+                                    "key": "Authorization",
+                                    "value": "Bearer {{access_token}}",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    }
+                    collection["item"].append(item)
+        
+        return collection
+
+
+# Import the get_openapi_schema function
+from core.documentation.openapi import get_openapi_schema
