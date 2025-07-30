@@ -52,7 +52,8 @@ class TokenResponse(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: str
+    email: Optional[str] = None
+    username: Optional[str] = None
     password: str
 
 
@@ -195,15 +196,26 @@ async def login(
     login_data: LoginRequest,
     db: AsyncSession = Depends(get_db)
 ):
-    """Login with email and password."""
-    # Get user by email
-    stmt = select(User).where(User.email == login_data.email)
+    """Login with email/username and password."""
+    # Validate that either email or username is provided
+    if not login_data.email and not login_data.username:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Either email or username must be provided"
+        )
+    
+    # Get user by email or username
+    if login_data.email:
+        stmt = select(User).where(User.email == login_data.email)
+    else:
+        stmt = select(User).where(User.username == login_data.username)
+    
     user = await db.scalar(stmt)
     
     if not user or not verify_password(login_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -232,6 +244,56 @@ async def get_me(
 ):
     """Get current user profile."""
     return UserResponse.model_validate(current_user)
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(
+    refresh_data: RefreshRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Refresh access token."""
+    try:
+        # For simplicity, we'll just decode the token and create a new one
+        # In production, you'd want separate refresh tokens
+        payload = jwt.decode(
+            refresh_data.refresh_token, 
+            settings.JWT_SECRET_KEY or settings.SECRET_KEY, 
+            algorithms=[settings.JWT_ALGORITHM or "HS256"]
+        )
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token"
+            )
+        
+        # Get user
+        stmt = select(User).where(User.id == int(user_id))
+        user = await db.scalar(stmt)
+        
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid user"
+            )
+        
+        # Create new access token
+        access_token = create_access_token(data={"sub": str(user.id)})
+        
+        return TokenResponse(
+            access_token=access_token,
+            user=UserResponse.model_validate(user)
+        )
+        
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
 
 
 @router.get("/test-auth")

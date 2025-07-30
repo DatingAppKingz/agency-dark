@@ -4,7 +4,6 @@ API key management endpoints.
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
-from uuid import UUID
 
 from core.dependencies import get_db, get_current_user
 from core.domain.models import User, UserRole
@@ -17,7 +16,7 @@ from core.domain.api_key_schemas import (
 from core.application.api_key_service import APIKeyService
 from core.exceptions import NotFoundError, ValidationError, PermissionError
 
-router = APIRouter(prefix="/api-keys", tags=["api-keys"])
+router = APIRouter()
 
 
 @router.post("", response_model=APIKeyCreateResponse)
@@ -51,7 +50,6 @@ async def create_api_key(
 
 @router.get("", response_model=List[APIKeyResponse])
 async def list_api_keys(
-    include_revoked: bool = False,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ) -> List[APIKeyResponse]:
@@ -63,8 +61,7 @@ async def list_api_keys(
     keys = await APIKeyService.list_api_keys(
         db=db,
         user_id=str(current_user.id),
-        agency_id=str(current_user.agency_id),
-        include_revoked=include_revoked
+        agency_id=str(current_user.agency_id) if current_user.agency_id else None
     )
     
     return [APIKeyResponse.model_validate(key) for key in keys]
@@ -72,7 +69,7 @@ async def list_api_keys(
 
 @router.get("/{key_id}", response_model=APIKeyResponse)
 async def get_api_key(
-    key_id: UUID,
+    key_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ) -> APIKeyResponse:
@@ -94,7 +91,7 @@ async def get_api_key(
 
 @router.post("/{key_id}/rotate", response_model=APIKeyRotateResponse)
 async def rotate_api_key(
-    key_id: UUID,
+    key_id: int,
     rotation_data: APIKeyRotate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -124,7 +121,7 @@ async def rotate_api_key(
 
 @router.post("/{key_id}/revoke")
 async def revoke_api_key(
-    key_id: UUID,
+    key_id: int,
     revoke_data: APIKeyRevoke,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -152,7 +149,7 @@ async def revoke_api_key(
 
 @router.get("/{key_id}/audit-logs", response_model=List[APIKeyAuditLogResponse])
 async def get_api_key_audit_logs(
-    key_id: UUID,
+    key_id: int,
     limit: int = 100,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)

@@ -32,6 +32,22 @@ class DashboardWebSocketHandler(WebSocketHandler):
         
     async def handle(self):
         """Override to start dashboard updates."""
+        # Start periodic updates task (but don't send anything yet)
+        self.update_task = asyncio.create_task(self._start_updates_after_connection())
+        
+        try:
+            # Call parent handle() which will accept the connection
+            await super().handle()
+        finally:
+            # Cancel update task
+            if self.update_task:
+                self.update_task.cancel()
+                
+    async def _start_updates_after_connection(self):
+        """Start updates after connection is established."""
+        # Wait a moment for the connection to be fully established
+        await asyncio.sleep(0.1)
+        
         # Join appropriate dashboard room
         if self.user.role in [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
             if self.user.agency_id:
@@ -39,15 +55,11 @@ class DashboardWebSocketHandler(WebSocketHandler):
         elif self.user.role == UserRole.MODEL:
             await manager.join_room(self.user.id, f"dashboard_model_{self.user.id}")
             
-        # Start periodic updates
-        self.update_task = asyncio.create_task(self.send_periodic_updates())
+        # Send initial stats
+        await self.send_dashboard_stats()
         
-        try:
-            await super().handle()
-        finally:
-            # Cancel update task
-            if self.update_task:
-                self.update_task.cancel()
+        # Continue with periodic updates
+        await self.send_periodic_updates()
                 
     async def handle_custom_message(self, data: Dict[str, Any]):
         """Handle dashboard-specific messages."""

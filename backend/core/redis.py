@@ -22,20 +22,28 @@ class RedisManager:
     async def connect(self) -> Redis:
         """Create Redis connection pool and return client."""
         if not self.client:
-            # Only include password if it's set and not empty
-            pool_kwargs = {
-                "host": settings.REDIS_HOST,
-                "port": settings.REDIS_PORT,
-                "db": settings.REDIS_DB,
-                "decode_responses": False,  # We'll handle encoding/decoding ourselves
-                "max_connections": 50,
-            }
-            
-            if hasattr(settings, 'REDIS_PASSWORD') and settings.REDIS_PASSWORD:
-                pool_kwargs["password"] = settings.REDIS_PASSWORD
+            # Use REDIS_URL if provided, otherwise fall back to individual settings
+            if hasattr(settings, 'REDIS_URL') and settings.REDIS_URL:
+                self.client = redis.from_url(
+                    settings.REDIS_URL,
+                    decode_responses=False,
+                    max_connections=50
+                )
+            else:
+                # Fall back to individual settings
+                pool_kwargs = {
+                    "host": settings.REDIS_HOST,
+                    "port": settings.REDIS_PORT,
+                    "db": settings.REDIS_DB,
+                    "decode_responses": False,  # We'll handle encoding/decoding ourselves
+                    "max_connections": 50,
+                }
                 
-            self.pool = redis.ConnectionPool(**pool_kwargs)
-            self.client = redis.Redis(connection_pool=self.pool)
+                if hasattr(settings, 'REDIS_PASSWORD') and settings.REDIS_PASSWORD:
+                    pool_kwargs["password"] = settings.REDIS_PASSWORD
+                    
+                self.pool = redis.ConnectionPool(**pool_kwargs)
+                self.client = redis.Redis(connection_pool=self.pool)
             
             # Test connection
             await self.client.ping()

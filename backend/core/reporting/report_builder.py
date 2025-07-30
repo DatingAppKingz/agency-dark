@@ -313,8 +313,8 @@ class ReportBuilder:
     async def get_report_data(
         self,
         report: Report,
-        parameters: Optional[Dict[str, Any]] = None,
-        session: AsyncSession
+        session: AsyncSession,
+        parameters: Optional[Dict[str, Any]] = None
     ) -> pd.DataFrame:
         """Get report data as DataFrame."""
         # Build query
