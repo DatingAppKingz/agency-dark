@@ -103,11 +103,8 @@ app.include_router(media_upload_router, prefix="/api/v1/media", tags=["media-upl
 from api.v1.endpoints.reports import router as reports_router
 app.include_router(reports_router, prefix="/api/v1/reports", tags=["reports"])
 
-try:
-    from api.v1.endpoints.ml_analytics import router as ml_router
-    app.include_router(ml_router, prefix="/api/v1/ml", tags=["ml-analytics"])
-except ImportError:
-    pass
+from api.v1.endpoints.ml_analytics import router as ml_router
+app.include_router(ml_router, prefix="/api/v1/ml", tags=["ml-analytics"])
 
 from api.v1.endpoints.fraud_detection import router as fraud_router
 app.include_router(fraud_router, prefix="/api/v1/fraud", tags=["fraud"])
