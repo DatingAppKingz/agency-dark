@@ -7,6 +7,8 @@ from models.base import Base, BaseModel
 from models.user import User, Session, UserRole
 from models.agency import Agency
 from models.model import Model, ModelStatus, Platform
+from models.subscriber import Subscriber, SubscriptionTier, SubscriptionStatus
+from models.model_settings import ModelSettings, ModelSchedule
 
 # Chat models
 from models.chat import (
@@ -65,6 +67,11 @@ __all__ = [
     "Model",
     "ModelStatus",
     "Platform",
+    "Subscriber",
+    "SubscriptionTier",
+    "SubscriptionStatus",
+    "ModelSettings",
+    "ModelSchedule",
     
     # Chat
     "Conversation",

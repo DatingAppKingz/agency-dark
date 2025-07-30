@@ -58,7 +58,7 @@ class ModelSettings(BaseModel):
     notification_expiring_fans = Column(Boolean, default=True, nullable=False)
     
     # Relationships
-    model = relationship("Model", back_populates="settings", uselist=False)
+    model = relationship("Model", uselist=False)
 
 
 class ModelSchedule(BaseModel):
@@ -78,4 +78,4 @@ class ModelSchedule(BaseModel):
     is_active = Column(Boolean, default=True, nullable=False)
     
     # Relationships
-    model = relationship("Model", back_populates="schedules")
+    model = relationship("Model")

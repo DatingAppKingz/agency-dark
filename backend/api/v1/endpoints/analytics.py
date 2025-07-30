@@ -124,7 +124,7 @@ async def get_dashboard_stats(
     
     # Get current period stats
     # Total revenue
-    revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+    revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
         and_(
             agency_filter,
             Transaction.status == TransactionStatus.COMPLETED,
@@ -134,7 +134,7 @@ async def get_dashboard_stats(
     total_revenue = await db.scalar(revenue_stmt) or Decimal('0')
     
     # Previous period revenue
-    prev_revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+    prev_revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
         and_(
             agency_filter,
             Transaction.status == TransactionStatus.COMPLETED,
@@ -229,7 +229,7 @@ async def get_dashboard_stats(
         
         recent_transactions.append({
             "id": trans.id,
-            "amount": float(trans.amount),
+            "amount": float(trans.gross_amount),
             "type": trans.type.value,
             "model_name": model_name,
             "created_at": trans.created_at.isoformat()
@@ -240,7 +240,7 @@ async def get_dashboard_stats(
         Model.id,
         Model.stage_name,
         Model.profile_photo_url,
-        func.coalesce(func.sum(Transaction.amount), 0).label('revenue')
+        func.coalesce(func.sum(Transaction.gross_amount), 0).label('revenue')
     ).join(
         Transaction, Transaction.model_id == Model.id
     ).where(
@@ -251,7 +251,7 @@ async def get_dashboard_stats(
             Transaction.created_at >= start_date
         )
     ).group_by(Model.id, Model.stage_name, Model.profile_photo_url
-    ).order_by(func.sum(Transaction.amount).desc()
+    ).order_by(func.sum(Transaction.gross_amount).desc()
     ).limit(5)
     
     top_models_result = await db.execute(top_models_stmt)
@@ -271,7 +271,7 @@ async def get_dashboard_stats(
         day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
         day_end = day_start + timedelta(days=1)
         
-        day_revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+        day_revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
             and_(
                 agency_filter,
                 Transaction.status == TransactionStatus.COMPLETED,
@@ -357,7 +357,7 @@ async def get_revenue_analytics(
     # Get total revenue by type
     revenue_by_type_stmt = select(
         Transaction.type,
-        func.coalesce(func.sum(Transaction.amount), 0).label('amount')
+        func.coalesce(func.sum(Transaction.gross_amount), 0).label('amount')
     ).where(and_(*filters)).group_by(Transaction.type)
     
     revenue_by_type_result = await db.execute(revenue_by_type_stmt)
@@ -368,7 +368,7 @@ async def get_revenue_analytics(
     ppv_revenue = Decimal('0')
     
     for row in revenue_by_type_result:
-        amount = row.amount
+        amount = row.gross_amount
         total_revenue += amount
         
         if row.type == TransactionType.SUBSCRIPTION:
@@ -391,7 +391,7 @@ async def get_revenue_analytics(
     if model_id:
         prev_filters.append(Transaction.model_id == model_id)
     
-    prev_revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+    prev_revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
         and_(*prev_filters)
     )
     prev_total = await db.scalar(prev_revenue_stmt) or Decimal('0')
@@ -412,7 +412,7 @@ async def get_revenue_analytics(
             Transaction.created_at < day_end
         ]
         
-        day_revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+        day_revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
             and_(*day_filters)
         )
         day_revenue = await db.scalar(day_revenue_stmt) or 0
@@ -436,13 +436,13 @@ async def get_revenue_analytics(
     model_breakdown_stmt = select(
         Model.id,
         Model.stage_name,
-        func.coalesce(func.sum(Transaction.amount), 0).label('revenue')
+        func.coalesce(func.sum(Transaction.gross_amount), 0).label('revenue')
     ).join(
         Model, Model.id == Transaction.model_id
     ).where(
         and_(*model_filters)
     ).group_by(Model.id, Model.stage_name
-    ).order_by(func.sum(Transaction.amount).desc()
+    ).order_by(func.sum(Transaction.gross_amount).desc()
     ).limit(10)
     
     model_breakdown_result = await db.execute(model_breakdown_stmt)
@@ -497,7 +497,7 @@ async def get_model_stats(
         start_date = now - timedelta(days=365)
     
     # Get total revenue
-    revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+    revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
         and_(
             Transaction.model_id == model_id,
             Transaction.status == TransactionStatus.COMPLETED,
@@ -604,7 +604,7 @@ async def get_chatter_performance(
         messages_sent = await db.scalar(msg_stmt) or 0
         
         # Get revenue generated (from chats managed by this chatter)
-        revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).join(
+        revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).join(
             Chat, Chat.id == Transaction.chat_id
         ).where(
             and_(

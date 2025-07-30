@@ -46,10 +46,12 @@ app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 from api.v1.endpoints.analytics import router as analytics_router
 from api.v1.endpoints.models import router as models_router
 from api.v1.endpoints.conversations import router as conversations_router
+from api.v1.endpoints.financial import router as financial_router
 
 app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["analytics"])
 app.include_router(models_router, prefix="/api/v1/models", tags=["models"])
 app.include_router(conversations_router, prefix="/api/v1/conversations", tags=["conversations"])
+app.include_router(financial_router, prefix="/api/v1/financial", tags=["financial"])
 
 
 @app.get("/")

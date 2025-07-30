@@ -165,7 +165,7 @@ async def get_subscriber_info(subscriber_id: int, db: AsyncSession) -> Dict[str,
     user = await db.scalar(user_stmt)
     
     # Calculate total spent
-    spent_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+    spent_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
         and_(
             Transaction.user_id == subscriber.user_id,
             Transaction.model_id == subscriber.model_id,
@@ -758,7 +758,7 @@ async def get_model_subscribers(
         user = await db.scalar(user_stmt)
         
         # Calculate total spent
-        spent_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+        spent_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
             and_(
                 Transaction.user_id == sub.user_id,
                 Transaction.model_id == model_id,

@@ -133,7 +133,4 @@ class Model(BaseModel):
         commission = gross_amount * (self.effective_commission_rate / 100)
         return gross_amount - commission
     
-    # Relationships - defined here to avoid circular imports
-    # These will be populated by the related models
-    settings = None  # Will be set by ModelSettings relationship
-    schedules = None  # Will be set by ModelSchedule relationship
+    # Relationships are defined in the related models to avoid circular imports

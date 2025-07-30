@@ -421,7 +421,7 @@ async def get_model_stats(
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
     # Total revenue
-    total_revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+    total_revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
         and_(
             Transaction.model_id == model_id,
             Transaction.status == TransactionStatus.COMPLETED
@@ -430,7 +430,7 @@ async def get_model_stats(
     total_revenue = await db.scalar(total_revenue_stmt) or Decimal('0')
     
     # Current month revenue
-    month_revenue_stmt = select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+    month_revenue_stmt = select(func.coalesce(func.sum(Transaction.gross_amount), 0)).where(
         and_(
             Transaction.model_id == model_id,
             Transaction.status == TransactionStatus.COMPLETED,
