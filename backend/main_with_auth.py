@@ -88,11 +88,8 @@ app.include_router(content_router, prefix="/api/v1/media", tags=["media"])
 from api.v1.endpoints.api_keys import router as api_keys_router
 app.include_router(api_keys_router, prefix="/api/v1/api-keys", tags=["api-keys"])
 
-try:
-    from api.v1.endpoints.sessions import router as sessions_router
-    app.include_router(sessions_router, prefix="/api/v1/sessions", tags=["sessions"])
-except ImportError:
-    pass
+from api.v1.endpoints.sessions import router as sessions_router
+app.include_router(sessions_router, prefix="/api/v1/sessions", tags=["sessions"])
 
 try:
     from api.v1.endpoints.bulk_operations import router as bulk_router

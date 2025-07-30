@@ -4,6 +4,7 @@ API key management endpoints.
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
+from datetime import datetime
 
 from core.dependencies import get_db, get_current_user
 from core.domain.models import User, UserRole
@@ -64,7 +65,19 @@ async def list_api_keys(
         agency_id=str(current_user.agency_id) if current_user.agency_id else None
     )
     
-    return [APIKeyResponse.model_validate(key) for key in keys]
+    return [
+        APIKeyResponse(
+            id=key.id,
+            name=key.name,
+            description=key.description,
+            prefix=key.key_prefix,  # Map key_prefix to prefix
+            scopes=key.scopes,
+            is_active=key.is_active,
+            last_used_at=datetime.fromisoformat(key.last_used_at.replace('Z', '+00:00')) if key.last_used_at else None,
+            expires_at=datetime.fromisoformat(key.expires_at.replace('Z', '+00:00')) if key.expires_at else None,
+            created_at=key.created_at
+        ) for key in keys
+    ]
 
 
 @router.get("/{key_id}", response_model=APIKeyResponse)
@@ -77,12 +90,21 @@ async def get_api_key(
     try:
         key = await APIKeyService.get_api_key(
             db=db,
-            key_id=str(key_id),
-            user_id=str(current_user.id),
-            agency_id=str(current_user.agency_id)
+            key_id=key_id,  # Pass as int, not string
+            user_id=str(current_user.id)
         )
         
-        return APIKeyResponse.model_validate(key)
+        return APIKeyResponse(
+            id=key.id,
+            name=key.name,
+            description=key.description,
+            prefix=key.key_prefix,  # Map key_prefix to prefix
+            scopes=key.scopes,
+            is_active=key.is_active,
+            last_used_at=datetime.fromisoformat(key.last_used_at.replace('Z', '+00:00')) if key.last_used_at else None,
+            expires_at=datetime.fromisoformat(key.expires_at.replace('Z', '+00:00')) if key.expires_at else None,
+            created_at=key.created_at
+        )
     except NotFoundError:
         raise HTTPException(status_code=404, detail="API key not found")
     except PermissionError:
@@ -113,6 +135,27 @@ async def rotate_api_key(
         )
         
         return APIKeyRotateResponse(**result)
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail="API key not found")
+    except PermissionError:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+
+@router.delete("/{key_id}")
+async def delete_api_key(
+    key_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> dict:
+    """Delete an API key (same as revoke)."""
+    try:
+        await APIKeyService.revoke_api_key(
+            db=db,
+            key_id=key_id,
+            user_id=str(current_user.id)
+        )
+        
+        return {"message": "API key deleted successfully"}
     except NotFoundError:
         raise HTTPException(status_code=404, detail="API key not found")
     except PermissionError:
