@@ -4,7 +4,7 @@ Optimized database connection pooling configuration
 import os
 import logging
 from typing import Optional, Dict, Any
-from sqlalchemy.pool import QueuePool, NullPool, StaticPool
+from sqlalchemy.pool import QueuePool, NullPool, StaticPool, AsyncAdaptedQueuePool
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from core.config import settings
 
@@ -13,6 +13,47 @@ logger = logging.getLogger(__name__)
 
 class DatabasePoolConfig:
     """Database connection pool configuration"""
+    
+    @staticmethod
+    def get_async_pool_config() -> Dict[str, Any]:
+        """
+        Get optimized pool configuration for async engines
+        
+        Returns:
+            Dict with pool configuration parameters for async
+        """
+        # Base configuration
+        config = {
+            "pool_pre_ping": True,  # Verify connections before use
+            "echo": settings.DEBUG,
+            "future": True,
+            "query_cache_size": 1200,  # Cache parsed SQL statements
+        }
+        
+        # Environment-specific configuration
+        if settings.ENVIRONMENT == "test":
+            # Test environment: Use NullPool for isolation
+            config.update({
+                "poolclass": NullPool,
+            })
+        elif settings.ENVIRONMENT == "development":
+            # Development: No explicit poolclass for async engine
+            config.update({
+                "pool_size": 5,
+                "max_overflow": 10,
+                "pool_timeout": 30,
+                "pool_recycle": 3600,  # Recycle connections after 1 hour
+            })
+        else:
+            # Production: Optimized for high concurrency
+            config.update({
+                "pool_size": settings.DATABASE_POOL_SIZE,
+                "max_overflow": 20,
+                "pool_timeout": 30,
+                "pool_recycle": 1800,  # Recycle connections after 30 minutes
+            })
+        
+        return config
     
     @staticmethod
     def get_pool_config() -> Dict[str, Any]:

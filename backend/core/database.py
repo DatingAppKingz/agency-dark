@@ -24,10 +24,10 @@ naming_convention = {
 metadata = MetaData(naming_convention=naming_convention)
 Base = declarative_base(metadata=metadata)
 
-# Use optimized pool configuration
+# Use optimized pool configuration for async engine
 engine = create_async_engine(
     DATABASE_URL,
-    **DatabasePoolConfig.get_pool_config()
+    **DatabasePoolConfig.get_async_pool_config()
 )
 
 # Initialize pool manager for advanced use cases

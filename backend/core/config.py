@@ -72,9 +72,27 @@ class Settings(BaseSettings):
             raise ValueError("DATABASE_URL must be a PostgreSQL URL")
         return v
     
+    # Additional fields from .env
+    APP_NAME: Optional[str] = Field("AgencyDark", env="APP_NAME")
+    APP_VERSION: Optional[str] = Field("1.0.0", env="APP_VERSION")
+    DATABASE_SYNC_URL: Optional[str] = Field(None, env="DATABASE_SYNC_URL")
+    REDIS_PASSWORD: Optional[str] = Field(None, env="REDIS_PASSWORD")
+    JWT_SECRET_KEY: Optional[str] = Field(None, env="JWT_SECRET_KEY")
+    JWT_ALGORITHM: Optional[str] = Field("HS256", env="JWT_ALGORITHM")
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: Optional[int] = Field(30, env="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: Optional[int] = Field(7, env="JWT_REFRESH_TOKEN_EXPIRE_DAYS")
+    SMTP_FROM: Optional[str] = Field(None, env="SMTP_FROM")
+    ALLOWED_HOSTS: Optional[str] = Field("localhost,127.0.0.1", env="ALLOWED_HOSTS")
+    UPLOAD_DIR: Optional[str] = Field("./uploads", env="UPLOAD_DIR")
+    MAX_UPLOAD_SIZE: Optional[int] = Field(10485760, env="MAX_UPLOAD_SIZE")
+    ENVIRONMENT: Optional[str] = Field("development", env="ENVIRONMENT")
+    DEBUG: Optional[bool] = Field(False, env="DEBUG")
+    SMTP_USER: Optional[str] = Field(None, env="SMTP_USER")
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Ignore extra fields from .env
 
 
 settings = Settings()
