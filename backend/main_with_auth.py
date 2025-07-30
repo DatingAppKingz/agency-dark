@@ -97,17 +97,11 @@ try:
 except ImportError:
     pass
 
-try:
-    from api.v1.endpoints.media_upload import router as media_upload_router
-    app.include_router(media_upload_router, prefix="/api/v1/media", tags=["media-upload"])
-except ImportError:
-    pass
+from api.v1.endpoints.media_upload import router as media_upload_router
+app.include_router(media_upload_router, prefix="/api/v1/media", tags=["media-upload"])
 
-try:
-    from api.v1.endpoints.reports import router as reports_router
-    app.include_router(reports_router, prefix="/api/v1/reports", tags=["reports"])
-except ImportError:
-    pass
+from api.v1.endpoints.reports import router as reports_router
+app.include_router(reports_router, prefix="/api/v1/reports", tags=["reports"])
 
 try:
     from api.v1.endpoints.ml_analytics import router as ml_router
