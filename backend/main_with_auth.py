@@ -136,11 +136,8 @@ try:
 except ImportError:
     pass
 
-try:
-    from api.v1.endpoints.query_performance import router as performance_router
-    app.include_router(performance_router, prefix="/api/v1/performance", tags=["performance"])
-except ImportError:
-    pass
+from api.v1.endpoints.query_performance import router as performance_router
+app.include_router(performance_router, prefix="/api/v1/performance", tags=["performance"])
 
 
 @app.get("/")
