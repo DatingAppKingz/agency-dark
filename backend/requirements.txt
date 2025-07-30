@@ -28,6 +28,7 @@ tenacity==8.2.3
 
 # WebSocket
 python-socketio==5.10.0
+websockets==12.0
 
 # Scheduler
 apscheduler==3.10.4

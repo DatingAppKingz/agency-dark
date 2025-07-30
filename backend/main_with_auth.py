@@ -56,12 +56,16 @@ from api.v1.endpoints.models import router as models_router
 from api.v1.endpoints.conversations import router as conversations_router
 from api.v1.endpoints.financial import router as financial_router
 from api.v1.endpoints.tasks import router as tasks_router
+from api.v1.endpoints.websocket import router as websocket_router
+from api.v1.endpoints.realtime_dashboard import router as dashboard_ws_router
 
 app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["analytics"])
 app.include_router(models_router, prefix="/api/v1/models", tags=["models"])
 app.include_router(conversations_router, prefix="/api/v1/conversations", tags=["conversations"])
 app.include_router(financial_router, prefix="/api/v1/financial", tags=["financial"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
+app.include_router(websocket_router, prefix="/api/v1/ws", tags=["websocket"])
+app.include_router(dashboard_ws_router, prefix="/api/v1/ws", tags=["websocket"])
 
 
 @app.get("/")
