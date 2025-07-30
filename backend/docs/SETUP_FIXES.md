@@ -68,16 +68,27 @@ boto3==1.34.0
 ### Working Services:
 - ✅ PostgreSQL (port 5433)
 - ✅ Redis (port 6379)
-- ✅ Backend API (port 8000) - using minimal implementation
-- ✅ Frontend (port 3001) - Vite + React application
-- ⚠️ Celery Workers - Restarting due to dependencies
+- ✅ Backend API (port 8000) - using expanded minimal implementation
+- ✅ Frontend (port 3000) - Vite + React application
+- ⚠️ Celery Workers - Restarting due to syntax errors
 
 ### Accessible Endpoints:
+Backend API:
 - http://localhost:8000/ - API root
 - http://localhost:8000/health - Health check
 - http://localhost:8000/docs - Swagger documentation
 - http://localhost:8000/redoc - ReDoc documentation
-- http://localhost:3001/ - Frontend application
+- http://localhost:8000/api/v1/test - Test endpoint
+- http://localhost:8000/api/v1/auth/register - User registration
+- http://localhost:8000/api/v1/auth/login - User login
+- http://localhost:8000/api/v1/auth/me - Current user info (requires auth)
+- http://localhost:8000/api/v1/users - List users (requires auth)
+- http://localhost:8000/api/v1/models - List models (placeholder)
+- http://localhost:8000/api/v1/chat/conversations - List conversations (placeholder)
+- http://localhost:8000/api/v1/analytics/overview - Analytics overview (placeholder)
+
+Frontend:
+- http://localhost:3000/ - Frontend application
 
 ## Running the Application
 
@@ -114,6 +125,7 @@ To enable full functionality:
 ## Temporary Files Created
 
 - `main_minimal.py` - Minimal FastAPI application
+- `main_expanded.py` - Expanded minimal API with authentication endpoints
 - `core/security/secrets_minimal.py` - Minimal secrets manager implementation
 - `core/auth_security.py` - Renamed from `core/security.py`
 
