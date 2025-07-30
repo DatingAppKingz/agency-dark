@@ -109,11 +109,8 @@ try:
 except ImportError:
     pass
 
-try:
-    from api.v1.endpoints.fraud_detection import router as fraud_router
-    app.include_router(fraud_router, prefix="/api/v1/fraud", tags=["fraud"])
-except ImportError:
-    pass
+from api.v1.endpoints.fraud_detection import router as fraud_router
+app.include_router(fraud_router, prefix="/api/v1/fraud", tags=["fraud"])
 
 try:
     from api.v1.endpoints.rate_limits import router as rate_limits_router
