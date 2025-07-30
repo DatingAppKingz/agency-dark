@@ -1,330 +1,272 @@
-"""
-Rate limit management endpoints.
-"""
-from fastapi import APIRouter, Depends, HTTPException, Query
+"""Rate limiting endpoints for API usage control."""
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
-from datetime import datetime, timedelta
-from uuid import UUID
-
-from core.dependencies import get_db, get_current_user
-from core.domain.models import User, UserRole
-from core.rate_limiting.rate_limiter import rate_limiter
-from core.middleware.rate_limit import DynamicRateLimiter, rate_limit
-from core.domain.schemas import BaseResponse
-
-router = APIRouter(prefix="/rate-limits", tags=["rate-limits"])
-
-
-# Schemas
+from typing import Dict, Any, Optional, List
+from datetime import datetime
 from pydantic import BaseModel, Field
 
+from core.dependencies import get_db, get_current_user
+from models.user import User
+from core.application.rate_limit_service import RateLimitService
+from core.exceptions import ValidationError, NotFoundError
 
-class RateLimitConfigRequest(BaseModel):
-    """Request to configure rate limits."""
-    tier: str = Field(..., description="Rate limit tier")
-    endpoint_pattern: str = Field(..., description="Endpoint pattern (supports wildcards)")
-    requests_per_minute: Optional[int] = None
-    requests_per_hour: Optional[int] = None
-    requests_per_day: Optional[int] = None
-    burst_size: int = Field(10, ge=0)
+router = APIRouter()
 
 
-class UserRateLimitRequest(BaseModel):
-    """Request to set user-specific rate limit."""
-    user_id: UUID
-    limit_multiplier: float = Field(1.0, gt=0, le=10)
-    custom_limits: Optional[dict] = None
-    valid_days: int = Field(30, ge=1, le=365)
-    reason: str = Field(..., min_length=1)
-
-
-class IPBlockRequest(BaseModel):
-    """Request to block an IP address."""
-    ip_address: str
-    duration_hours: int = Field(24, ge=1, le=168)  # Max 1 week
-    reason: str = Field(..., min_length=1)
-
-
-class WhitelistRequest(BaseModel):
-    """Request to whitelist a user."""
-    user_id: UUID
-    endpoint_pattern: str = Field("*", description="Endpoint pattern or * for all")
-    valid_days: int = Field(30, ge=1, le=365)
-    reason: str = Field(..., min_length=1)
-
-
-class UsageStatsResponse(BaseModel):
-    """Response with usage statistics."""
-    identifier: str
-    requests_per_minute: int
-    requests_per_hour: int
-    requests_per_day: int
-    tier: str
-    limits: dict
-
-
-class ViolationResponse(BaseModel):
-    """Rate limit violation details."""
-    id: UUID
-    user_id: Optional[UUID]
-    ip_address: str
+# Request/Response schemas
+class CustomLimitRequest(BaseModel):
+    """Request to set custom rate limit."""
+    user_id: int
     endpoint: str
-    method: str
-    limit_type: str
-    limit_value: int
-    actual_value: int
-    violated_at: datetime
+    max_requests: int = Field(..., ge=0)
+    window_seconds: Optional[int] = Field(None, ge=1)
+    expires_at: Optional[datetime] = None
 
 
-# Endpoints
+class RateLimitStatusResponse(BaseModel):
+    """Rate limit status response."""
+    allowed: bool
+    limit: int
+    remaining: int
+    reset_at: str
+    window_seconds: int
+    retry_after: Optional[int] = None
 
-@router.get("/usage/me", response_model=UsageStatsResponse)
-async def get_my_usage(
+
+class EndpointStatusResponse(BaseModel):
+    """Endpoint rate limit status."""
+    current: int
+    limit: int
+    remaining: int
+    reset_at: str
+    window_seconds: int
+
+
+class UserRateLimitStatus(BaseModel):
+    """User rate limit status response."""
+    user_id: int
+    endpoints: Dict[str, EndpointStatusResponse]
+    timestamp: str
+
+
+@router.get("/status", response_model=UserRateLimitStatus)
+async def get_rate_limit_status(
+    endpoints: Optional[List[str]] = None,
     current_user: User = Depends(get_current_user)
-) -> UsageStatsResponse:
-    """Get current user's rate limit usage statistics."""
-    identifier = f"user:{current_user.id}"
-    stats = await rate_limiter.get_usage_stats(identifier)
+) -> UserRateLimitStatus:
+    """
+    Get current rate limit status for the authenticated user.
     
-    # Determine tier
-    if current_user.role == UserRole.SUPER_ADMIN:
-        tier = "enterprise"
-    elif current_user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
-        tier = "professional"
-    elif current_user.role in [UserRole.AGENCY_MEMBER, UserRole.MODEL]:
-        tier = "basic"
-    else:
-        tier = "free"
-    
-    # Get limits for tier
-    from core.rate_limiting.models import RateLimitTier
-    tier_enum = RateLimitTier(tier)
-    limits = rate_limiter._get_default_config(tier_enum)
-    
-    return UsageStatsResponse(
-        identifier=identifier,
-        tier=tier,
-        limits=limits,
-        **stats
+    Returns usage counts and limits for specified endpoints.
+    If no endpoints specified, returns status for all default endpoints.
+    """
+    status = await RateLimitService.get_rate_limit_status(
+        user_id=current_user.id,
+        endpoints=endpoints
     )
+    
+    return UserRateLimitStatus(**status)
 
 
-@router.get("/usage/{user_id}", response_model=UsageStatsResponse)
-async def get_user_usage(
-    user_id: UUID,
+@router.get("/check/{endpoint:path}", response_model=RateLimitStatusResponse)
+async def check_endpoint_limit(
+    endpoint: str,
+    current_user: User = Depends(get_current_user)
+) -> RateLimitStatusResponse:
+    """
+    Check rate limit for a specific endpoint without incrementing counter.
+    
+    Useful for pre-flight checks before making actual requests.
+    """
+    allowed, result = await RateLimitService.check_rate_limit(
+        user_id=current_user.id,
+        endpoint=endpoint,
+        user_role=current_user.role,
+        agency_id=current_user.agency_id
+    )
+    
+    return RateLimitStatusResponse(**result)
+
+
+@router.post("/custom", response_model=Dict[str, Any])
+async def set_custom_limit(
+    request: CustomLimitRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
-) -> UsageStatsResponse:
+) -> Dict[str, Any]:
     """
-    Get rate limit usage for a specific user.
+    Set custom rate limit for a specific user and endpoint.
     
-    Requires admin permissions.
+    - Requires admin or owner role
+    - Can set temporary limits with expiration
+    - Overrides default limits for the user
     """
-    if current_user.role not in [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
+    # Check permissions
+    if current_user.role not in ["admin", "owner"]:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
     
-    # Verify user exists and belongs to same agency
-    if current_user.role != UserRole.SUPER_ADMIN:
-        from sqlalchemy import select
-        result = await db.execute(
-            select(User).where(
-                User.id == user_id,
-                User.agency_id == current_user.agency_id
-            )
+    # If setting limit for another user, verify they're in same agency
+    if request.user_id != current_user.id:
+        target_user = await db.get(User, request.user_id)
+        if not target_user or target_user.agency_id != current_user.agency_id:
+            raise HTTPException(status_code=404, detail="User not found or not in your agency")
+    
+    try:
+        result = await RateLimitService.set_custom_limit(
+            db=db,
+            user_id=request.user_id,
+            endpoint=request.endpoint,
+            max_requests=request.max_requests,
+            window_seconds=request.window_seconds,
+            expires_at=request.expires_at
         )
-        if not result.scalar_one_or_none():
-            raise HTTPException(status_code=404, detail="User not found")
-    
-    identifier = f"user:{user_id}"
-    stats = await rate_limiter.get_usage_stats(identifier)
-    
-    return UsageStatsResponse(
-        identifier=identifier,
-        tier="unknown",  # Would need to look up user to determine
-        limits={},
-        **stats
-    )
+        return result
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/user-limits")
-async def set_user_rate_limit(
-    request: UserRateLimitRequest,
+@router.post("/reset", response_model=Dict[str, Any])
+async def reset_rate_limits(
+    user_id: Optional[int] = None,
+    endpoint: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
-) -> BaseResponse:
+) -> Dict[str, Any]:
     """
-    Set custom rate limit for a user.
+    Reset rate limit counters.
     
-    Requires admin permissions.
+    - Users can reset their own limits
+    - Admins can reset any user's limits
+    - Can reset specific endpoint or all endpoints
     """
-    if current_user.role not in [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER]:
+    # Default to current user if not specified
+    if user_id is None:
+        user_id = current_user.id
+    
+    # Check permissions for resetting other users
+    if user_id != current_user.id and current_user.role not in ["admin", "owner"]:
+        raise HTTPException(status_code=403, detail="Cannot reset limits for other users")
+    
+    # Verify user exists and is in same agency
+    if user_id != current_user.id:
+        target_user = await db.get(User, user_id)
+        if not target_user or target_user.agency_id != current_user.agency_id:
+            raise HTTPException(status_code=404, detail="User not found or not in your agency")
+    
+    result = await RateLimitService.reset_rate_limit(
+        user_id=user_id,
+        endpoint=endpoint
+    )
+    
+    return result
+
+
+@router.get("/agency/{agency_id}", response_model=Dict[str, Any])
+async def get_agency_limits(
+    agency_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get rate limits for an agency based on their plan.
+    
+    - Shows limits for all endpoints
+    - Includes plan multipliers
+    - Requires admin access
+    """
+    # Check permissions
+    if current_user.role not in ["admin", "owner", "manager"]:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
     
-    await DynamicRateLimiter.set_user_limit(
-        user_id=str(request.user_id),
-        limit_multiplier=request.limit_multiplier,
-        custom_limits=request.custom_limits,
-        valid_days=request.valid_days,
-        reason=request.reason
-    )
+    # Verify agency access
+    if agency_id != current_user.agency_id and current_user.role != "owner":
+        raise HTTPException(status_code=403, detail="Cannot view other agency limits")
     
-    return BaseResponse(
-        success=True,
-        message="User rate limit updated successfully"
-    )
-
-
-@router.post("/block-ip")
-async def block_ip_address(
-    request: IPBlockRequest,
-    current_user: User = Depends(get_current_user)
-) -> BaseResponse:
-    """
-    Block an IP address.
-    
-    Requires admin permissions.
-    """
-    if current_user.role not in [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
-    
-    await DynamicRateLimiter.block_ip(
-        ip_address=request.ip_address,
-        duration_hours=request.duration_hours,
-        reason=request.reason
-    )
-    
-    return BaseResponse(
-        success=True,
-        message=f"IP {request.ip_address} blocked for {request.duration_hours} hours"
-    )
-
-
-@router.post("/whitelist")
-async def whitelist_user(
-    request: WhitelistRequest,
-    current_user: User = Depends(get_current_user)
-) -> BaseResponse:
-    """
-    Add user to rate limit whitelist.
-    
-    Requires super admin permissions.
-    """
-    if current_user.role != UserRole.SUPER_ADMIN:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
-    
-    await DynamicRateLimiter.whitelist_user(
-        user_id=str(request.user_id),
-        endpoint_pattern=request.endpoint_pattern,
-        valid_days=request.valid_days,
-        reason=request.reason,
-        approved_by_id=str(current_user.id)
-    )
-    
-    return BaseResponse(
-        success=True,
-        message="User added to whitelist"
-    )
-
-
-@router.get("/violations", response_model=List[ViolationResponse])
-async def get_violations(
-    user_id: Optional[UUID] = None,
-    ip_address: Optional[str] = None,
-    hours: int = Query(24, ge=1, le=168),
-    current_user: User = Depends(get_current_user)
-) -> List[ViolationResponse]:
-    """
-    Get recent rate limit violations.
-    
-    Requires admin permissions.
-    """
-    if current_user.role not in [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
-    
-    violations = await DynamicRateLimiter.get_violations(
-        user_id=str(user_id) if user_id else None,
-        ip_address=ip_address,
-        hours=hours
-    )
-    
-    return [
-        ViolationResponse(
-            id=v.id,
-            user_id=v.user_id,
-            ip_address=v.ip_address,
-            endpoint=v.endpoint,
-            method=v.method,
-            limit_type=v.limit_type,
-            limit_value=v.limit_value,
-            actual_value=v.actual_value,
-            violated_at=v.violated_at
+    try:
+        limits = await RateLimitService.get_agency_limits(
+            db=db,
+            agency_id=agency_id
         )
-        for v in violations
-    ]
+        return limits
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
-# Example endpoint with custom rate limit
-@router.get("/expensive-operation")
-@rate_limit(requests_per_minute=5, burst_size=2)
-async def expensive_operation(
+@router.get("/violations")
+async def get_rate_limit_violations(
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    limit: int = 100,
     current_user: User = Depends(get_current_user)
-) -> dict:
+) -> Dict[str, Any]:
     """
-    Example endpoint with strict rate limiting.
+    Get rate limit violations for monitoring.
     
-    Limited to 5 requests per minute with burst of 2.
+    - Shows users who hit rate limits
+    - Requires admin access
+    - Useful for identifying abusive patterns
     """
-    # Simulate expensive operation
-    import asyncio
-    await asyncio.sleep(1)
+    if current_user.role not in ["admin", "owner"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
     
+    # This would typically query a violations log
+    # For now, return placeholder
     return {
-        "message": "Expensive operation completed",
-        "user_id": str(current_user.id)
+        "violations": [],
+        "total": 0,
+        "start_date": start_date,
+        "end_date": end_date
     }
 
 
-@router.get("/config")
-async def get_rate_limit_config(
-    tier: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-) -> dict:
+@router.post("/api-key/check")
+async def check_api_key_limit(
+    endpoint: str,
+    api_key: str = Header(..., alias="X-API-Key")
+) -> RateLimitStatusResponse:
     """
-    Get rate limit configuration.
+    Check rate limit for API key access.
     
-    Requires admin permissions.
+    API keys have stricter limits than user tokens.
     """
-    if current_user.role not in [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    allowed, result = await RateLimitService.check_api_key_rate_limit(
+        api_key=api_key,
+        endpoint=endpoint
+    )
     
-    from sqlalchemy import select
-    from core.rate_limiting.models import RateLimitConfig, RateLimitTier
+    return RateLimitStatusResponse(**result)
+
+
+# Utility endpoints
+
+@router.get("/rules")
+async def get_rate_limit_rules(
+    current_user: User = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Get default rate limit rules for all endpoints."""
+    rules = {}
     
-    query = select(RateLimitConfig).where(RateLimitConfig.is_active == True)
+    for name, rule in RateLimitService.DEFAULT_RULES.items():
+        rules[name] = {
+            "endpoint": rule.endpoint,
+            "max_requests": rule.max_requests,
+            "window_seconds": rule.window_seconds,
+            "burst_size": rule.burst_size
+        }
     
-    if tier:
-        try:
-            tier_enum = RateLimitTier(tier)
-            query = query.where(RateLimitConfig.tier == tier_enum)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid tier")
-    
-    result = await db.execute(query)
-    configs = result.scalars().all()
+    # Add role multipliers
+    role_multiplier = RateLimitService.ROLE_MULTIPLIERS.get(current_user.role, 1.0)
     
     return {
-        "configs": [
-            {
-                "id": str(config.id),
-                "tier": config.tier.value,
-                "endpoint_pattern": config.endpoint_pattern,
-                "requests_per_minute": config.requests_per_minute,
-                "requests_per_hour": config.requests_per_hour,
-                "requests_per_day": config.requests_per_day,
-                "burst_size": config.burst_size
+        "rules": rules,
+        "user_role": current_user.role,
+        "role_multiplier": role_multiplier,
+        "effective_limits": {
+            name: {
+                "max_requests": int(rule["max_requests"] * role_multiplier),
+                "window_seconds": rule["window_seconds"]
             }
-            for config in configs
-        ]
+            for name, rule in rules.items()
+        }
     }

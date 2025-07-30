@@ -135,8 +135,8 @@ class SessionService:
             
             await redis_manager.set(
                 f"session:{session_token}",
-                SessionService.SESSION_TTL,
-                json.dumps(session_data)
+                json.dumps(session_data),
+                expire=SessionService.SESSION_TTL
             )
         
         return session
