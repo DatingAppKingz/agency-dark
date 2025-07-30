@@ -8,12 +8,12 @@ from fastapi.middleware.gzip import GZipMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 
-from app.core.config import settings
-from app.core.logging import setup_logging, get_logger
+from core.config import settings
+from core.logging import setup_logging, get_logger
 from app.api.v1.api import api_router
 
 # Import optimization modules
-from app.core.optimization import (
+from core.optimization import (
     ConnectionPoolManager,
     CacheManager,
     MemoryProfiler,
@@ -21,7 +21,7 @@ from app.core.optimization import (
 )
 
 # Import security modules
-from app.core.security import (
+from core.security import (
     SecurityHeadersMiddleware,
     security_headers_config,
     audit_logger,
@@ -181,7 +181,7 @@ def create_app() -> FastAPI:
     @app.post("/admin/security/scan")
     async def security_scan(request: Request):
         """Run security vulnerability scan."""
-        from app.core.security import vulnerability_scanner
+        from core.security import vulnerability_scanner
         
         # TODO: Add authentication check
         
@@ -194,7 +194,7 @@ def create_app() -> FastAPI:
     @app.post("/admin/cache/warmup")
     async def warmup_cache():
         """Warm up application cache."""
-        from app.core.optimization.cache_manager import warm_user_cache, warm_config_cache
+        from core.optimization.cache_manager import warm_user_cache, warm_config_cache
         
         # TODO: Add authentication check
         

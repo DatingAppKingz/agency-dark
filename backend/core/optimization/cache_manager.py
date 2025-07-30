@@ -15,8 +15,8 @@ import redis.asyncio as redis
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
-from app.core.config import settings
-from app.core.logging import get_logger
+from core.config import settings
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -305,8 +305,8 @@ class CacheWarmer:
 # Cache warming functions
 async def warm_user_cache(cache_manager: CacheManager):
     """Warm cache with active user data."""
-    from app.models import User
-    from app.core.database import get_db
+    from core.domain.models import User
+    from core.database import get_db
     
     async with get_db() as db:
         # Cache active users

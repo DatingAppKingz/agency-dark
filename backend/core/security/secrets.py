@@ -15,9 +15,9 @@ import boto3
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
-from app.core.config import settings
-from app.core.logging import get_logger
-from app.core.security.audit import audit_logger, AuditEventType, AuditSeverity
+from core.config import settings
+from core.logging import get_logger
+from core.security.audit import audit_logger, AuditEventType, AuditSeverity
 
 logger = get_logger(__name__)
 

@@ -10,32 +10,8 @@ from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 logger = logging.getLogger(__name__)
 
-# Parse DATABASE_URL and handle query parameters properly
-parsed_url = urlparse(settings.DATABASE_URL)
-query_params = parse_qs(parsed_url.query)
-
-# Remove pgbouncer parameter as it's not needed for asyncpg
-if 'pgbouncer' in query_params:
-    del query_params['pgbouncer']
-
-# Convert sslmode to ssl for asyncpg
-if 'sslmode' in query_params:
-    if query_params['sslmode'][0] == 'require':
-        query_params['ssl'] = ['require']
-    del query_params['sslmode']
-
-# Reconstruct the URL with asyncpg driver
-new_query = urlencode(query_params, doseq=True)
-asyncpg_url = urlunparse((
-    parsed_url.scheme.replace('postgresql', 'postgresql+asyncpg'),
-    parsed_url.netloc,
-    parsed_url.path,
-    parsed_url.params,
-    new_query,
-    parsed_url.fragment
-))
-
-DATABASE_URL = asyncpg_url
+# Use the DATABASE_URL directly from settings
+DATABASE_URL = settings.DATABASE_URL
 
 naming_convention = {
     "ix": "ix_%(column_0_label)s",
@@ -55,8 +31,9 @@ engine = create_async_engine(
 )
 
 # Initialize pool manager for advanced use cases
-import asyncio
-asyncio.create_task(pool_manager.initialize(DATABASE_URL))
+# NOTE: This needs to be done inside an async context, not at module level
+# import asyncio
+# asyncio.create_task(pool_manager.initialize(DATABASE_URL))
 
 AsyncSessionLocal = async_sessionmaker(
     engine,

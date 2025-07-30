@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def validate_postgres_url(cls, v: str) -> str:
-        if not v.startswith("postgresql://"):
+        if not (v.startswith("postgresql://") or v.startswith("postgresql+asyncpg://")):
             raise ValueError("DATABASE_URL must be a PostgreSQL URL")
         return v
     

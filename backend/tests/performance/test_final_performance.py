@@ -14,9 +14,9 @@ import psutil
 import asyncpg
 import redis.asyncio as redis
 
-from app.core.config import settings
-from app.core.database import get_db_engine
-from app.core.optimization import CacheManager
+from core.config import settings
+from core.database import get_db_engine
+from core.optimization import CacheManager
 
 
 class PerformanceTestSuite:

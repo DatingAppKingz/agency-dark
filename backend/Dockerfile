@@ -69,4 +69,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:${PORT}/health || exit 1
 
 # Use gunicorn for production with uvicorn workers
-CMD ["sh", "-c", "gunicorn main:app --worker-class uvicorn.workers.UvicornWorker --workers ${WORKERS} --bind 0.0.0.0:${PORT} --access-logfile - --error-logfile - --log-level info --timeout 120"]
+CMD ["sh", "-c", "gunicorn main_minimal:app --worker-class uvicorn.workers.UvicornWorker --workers ${WORKERS} --bind 0.0.0.0:${PORT} --access-logfile - --error-logfile - --log-level info --timeout 120"]

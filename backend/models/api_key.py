@@ -44,7 +44,7 @@ class APIKey(Base):
     rotation_count = Column(Integer, default=0)
     
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    key_metadata = Column(JSON, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

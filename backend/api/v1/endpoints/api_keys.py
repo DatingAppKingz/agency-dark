@@ -41,7 +41,7 @@ async def create_api_key(
             scopes=key_data.scopes,
             expires_in_days=key_data.expires_in_days,
             ip_whitelist=key_data.ip_whitelist,
-            metadata=key_data.metadata
+            metadata=key_data.metadata if hasattr(key_data, 'metadata') else key_data.key_metadata if hasattr(key_data, 'key_metadata') else None
         )
         
         return APIKeyCreateResponse(**result)

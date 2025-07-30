@@ -2,14 +2,14 @@
 Security headers middleware for FastAPI applications.
 """
 
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, Any
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
-from app.core.config import settings
-from app.core.logging import get_logger
+from core.config import settings
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

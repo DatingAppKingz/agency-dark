@@ -12,8 +12,8 @@ import logging
 from functools import wraps
 from collections import defaultdict
 
-from app.core.database import get_db_engine
-from app.core.logging import get_logger
+from core.database import get_db_engine
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

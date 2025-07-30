@@ -13,7 +13,7 @@ from starlette.requests import Request
 from starlette.responses import Response, StreamingResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from app.core.logging import get_logger
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

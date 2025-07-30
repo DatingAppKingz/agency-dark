@@ -409,6 +409,6 @@ session_manager = SessionManager()
 
 
 # Add additional columns to Session model
-Session.location = Column(String(255))
-Session.revoked_at = Column(DateTime)
-Session.revocation_reason = Column(String(255))
+# Session.location = Column(String(255))
+# Session.revoked_at = Column(DateTime)
+# Session.revocation_reason = Column(String(255))

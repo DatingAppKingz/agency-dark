@@ -12,10 +12,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import redis.asyncio as redis
 from cryptography.fernet import Fernet
 
-from app.core.database import get_db
-from app.core.config import settings
-from app.core.logging import get_logger
-from app.models import APIKey, User
+from core.database import get_db
+from core.config import settings
+from core.logging import get_logger
+from models.api_key import APIKey
+from core.domain.models import User
 
 logger = get_logger(__name__)
 

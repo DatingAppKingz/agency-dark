@@ -237,7 +237,7 @@ class APIKeyService:
         encrypted_data = api_key_encryption.encrypt_api_key(
             api_key=new_api_key,
             api_secret=new_api_secret,
-            metadata=api_key.metadata or {}
+            metadata=api_key.key_metadata or {}
         )
         
         # Update the key record
