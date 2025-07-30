@@ -69,6 +69,7 @@ boto3==1.34.0
 - ✅ PostgreSQL (port 5433)
 - ✅ Redis (port 6379)
 - ✅ Backend API (port 8000) - using minimal implementation
+- ✅ Frontend (port 3001) - Vite + React application
 - ⚠️ Celery Workers - Restarting due to dependencies
 
 ### Accessible Endpoints:
@@ -76,12 +77,20 @@ boto3==1.34.0
 - http://localhost:8000/health - Health check
 - http://localhost:8000/docs - Swagger documentation
 - http://localhost:8000/redoc - ReDoc documentation
+- http://localhost:3001/ - Frontend application
 
 ## Running the Application
 
+### Backend (Docker):
 1. Start Docker Desktop
 2. Run: `docker-compose up -d`
 3. Access the API at http://localhost:8000
+
+### Frontend (Local):
+1. Navigate to frontend directory: `cd frontend`
+2. Install dependencies: `npm install`
+3. Start development server: `npm run dev`
+4. Access the frontend at http://localhost:3001
 
 ## Next Steps
 
@@ -111,10 +120,21 @@ To enable full functionality:
 ## Docker Configuration
 
 The application uses Docker Compose with the following services:
-- PostgreSQL 16 
-- Redis 7
-- Backend (FastAPI with Gunicorn)
+- PostgreSQL 16 (port 5433)
+- Redis 7 (port 6379)
+- Backend (FastAPI with Gunicorn) (port 8000)
 - Celery Worker (currently failing)
 - Celery Beat (currently failing)
 
 PostgreSQL is configured to run on port 5433 (not the default 5432) to avoid conflicts.
+
+## Frontend Configuration
+
+The frontend is a Vite + React application that includes:
+- Material-UI for components
+- React Router for navigation
+- Tanstack Query for API state management
+- Zustand for client state
+- Socket.io for real-time features
+- i18next for internationalization
+- Multiple dashboard views for different user roles
