@@ -17,9 +17,17 @@ async def lifespan(app: FastAPI):
     # Startup
     print("Starting up...")
     # Tables are already created via create_tables.py
+    
+    # Initialize Redis
+    from core.redis import redis_manager
+    await redis_manager.connect()
+    print("Redis connected")
+    
     yield
+    
     # Shutdown
     print("Shutting down...")
+    await redis_manager.disconnect()
     await engine.dispose()
 
 
@@ -47,11 +55,13 @@ from api.v1.endpoints.analytics import router as analytics_router
 from api.v1.endpoints.models import router as models_router
 from api.v1.endpoints.conversations import router as conversations_router
 from api.v1.endpoints.financial import router as financial_router
+from api.v1.endpoints.tasks import router as tasks_router
 
 app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["analytics"])
 app.include_router(models_router, prefix="/api/v1/models", tags=["models"])
 app.include_router(conversations_router, prefix="/api/v1/conversations", tags=["conversations"])
 app.include_router(financial_router, prefix="/api/v1/financial", tags=["financial"])
+app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
 
 
 @app.get("/")

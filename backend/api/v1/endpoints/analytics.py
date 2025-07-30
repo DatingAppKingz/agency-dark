@@ -9,6 +9,7 @@ from decimal import Decimal
 from pydantic import BaseModel
 
 from core.database import get_db
+from core.redis import cached, invalidate_agency_cache, invalidate_model_cache
 from models.user import User, UserRole
 from models.agency import Agency
 from models.model import Model, ModelStatus
@@ -91,7 +92,14 @@ def calculate_percentage_change(current: float, previous: float) -> float:
 
 
 # Endpoints
+def dashboard_cache_key(period: str, current_user: User, db: AsyncSession) -> str:
+    """Generate cache key for dashboard stats."""
+    agency_id = current_user.agency_id or "all"
+    return f"dashboard:{agency_id}:{period}"
+
+
 @router.get("/dashboard", response_model=DashboardStats)
+@cached(expire=300, prefix="analytics", key_func=dashboard_cache_key)  # Cache for 5 minutes
 async def get_dashboard_stats(
     period: str = Query("week", regex="^(day|week|month|year)$"),
     current_user: User = Depends(get_current_user),

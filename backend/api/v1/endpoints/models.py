@@ -94,7 +94,7 @@ class ModelResponse(BaseModel):
     followers_count: int
     posts_count: int
     total_earnings: Decimal
-    current_balance: Decimal
+    pending_payout: Decimal
     categories: List[str]
     tags: List[str]
     languages: List[str]

@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     
     REDIS_URL: str = Field(..., env="REDIS_URL")
     REDIS_TTL: int = 3600  # 1 hour default TTL
+    REDIS_HOST: str = Field("localhost", env="REDIS_HOST")
+    REDIS_PORT: int = Field(6379, env="REDIS_PORT")
+    REDIS_DB: int = Field(0, env="REDIS_DB")
     
     INFLOW_API_KEY: Optional[str] = Field(None, env="INFLOW_API_KEY")
     INFLOW_API_URL: str = "https://api.inflow.com"
