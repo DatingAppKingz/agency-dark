@@ -33,7 +33,7 @@ class SocketManager {
   private chatSocket: Socket | null = null;
   private notificationSocket: Socket | null = null;
   private dashboardSocket: Socket | null = null;
-  private listeners: Map<string, Set<Function>> = new Map();
+  private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
 
   connect(): void {
     const token = authService.getAccessToken();
@@ -202,13 +202,13 @@ class SocketManager {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
-    this.listeners.get(event)!.add(callback as Function);
+    this.listeners.get(event)!.add(callback as (...args: any[]) => void);
   }
 
   off<K extends keyof SocketEvents>(event: K, callback: SocketEvents[K]): void {
     const callbacks = this.listeners.get(event);
     if (callbacks) {
-      callbacks.delete(callback as Function);
+      callbacks.delete(callback as (...args: any[]) => void);
     }
   }
 

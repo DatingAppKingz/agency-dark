@@ -275,7 +275,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
         break;
         
       case 'number':
-      case 'rating':
+      case 'rating': {
         const numValue = Number(value);
         if (validation.min !== undefined && numValue < validation.min) {
           return `${field.label} must be at least ${validation.min}`;
@@ -284,6 +284,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
           return `${field.label} must be no more than ${validation.max}`;
         }
         break;
+      }
     }
     
     // Custom validation

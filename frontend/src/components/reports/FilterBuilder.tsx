@@ -163,7 +163,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
           />
         );
 
-      case 'select':
+      case 'select': {
         const options = fieldConfig?.options || [];
         if (filter.operator === 'in' || (filter.operator as any) === 'not_in') {
           return (
@@ -211,6 +211,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
             </Select>
           </FormControl>
         );
+      }
 
       default:
         return (

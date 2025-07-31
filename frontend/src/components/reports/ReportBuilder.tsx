@@ -195,7 +195,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
       name: templateName,
       description: templateDescription,
       type: ReportType.CUSTOM,
-      widgets: widgets.map(({ data, loading, error, ...widget }) => widget),
+      widgets: widgets.map(({ data: _data, loading: _loading, error: _error, ...widget }) => widget),
       globalFilters,
       dateRange,
       refreshInterval,

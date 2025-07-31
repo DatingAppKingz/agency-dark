@@ -166,7 +166,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
           </ResponsiveContainer>
         );
 
-      case ChartType.TABLE:
+      case ChartType.TABLE: {
         const columns = [
           ...chartConfig.dimensions.map(d => ({ field: d.field, label: d.name, format: undefined })),
           ...chartConfig.metrics.map(m => ({ field: m.field, label: m.name, format: m.format })),
@@ -196,8 +196,9 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
             </Table>
           </TableContainer>
         );
+      }
 
-      case ChartType.METRIC_CARD:
+      case ChartType.METRIC_CARD: {
         const metric = chartConfig.metrics[0];
         const value = data[0]?.[metric?.field];
         const formattedValue = formatValue(value, metric?.format);
@@ -234,6 +235,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
             </Box>
           </Box>
         );
+      }
 
       default:
         return (
