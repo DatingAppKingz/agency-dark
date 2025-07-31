@@ -30,8 +30,7 @@ import {
   Person as UserIcon,
   Description as ContentIcon,
   Language as PlatformIcon,
-  Category as CategoryIcon,
-  Delete } from '@mui/icons-material';
+  Category as CategoryIcon } from '@mui/icons-material';
 import { ReportDimension } from '@/types/reports';
 
 interface DimensionSelectorProps {

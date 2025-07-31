@@ -25,7 +25,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import { reportsService } from '@/services/api/reports';
-import { ReportWidget } from '@/types/reports';
+import { ReportWidget, ReportTemplate } from '@/types/reports';
 import ChartWidget from '@/components/reports/ChartWidget';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -41,7 +41,7 @@ const ReportViewerPage: React.FC = () => {
   const [setAutoRefreshTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Fetch template
-  const { data: template, isPending: loadingTemplate } = useQuery({
+  const { data: template, isPending: loadingTemplate } = useQuery<ReportTemplate>({
     queryKey: ['report-template', templateId],
     queryFn: () => reportsService.getTemplate(templateId!),
     enabled: !!templateId,
@@ -165,8 +165,8 @@ const ReportViewerPage: React.FC = () => {
               <BackIcon />
             </IconButton>
             <Box>
-              <Typography variant="h5">{template.name}</Typography>
-              {template.description && (
+              <Typography variant="h5">{template?.name}</Typography>
+              {template?.description && (
                 <Typography variant="body2" color="text.secondary">
                   {template.description}
                 </Typography>

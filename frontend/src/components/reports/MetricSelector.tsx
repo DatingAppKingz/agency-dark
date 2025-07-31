@@ -31,8 +31,7 @@ import {
   Person as PersonIcon,
   Message as MessageIcon,
   Image as ContentIcon,
-  CreditCard as SubscriptionIcon,
-  Edit as Delete } from '@mui/icons-material';
+  CreditCard as SubscriptionIcon } from '@mui/icons-material';
 import { ReportMetric, AggregationType } from '@/types/reports';
 
 interface MetricSelectorProps {

@@ -153,14 +153,14 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
             variant="contained"
             startIcon={<Add />}
             onClick={() => setRequestDialogOpen(true)}
-            disabled={!summary?.data?.available_balance || summary.data.available_balance < 10}
+            disabled={!summary?.available_balance || summary.available_balance < 10}
           >
             Request Payout
           </Button>
         </Box>
       </Box>
 
-      {summary?.data && (
+      {summary && (
         <Grid container spacing={3} mb={3}>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
@@ -172,7 +172,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                       Available Balance
                     </Typography>
                     <Typography variant="h6">
-                      {formatCurrency(summary.data.available_balance, summary.data.currency)}
+                      {formatCurrency(summary.available_balance, summary.currency)}
                     </Typography>
                   </Box>
                 </Box>
@@ -189,7 +189,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                       Pending Payouts
                     </Typography>
                     <Typography variant="h6">
-                      {formatCurrency(summary.data.pending_payouts, summary.data.currency)}
+                      {formatCurrency(summary.pending_payouts, summary.currency)}
                     </Typography>
                   </Box>
                 </Box>
@@ -331,7 +331,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
           <DialogContent>
             <Box display="flex" flexDirection="column" gap={2} pt={1}>
               <Alert severity="info">
-                Available balance: {formatCurrency(summary?.data?.available_balance || 0)}
+                Available balance: {formatCurrency(summary?.available_balance || 0)}
               </Alert>
               <TextField
                 label="Amount"

@@ -150,7 +150,7 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
           </Box>
 
           {!isEditing && (
-            <FormControl fullWidth margin="normal" error={!!errors.user_id}>
+            <FormControl fullWidth margin="normal" error={!!(errors as any).user_id}>
               <InputLabel>Select User</InputLabel>
               <Select
                 {...register('user_id')}
@@ -166,9 +166,9 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
                   </MenuItem>
                 ))}
               </Select>
-              {errors.user_id && (
+              {(errors as any).user_id && (
                 <Box sx={{ color: 'error.main', fontSize: '0.75rem', mt: 0.5 }}>
-                  {errors.user_id.message}
+                  {(errors as any).user_id.message}
                 </Box>
               )}
             </FormControl>

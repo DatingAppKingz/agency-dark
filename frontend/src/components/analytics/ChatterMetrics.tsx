@@ -274,7 +274,7 @@ export const ChatterMetrics = ({ dateRange, refreshKey }: ChatterMetricsProps) =
                   fill="#8884d8"
                   dataKey="count"
                 >
-                  {metricsData?.responseTimeDistribution.map((index) => (
+                  {metricsData?.responseTimeDistribution.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

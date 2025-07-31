@@ -202,7 +202,7 @@ export const PaymentMethods = () => {
 
       <Card>
         <CardContent>
-          {paymentMethods?.data?.length === 0 ? (
+          {paymentMethods?.length === 0 ? (
             <Box textAlign="center" py={4}>
               <Typography variant="body1" color="textSecondary" gutterBottom>
                 No payment methods added yet
@@ -218,7 +218,7 @@ export const PaymentMethods = () => {
             </Box>
           ) : (
             <List>
-              {paymentMethods?.data?.map((method, index) => (
+              {paymentMethods?.map((method, index) => (
                 <React.Fragment key={method.id}>
                   {index > 0 && <Divider />}
                   <ListItem>

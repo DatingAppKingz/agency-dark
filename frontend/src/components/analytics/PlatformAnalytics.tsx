@@ -113,17 +113,17 @@ export const PlatformAnalytics = ({ dateRange, refreshKey }: PlatformAnalyticsPr
                     ${metricsData?.revenue.total.toLocaleString()}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    {metricsData?.revenue.change > 0 ? (
+                    {(metricsData?.revenue.change ?? 0) > 0 ? (
                       <TrendingUp color="success" fontSize="small" />
                     ) : (
                       <TrendingDown color="error" fontSize="small" />
                     )}
                     <Typography
                       variant="body2"
-                      color={metricsData?.revenue.change > 0 ? 'success.main' : 'error.main'}
+                      color={(metricsData?.revenue.change ?? 0) > 0 ? 'success.main' : 'error.main'}
                       sx={{ ml: 0.5 }}
                     >
-                      {Math.abs(metricsData?.revenue.change)}%
+                      {Math.abs(metricsData?.revenue.change ?? 0)}%
                     </Typography>
                   </Box>
                 </Box>
@@ -241,7 +241,7 @@ export const PlatformAnalytics = ({ dateRange, refreshKey }: PlatformAnalyticsPr
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {metricsData?.revenueByType.map((index) => (
+                  {metricsData?.revenueByType.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

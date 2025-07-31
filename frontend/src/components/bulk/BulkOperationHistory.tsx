@@ -38,8 +38,7 @@ import {
   Error as ErrorIcon,
   Warning as WarningIcon,
   Schedule as PendingIcon,
-  Search as SearchIcon,
-  FilterList } from '@mui/icons-material';
+  Search as SearchIcon } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
@@ -146,7 +145,10 @@ const BulkOperationHistory: React.FC = () => {
       [BulkOperationStatus.PROCESSING]: { color: 'primary' as const, label: 'Processing' },
       [BulkOperationStatus.PENDING]: { color: 'default' as const, label: 'Pending' },
       [BulkOperationStatus.CANCELLED]: { color: 'default' as const, label: 'Cancelled' },
-      [BulkOperationStatus.PARTIALLY_COMPLETED]: { color: 'warning' as const, label: 'Partial' } };
+      [BulkOperationStatus.PARTIALLY_COMPLETED]: { color: 'warning' as const, label: 'Partial' },
+      [BulkOperationStatus.VALIDATING]: { color: 'info' as const, label: 'Validating' },
+      [BulkOperationStatus.SCHEDULED]: { color: 'info' as const, label: 'Scheduled' },
+      [BulkOperationStatus.ROLLED_BACK]: { color: 'error' as const, label: 'Rolled Back' } };
 
     const config = statusConfig[status] || { color: 'default' as const, label: status };
     return <Chip size="small" color={config.color} label={config.label} />;
@@ -165,11 +167,19 @@ const BulkOperationHistory: React.FC = () => {
       [BulkOperationType.CONTENT_UPLOAD]: 'Upload Content',
       [BulkOperationType.CONTENT_DELETE]: 'Delete Content',
       [BulkOperationType.CONTENT_PUBLISH]: 'Publish Content',
-      [BulkOperationType.ANALYTICS_EXPORT]: 'Export Analytics' };
+      [BulkOperationType.ANALYTICS_EXPORT]: 'Export Analytics',
+      [BulkOperationType.MODEL_UPDATE]: 'Update Models',
+      [BulkOperationType.MODEL_ASSIGN]: 'Assign Models',
+      [BulkOperationType.TRANSACTION_EXPORT]: 'Export Transactions',
+      [BulkOperationType.TRANSACTION_RECONCILE]: 'Reconcile Transactions',
+      [BulkOperationType.PAYOUT_SCHEDULE]: 'Schedule Payouts',
+      [BulkOperationType.PAYOUT_CANCEL]: 'Cancel Payouts',
+      [BulkOperationType.DATA_IMPORT]: 'Import Data',
+      [BulkOperationType.DATA_EXPORT]: 'Export Data' };
     return labels[type] || type;
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
@@ -282,12 +292,12 @@ const BulkOperationHistory: React.FC = () => {
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
                           <Typography variant="body2">
-                            {operation.progress_current}/{operation.progress_total}
+                            {operation.progress_current || 0}/{operation.progress_total || 0}
                           </Typography>
-                          {operation.progress_total > 0 && (
+                          {(operation.progress_total ?? 0) > 0 && (
                             <LinearProgress
                               variant="determinate"
-                              value={(operation.progress_current / operation.progress_total) * 100}
+                              value={((operation.progress_current || 0) / (operation.progress_total || 1)) * 100}
                               sx={{ width: 60, ml: 1 }}
                             />
                           )}

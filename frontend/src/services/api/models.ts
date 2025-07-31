@@ -15,37 +15,37 @@ export const modelsService = {
   // The following methods integrate with the available backend endpoints
 
   // Get model profile via orchestration
-  async getModel(modelId: string): Promise<any> {
+  async getModel(_modelId: string): Promise<any> {
     // Use orchestration endpoint to get model data
-    const { data } = await apiClient.get(`/orchestration/sync/${modelId}/status`);
+    const { data } = await apiClient.get(`/orchestration/sync/${_modelId}/status`);
     return data;
   },
 
   // Get model analytics
-  async getModelAnalytics(modelId: string, startDate: string, endDate: string): Promise<any> {
-    const { data } = await apiClient.get(`/orchestration/analytics/${modelId}`, {
+  async getModelAnalytics(_modelId: string, startDate: string, endDate: string): Promise<any> {
+    const { data } = await apiClient.get(`/orchestration/analytics/${_modelId}`, {
       params: { start_date: startDate, end_date: endDate }
     });
     return data;
   },
 
   // Get unified fans for a model
-  async getModelFans(modelId: string, params?: { limit?: number; offset?: number }): Promise<any> {
+  async getModelFans(_modelId: string, params?: { limit?: number; offset?: number }): Promise<any> {
     const { data } = await apiClient.get(`/orchestration/fans/${event}`, { params });
     return data;
   },
 
   // Trigger sync for model data
-  async syncModelData(modelId: string, syncInflow = true, syncOnlyfans = true): Promise<any> {
-    const { data } = await apiClient.post(`/orchestration/sync/${modelId}`, null, {
+  async syncModelData(_modelId: string, syncInflow = true, syncOnlyfans = true): Promise<any> {
+    const { data } = await apiClient.post(`/orchestration/sync/${_modelId}`, null, {
       params: { sync_inflow: syncInflow, sync_onlyfans: syncOnlyfans }
     });
     return data;
   },
 
   // Get sync status
-  async getSyncStatus(modelId: string): Promise<any> {
-    const { data } = await apiClient.get(`/orchestration/sync/${modelId}/status`);
+  async getSyncStatus(_modelId: string): Promise<any> {
+    const { data } = await apiClient.get(`/orchestration/sync/${_modelId}/status`);
     return data;
   },
 
@@ -55,34 +55,34 @@ export const modelsService = {
     return data;
   },
 
-  async createModel(event: CreateModelProfileData): Promise<ModelProfile> {
+  async createModel(_event: CreateModelProfileData): Promise<ModelProfile> {
     throw new Error('Model creation not yet implemented in backend');
   },
 
-  async updateModel(modelId: string, data: UpdateModelProfileData): Promise<ModelProfile> {
+  async updateModel(_modelId: string, data: UpdateModelProfileData): Promise<ModelProfile> {
     throw new Error('Model update not yet implemented in backend');
   },
 
-  async deleteModel(modelId: string): Promise<void> {
+  async deleteModel(_modelId: string): Promise<void> {
     throw new Error('Model deletion not yet implemented in backend');
   },
 
   // Model Content - placeholder
-  async getModelContent(modelId: string): Promise<ModelContent[]> {
+  async getModelContent(_modelId: string): Promise<ModelContent[]> {
     console.warn('Content management through orchestration API');
     return [];
   },
 
-  async uploadContent(modelId: string, file: File, metadata: Partial<ModelContent>): Promise<ModelContent> {
+  async uploadContent(_modelId: string, file: File, metadata: Partial<ModelContent>): Promise<ModelContent> {
     // Use orchestration content post endpoint
     const formData = new FormData();
     formData.append('file', file);
     
     const { data } = await apiClient.post('/orchestration/content/post', {
-      model_id: modelId,
-      text: metadata.title || '',
+      model_id: _modelId,
+      text: _metadata.title || '',
       media_urls: [],
-      is_free: metadata.is_free || false,
+      is_free: _metadata.is_free || false,
       publish_immediately: true,
       post_to_onlyfans: true,
       post_to_inflow: true });
@@ -90,50 +90,50 @@ export const modelsService = {
     return data;
   },
 
-  async deleteContent(modelId: string, contentId: string): Promise<void> {
+  async deleteContent(_modelId: string, contentId: string): Promise<void> {
     throw new Error('Content deletion not yet implemented');
   },
 
   // Model Messages
-  async getModelMessages(modelId: string, fanId?: string, limit = 50, offset = 0): Promise<any> {
-    const { data } = await apiClient.get(`/orchestration/messages/${modelId}`, {
+  async getModelMessages(_modelId: string, fanId?: string, limit = 50, offset = 0): Promise<any> {
+    const { data } = await apiClient.get(`/orchestration/messages/${_modelId}`, {
       params: { fan_id: fanId, limit, offset }
     });
     return data;
   },
 
-  async sendMessage(modelId: string, fanId: string, text: string, price?: number): Promise<any> {
+  async sendMessage(_modelId: string, fanId: string, text: string, price?: number): Promise<any> {
     const { data } = await apiClient.post('/orchestration/messages/send', {
       fan_id: fanId,
       text,
       price }, {
-      params: { model_id: modelId }
+      params: { model_id: _modelId }
     });
     return data;
   },
 
   // Placeholder methods for features not in backend yet
-  async getAvailability(modelId: string): Promise<ModelAvailability[]> {
+  async getAvailability(_modelId: string): Promise<ModelAvailability[]> {
     console.warn('Availability not implemented in backend');
     return [];
   },
 
-  async updateAvailability(modelId: string, availability: ModelAvailability[]): Promise<ModelAvailability[]> {
+  async updateAvailability(_modelId: string, availability: ModelAvailability[]): Promise<ModelAvailability[]> {
     console.warn('Availability update not implemented in backend');
     return availability;
   },
 
-  async getPreferences(modelId: string): Promise<ModelPreferences> {
+  async getPreferences(_modelId: string): Promise<ModelPreferences> {
     console.warn('Preferences not implemented in backend');
     return {} as ModelPreferences;
   },
 
-  async updatePreferences(modelId: string, preferences: Partial<ModelPreferences>): Promise<ModelPreferences> { 
+  async updatePreferences(_modelId: string, preferences: Partial<ModelPreferences>): Promise<ModelPreferences> { 
     console.warn('Preferences update not implemented in backend');
     return preferences as ModelPreferences;
     },
 
-  async getStats(modelId: string, period: 'day' | 'week' | 'month' = 'month'): Promise<ModelStats> {
+  async getStats(_modelId: string, period: 'day' | 'week' | 'month' = 'month'): Promise<ModelStats> {
     // Use analytics endpoint
     const endDate = new Date();
     const startDate = new Date();
@@ -158,14 +158,14 @@ export const modelsService = {
     return analytics;
   },
 
-  async toggleModelStatus(modelId: string, isActive: boolean): Promise<ModelProfile> {
+  async toggleModelStatus(_modelId: string, isActive: boolean): Promise<ModelProfile> {
     throw new Error('Status toggle not implemented in backend');
   },
 
-  async uploadAvatar(modelId: string, file: File): Promise<{ avatar_url: string }> {
+  async uploadAvatar(_modelId: string, file: File): Promise<{ avatar_url: string }> {
     throw new Error('Avatar upload not implemented in backend');
   },
 
-  async uploadCover(modelId: string, file: File): Promise<{ cover_image_url: string }> {
+  async uploadCover(_modelId: string, file: File): Promise<{ cover_image_url: string }> {
     throw new Error('Cover upload not implemented in backend');
   } };

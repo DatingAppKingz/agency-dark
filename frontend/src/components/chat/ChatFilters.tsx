@@ -24,7 +24,7 @@ import {
   Group } from '@mui/icons-material';
 import { ChatFilters as ChatFiltersType          } from '@/types/chat';
 import { useAuthStore } from '@/store/authStore';
-import { User } from '@/types';
+import { User } from '@/types/auth';
 
 interface ChatFiltersProps {
   filters: ChatFiltersType;
@@ -50,14 +50,14 @@ export const ChatFilters = ({
     setAnchorEl(null);
   };
 
-  const handleStatusChange = (event: React.MouseEvent<HTMLElement>,
+  const handleStatusChange = (_event: React.MouseEvent<HTMLElement>,
     newStatus: string | null,
   ) => { if (newStatus !== null) {
       onFiltersChange({ status: newStatus as ChatFiltersType['status']          });
     }
   };
 
-  const handleAssignedToChange = (event: React.MouseEvent<HTMLElement>,
+  const handleAssignedToChange = (_event: React.MouseEvent<HTMLElement>,
     newAssignedTo: string | null,
   ) => { if (newAssignedTo !== null) {
       onFiltersChange({ assigned_to: newAssignedTo as ChatFiltersType['assigned_to']          });
@@ -180,7 +180,7 @@ export const ChatFilters = ({
                 <MenuItem value="">All Models</MenuItem>
                 {models.map((model) => (
                   <MenuItem key={model.id} value={model.id}>
-                    {model.name}
+                    {model.full_name}
                   </MenuItem>
                 ))}
               </Select>

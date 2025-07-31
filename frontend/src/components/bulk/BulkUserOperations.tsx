@@ -45,7 +45,7 @@ import {
   Group as ExportIcon,
   Upload as AssignIcon,
   CheckCircle as SuccessIcon,
-  Error as Warning } from '@mui/icons-material';
+} from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { bulkOperationsService } from '@/services/api/bulkOperations';
@@ -65,6 +65,7 @@ interface BulkUpdateData {
   is_verified?: boolean;
   tags?: string[];
   custom_fields?: Record<string, any>;
+  format?: string;
 }
 
 const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
@@ -158,7 +159,8 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
       [UserRole.AGENCY_OWNER]: 'warning',
       [UserRole.AGENCY_ADMIN]: 'info',
       [UserRole.MODEL]: 'success',
-      [UserRole.CHATTER]: 'primary' };
+      [UserRole.CHATTER]: 'primary',
+      [UserRole.AGENCY_MEMBER]: 'default' };
     return colors[role] || 'default';
   };
 
@@ -492,7 +494,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
                       <TableCell align="right">
                         <IconButton
                           size="small"
-                          onClick={(event) => setAnchorEl(eevent.currentTarget)}
+                          onClick={(event) => setAnchorEl(event.currentTarget)}
                         >
                           <MoreIcon />
                         </IconButton>

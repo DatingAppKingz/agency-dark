@@ -47,27 +47,6 @@ interface CannedResponsesProps {
   onSelectResponse: (response: string) => void;
 }
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-const TabPanel = (props: TabPanelProps) => {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`canned-responses-tabpanel-${index}`}
-      aria-labelledby={`canned-responses-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 2 }}>{children}</Box>}
-    </div>
-  );
-};
 
 export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
   const { error, success } = useToast();

@@ -179,7 +179,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
     }
   };
 
-  const handleDownloadStatement = async (event: EarningsStatement) => {
+  const handleDownloadStatement = async (_statement: EarningsStatement) => {
     try {
       // TODO: Implement download
       success('Statement downloaded successfully');
@@ -188,7 +188,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
     }
   };
 
-  const handleEmailStatement = async (event: EarningsStatement) => {
+  const handleEmailStatement = async (_statement: EarningsStatement) => {
     try {
       // TODO: Implement email
       success('Statement sent via email');

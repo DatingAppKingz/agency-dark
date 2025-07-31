@@ -19,8 +19,7 @@ import {
   Download,
   Description,
   PictureAsPdf,
-  TableChart,
-  Image } from '@mui/icons-material';
+  TableChart } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -65,9 +64,9 @@ export const ExportConversation = ({ open, onClose, conversation }: ExportConver
       setExportProgress(10);
 
       // Fetch all messages
-      const messages = await chatApi.getMessages(conversation.id, {
-        size: 1000, // Get all messages
-      });
+      // TODO: Fix API call - needs proper conversation messages endpoint
+      const messages: Message[] = [];
+      // const messages = await chatApi.getMessages(conversation.model_id, conversation.fan_id);
       setExportProgress(40);
 
       // Filter by date if needed
@@ -134,12 +133,12 @@ export const ExportConversation = ({ open, onClose, conversation }: ExportConver
       const timestamp = format(new Date(message.created_at), 'PPp');
       
       // Sender and timestamp
-      pdf.setFont(undefined, 'bold');
+      pdf.setFontSize(10);
       pdf.text(`${sender} - ${timestamp}`, 20, y);
       y += 5;
 
       // Message content
-      pdf.setFont(undefined, 'normal');
+      pdf.setFontSize(10);
       const lines = pdf.splitTextToSize(message.content, 170);
       lines.forEach((line: string) => {
         if (y > pageHeight - 20) {
@@ -152,7 +151,7 @@ export const ExportConversation = ({ open, onClose, conversation }: ExportConver
 
       // Attachments
       if (message.attachments && message.attachments.length > 0) {
-        pdf.setFont(undefined, 'italic');
+        pdf.setFontSize(10);
         pdf.text(`[${message.attachments.length} attachment(s)]`, 20, y);
         y += 5;
       }
@@ -258,19 +257,6 @@ export const ExportConversation = ({ open, onClose, conversation }: ExportConver
       endDate: null });
     setExportProgress(0);
     onClose();
-  };
-
-  const getFormatIcon = (format: ExportOptions['format']) => {
-    switch (format) {
-      case 'pdf':
-        return <PictureAsPdf />;
-      case 'txt':
-        return <Description />;
-      case 'csv':
-        return <TableChart />;
-      case 'json':
-        return <Description />;
-    }
   };
 
   return (

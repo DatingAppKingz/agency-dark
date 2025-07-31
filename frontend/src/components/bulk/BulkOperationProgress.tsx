@@ -96,7 +96,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
     );
   }
 
-  const getStatusColor = (status: BulkOperationStatus) => {
+  const getStatusColor = (status: BulkOperationStatus): 'success' | 'error' | 'warning' | 'primary' | 'default' => {
     switch (status) {
       case BulkOperationStatus.COMPLETED:
         return 'success';

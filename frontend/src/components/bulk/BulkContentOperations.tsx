@@ -41,9 +41,7 @@ import {
   LockOpen as UnlockIcon,
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
-  Description as FileIcon,
-  CheckCircle,
-  Error } from '@mui/icons-material';
+  Description as FileIcon } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -54,21 +52,6 @@ import { BulkOperationType } from '@/types/bulkOperations';
 import MediaUploader from '@/components/media/MediaUploader';
 import { useModels } from '@/hooks/useModels';
 import { ModelProfile } from '@/types/models';
-
-interface ContentItem {
-  id: string;
-  type: 'image' | 'video' | 'document';
-  title: string;
-  description?: string;
-  url: string;
-  thumbnail?: string;
-  price?: number;
-  is_locked: boolean;
-  is_visible: boolean;
-  created_at: string;
-  views: number;
-  purchases: number;
-}
 
 const BulkContentOperations: React.FC = () => {
   const [selectedContent, setSelectedContent] = useState<string[]>([]);

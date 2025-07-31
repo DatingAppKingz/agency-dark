@@ -30,7 +30,7 @@ import {
   AttachFile as AttachIcon,
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
-  Cancel } from '@mui/icons-material';
+} from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -424,7 +424,7 @@ const BulkMessageOperations: React.FC = () => {
 
               {(formData.attachments.images.length > 0 || 
                 formData.attachments.videos.length > 0 || 
-                formData.attachments.audio.length > 0) && (
+                formData.attachments.documents.length > 0) && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Attachments
@@ -436,8 +436,8 @@ const BulkMessageOperations: React.FC = () => {
                     {formData.attachments.videos.map((idx) => (
                       <Chip key={idx} icon={<VideoIcon />} label={`Video ${idx + 1}`} size="small" />
                     ))}
-                    {formData.attachments.files.map((idx) => (
-                      <Chip key={idx} icon={<AttachIcon />} label={`File ${idx + 1}`} size="small" />
+                    {formData.attachments.documents.map((_, idx) => (
+                      <Chip key={idx} icon={<AttachIcon />} label={`Document ${idx + 1}`} size="small" />
                     ))}
                   </Box>
                 </Box>
@@ -552,7 +552,7 @@ const BulkMessageOperations: React.FC = () => {
                 Send Messages
               </Button>
               <Button
-                variant={selectedOperation === 'delete' ? 'contained' : 'outlined'}
+                variant="outlined"
                 startIcon={<DeleteIcon />}
                 onClick={() => setSelectedOperation('delete')}
               >

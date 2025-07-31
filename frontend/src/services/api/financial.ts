@@ -158,8 +158,8 @@ export const financialApi = {
         status: filters?.status,
         due_date_start: filters?.start_date,
         due_date_end: filters?.end_date,
-        limit: filters?.limit,
-        offset: filters?.offset }
+        page: filters?.page,
+        size: filters?.size }
     });
     return data;
   },
@@ -193,17 +193,18 @@ export const financialApi = {
   async getTransactions(filters?: TransactionFilters): Promise<PaginatedResponse<Transaction>> {
     console.warn('Transaction listing not directly available, use billing cycles');
     return {
-      documents: [],
+      items: [],
       total: 0,
       page: filters?.page || 1,
+      size: filters?.size || 20,
       pages: 0 };
   },
 
-  async getTransaction(transactionId: string): Promise<Transaction> {
+  async getTransaction(_transactionId: string): Promise<Transaction> {
     throw new Error('Transaction detail not implemented');
   },
 
-  async cancelPayout(payoutId: string): Promise<Payout> {
+  async cancelPayout(_payoutId: string): Promise<Payout> {
     throw new Error('Payout cancellation not implemented');
   },
 
@@ -212,24 +213,24 @@ export const financialApi = {
     return this.getWallets({ active_only: true                                                                                                                                     });
   },
 
-  async getPaymentMethod(methodId: string): Promise<PaymentMethod> {
+  async getPaymentMethod(_methodId: string): Promise<PaymentMethod> {
     throw new Error('Payment method detail not implemented');
   },
 
-  async createPaymentMethod(event: Partial<PaymentMethod>): Promise<PaymentMethod> {
+  async createPaymentMethod(_event: Partial<PaymentMethod>): Promise<PaymentMethod> {
     // Map to wallet creation
     return this.createWallet();
   },
 
-  async updatePaymentMethod(methodId: string, updateData: Partial<PaymentMethod>): Promise<PaymentMethod> {
+  async updatePaymentMethod(_methodId: string, _updateData: Partial<PaymentMethod>): Promise<PaymentMethod> {
     throw new Error('Payment method update not implemented');
   },
 
-  async deletePaymentMethod(methodId: string): Promise<void> {
+  async deletePaymentMethod(_methodId: string): Promise<void> {
     throw new Error('Payment method deletion not implemented');
   },
 
-  async setDefaultPaymentMethod(methodId: string): Promise<PaymentMethod> {
+  async setDefaultPaymentMethod(_methodId: string): Promise<PaymentMethod> {
     throw new Error('Default payment method not implemented');
   },
 
@@ -243,7 +244,7 @@ export const financialApi = {
     return analytics.data;
   },
 
-  async getRevenueHistory(params: any): Promise<Revenue[]> {
+  async getRevenueHistory(_params: any): Promise<Revenue[]> {
     console.warn('Revenue history not directly available');
     return [];
   },
@@ -252,17 +253,18 @@ export const financialApi = {
   async getReports(params?: QueryParams): Promise<PaginatedResponse<FinancialReport>> {
     console.warn('Financial reports not directly available');
     return {
-      documents: [],
+      items: [],
       total: 0,
       page: params?.page || 1,
+      size: params?.size || 20,
       pages: 0 };
   },
 
-  async generateReport(event: any): Promise<FinancialReport> {
+  async generateReport(_event: any): Promise<FinancialReport> {
     throw new Error('Report generation not implemented');
   },
 
-  async downloadReport(reportId: string, format: 'pdf' | 'csv' = 'pdf'): Promise<any> {
+  async downloadReport(_reportId: string, _format: 'pdf' | 'csv' = 'pdf'): Promise<any> {
     throw new Error('Report download not implemented');
   },
 
@@ -278,12 +280,12 @@ export const financialApi = {
       total_revenue: 0,
       total_payouts: 0,
       pending_payouts: 0,
-      total_commission: 0,
-      billing_cycles: billingCycles,
-      recent_payouts: payouts,
-      pending_invoices: invoices.filter((inv: any) => inv.status === 'pending') } as FinancialSummary;
+      available_balance: 0,
+      currency: 'USD',
+      last_payout: payouts[0],
+      next_payout_date: undefined };
   },
 
-  async exportTransactions(filters: TransactionFilters & { format: 'csv' | 'pdf' }): Promise<any> {
+  async exportTransactions(_filters: TransactionFilters & { format: 'csv' | 'pdf' }): Promise<any> {
     throw new Error('Transaction export not implemented');
   } };
