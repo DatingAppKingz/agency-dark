@@ -79,6 +79,7 @@ export const InvoiceGenerator = ({
     watch,
     setValue,
     reset,
+    getValues,
     formState: { errors } } = useForm<InvoiceFormData>({
     defaultValues: {
       invoice_number: `INV-${Date.now()}`,
@@ -162,7 +163,7 @@ export const InvoiceGenerator = ({
     }
   };
 
-  const handleEmailInvoice = async (event: InvoiceFormData) => {
+  const handleEmailInvoice = async (_data: InvoiceFormData) => {
     try {
       setIsGenerating(true);
       // TODO: Implement email sending

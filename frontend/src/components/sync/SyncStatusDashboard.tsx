@@ -70,7 +70,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
   });
 
   // Get sync status for selected model
-  const { data: status, isPending: isStatusLoading } = useQuery({
+  const { data: status } = useQuery({
     queryKey: ['sync-status', selectedModel],
     queryFn: () => syncService.getStatus(selectedModel),
     enabled: !!selectedModel,

@@ -46,7 +46,7 @@ export const BlockReportDialog = ({
   onBlock,
   onReport }: BlockReportDialogProps) => {
   const { error, success } = useToast();
-  const [action, setAction] = useState<'block' | 'report'>('block');
+  const [, setAction] = useState<'block' | 'report'>('block');
   const [blockUser, setBlockUser] = useState(true);
   const [reportUser, setReportUser] = useState(false);
   const [reportReason, setReportReason] = useState('');

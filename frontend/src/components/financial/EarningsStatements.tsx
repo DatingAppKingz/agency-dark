@@ -58,14 +58,6 @@ interface EarningsStatement {
   paid_at?: string;
 }
 
-interface EarningsBreakdown {
-  subscriptions: number;
-  tips: number;
-  ppv_content: number;
-  custom_requests: number;
-  referrals: number;
-  other: number;
-}
 
 export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProps) => {
   const { error, success } = useToast();

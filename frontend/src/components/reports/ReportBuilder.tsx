@@ -44,7 +44,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import GridLayout, { WidthProvider } from 'react-grid-layout';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { reportsService } from '@/services/api/reports';
 import {
@@ -85,11 +85,10 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
   const [dimensionsOpen, setDimensionsOpen] = useState(true);
   const [chartsOpen, setChartsOpen] = useState(true);
 
-  const queryClient = useQueryClient();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Load template if provided
-  const { data: template, isPending: isTemplateLoading } = useQuery({
+  const { data: template } = useQuery({
     queryKey: ['report-template', templateId],
     queryFn: () => reportsService.getTemplate(templateId!),
     enabled: !!templateId });

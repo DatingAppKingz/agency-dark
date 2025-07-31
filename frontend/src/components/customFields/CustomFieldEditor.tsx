@@ -34,7 +34,6 @@ import {
   Edit,
   Delete,
   ExpandMore } from '@mui/icons-material';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import { CustomField, FieldType, EntityType, SelectOption } from '@/types/customFields';
 

@@ -22,7 +22,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ModelProfile, CreateModelProfileData, UpdateModelProfileData } from '@/types/models';
 import { useUsers } from '@/hooks/useUsers';
-import { UserRole } from '@/types/auth';
 
 const createModelSchema = z.object({
   user_id: z.string().min(1, 'User is required'),
@@ -64,8 +63,7 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
     register,
     handleSubmit,
     formState: { errors },
-    reset,
-    watch } = useForm<CreateModelProfileData | UpdateModelProfileData>({
+    reset } = useForm<CreateModelProfileData | UpdateModelProfileData>({
     resolver: zodResolver(isEditing ? updateModelSchema : createModelSchema),
     defaultValues: model ? {
       stage_name: model.stage_name,
@@ -78,7 +76,6 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
       subscription_price: 9.99,
       is_active: true } });
 
-  const subscriptionPrice = watch('subscription_price');
 
   useEffect(() => {
     if (model) {

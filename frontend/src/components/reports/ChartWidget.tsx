@@ -131,7 +131,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
                 outerRadius="80%"
                 label={chartConfig.options?.showDataLabels}
               >
-                {data.map((event: any, index: number) => (
+                {data.map((_entry: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

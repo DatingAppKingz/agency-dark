@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,7 +11,6 @@ import {
   Typography } from '@mui/material';
 import { User } from '@/types/auth';
 import { ChatUser } from '@/types/chat';
-import { chatApi } from '@/services/api/chat';
 import { useToast } from '@/components/common/Toaster';
 
 interface FanAssignmentProps {
@@ -36,7 +35,7 @@ export const FanAssignment = ({
   const [isSaving, setIsSaving] = useState(false);
 
   // Load available models when dialog opens
-  useState(() => {
+  useEffect(() => {
     if (open) {
       const loadModels = async () => {
         try {
@@ -54,7 +53,7 @@ export const FanAssignment = ({
       
       loadModels();
     }
-  }, [open]);
+  }, [open, error]);
 
   const handleAssign = async () => {
     try {

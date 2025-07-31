@@ -26,7 +26,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format } from 'date-fns';
 import { useToast } from '@/components/common/Toaster';
 import { Conversation, Message } from '@/types/chat';
-import { chatApi } from '@/services/api/chat';
 import jsPDF from 'jspdf';
 
 interface ExportConversationProps {

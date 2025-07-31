@@ -66,13 +66,12 @@ export const PaymentMethods = () => {
   const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
   const [formType, setFormType] = useState<PaymentMethod['type']>('bank_account');
 
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<PaymentMethodForm>({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<PaymentMethodForm>({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues: {
       type: 'bank_account',
       is_default: false } });
 
-  const type = watch('type');
 
   const { data: paymentMethods, isPending } = useQuery({
     queryKey: ['payment-methods'],

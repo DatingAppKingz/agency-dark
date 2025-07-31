@@ -1,18 +1,4 @@
 import { Box, CircularProgress, Skeleton, Typography, LinearProgress } from '@mui/material';
-import { keyframes } from '@mui/system';
-
-// Pulse animation for skeleton
-const pulse = keyframes`
-  0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.6;
-  }
-`;
 
 // Full page loader
 export const FullPageLoader = ({ message }: { message?: string }) => {

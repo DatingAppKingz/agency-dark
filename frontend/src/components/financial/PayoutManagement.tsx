@@ -38,7 +38,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { financialApi } from '@/services/api/financial';
-import type { Payout, PaymentMethod } from '@/types/financial';
+import type { Payout } from '@/types/financial';
 
 const requestPayoutSchema = z.object({
   amount: z.number().min(10, 'Minimum payout amount is $10'),

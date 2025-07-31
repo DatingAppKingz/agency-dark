@@ -31,9 +31,8 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValue
   const { error } = useToast();
   const [message, setMessage] = useState(value || '');
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [, setIsUploading] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {

@@ -63,18 +63,6 @@ interface TaxDocument {
   deadline?: string;
 }
 
-interface TaxSummary {
-  total_income: number;
-  total_expenses: number;
-  taxable_income: number;
-  estimated_tax: number;
-  quarterly_payments: {
-    q1: number;
-    q2: number;
-    q3: number;
-    q4: number;
-  };
-}
 
 export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
   const { error, success } = useToast();
@@ -120,7 +108,7 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
       ];
     } });
 
-  const { data: taxSummary, isPending: isSummaryPending } = useQuery({
+  const { data: taxSummary } = useQuery({
     queryKey: ['tax-summary', selectedYear, modelId, agencyId],
     queryFn: async () => {
       // Mock data
@@ -190,7 +178,7 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
     }
   };
 
-  const handleDownloadDocument = async (event: TaxDocument) => {
+  const handleDownloadDocument = async (_document: TaxDocument) => {
     try {
       // TODO: Implement download
       success('Document downloaded successfully');

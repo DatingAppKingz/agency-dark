@@ -62,7 +62,7 @@ const ChatPage = () => {
     setFilters,
     getUnreadCount } = useChatStore();
 
-  const [setIsLoadingConversations] = useState(true);
+  const [, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -119,42 +119,43 @@ const ChatPage = () => {
     loadMessages();
 
     // Join conversation room
-    socket.emit('join_conversation', { conversation_id: activeConversationId });
+    socket.joinConversation(activeConversationId);
 
     return () => {
       // Leave conversation room
-      socket.emit('leave_conversation', { conversation_id: activeConversationId });
+      socket.leaveConversation(activeConversationId);
     };
   }, [activeConversationId]);
 
   // Socket event handlers
   useEffect(() => {
-    socket.on('new_message', (event: Message) => {
-      addMessage(event);
+    // Store callback functions so we can properly remove them later
+    const handleNewMessage = (message: Message) => {
+      addMessage(message);
 
       // Update conversation's last message
-      const conversation = getConversation(event.conversation_id);
+      const conversation = getConversation(message.conversation_id);
       if (conversation) {
         updateConversation({
           ...conversation,
-          last_message: event.content,
-          updated_at: event.created_at,
+          last_message: message.content,
+          updated_at: message.created_at,
           unread_count:
-            event.conversation_id === activeConversationId
+            message.conversation_id === activeConversationId
               ? 0
               : conversation.unread_count + 1 });
       }
 
       // Send push notification if is from another user and tab is not active
       if (
-        event.sender_id !== user?.id &&
-        event.conversation_id !== activeConversationId &&
+        message.sender_id !== user?.id &&
+        message.conversation_id !== activeConversationId &&
         permission === 'granted' &&
         isSubscribed &&
         document.hidden
       ) {
         const notificationTitle = conversation?.fan.name || 'New Message';
-        const notificationBody = event.content.substring(0, 100);
+        const notificationBody = message.content.substring(0, 100);
         
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           navigator.serviceWorker.ready.then((registration) => {
@@ -162,59 +163,68 @@ const ChatPage = () => {
               body: notificationBody,
               icon: '/icon-192x192.png',
               badge: '/icon-72x72.png',
-              tag: `message-${event.id}`,
+              tag: `message-${message.id}`,
               data: {
-                url: `/chat?conversation=${event.conversation_id}`,
-                conversationId: event.conversation_id } });
+                url: `/chat?conversation=${message.conversation_id}`,
+                conversationId: message.conversation_id } });
           });
         }
       }
-    });
+    };
 
-    socket.on('message_updated', (event: Message) => {
-      updateMessage(event);
-    });
+    const handleMessageUpdated = (message: Message) => {
+      updateMessage(message);
+    };
 
-    socket.on('message_deleted', ({ conversation_id, message_id }: any) => {
+    const handleMessageDeleted = ({ conversation_id, message_id }: { conversation_id: string; message_id: string }) => {
       const { deleteMessage } = useChatStore.getState();
       deleteMessage(conversation_id, message_id);
-    });
+    };
 
-    socket.on('typing_status', setTypingStatus);
-
-    socket.on('user_online', ({ user_id }: any) => {
+    const handleUserOnline = ({ user_id }: { user_id: string }) => {
       setUserOnline(user_id, true);
-    });
+    };
 
-    socket.on('user_offline', ({ user_id }: any) => {
+    const handleUserOffline = ({ user_id }: { user_id: string }) => {
       setUserOnline(user_id, false);
-    });
+    };
 
-    socket.on('message_delivered', ({ message_id, delivered_at }: any) => {
+    const handleMessageDelivered = ({ message_id, delivered_at }: { message_id: string; delivered_at: string }) => {
       const message = messages.find((m) => m.id === message_id);
       if (message) {
         updateMessage({ ...message, delivered_at });
       }
-    });
+    };
 
-    socket.on('message_read', ({ message_id, read_at }: any) => {
+    const handleMessageRead = ({ message_id, read_at }: { message_id: string; read_at: string }) => {
       const message = messages.find((m) => m.id === message_id);
       if (message) {
         updateMessage({ ...message, read_at });
       }
-    });
+    };
+
+    // Subscribe to events
+    socket.on('message:new', handleNewMessage);
+    socket.on('message:updated', handleMessageUpdated);
+    socket.on('message:deleted', handleMessageDeleted);
+    socket.on('typing:status', setTypingStatus);
+    socket.on('user:online', handleUserOnline);
+    socket.on('user:offline', handleUserOffline);
+    socket.on('message_delivered', handleMessageDelivered);
+    socket.on('message_read', handleMessageRead);
 
     return () => {
-      socket.off('new_message');
-      socket.off('message_updated');
-      socket.off('message_deleted');
-      socket.off('typing_status');
-      socket.off('user_online');
-      socket.off('user_offline');
-      socket.off('message_delivered');
-      socket.off('message_read');
+      // Unsubscribe from events
+      socket.off('message:new', handleNewMessage);
+      socket.off('message:updated', handleMessageUpdated);
+      socket.off('message:deleted', handleMessageDeleted);
+      socket.off('typing:status', setTypingStatus);
+      socket.off('user:online', handleUserOnline);
+      socket.off('user:offline', handleUserOffline);
+      socket.off('message_delivered', handleMessageDelivered);
+      socket.off('message_read', handleMessageRead);
     };
-  }, [messages]);
+  }, [messages, activeConversationId, user, permission, isSubscribed, addMessage, updateMessage, getConversation, updateConversation, setTypingStatus, setUserOnline]);
 
   const handleConversationSelect = (conversation: Conversation) => {
     setActiveConversation(conversation.id);
@@ -231,7 +241,7 @@ const ChatPage = () => {
         content,
         attachments: attachments ? await uploadAttachments(attachments) : undefined };
 
-      const response = await chatApi.sendMessage(newMessage);
+      await chatApi.sendMessage(newMessage);
       
       // Message will be added via socket event
       success('Message sent');
@@ -261,7 +271,7 @@ const ChatPage = () => {
         attachments,
         message_type: 'voice' };
 
-      const response = await chatApi.sendMessage(newMessage);
+      await chatApi.sendMessage(newMessage);
       
       // Message will be added via socket event
       success('Voice sent');
@@ -275,12 +285,10 @@ const ChatPage = () => {
   const handleTyping = (isTyping: boolean) => {
     if (!activeConversationId) return;
 
-    socket.emit('typing', {
-      conversation_id: activeConversationId,
-      is_typing: isTyping });
+    socket.emitTyping(activeConversationId, isTyping);
   };
 
-  const uploadAttachments = async (event: File[]) => {
+  const uploadAttachments = async (_files: File[]) => {
     // TODO: Implement file upload
     // This would upload to your storage service and return attachment metadata
     return [];
