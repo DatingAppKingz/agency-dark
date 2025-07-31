@@ -1,6 +1,6 @@
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { SocketManager } from '../../__mocks__/services';
-import { createMockUser, createMockChat } from '@/test-utils/test-utils';
+import { createMockUser } from '@/test-utils/test-utils';
 
 // Mock socket.io-client
 jest.mock('socket.io-client');
@@ -8,7 +8,7 @@ jest.mock('socket.io-client');
 describe('Socket.IO Integration Tests', () => {
   let mockSocket: any;
   let socketManager: SocketManager;
-  const mockUser = createMockUser();
+  // const mockUser = createMockUser(); // Would be used for user-specific socket events
 
   beforeEach(() => {
     // Create mock socket instance

@@ -90,7 +90,7 @@ describe('Multi-Tenant Isolation', () => {
       render(<ChatPage />);
 
       // Try to access conversation from another agency
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // Would be used for interaction testing
       
       // This should be prevented by the UI, but testing API protection
       await waitFor(() => {
@@ -114,7 +114,7 @@ describe('Multi-Tenant Isolation', () => {
 
       server.use(
         rest.get('*/financial/summary', (req, res, ctx) => {
-          const authHeader = req.headers.get('Authorization');
+          // const authHeader = req.headers.get('Authorization'); // Would validate auth token
           
           // Return only agency-specific financial data
           return res(
@@ -145,7 +145,7 @@ describe('Multi-Tenant Isolation', () => {
   describe('Cross-Tenant Security', () => {
     it('should prevent model reassignment to different agency', async () => {
       const agencyId = 'agency123';
-      const otherAgencyId = 'agency456';
+      // const otherAgencyId = 'agency456'; // Would be used to test cross-agency access prevention
       
       jest.mock('@/store/authStore', () => ({
         useAuthStore: () => ({

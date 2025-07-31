@@ -295,7 +295,7 @@ describe('Authentication Flow Tests', () => {
       );
 
       // Make an API call that triggers token refresh
-      const response = await fetch('/api/users/me', {
+      await fetch('/api/users/me', {
         headers: {
           'Authorization': 'Bearer expired-token',
         },

@@ -1,6 +1,5 @@
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import axios from 'axios';
 import { apiClient, authService, userService, modelService } from '../../__mocks__/services';
 import { createMockUser, createMockModel, mockApiResponses } from '@/test-utils/test-utils';
 
