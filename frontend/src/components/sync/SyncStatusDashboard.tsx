@@ -298,7 +298,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
                   onChange={(e) => setSelectedModel(e.target.value)}
                   label="Select Model"
                 >
-                  {models?.map((model) => (
+                  {models?.map((model: any) => (
                     <MenuItem key={model.id} value={model.id}>
                       {model.stage_name || model.username}
                     </MenuItem>
@@ -534,15 +534,6 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
         </DialogActions>
       </Dialog>
 
-      <style jsx>{`
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .rotating {
-          animation: rotate 2s linear infinite;
-        }
-      `}</style>
     </Box>
   );
 };

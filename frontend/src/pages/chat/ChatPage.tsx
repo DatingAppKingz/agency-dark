@@ -138,7 +138,7 @@ const ChatPage = () => {
       if (conversation) {
         updateConversation({
           ...conversation,
-          last_message: message.content,
+          last_message: message,
           updated_at: message.created_at,
           unread_count:
             message.conversation_id === activeConversationId
@@ -210,8 +210,8 @@ const ChatPage = () => {
     socket.on('typing:status', setTypingStatus);
     socket.on('user:online', handleUserOnline);
     socket.on('user:offline', handleUserOffline);
-    socket.on('message_delivered', handleMessageDelivered);
-    socket.on('message_read', handleMessageRead);
+    socket.on('message:delivered', handleMessageDelivered);
+    socket.on('message:read', handleMessageRead);
 
     return () => {
       // Unsubscribe from events
@@ -221,8 +221,8 @@ const ChatPage = () => {
       socket.off('typing:status', setTypingStatus);
       socket.off('user:online', handleUserOnline);
       socket.off('user:offline', handleUserOffline);
-      socket.off('message_delivered', handleMessageDelivered);
-      socket.off('message_read', handleMessageRead);
+      socket.off('message:delivered', handleMessageDelivered);
+      socket.off('message:read', handleMessageRead);
     };
   }, [messages, activeConversationId, user, permission, isSubscribed, addMessage, updateMessage, getConversation, updateConversation, setTypingStatus, setUserOnline]);
 
@@ -425,7 +425,7 @@ const ChatPage = () => {
                 <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
                   <MessageThread
                     messages={messages}
-                    conversationId={activeConversationId}
+                    conversationId={activeConversationId || ''}
                     isPending={isLoadingMessages}
                   />
                 </Box>
@@ -515,7 +515,7 @@ const ChatPage = () => {
       <ExportConversation
         open={exportOpen}
         onClose={() => setExportOpen(false)}
-        conversation={activeConversation}
+        conversation={activeConversation || null}
       />
     </Box>
   );

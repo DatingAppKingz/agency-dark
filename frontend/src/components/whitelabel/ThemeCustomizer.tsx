@@ -10,21 +10,20 @@ import {
   FormControlLabel,
   Slider,
   IconButton,
-  Chip } from '@mui/material';
+  Chip,
+  InputAdornment } from '@mui/material';
 import {
   Brightness4,
   Brightness7,
   RestartAlt,
   ContentCopy } from '@mui/icons-material';
 import { HexColorPicker } from 'react-colorful';
-import { useTheme } from '@mui/material/styles';
 
 interface ThemeCustomizerProps {
   onChange: () => void;
 }
 
 export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
-  const theme = useTheme();
   const [darkMode, setDarkMode] = useState(false);
   const [colors, setColors] = useState({
     primary: '#1976d2',
@@ -208,7 +207,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
             <Box sx={{ px: 2 }}>
               <Slider
                 value={borderRadius}
-                onChange={ (value) => {
+                onChange={ (_, value) => {
                   setBorderRadius(value as number);
                   onChange();
                  }}
@@ -243,7 +242,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
             <Box sx={{ px: 2 }}>
               <Slider
                 value={elevation}
-                onChange={ (value) => {
+                onChange={ (_, value) => {
                   setElevation(value as number);
                   onChange();
                  }}

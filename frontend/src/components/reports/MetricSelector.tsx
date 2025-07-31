@@ -52,7 +52,7 @@ const MetricSelector: React.FC<MetricSelectorProps> = ({
   onChange }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingMetric, setEditingMetric] = useState<ReportMetric | null>(null);
-  const [customMetricDialog, setCustomMetricDialog] = useState(false);
+  const [, setCustomMetricDialog] = useState(false);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {

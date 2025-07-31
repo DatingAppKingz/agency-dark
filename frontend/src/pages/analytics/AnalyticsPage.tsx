@@ -52,7 +52,7 @@ const AnalyticsPage = () => {
   const [comparisonMode, setComparisonMode] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
   };
 

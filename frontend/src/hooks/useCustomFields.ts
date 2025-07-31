@@ -33,7 +33,7 @@ const customFieldsApi = {
     localStorage.setItem(`${STORAGE_KEY}_${config.agencyId}`, JSON.stringify(config));
   },
   
-  getValues: async (entityId: string, entityType: EntityType): Promise<CustomFieldValue[]> => {
+  getValues: async (entityId: string, _entityType: EntityType): Promise<CustomFieldValue[]> => {
     const stored = localStorage.getItem(`${STORAGE_KEY}_values_${entityId}`);
     if (stored) {
       return JSON.parse(stored);

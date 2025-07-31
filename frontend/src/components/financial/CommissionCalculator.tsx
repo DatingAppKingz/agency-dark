@@ -48,9 +48,9 @@ export const CommissionCalculator = ({ modelId, agencyId }: CommissionCalculator
     const numAmount = parseFloat(amount);
     if (!isNaN(numAmount) && numAmount > 0) {
       calculateMutation.mutate({
-        amount: numAmount,
+        gross_amount: numAmount,
         model_id: modelId || '',
-        agency_id: agencyId || '' });
+        calculation_date: new Date().toISOString() });
     }
   };
 

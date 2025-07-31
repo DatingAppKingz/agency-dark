@@ -280,9 +280,14 @@ const ApiKeyManager: React.FC<ApiKeyManagerProps> = ({ provider }) => {
             <DataGrid
               rows={data?.keys || []}
               columns={columns}
-              pageSize={10}
-              rowsPerPageOptions={[10, 25, 50]}
-              disableSelectionOnClick
+              pageSizeOptions={[10, 25, 50]}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 10,
+                  },
+                },
+              }}
               density="comfortable"
             />
           </Box>

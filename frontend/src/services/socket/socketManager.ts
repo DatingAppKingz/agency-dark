@@ -22,6 +22,10 @@ export interface SocketEvents {
   'notification': (notification: any) => void;
   'user:online': (userId: string) => void;
   'user:offline': (userId: string) => void;
+  
+  // Message status events
+  'message:delivered': (data: { message_id: string; delivered_at: string }) => void;
+  'message:read': (data: { message_id: string; read_at: string }) => void;
 }
 
 class SocketManager {
@@ -156,6 +160,14 @@ class SocketManager {
 
     this.chatSocket.on('fan:released', (data) => {
       this.emit('fan:released', data);
+    });
+
+    this.chatSocket.on('message:delivered', (data) => {
+      this.emit('message:delivered', data);
+    });
+
+    this.chatSocket.on('message:read', (data) => {
+      this.emit('message:read', data);
     });
   }
 

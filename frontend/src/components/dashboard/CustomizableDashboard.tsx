@@ -65,7 +65,7 @@ export const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
     addWidget } = useDashboardCustomization();
 
   const [settingsAnchor, setSettingsAnchor] = useState<null | HTMLElement>(null);
-  const [selectedWidget, setSelectedWidget] = useState<WidgetConfig | null>(null);
+  const [, setSelectedWidget] = useState<WidgetConfig | null>(null);
   const [addWidgetDialog, setAddWidgetDialog] = useState(false);
   const [newWidgetType, setNewWidgetType] = useState<WidgetType>('stats-card');
   const [newWidgetTitle, setNewWidgetTitle] = useState('');

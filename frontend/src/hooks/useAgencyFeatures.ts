@@ -21,6 +21,7 @@ const agencyFeaturesApi = {
     
     // Default config
     return {
+      agencyId: agencyId,
       features: FEATURE_CATALOG.map(f => ({ ...f, enabled: false })),
       customModules: [],
       integrations: [],
@@ -38,7 +39,7 @@ const agencyFeaturesApi = {
     localStorage.setItem(`${STORAGE_KEY}_${config.agencyId}`, JSON.stringify(config));
   },
   
-  getUsage: async (agencyId: string, featureId: string): Promise<FeatureUsage[]> => {
+  getUsage: async (_agencyId: string, _featureId: string): Promise<FeatureUsage[]> => {
     // Mock usage data
     return [];
   } };
@@ -52,11 +53,11 @@ export const useAgencyFeatures = () => {
   // Load configuration
   useEffect(() => {
     const loadConfig = async () => {
-      if (!user?.agencyId) return;
+      if (!user?.agency_id) return;
       
       setIsLoading(true);
       try {
-        const featureConfig = await agencyFeaturesApi.getConfig(user.agencyId);
+        const featureConfig = await agencyFeaturesApi.getConfig(user.agency_id);
         setConfig(featureConfig);
       } catch (error) {
         console.error('Error loading agency features:', error);
@@ -66,7 +67,7 @@ export const useAgencyFeatures = () => {
     };
     
     loadConfig();
-  }, [user?.agencyId]);
+  }, [user?.agency_id]);
 
   // Save configuration
   const saveConfig = useCallback(async (newConfig: AgencyFeatureConfig) => {
