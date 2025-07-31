@@ -1,4 +1,5 @@
 // Cache utilities for API responses and assets
+import { logger } from './logger';
 
 interface CacheItem<T> {
   data: T;
@@ -109,7 +110,7 @@ class CacheManager {
     try {
       this.localStorage.setItem(`cache_${key}`, JSON.stringify(item));
     } catch (e) {
-      console.warn('Failed to save to localStorage:', e);
+      logger.warn('Failed to save to localStorage:', e);
     }
   }
 
@@ -132,7 +133,7 @@ class CacheManager {
       this.cache.set(key, item);
       return item.data;
     } catch (e) {
-      console.warn('Failed to load from localStorage:', e);
+      logger.warn('Failed to load from localStorage:', e);
       return null;
     }
   }
@@ -143,7 +144,7 @@ class CacheManager {
     try {
       this.localStorage.removeItem(`cache_${key}`);
     } catch (e) {
-      console.warn('Failed to delete from localStorage:', e);
+      logger.warn('Failed to delete from localStorage:', e);
     }
   }
 
@@ -159,7 +160,7 @@ class CacheManager {
         }
       });
     } catch (e) {
-      console.warn('Failed to clear localStorage:', e);
+      logger.warn('Failed to clear localStorage:', e);
     }
   }
 
@@ -185,7 +186,7 @@ class CacheManager {
         }
       });
     } catch (e) {
-      console.warn('Failed to load cache from localStorage:', e);
+      logger.warn('Failed to load cache from localStorage:', e);
     }
   }
 }
@@ -271,9 +272,9 @@ export function useCachedData<T>(
 export const setupServiceWorkerCache = () => {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').then(registration => {
-      console.log('Service Worker registered:', registration);
+      logger.info('Service Worker registered:', registration);
     }).catch(error => {
-      console.log('Service Worker registration failed:', error);
+      logger.error('Service Worker registration failed:', error);
     });
   }
 };

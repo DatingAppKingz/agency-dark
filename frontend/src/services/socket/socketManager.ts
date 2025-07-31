@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import { authService } from '@/services/auth/authService';
 import { Message, TypingStatus, Conversation } from '@/types/chat';
+import { logger } from '@/utils/logger';
 
 export interface SocketEvents {
   // Connection events
@@ -38,7 +39,7 @@ class SocketManager {
   connect(): void {
     const token = authService.getAccessToken();
     if (!token) {
-      console.error('No auth token available for socket connection');
+      logger.error('No auth token available for socket connection');
       return;
     }
 
@@ -100,22 +101,22 @@ class SocketManager {
     if (!this.mainSocket) return;
 
     this.mainSocket.on('connect', () => {
-      console.log('Main socket connected');
+      logger.info('Main socket connected');
       this.emit('connect');
     });
 
     this.mainSocket.on('disconnect', (reason) => {
-      console.log('Main socket disconnected:', reason);
+      logger.info('Main socket disconnected:', reason);
       this.emit('disconnect', reason);
     });
 
     this.mainSocket.on('connected', (data) => {
-      console.log('Socket authenticated:', data);
+      logger.info('Socket authenticated:', data);
       this.emit('connected', data);
     });
 
     this.mainSocket.on('error', (error) => {
-      console.error('Socket error:', error);
+      logger.error('Socket error:', error);
       this.emit('error', error);
     });
 
@@ -193,7 +194,7 @@ class SocketManager {
     // Dashboard real-time updates
     this.dashboardSocket.on('stats:update', (stats) => {
       // Handle dashboard stats updates
-      console.log('Dashboard stats updated:', stats);
+      logger.info('Dashboard stats updated:', stats);
     });
   }
 

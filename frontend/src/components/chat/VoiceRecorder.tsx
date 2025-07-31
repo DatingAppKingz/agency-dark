@@ -13,6 +13,7 @@ import {
   Delete,
   PlayArrow,
   Pause } from '@mui/icons-material';
+import { logger } from '@/utils/logger';
 
 
 interface VoiceRecorderProps {
@@ -85,7 +86,7 @@ export const VoiceRecorder = ({ onSendAudio, disabled }: VoiceRecorderProps) => 
         setRecordingTime(prev => prev + 1);
       }, 1000);
     } catch (error) {
-      console.error('Error starting recording:', error);
+      logger.error('Error starting recording:', error);
       // Handle permission denied or other errors
     }
   };

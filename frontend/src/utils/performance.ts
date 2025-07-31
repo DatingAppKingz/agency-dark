@@ -113,7 +113,7 @@ class PerformanceMonitor {
     logger.info('LCP:', this.metrics.LCP ? `${this.metrics.LCP}ms` : 'Not measured');
     logger.info('FID:', this.metrics.FID ? `${this.metrics.FID}ms` : 'Not measured');
     logger.info('CLS:', this.metrics.CLS || 'Not measured');
-    console.log('TTFB:', this.metrics.TTFB ? `${this.metrics.TTFB}ms` : 'Not measured');
+    logger.info('TTFB:', this.metrics.TTFB ? `${this.metrics.TTFB}ms` : 'Not measured');
     logger.groupEnd();
   }
 }
@@ -157,7 +157,7 @@ export const measureComponentPerformance = (componentName: string) => {
       const duration = measures[measures.length - 1]?.duration;
       
       if (duration > 16) { // Longer than one frame (60fps)
-        console.warn(`${componentName} render took ${duration.toFixed(2)}ms`);
+        logger.warn(`${componentName} render took ${duration.toFixed(2)}ms`);
       }
       
       // Clean up

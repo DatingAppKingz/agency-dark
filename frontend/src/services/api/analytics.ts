@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { logger } from '@/utils/logger';
 
 export interface DashboardStats {
   total_users: number;
@@ -136,13 +137,13 @@ export const analyticsService = {
 
   // Legacy methods - map to new endpoints
   async getDashboardStats(): Promise<DashboardStats> {
-    console.log('📊 Fetching dashboard stats...');
+    logger.info('📊 Fetching dashboard stats...');
     try {
       const { data } = await apiClient.get('/analytics/agency/dashboard-stats');
-      console.log('✅ Dashboard stats received:', data);
+      logger.info('✅ Dashboard stats received:', data);
       return data;
     } catch (error) {
-      console.error('❌ Failed to fetch dashboard stats:', error);
+      logger.error('❌ Failed to fetch dashboard stats:', error);
       // Return default values on error
       return {
         total_users: 0,
@@ -157,20 +158,20 @@ export const analyticsService = {
   },
 
   async getAgencyStats(): Promise<AgencyStats[]> {
-    console.warn('Agency stats not directly available in analytics API');
+    logger.warn('Agency stats not directly available in analytics API');
     return [];
   },
 
   async getModelPerformance(period: 'day' | 'week' | 'month' = 'month'): Promise<ModelPerformance[]> {
-    console.log('📊 Fetching model performance...');
+    logger.info('📊 Fetching model performance...');
     try {
       const { data } = await apiClient.get('/analytics/agency/model-performance', {
         params: { period }
       });
-      console.log('✅ Model performance received:', data);
+      logger.info('✅ Model performance received:', data);
       return data;
     } catch (error) {
-      console.error('❌ Failed to fetch model performance:', error);
+      logger.error('❌ Failed to fetch model performance:', error);
       return [];
     }
   },
@@ -198,7 +199,7 @@ export const analyticsService = {
         ]
       };
     } catch (error) {
-      console.error('Failed to fetch revenue chart:', error);
+      logger.error('Failed to fetch revenue chart:', error);
       return {
         labels: [],
         datasets: []
@@ -207,6 +208,6 @@ export const analyticsService = {
   },
 
   async getMessageChart(_period: 'day' | 'week' | 'month' = 'month') {
-    console.warn('Message chart not directly available in analytics API');
+    logger.warn('Message chart not directly available in analytics API');
     return { labels: [], datasets: [] };
   } };

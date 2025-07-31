@@ -1,4 +1,5 @@
 import apiClient from './api/client';
+import { logger } from '@/utils/logger';
 
 const PUBLIC_VAPID_KEY = import.meta.env.VITE_PUBLIC_VAPID_KEY || '';
 
@@ -16,28 +17,28 @@ class PushNotificationService {
 
   async init() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.log('Push notifications not supported');
+      logger.info('Push notifications not supported');
       return false;
     }
 
     try {
       // Register service worker
       this.registration = await navigator.serviceWorker.register('/service-worker.js');
-      console.log('Service Worker registered');
+      logger.info('Service Worker registered');
 
       // Check if already subscribed
       this.subscription = await this.registration.pushManager.getSubscription();
       
       return true;
     } catch (error) {
-      console.error('Failed to initialize push notifications:', error);
+      logger.error('Failed to initialize push notifications:', error);
       return false;
     }
   }
 
   async requestPermission(): Promise<NotificationPermission> {
     if (!('Notification' in window)) {
-      console.log('Notifications not supported');
+      logger.info('Notifications not supported');
       return 'denied';
     }
 
@@ -61,7 +62,7 @@ class PushNotificationService {
 
   async subscribe() {
     if (!this.registration || !PUBLIC_VAPID_KEY) {
-      console.error('Service worker not registered or VAPID key missing');
+      logger.error('Service worker not registered or VAPID key missing');
       return false;
     }
 
@@ -77,7 +78,7 @@ class PushNotificationService {
       
       return true;
     } catch (error) {
-      console.error('Failed to subscribe to push notifications:', error);
+      logger.error('Failed to subscribe to push notifications:', error);
       return false;
     }
   }
@@ -94,7 +95,7 @@ class PushNotificationService {
       
       return true;
     } catch (error) {
-      console.error('Failed to unsubscribe from push notifications:', error);
+      logger.error('Failed to unsubscribe from push notifications:', error);
       return false;
     }
   }
@@ -111,7 +112,7 @@ class PushNotificationService {
     try {
       await apiClient.post('/users/push-subscription', subscriptionData);
     } catch (error) {
-      console.error('Failed to send subscription to server:', error);
+      logger.error('Failed to send subscription to server:', error);
       throw error;
     }
   }
@@ -120,7 +121,7 @@ class PushNotificationService {
     try {
       await apiClient.delete('/users/push-subscription');
     } catch (error) {
-      console.error('Failed to remove subscription from server:', error);
+      logger.error('Failed to remove subscription from server:', error);
       throw error;
     }
   }
@@ -139,7 +140,7 @@ class PushNotificationService {
   // Test notification
   async sendTestNotification() {
     if (!this.registration || this.getPermissionStatus() !== 'granted') {
-      console.error('Cannot send test notification');
+      logger.error('Cannot send test notification');
       return;
     }
 

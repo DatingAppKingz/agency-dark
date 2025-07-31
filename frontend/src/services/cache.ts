@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 interface CacheItem<T> {
   data: T;
   timestamp: number;
@@ -40,7 +42,7 @@ class CacheService {
           try {
             localStorage.setItem(key, JSON.stringify(cacheItem));
           } catch (e) {
-            console.error('Failed to save to localStorage:', e);
+            logger.error('Failed to save to localStorage:', e);
             // Fallback to memory
             this.memoryCache.set(key, cacheItem);
           }
@@ -51,7 +53,7 @@ class CacheService {
           try {
             sessionStorage.setItem(key, JSON.stringify(cacheItem));
           } catch (e) {
-            console.error('Failed to save to sessionStorage:', e);
+            logger.error('Failed to save to sessionStorage:', e);
             // Fallback to memory
             this.memoryCache.set(key, cacheItem);
           }
@@ -74,7 +76,7 @@ class CacheService {
             try {
               cacheItem = JSON.parse(item);
             } catch (e) {
-              console.error('Failed to parse localStorage item:', e);
+              logger.error('Failed to parse localStorage item:', e);
               localStorage.removeItem(key);
             }
           }
@@ -87,7 +89,7 @@ class CacheService {
             try {
               cacheItem = JSON.parse(item);
             } catch (e) {
-              console.error('Failed to parse sessionStorage item:', e);
+              logger.error('Failed to parse sessionStorage item:', e);
               sessionStorage.removeItem(key);
             }
           }

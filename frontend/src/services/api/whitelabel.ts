@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { logger } from '@/utils/logger';
 
 export interface ThemeSettings {
   primary_color: string;
@@ -136,7 +137,7 @@ export const whitelabelApi = {
 
   // Domain Settings (placeholder - not in backend yet)
   async getDomainSettings(_agencyId: string): Promise<DomainSettings> {
-    console.warn('Domain settings not implemented in backend');
+    logger.warn('Domain settings not implemented in backend');
     return {
       subdomain: 'agency',
       ssl_enabled: true,
@@ -144,11 +145,11 @@ export const whitelabelApi = {
   },
 
   async updateDomainSettings(_agencyId: string, settings: Partial<DomainSettings>): Promise<DomainSettings> {
-    console.warn('Domain settings update not implemented in backend');
+    logger.warn('Domain settings update not implemented in backend');
     return { ...settings } as DomainSettings;
   },
 
   async verifyDomain(_agencyId: string, _domain: string): Promise<{ verified: boolean; dns_records: Array<{ type: string; name: string; value: string }> }> {
-    console.warn('Domain verification not implemented in backend');
+    logger.warn('Domain verification not implemented in backend');
     return { verified: false, dns_records: [] };
   } };

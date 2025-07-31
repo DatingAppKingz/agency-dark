@@ -7,6 +7,7 @@ import {
   EntityType,
   CustomFieldSection,
   FieldValue } from '@/types/customFields';
+import { logger } from '@/utils/logger';
 
 const STORAGE_KEY = 'custom_fields';
 
@@ -74,7 +75,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
           setValues(valueMap);
         }
       } catch (error) {
-        console.error('Error loading custom fields:', error);
+        logger.error('Error loading custom fields:', error);
       } finally {
         setIsLoading(false);
       }
@@ -237,7 +238,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
       
       await customFieldsApi.saveValues(entityId, fieldValues);
     } catch (error) {
-      console.error('Error saving custom field values:', error);
+      logger.error('Error saving custom field values:', error);
       throw error;
     } finally {
       setIsSaving(false);

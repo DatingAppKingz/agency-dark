@@ -32,6 +32,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useQuery } from '@tanstack/react-query';
 import { financialApi } from '@/services/api/financial';
 import { InvoiceGenerator } from './InvoiceGenerator';
+import { logger } from '@/utils/logger';
 import type { Transaction } from '@/types/financial';
 
 interface TransactionHistoryProps {
@@ -146,7 +147,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Export failed:', error);
+      logger.error('Export failed:', error);
     }
     setMenuAnchor(null);
   };
@@ -342,7 +343,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
         onClose={() => setInvoiceOpen(false)}
         onSave={async (invoice) => {
           // TODO: Implement invoice save
-          console.log('Saving invoice:', invoice);
+          logger.info('Saving invoice:', invoice);
         }}
       />
     </Box>

@@ -1,4 +1,5 @@
 // Browser compatibility checks and polyfills
+import { logger } from './logger';
 
 export const browserCompat = {
   // Check if browser supports required features
@@ -116,12 +117,12 @@ export const browserCompat = {
   applyPolyfills(): void {
     // ResizeObserver polyfill
     if (!window.ResizeObserver) {
-      console.warn('ResizeObserver not supported, functionality may be limited');
+      logger.warn('ResizeObserver not supported, functionality may be limited');
     }
     
     // IntersectionObserver polyfill
     if (!window.IntersectionObserver) {
-      console.warn('IntersectionObserver not supported, lazy loading disabled');
+      logger.warn('IntersectionObserver not supported, lazy loading disabled');
     }
     
     // Smooth scroll polyfill

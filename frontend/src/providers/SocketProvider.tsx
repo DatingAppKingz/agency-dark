@@ -33,7 +33,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       });
 
       socketManager.on('error', (err) => {
-        console.error('Socket error:', err);
+        logger.error('Socket error:', err);
         error('Connection error. Please refresh the page.');
       });
 
