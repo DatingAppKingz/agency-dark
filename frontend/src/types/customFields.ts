@@ -16,6 +16,8 @@ export type FieldType =
   | 'color'
   | 'rating';
 
+export type FieldValue = string | number | boolean | Date | string[] | File | null;
+
 export interface FieldValidation {
   required?: boolean;
   min?: number;
@@ -24,7 +26,7 @@ export interface FieldValidation {
   maxLength?: number;
   pattern?: string;
   patternMessage?: string;
-  customValidator?: (value: any) => string | null;
+  customValidator?: (value: FieldValue) => string | null;
 }
 
 export interface SelectOption {
@@ -42,7 +44,7 @@ export interface CustomField {
   type: FieldType;
   description?: string;
   placeholder?: string;
-  defaultValue?: any;
+  defaultValue?: FieldValue;
   options?: SelectOption[]; // For select/multiselect
   validation?: FieldValidation;
   required: boolean;
@@ -62,7 +64,7 @@ export interface CustomFieldValue {
   fieldId: string;
   entityId: string;
   entityType: EntityType;
-  value: any;
+  value: FieldValue;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -117,7 +117,7 @@ export const whitelabelApi = {
     return data;
   },
 
-  async updateModelBranding(modelId: string, branding: any) {
+  async updateModelBranding(modelId: string, branding: BrandingSettings) {
     const { data } = await apiClient.put(`/whitelabel/models/${modelId}/branding`, branding);
     return data;
   },
@@ -148,7 +148,7 @@ export const whitelabelApi = {
     return { ...settings } as DomainSettings;
   },
 
-  async verifyDomain(_agencyId: string, _domain: string): Promise<{ verified: boolean; dns_records: any[] }> {
+  async verifyDomain(_agencyId: string, _domain: string): Promise<{ verified: boolean; dns_records: Array<{ type: string; name: string; value: string }> }> {
     console.warn('Domain verification not implemented in backend');
     return { verified: false, dns_records: [] };
   } };

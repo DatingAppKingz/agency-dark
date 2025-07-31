@@ -30,7 +30,11 @@ export interface SyncResponse {
   status: SyncStatus;
   started_at: string;
   completed_at?: string;
-  platforms: Record<string, any>;
+  platforms: Record<string, {
+    status: string;
+    synced_items?: number;
+    errors?: string[];
+  }>;
   errors: Array<{
     platform: string;
     error: string;
@@ -40,7 +44,7 @@ export interface SyncResponse {
 export interface SyncStatusResponse {
   model_id: string;
   status: SyncStatus;
-  last_sync?: any;
+  last_sync?: SyncResponse;
   next_sync?: string;
   platforms: Record<string, {
     configured: boolean;

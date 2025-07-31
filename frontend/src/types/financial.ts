@@ -122,6 +122,14 @@ export interface InvoiceParty {
   tax_id?: string;
 }
 
+export interface FinancialReportData {
+  earnings?: Record<string, number>;
+  deductions?: Record<string, number>;
+  taxes?: Record<string, number>;
+  commissions?: Record<string, number>;
+  summary?: Record<string, string | number>;
+}
+
 export interface FinancialReport {
   id: string;
   type: 'earnings_statement' | 'tax_document' | 'commission_report';
@@ -129,7 +137,7 @@ export interface FinancialReport {
   period_end: string;
   generated_at: string;
   file_url?: string;
-  data: any;
+  data: FinancialReportData;
 }
 
 export interface FinancialSummary {

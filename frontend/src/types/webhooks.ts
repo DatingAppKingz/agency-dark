@@ -100,7 +100,7 @@ export interface WebhookDeadLetter {
   webhook_id: string;
   event_type: string;
   event_id: string;
-  payload: any;
+  payload: Record<string, unknown>;
   final_status_code?: number;
   total_attempts: number;
   first_attempt_at: string;
@@ -116,7 +116,7 @@ export interface WebhookPayload {
   event: WebhookEvent;
   event_id: string;
   timestamp: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface WebhookTestResult {
@@ -124,7 +124,7 @@ export interface WebhookTestResult {
   response_time_ms?: number;
   status_code?: number;
   message?: string;
-  response?: any;
+  response?: Record<string, unknown>;
   error?: string;
 }
 

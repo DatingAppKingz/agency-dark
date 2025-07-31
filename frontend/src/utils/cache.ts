@@ -195,10 +195,10 @@ export const cache = new CacheManager();
 
 // API Cache decorator
 export function cacheAPI(ttl: number = 300000) {
-  return function (_event: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       // Generate cache key from method name and arguments
       const cacheKey = `api_${propertyKey}_${JSON.stringify(args)}`;
       

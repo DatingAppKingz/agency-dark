@@ -201,9 +201,10 @@ export const queryClientConfig = {
       cacheTime: 10 * 60 * 1000, // 10 minutes
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
-      retry: (failureCount: number, error: any) => {
+      retry: (failureCount: number, error: unknown) => {
         // Don't retry on 4xx errors
-        if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError?.response?.status && axiosError.response.status >= 400 && axiosError.response.status < 500) {
           return false;
         }
         return failureCount < 3;

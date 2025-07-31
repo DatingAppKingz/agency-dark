@@ -82,7 +82,7 @@ export interface NewMessage {
   conversation_id: string;
   content: string;
   message_type?: 'text' | 'voice' | 'image' | 'video';
-  attachments?: any[];
+  attachments?: MessageAttachment[];
 }
 
 export interface ChatStats {

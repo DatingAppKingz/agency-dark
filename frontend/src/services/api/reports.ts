@@ -7,6 +7,8 @@ import {
   SaveReportTemplateRequest,
   GenerateReportRequest,
   ReportDataResponse,
+  DateRange,
+  ReportFilter,
 } from '@/types/reports';
 
 export const reportsService = {
@@ -52,8 +54,8 @@ export const reportsService = {
   },
 
   async getReportData(templateId: string, params?: {
-    dateRange?: any;
-    filters?: any[];
+    dateRange?: DateRange;
+    filters?: ReportFilter[];
   }): Promise<ReportDataResponse> {
     const response = await apiClient.get(`/api/v1/reports/templates/${templateId}/data`, { params });
     return response.data;

@@ -60,7 +60,7 @@ export interface ReportFilter {
   id: string;
   field: string;
   operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'between' | 'in';
-  value: any;
+  value: string | number | boolean | string[] | number[] | [string | number, string | number];
   label?: string;
 }
 
@@ -89,7 +89,7 @@ export interface ReportWidget {
   w: number;
   h: number;
   chartConfig: ChartConfig;
-  data?: any;
+  data?: Record<string, unknown>[];
   loading?: boolean;
   error?: string;
 }
@@ -196,7 +196,7 @@ export interface GenerateReportRequest {
 export interface ReportDataResponse {
   widgets: {
     widgetId: string;
-    data: any;
+    data: Record<string, unknown>[];
     metadata?: {
       totalRows: number;
       executionTime: number;

@@ -5,7 +5,8 @@ import {
   WebhookResponse,
   WebhookDelivery,
   WebhookTestResult,
-  PaginatedWebhookDeadLetters } from '@/types/webhooks';
+  PaginatedWebhookDeadLetters,
+  WebhookPayload } from '@/types/webhooks';
 
 export const webhookService = {
   // Webhook CRUD operations
@@ -39,7 +40,7 @@ export const webhookService = {
     return response.data;
   },
 
-  async sendTestWebhook(id: string, payload: any): Promise<WebhookTestResult> {
+  async sendTestWebhook(id: string, payload: WebhookPayload): Promise<WebhookTestResult> {
     const response = await apiClient.post(`/api/v1/webhooks/${id}/test`, payload);
     return response.data;
   },

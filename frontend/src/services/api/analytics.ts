@@ -122,7 +122,7 @@ export const analyticsService = {
   },
 
   // Get generic chart data
-  async getGenericChart(modelId: string, chartType: string, startDate: string, endDate: string, options?: any) {
+  async getGenericChart(modelId: string, chartType: string, startDate: string, endDate: string, options?: Record<string, unknown>) {
     const { data } = await apiClient.post('/analytics/charts/generic', {
       chart_type: chartType,
       period_start: startDate,
@@ -183,16 +183,16 @@ export const analyticsService = {
       
       // Transform data for chart format
       return {
-        labels: data.data.map((d: any) => d.date),
+        labels: data.data.map((d: { date: string }) => d.date),
         datasets: [
           {
             label: 'Total Revenue',
-            data: data.data.map((d: any) => d.revenue),
+            data: data.data.map((d: { revenue: number }) => d.revenue),
             borderColor: 'rgb(75, 192, 192)',
             backgroundColor: 'rgba(75, 192, 192, 0.1)' },
           {
             label: 'Tips',
-            data: data.data.map((d: any) => d.tips),
+            data: data.data.map((d: { tips: number }) => d.tips),
             borderColor: 'rgb(255, 99, 132)',
             backgroundColor: 'rgba(255, 99, 132, 0.1)' }
         ]

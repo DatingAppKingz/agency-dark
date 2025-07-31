@@ -128,8 +128,8 @@ export const browserCompat = {
     if (!('scrollBehavior' in document.documentElement.style)) {
       // Simple smooth scroll polyfill
       const originalScrollTo = window.scrollTo;
-      window.scrollTo = function(options: any) {
-        if (options && options.behavior === 'smooth') {
+      window.scrollTo = function(options: ScrollToOptions | number, y?: number) {
+        if (typeof options === 'object' && options.behavior === 'smooth') {
           const start = window.pageYOffset;
           const distance = (options.top || 0) - start;
           const duration = 500;
@@ -148,8 +148,10 @@ export const browserCompat = {
           };
           
           requestAnimationFrame(animation);
+        } else if (typeof options === 'number') {
+          originalScrollTo.call(window, options, y);
         } else {
-          originalScrollTo.apply(window, [x, y] as any);
+          originalScrollTo.call(window, options);
         }
       };
     }
