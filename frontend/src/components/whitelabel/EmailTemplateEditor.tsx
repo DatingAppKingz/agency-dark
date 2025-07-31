@@ -212,7 +212,7 @@ View Conversation: {{conversationUrl}}
 
   const currentTemplate = templates.find(t => t.id === selectedTemplate);
 
-  const handleTemplateChange = (field: keyof EmailTemplate, value: any) => {
+  const handleTemplateChange = (field: keyof EmailTemplate, value: string | string[]) => {
     setTemplates(prev => prev.map(t => 
       t.id === selectedTemplate ? { ...t, [field]: value } : t
     ));

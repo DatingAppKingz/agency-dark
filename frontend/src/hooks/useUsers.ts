@@ -3,6 +3,14 @@ import { userService, CreateUserData, UpdateUserData } from '@/services/api/user
 import { QueryParams } from '@/types/api';
 import { useToast } from '@/components/common/Toaster';
 
+type ApiError = {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+};
+
 export const useUsers = (params?: QueryParams) => {
   return useQuery({
     queryKey: ['users', params],
@@ -28,7 +36,7 @@ export const useCreateUser = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('User created successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to create user');
     },
   });
@@ -45,7 +53,7 @@ export const useUpdateUser = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('User updated successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to update user');
     },
   });
@@ -61,7 +69,7 @@ export const useDeleteUser = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('User deleted successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to delete user');
     },
   });
@@ -77,7 +85,7 @@ export const useDeleteUsers = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('Users deleted successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to delete users');
     },
   });
@@ -94,7 +102,7 @@ export const useToggleUserStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       success('User status updated');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to update user status');
     },
   });

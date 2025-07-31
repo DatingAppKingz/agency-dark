@@ -47,7 +47,7 @@ export const useTranslations = () => {
   }, [i18n.language]);
 
   // Get plural form
-  const pluralize = useCallback((count: number, key: string, options?: any) => {
+  const pluralize = useCallback((count: number, key: string, options?: Record<string, unknown>) => {
     return t(key, { count, ...options });
   }, [t]);
 

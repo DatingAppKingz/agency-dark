@@ -5,7 +5,8 @@ import {
   CustomFieldValue,
   CustomFieldConfig,
   EntityType,
-  CustomFieldSection } from '@/types/customFields';
+  CustomFieldSection,
+  FieldValue } from '@/types/customFields';
 
 const STORAGE_KEY = 'custom_fields';
 
@@ -48,7 +49,7 @@ const customFieldsApi = {
 export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
   const { user } = useAuthStore();
   const [config, setConfig] = useState<CustomFieldConfig | null>(null);
-  const [values, setValues] = useState<Record<string, any>>({});
+  const [values, setValues] = useState<Record<string, FieldValue>>({});
   const [isPending, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -69,7 +70,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
           const valueMap = fieldValues.reduce((acc, fv) => {
             acc[fv.fieldId] = fv.value;
             return acc;
-          }, {} as Record<string, any>);
+          }, {} as Record<string, FieldValue>);
           setValues(valueMap);
         }
       } catch (error) {
@@ -215,7 +216,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
   }, [config]);
 
   // Update field value
-  const updateValue = useCallback((fieldId: string, value: any) => {
+  const updateValue = useCallback((fieldId: string, value: FieldValue) => {
     setValues(prev => ({ ...prev, [fieldId]: value }));
   }, []);
 
@@ -244,7 +245,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
   }, [entityId, values]);
 
   // Validate field value
-  const validateField = useCallback((field: CustomField, value: any): string | null => {
+  const validateField = useCallback((field: CustomField, value: FieldValue): string | null => {
     const validation = field.validation;
     if (!validation) return null;
     

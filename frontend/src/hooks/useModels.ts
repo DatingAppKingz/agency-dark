@@ -1,8 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { modelsService } from '@/services/api/models';
 import { QueryParams } from '@/types/api';
-import { CreateModelProfileData, UpdateModelProfileData } from '@/types/models';
+import { CreateModelProfileData, UpdateModelProfileData, ModelPreferences } from '@/types/models';
 import { useToast } from '@/components/common/Toaster';
+
+type ApiError = {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+};
 
 export const useModels = (params?: QueryParams) => {
   return useQuery({
@@ -30,7 +38,7 @@ export const useCreateModel = () => {
       queryClient.invalidateQueries({ queryKey: ['models'] });
       success('Model profile created successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to create model profile');
     },
   });
@@ -48,7 +56,7 @@ export const useUpdateModel = () => {
       queryClient.invalidateQueries({ queryKey: ['models', variables.modelId] });
       success('Model profile updated successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to update model profile');
     },
   });
@@ -64,7 +72,7 @@ export const useDeleteModel = () => {
       queryClient.invalidateQueries({ queryKey: ['models'] });
       success('Model profile deleted successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to delete model profile');
     },
   });
@@ -81,7 +89,7 @@ export const useToggleModelStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['models'] });
       success('Model status updated');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to update model status');
     },
   });
@@ -108,13 +116,13 @@ export const useUpdateModelPreferences = () => {
   const { success, error } = useToast();
 
   return useMutation({
-    mutationFn: ({ modelId, preferences }: { modelId: string; preferences: any }) =>
+    mutationFn: ({ modelId, preferences }: { modelId: string; preferences: Partial<ModelPreferences> }) =>
       modelsService.updatePreferences(modelId, preferences),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['models', variables.modelId, 'preferences'] });
       success('Preferences updated successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to update preferences');
     },
   });
@@ -131,7 +139,7 @@ export const useUploadAvatar = () => {
       queryClient.invalidateQueries({ queryKey: ['models', variables.modelId] });
       success('Avatar uploaded successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to upload avatar');
     },
   });
@@ -148,7 +156,7 @@ export const useUploadCover = () => {
       queryClient.invalidateQueries({ queryKey: ['models', variables.modelId] });
       success('Cover image uploaded successfully');
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       error(err.response?.data?.detail || 'Failed to upload cover image');
     },
   });

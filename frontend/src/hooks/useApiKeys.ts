@@ -8,6 +8,14 @@ import {
   ApiKeyFilters
 } from '@/types/apiKeys';
 
+type ApiError = {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+};
+
 const QUERY_KEY = 'apiKeys';
 
 export const useApiKeys = (filters?: ApiKeyFilters) => {
@@ -46,7 +54,7 @@ export const useCreateApiKey = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success(`API key "${newKey.name}" created successfully`);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(error.response?.data?.detail || 'Failed to create API key');
     } });
 };
@@ -62,7 +70,7 @@ export const useUpdateApiKey = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, updatedKey.id] });
       toast.success('API key updated successfully');
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(error.response?.data?.detail || 'Failed to update API key');
     } });
 };
@@ -78,7 +86,7 @@ export const useRotateApiKey = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, rotatedKey.id] });
       toast.success('API key rotated successfully. Please update your integrations.');
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(error.response?.data?.detail || 'Failed to rotate API key');
     } });
 };
@@ -92,7 +100,7 @@ export const useDeleteApiKey = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success('API key deleted successfully');
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(error.response?.data?.detail || 'Failed to delete API key');
     } });
 };
@@ -101,7 +109,7 @@ export const useValidateApiKey = () => {
   return useMutation({
     mutationFn: ({ provider, key }: { provider: string; key: string }) => 
       apiKeysService.validate(provider, key),
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(error.response?.data?.detail || 'Failed to validate API key');
     } });
 };
@@ -116,7 +124,7 @@ export const useTestApiKey = () => {
         toast.error(result.message || 'API key connection failed');
       }
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(error.response?.data?.detail || 'Failed to test API key');
     } });
 };
