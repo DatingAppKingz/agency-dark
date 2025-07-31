@@ -2,7 +2,7 @@ import { Box, CircularProgress, Skeleton, Typography, LinearProgress } from '@mu
 import { keyframes } from '@mui/system';
 
 // Pulse animation for skeleton
-const = keyframes`
+const pulse = keyframes`
   0% {
     opacity: 0.6;
   }

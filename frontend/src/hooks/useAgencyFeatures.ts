@@ -13,8 +13,8 @@ const STORAGE_KEY = 'agency_features';
 
 // Mock API service - replace with actual API calls
 const agencyFeaturesApi = {
-  getConfig: async (event: string): Promise<AgencyFeatureConfig> => {
-    const stored = localStorage.getItem(`${STORAGE_KEY}_${}`);
+  getConfig: async (agencyId: string): Promise<AgencyFeatureConfig> => {
+    const stored = localStorage.getItem(`${STORAGE_KEY}_${agencyId}`);
     if (stored) {
       return JSON.parse(stored);
     }
@@ -35,10 +35,10 @@ const agencyFeaturesApi = {
   },
   
   saveConfig: async (config: AgencyFeatureConfig): Promise<void> => {
-    localStorage.setItem(`${STORAGE_KEY}_${config.}`, JSON.stringify(config));
+    localStorage.setItem(`${STORAGE_KEY}_${config.agencyId}`, JSON.stringify(config));
   },
   
-  getUsage: async (event: string, : string): Promise<FeatureUsage[]> => {
+  getUsage: async (agencyId: string, featureId: string): Promise<FeatureUsage[]> => {
     // Mock usage data
     return [];
   } };
@@ -52,11 +52,11 @@ export const useAgencyFeatures = () => {
   // Load configuration
   useEffect(() => {
     const loadConfig = async () => {
-      if (!user?.) return;
+      if (!user?.agencyId) return;
       
       setIsLoading(true);
       try {
-        const featureConfig = await agencyFeaturesApi.getConfig(user.);
+        const featureConfig = await agencyFeaturesApi.getConfig(user.agencyId);
         setConfig(featureConfig);
       } catch (error) {
         console.error('Error loading agency features:', error);
@@ -66,7 +66,7 @@ export const useAgencyFeatures = () => {
     };
     
     loadConfig();
-  }, [user?.]);
+  }, [user?.agencyId]);
 
   // Save configuration
   const saveConfig = useCallback(async (newConfig: AgencyFeatureConfig) => {
@@ -83,13 +83,13 @@ export const useAgencyFeatures = () => {
   }, []);
 
   // Toggle feature
-  const toggleFeature = useCallback(async (event: string) => {
+  const toggleFeature = useCallback(async (featureId: string) => {
     if (!config) return;
     
     const updatedConfig = {
       ...config,
       features: config.features.map(feature =>
-        feature.id === ? { ...feature, enabled: !feature.enabled }
+        feature.id === featureId ? { ...feature, enabled: !feature.enabled }
           : feature
       ),
       updatedAt: new Date() };
@@ -98,13 +98,13 @@ export const useAgencyFeatures = () => {
   }, [config, saveConfig]);
 
   // Update feature settings
-  const updateFeatureSettings = useCallback(async (event: string, settings: Record<string, any>) => {
+  const updateFeatureSettings = useCallback(async (featureId: string, settings: Record<string, any>) => {
     if (!config) return;
     
     const updatedConfig = {
       ...config,
       features: config.features.map(feature =>
-        feature.id === ? { ...feature, settings: { ...feature.settings, ...settings } }
+        feature.id === featureId ? { ...feature, settings: { ...feature.settings, ...settings } }
           : feature
       ),
       updatedAt: new Date() };
@@ -207,16 +207,16 @@ export const useAgencyFeatures = () => {
   }, [config, saveConfig]);
 
   // Check if feature is enabled
-  const isFeatureEnabled = useCallback((event: string): boolean => {
+  const isFeatureEnabled = useCallback((featureId: string): boolean => {
     if (!config) return false;
-    const feature = config.features.find(f => f.id === );
+    const feature = config.features.find(f => f.id === featureId);
     return feature?.enabled || false;
   }, [config]);
 
   // Get feature by ID
-  const getFeature = useCallback((event: string): Feature | undefined => {
+  const getFeature = useCallback((featureId: string): Feature | undefined => {
     if (!config) return undefined;
-    return config.features.find(f => f.id === );
+    return config.features.find(f => f.id === featureId);
   }, [config]);
 
   // Check limit

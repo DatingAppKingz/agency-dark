@@ -69,7 +69,7 @@ export const EmailTemplateEditor = ({ onChange }: EmailTemplateEditorProps) => {
   const [templates, setTemplates] = useState<EmailTemplate[]>([
     {
       id: 'welcome',
-      name: 'Welcome ',
+      name: 'Welcome Email',
       subject: 'Welcome to {{appName}}!',
       htmlContent: `<!DOCTYPE html>
 <html>
@@ -302,11 +302,11 @@ View Conversation: {{conversationUrl}}
                 fullWidth
                 label="Subject"
                 value={currentTemplate.subject}
-                onChange={() => handleTemplateChange('subject', .target.value)}
+                onChange={(e) => handleTemplateChange('subject', e.target.value)}
                 sx={{ mb: 2 }}
               />
 
-              <Tabs value={editTab} onChange={(v) => setEditTab(v)} sx={{ mb: 2 }}>
+              <Tabs value={editTab} onChange={(_, v) => setEditTab(v)} sx={{ mb: 2 }}>
                 <Tab icon={<Code />} label="HTML" />
                 <Tab icon={<Edit />} label="Text" />
                 <Tab icon={<Preview />} label="Variables" />
@@ -318,7 +318,7 @@ View Conversation: {{conversationUrl}}
                   multiline
                   rows={15}
                   value={currentTemplate.htmlContent}
-                  onChange={() => handleTemplateChange('htmlContent', .target.value)}
+                  onChange={(e) => handleTemplateChange('htmlContent', e.target.value)}
                   sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
                 />
               </TabPanel>
@@ -329,7 +329,7 @@ View Conversation: {{conversationUrl}}
                   multiline
                   rows={15}
                   value={currentTemplate.textContent}
-                  onChange={() => handleTemplateChange('textContent', .target.value)}
+                  onChange={(e) => handleTemplateChange('textContent', e.target.value)}
                   sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
                 />
               </TabPanel>

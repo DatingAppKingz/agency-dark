@@ -444,8 +444,8 @@ export const CustomFieldEditor: React.FC = () => {
                     control={
                       <Checkbox
                         checked={fieldForm.appliesTo.includes(value)}
-                        onChange={() => {
-                          if (.target.checked) {
+                        onChange={(e) => {
+                          if (e.target.checked) {
                             setFieldForm(prev => ({
                               ...prev,
                               appliesTo: [...prev.appliesTo, value] }));
@@ -483,13 +483,13 @@ export const CustomFieldEditor: React.FC = () => {
                     <TextField
                       label="Value"
                       value={option.value}
-                      onChange={() => handleUpdateOption(index, 'value', .target.value)}
+                      onChange={(e) => handleUpdateOption(index, 'value', e.target.value)}
                       size="small"
                     />
                     <TextField
                       label="Label"
                       value={option.label}
-                      onChange={() => handleUpdateOption(index, 'label', .target.value)}
+                      onChange={(e) => handleUpdateOption(index, 'label', e.target.value)}
                       size="small"
                     />
                     <IconButton

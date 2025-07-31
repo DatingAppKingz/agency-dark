@@ -183,7 +183,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                   <InputLabel>Primary Font</InputLabel>
                   <Select
                     value={fontSettings.primary}
-                    onChange={() => handleFontChange('primary', .target.value)}
+                    onChange={(e) => handleFontChange('primary', e.target.value)}
                     label="Primary Font"
                   >
                     {googleFonts.map(font => (
@@ -200,7 +200,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                   <InputLabel>Secondary Font</InputLabel>
                   <Select
                     value={fontSettings.secondary}
-                    onChange={() => handleFontChange('secondary', .target.value)}
+                    onChange={(e) => handleFontChange('secondary', e.target.value)}
                     label="Secondary Font"
                   >
                     {googleFonts.map(font => (
@@ -217,7 +217,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                   <InputLabel>Monospace Font</InputLabel>
                   <Select
                     value={fontSettings.mono}
-                    onChange={() => handleFontChange('mono', .target.value)}
+                    onChange={(e) => handleFontChange('mono', e.target.value)}
                     label="Monospace Font"
                   >
                     {monoFonts.map(font => (
@@ -243,7 +243,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
               <Typography gutterBottom>Base Size: {fontSettings.sizes.base}px</Typography>
               <Slider
                 value={fontSettings.sizes.base}
-                onChange={(value) => handleSizeChange('base', value as number)}
+                onChange={(_, value) => handleSizeChange('base', value as number)}
                 min={12}
                 max={20}
                 marks
@@ -255,7 +255,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
               <Typography gutterBottom>Scale Ratio: {fontSettings.sizes.scale}</Typography>
               <Slider
                 value={fontSettings.sizes.scale}
-                onChange={(value) => handleSizeChange('scale', value as number)}
+                onChange={(_, value) => handleSizeChange('scale', value as number)}
                 min={1.1}
                 max={1.5}
                 step={0.05}
@@ -300,7 +300,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                 </Typography>
                 <Slider
                   value={value}
-                  onChange={(val) => handleWeightChange(weight as keyof FontSettings['weights'], val as number)}
+                  onChange={(_, val) => handleWeightChange(weight as keyof FontSettings['weights'], val as number)}
                   min={100}
                   max={900}
                   step={100}
@@ -320,7 +320,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
             </Typography>
             <Slider
               value={fontSettings.lineHeight}
-              onChange={(value) => {
+              onChange={(_, value) => {
                 setFontSettings(prev => ({ ...prev, lineHeight: value as number }));
                 onChange();
               }}
@@ -343,7 +343,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
             </Typography>
             <Slider
               value={fontSettings.letterSpacing}
-              onChange={(value) => {
+              onChange={(_, value) => {
                 setFontSettings(prev => ({ ...prev, letterSpacing: value as number }));
                 onChange();
               }}
@@ -374,7 +374,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                 fullWidth
                 label="Font URL"
                 value={customFontUrl}
-                onChange={() => setCustomFontUrl(event.target.value)}
+                onChange={(e) => setCustomFontUrl(e.target.value)}
                 placeholder="https://fonts.googleapis.com/css2?family=..."
               />
               <Button

@@ -24,7 +24,7 @@ interface ThemeCustomizerProps {
 }
 
 export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
-  const = useTheme();
+  const theme = useTheme();
   const [darkMode, setDarkMode] = useState(false);
   const [colors, setColors] = useState({
     primary: '#1976d2',

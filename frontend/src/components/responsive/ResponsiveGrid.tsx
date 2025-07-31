@@ -16,7 +16,7 @@ export const ResponsiveGrid = ({
 }: ResponsiveGridProps) => {
   const { isMobile, isTablet } = useResponsive();
   
-  const = isMobile ? mobileColumns : isTablet ? tabletColumns : desktopColumns;
+  const columns = isMobile ? mobileColumns : isTablet ? tabletColumns : desktopColumns;
   
   return (
     <Grid

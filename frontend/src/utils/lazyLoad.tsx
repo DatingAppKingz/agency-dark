@@ -15,8 +15,8 @@ const PageLoader = () => (
 );
 
 // Wrapper function for lazy loading with Suspense
-export function lazyLoad<extends ComponentType<any>>(
-  importFunc: () => Promise<{ default: }>
+export function lazyLoad<T extends ComponentType<any>>(
+  importFunc: () => Promise<{ default: T }>
 ) {
   const LazyComponent = lazy(importFunc);
 
@@ -28,7 +28,7 @@ export function lazyLoad<extends ComponentType<any>>(
 }
 
 // Named exports helper
-export function lazyLoadNamed<extends ComponentType<any>>(
+export function lazyLoadNamed<T extends ComponentType<any>>(
   importFunc: () => Promise<any>,
   componentName: string
 ) {
@@ -52,13 +52,13 @@ export function preloadComponent(
 }
 
 // Retry mechanism for failed lazy loads
-export function lazyLoadWithRetry<extends ComponentType<any>>(
-  importFunc: () => Promise<{ default: }>,
+export function lazyLoadWithRetry<T extends ComponentType<any>>(
+  importFunc: () => Promise<{ default: T }>,
   retries = 3,
   delay = 1000
 ) {
   return lazyLoad(() =>
-    new Promise<{ default: }>((resolve, reject) => {
+    new Promise<{ default: T }>((resolve, reject) => {
       const attemptImport = (attemptsLeft: number) => {
         importFunc()
           .then(resolve)

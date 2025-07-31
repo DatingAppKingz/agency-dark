@@ -33,7 +33,7 @@ const customFieldsApi = {
     localStorage.setItem(`${STORAGE_KEY}_${config.agencyId}`, JSON.stringify(config));
   },
   
-  getValues: async (entityId: string, : EntityType): Promise<CustomFieldValue[]> => {
+  getValues: async (entityId: string, entityType: EntityType): Promise<CustomFieldValue[]> => {
     const stored = localStorage.getItem(`${STORAGE_KEY}_values_${entityId}`);
     if (stored) {
       return JSON.parse(stored);
@@ -45,7 +45,7 @@ const customFieldsApi = {
     localStorage.setItem(`${STORAGE_KEY}_values_${entityId}`, JSON.stringify(values));
   } };
 
-export const useCustomFields = (?: EntityType, entityId?: string) => {
+export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
   const { user } = useAuthStore();
   const [config, setConfig] = useState<CustomFieldConfig | null>(null);
   const [values, setValues] = useState<Record<string, any>>({});
@@ -64,8 +64,8 @@ export const useCustomFields = (?: EntityType, entityId?: string) => {
         setConfig(fieldConfig);
         
         // Load values if entityId provided
-        if (entityId && ) {
-          const fieldValues = await customFieldsApi.getValues(entityId, );
+        if (entityId && entityType) {
+          const fieldValues = await customFieldsApi.getValues(entityId, entityType);
           const valueMap = fieldValues.reduce((acc, fv) => {
             acc[fv.fieldId] = fv.value;
             return acc;
@@ -80,7 +80,7 @@ export const useCustomFields = (?: EntityType, entityId?: string) => {
     };
     
     loadData();
-  }, [user?.agencyId, entityId, ]);
+  }, [user?.agencyId, entityId, entityType]);
 
   // Get fields for specific entity type
   const getFieldsForEntity = useCallback((type: EntityType): CustomField[] => {
@@ -221,7 +221,7 @@ export const useCustomFields = (?: EntityType, entityId?: string) => {
 
   // Save all values
   const saveValues = useCallback(async () => {
-    if (!entityId || !) return;
+    if (!entityId || !entityType) return;
     
     setIsSaving(true);
     try {
@@ -295,9 +295,9 @@ export const useCustomFields = (?: EntityType, entityId?: string) => {
 
   // Validate all fields
   const validateAll = useCallback((): Record<string, string> => {
-    if (!|| !config) return {};
+    if (!entityType || !config) return {};
     
-    const fields = getFieldsForEntity();
+    const fields = getFieldsForEntity(entityType);
     const errors: Record<string, string> = {};
     
     fields.forEach(field => {
@@ -312,8 +312,8 @@ export const useCustomFields = (?: EntityType, entityId?: string) => {
 
   return {
     config,
-    fields: ? getFieldsForEntity() documents: [],
-    fieldsBySection: ? getFieldsBySection() : { sections: [], grouped: new Map() },
+    fields: entityType ? getFieldsForEntity(entityType) : [],
+    fieldsBySection: entityType ? getFieldsBySection(entityType) : { sections: [], grouped: new Map() },
     values,
     isPending,
     isSaving,

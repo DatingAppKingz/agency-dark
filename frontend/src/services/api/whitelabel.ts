@@ -37,22 +37,22 @@ export interface DomainSettings {
 
 export const whitelabelApi = {
   // Agency Branding
-  async getAgencyBranding(event: string) {
-    const { data } = await apiClient.get(`/whitelabel/agencies/${}/branding`);
+  async getAgencyBranding(agencyId: string) {
+    const { data } = await apiClient.get(`/whitelabel/agencies/${agencyId}/branding`);
     return data;
   },
 
-  async updateAgencyBranding(event: string, branding: Partial<BrandingSettings>) {
-    const { data } = await apiClient.put(`/whitelabel/agencies/${}/branding`, branding);
+  async updateAgencyBranding(agencyId: string, branding: Partial<BrandingSettings>) {
+    const { data } = await apiClient.put(`/whitelabel/agencies/${agencyId}/branding`, branding);
     return data;
   },
 
-  async uploadLogo(event: string, file: File) {
+  async uploadLogo(agencyId: string, file: File) {
     const formData = new FormData();
     formData.append('logo', file);
     
     const { data } = await apiClient.post(
-      `/whitelabel/agencies/${}/branding/logo`,
+      `/whitelabel/agencies/${agencyId}/branding/logo`,
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -60,52 +60,52 @@ export const whitelabelApi = {
   },
 
   // Theme Settings
-  async getTheme(event: string) {
-    const { data } = await apiClient.get(`/whitelabel/agencies/${}/theme`);
+  async getTheme(agencyId: string) {
+    const { data } = await apiClient.get(`/whitelabel/agencies/${agencyId}/theme`);
     return data;
   },
 
-  async updateTheme(event: string, theme: Partial<ThemeSettings>) {
-    const { data } = await apiClient.put(`/whitelabel/agencies/${}/theme`, theme);
+  async updateTheme(agencyId: string, theme: Partial<ThemeSettings>) {
+    const { data } = await apiClient.put(`/whitelabel/agencies/${agencyId}/theme`, theme);
     return data;
   },
 
-  async previewTheme(event: string, theme: Partial<ThemeSettings>) {
-    const { data } = await apiClient.post(`/whitelabel/agencies/${}/theme/preview`, theme);
+  async previewTheme(agencyId: string, theme: Partial<ThemeSettings>) {
+    const { data } = await apiClient.post(`/whitelabel/agencies/${agencyId}/theme/preview`, theme);
     return data;
   },
 
   // Email Templates
-  async getEmailTemplates(event: string) {
-    const { data } = await apiClient.get(`/whitelabel/agencies/${}/email-templates`);
+  async getEmailTemplates(agencyId: string) {
+    const { data } = await apiClient.get(`/whitelabel/agencies/${agencyId}/email-templates`);
     return data;
   },
 
-  async getEmailTemplate(event: string, templateId: string) {
-    const { data } = await apiClient.get(`/whitelabel/agencies/${}/email-templates/${templateId}`);
+  async getEmailTemplate(agencyId: string, templateId: string) {
+    const { data } = await apiClient.get(`/whitelabel/agencies/${agencyId}/email-templates/${templateId}`);
     return data;
   },
 
-  async createEmailTemplate(event: string, template: Omit<EmailTemplate, 'id'>) {
-    const { data } = await apiClient.post(`/whitelabel/agencies/${}/email-templates`, template);
+  async createEmailTemplate(agencyId: string, template: Omit<EmailTemplate, 'id'>) {
+    const { data } = await apiClient.post(`/whitelabel/agencies/${agencyId}/email-templates`, template);
     return data;
   },
 
-  async updateEmailTemplate(event: string, templateId: string, template: Partial<EmailTemplate>) {
+  async updateEmailTemplate(agencyId: string, templateId: string, template: Partial<EmailTemplate>) {
     const { data } = await apiClient.put(
-      `/whitelabel/agencies/${}/email-templates/${templateId}`,
+      `/whitelabel/agencies/${agencyId}/email-templates/${templateId}`,
       template
     );
     return data;
   },
 
-  async deleteEmailTemplate(event: string, templateId: string) {
-    await apiClient.delete(`/whitelabel/agencies/${}/email-templates/${templateId}`);
+  async deleteEmailTemplate(agencyId: string, templateId: string) {
+    await apiClient.delete(`/whitelabel/agencies/${agencyId}/email-templates/${templateId}`);
   },
 
-  async previewEmailTemplate(event: string, templateId: string, variables: Record<string, string>) {
+  async previewEmailTemplate(agencyId: string, templateId: string, variables: Record<string, string>) {
     const { data } = await apiClient.post(
-      `/whitelabel/agencies/${}/email-templates/${templateId}/preview`,
+      `/whitelabel/agencies/${agencyId}/email-templates/${templateId}/preview`,
       { variables }
     );
     return data;
@@ -135,7 +135,7 @@ export const whitelabelApi = {
   },
 
   // Domain Settings (placeholder - not in backend yet)
-  async getDomainSettings(event: string): Promise<DomainSettings> {
+  async getDomainSettings(agencyId: string): Promise<DomainSettings> {
     console.warn('Domain settings not implemented in backend');
     return {
       subdomain: 'agency',
@@ -143,12 +143,12 @@ export const whitelabelApi = {
       verified: false };
   },
 
-  async updateDomainSettings(event: string, settings: Partial<DomainSettings>): Promise<DomainSettings> {
+  async updateDomainSettings(agencyId: string, settings: Partial<DomainSettings>): Promise<DomainSettings> {
     console.warn('Domain settings update not implemented in backend');
     return { ...settings } as DomainSettings;
   },
 
-  async verifyDomain(event: string, : string): Promise<{ verified: boolean; dns_records: any[] }> {
+  async verifyDomain(agencyId: string, domain: string): Promise<{ verified: boolean; dns_records: any[] }> {
     console.warn('Domain verification not implemented in backend');
     return { verified: false, dns_records: [] };
   } };

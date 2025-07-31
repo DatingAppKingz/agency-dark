@@ -74,7 +74,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             fullWidth
             label={field.label}
             value={value}
-            onChange={() => handleFieldChange(field.id, .target.value, field)}
+            onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
             placeholder={field.placeholder}
             required={field.required}
             error={Boolean(error)}
@@ -93,7 +93,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             fullWidth
             label={field.label}
             value={value}
-            onChange={() => handleFieldChange(field.id, Number(.target.value), field)}
+            onChange={(e) => handleFieldChange(field.id, Number(e.target.value), field)}
             placeholder={field.placeholder}
             required={field.required}
             error={Boolean(error)}
@@ -115,7 +115,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             fullWidth
             label={field.label}
             value={value}
-            onChange={() => handleFieldChange(field.id, .target.value, field)}
+            onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
             placeholder={field.placeholder}
             required={field.required}
             error={Boolean(error)}
@@ -135,7 +135,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             control={
               <Switch
                 checked={Boolean(value)}
-                onChange={() => handleFieldChange(field.id, .target.checked, field)}
+                onChange={(e) => handleFieldChange(field.id, e.target.checked, field)}
                 disabled={readOnly}
               />
             }
@@ -149,7 +149,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             <InputLabel>{field.label}</InputLabel>
             <Select
               value={value}
-              onChange={() => handleFieldChange(field.id, .target.value, field)}
+              onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
               label={field.label}
               disabled={readOnly}
               required={field.required}
@@ -170,14 +170,14 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             <InputLabel>{field.label}</InputLabel>
             <Select
               multiple
-              value={Array.isArray(value) ? value documents: []}
-              onChange={() => handleFieldChange(field.id, .target.value, field)}
+              value={Array.isArray(value) ? value : []}
+              onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
               input={<OutlinedInput label={field.label} />}
               renderValue={(selected) => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   { (selected as string[]).map((val) => {
                     const option = field.options?.find(opt => opt.value === val);
-                    return <Chip key={val            } label={option?.label || val} size="small" />;
+                    return <Chip key={val} label={option?.label || val} size="small" />;
                   })}
                 </Box>
               )}
@@ -234,7 +234,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             <Typography component="legend">{field.label}</Typography>
             <Rating
               value={Number(value) || 0}
-              onChange={(newValue) => handleFieldChange(field.id, newValue, field)}
+              onChange={(_, newValue) => handleFieldChange(field.id, newValue, field)}
               disabled={readOnly}
               max={field.validation?.max || 5}
             />
@@ -255,7 +255,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             <input
               type="color"
               value={value || '#000000'}
-              onChange={() => handleFieldChange(field.id, .target.value, field)}
+              onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
               disabled={readOnly}
               style={{
                 width: '100%',
@@ -278,8 +278,8 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             </Typography>
             <input
               type="file"
-              onChange={() => {
-                const file = .target.files?.[0];
+              onChange={(e) => {
+                const file = e.target.files?.[0];
                 if (file) {
                   handleFieldChange(field.id, file, field);
                 }
