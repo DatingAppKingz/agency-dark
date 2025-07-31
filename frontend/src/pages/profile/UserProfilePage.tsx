@@ -100,8 +100,8 @@ const UserProfilePage = () => {
     defaultValues: {
       full_name: user?.full_name || '',
       email: user?.email || '',
-      phone: user?.phone || '',
-      bio: user?.bio || '',
+      phone: (user as any)?.phone || '',
+      bio: (user as any)?.bio || '',
     },
   });
 
@@ -175,7 +175,7 @@ const UserProfilePage = () => {
               <Box display="flex" flexDirection="column" alignItems="center">
                 <Box position="relative">
                   <Avatar
-                    src={user.avatar}
+                    src={(user as any).avatar}
                     sx={{ width: 120, height: 120, mb: 2 }}
                   >
                     {user.full_name.charAt(0)}
@@ -223,7 +223,7 @@ const UserProfilePage = () => {
                 <ListItem>
                   <ListItemText
                     primary="Last Login"
-                    secondary={format(new Date(user.last_login_at || Date.now()), 'MMMM d, yyyy h:mm a')}
+                    secondary={format(new Date((user as any).last_login_at || Date.now()), 'MMMM d, yyyy h:mm a')}
                   />
                 </ListItem>
                 <ListItem>

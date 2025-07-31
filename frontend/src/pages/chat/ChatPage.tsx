@@ -181,11 +181,11 @@ const ChatPage = () => {
       deleteMessage(conversation_id, message_id);
     };
 
-    const handleUserOnline = ({ user_id }: { user_id: string }) => {
+    const handleUserOnline = (user_id: string) => {
       setUserOnline(user_id, true);
     };
 
-    const handleUserOffline = ({ user_id }: { user_id: string }) => {
+    const handleUserOffline = (user_id: string) => {
       setUserOnline(user_id, false);
     };
 

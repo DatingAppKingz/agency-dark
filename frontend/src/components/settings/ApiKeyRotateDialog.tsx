@@ -39,7 +39,7 @@ const ApiKeyRotateDialog: React.FC<ApiKeyRotateDialogProps> = ({
   const [activeStep, setActiveStep] = useState(0);
   const [newKey, setNewKey] = useState('');
   const [showKey, setShowKey] = useState(false);
-  const [setIsValidated] = useState(false);
+  const [, setIsValidated] = useState(false);
   const [confirmText, setConfirmText] = useState('');
 
   const rotateKey = useRotateApiKey();

@@ -28,6 +28,7 @@ export interface FeatureLimits {
   maxTransactions?: number;
   maxStorage?: number; // in MB
   maxApiCalls?: number;
+  maxRecipients?: number;
   customLimits?: Record<string, number>;
 }
 

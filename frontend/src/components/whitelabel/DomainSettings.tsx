@@ -135,7 +135,7 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
       case 'verified':
         return <CheckCircle color="success" fontSize="small" />;
       case '':
-        return <ErrorIcon color="" fontSize="small" />;
+        return <ErrorIcon color="error" fontSize="small" />;
       default:
         return <Refresh color="warning" fontSize="small" />;
     }
@@ -345,7 +345,7 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
                         )}
                         <IconButton
                           size="small"
-                          color=""
+                          color="error"
                           onClick={() => handleRemoveDomain(domain.id)}
                         >
                           <Delete />

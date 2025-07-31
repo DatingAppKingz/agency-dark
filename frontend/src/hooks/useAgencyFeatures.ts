@@ -175,7 +175,7 @@ export const useAgencyFeatures = () => {
       integrations: [...config.integrations, newIntegration],
       updatedAt: new Date() };
     
-    await saveConfig(updatedConfig);
+    await saveConfig(updatedConfig as AgencyFeatureConfig);
     return newIntegration;
   }, [config, saveConfig]);
 

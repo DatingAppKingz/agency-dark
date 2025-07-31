@@ -5,7 +5,6 @@ import type {
   Payout,
   PaymentMethod,
   Revenue,
-  Commission,
   Invoice,
   FinancialReport,
   FinancialSummary } from '@/types/financial';
@@ -28,6 +27,9 @@ export interface PayoutFilters extends QueryParams {
   user_id?: string;
   model_id?: string;
   agency_id?: string;
+  billing_cycle_id?: string;
+  limit?: number;
+  offset?: number;
 }
 
 export interface RevenueParams {
@@ -42,6 +44,8 @@ export interface InvoiceFilters extends QueryParams {
   status?: Invoice['status'];
   start_date?: string;
   end_date?: string;
+  agency_id?: string;
+  model_id?: string;
 }
 
 export const financialApi = {
@@ -118,7 +122,7 @@ export const financialApi = {
     return data;
   },
 
-  async getPayout(payoutId: string) {
+  async getPayout(_payoutId: string) {
     // Not available in backend yet
     throw new Error('Get single payout not implemented');
   },
@@ -219,7 +223,7 @@ export const financialApi = {
 
   async createPaymentMethod(_event: Partial<PaymentMethod>): Promise<PaymentMethod> {
     // Map to wallet creation
-    return this.createWallet();
+    return this.createWallet({});
   },
 
   async updatePaymentMethod(_methodId: string, _updateData: Partial<PaymentMethod>): Promise<PaymentMethod> {
@@ -270,7 +274,7 @@ export const financialApi = {
 
   async getFinancialSummary(params?: any): Promise<FinancialSummary> {
     // Combine from various endpoints
-    const [billingCycles, payouts, invoices] = await Promise.all([
+    const [_billingCycles, payouts, _invoices] = await Promise.all([
       this.getBillingCycles({ ...params, limit: 1 }),
       this.getPayouts({ ...params, limit: 10 }),
       this.getInvoices({ ...params, limit: 10 }),

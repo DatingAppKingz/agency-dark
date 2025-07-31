@@ -3,7 +3,8 @@ import { cleanup } from '@testing-library/react';
 
 // Add TextEncoder/TextDecoder polyfills for Node.js environment
 if (typeof globalThis.TextEncoder === 'undefined') {
-  const { TextEncoder, TextDecoder } = require('util');
+  // @ts-ignore
+  const { TextEncoder, TextDecoder } = await import('util');
   globalThis.TextEncoder = TextEncoder;
   globalThis.TextDecoder = TextDecoder as any;
 }
@@ -44,6 +45,10 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock IntersectionObserver
 globalThis.IntersectionObserver = class IntersectionObserver {
+  root = null;
+  rootMargin = '';
+  thresholds = [];
+  
   constructor() {}
   disconnect() {}
   observe() {}
@@ -51,7 +56,7 @@ globalThis.IntersectionObserver = class IntersectionObserver {
   takeRecords() {
     return [];
   }
-};
+} as any;
 
 // Mock ResizeObserver
 globalThis.ResizeObserver = class ResizeObserver {

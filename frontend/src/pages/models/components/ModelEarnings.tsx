@@ -27,7 +27,7 @@ interface ModelEarningsProps {
   modelId: string;
 }
 
-export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
+export const ModelEarnings = ({ modelId: _modelId }: ModelEarningsProps) => {
   const [startDate, setStartDate] = useState<Date | null>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [searchTerm, setSearchTerm] = useState('');
@@ -193,7 +193,7 @@ export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
                 </Box>
                 <ChartWidget
                   title=""
-                  data={revenueChartData}
+                  data={revenueChartData as any}
                   type="area"
                   height={300}
                   dataKey="total"

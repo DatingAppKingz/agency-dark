@@ -134,7 +134,7 @@ const ReportsPage: React.FC = () => {
 
   const handleExportReport = async (template: ReportTemplate) => {
     try {
-      const result = await reportsService.exportReport(template.id, 'pdf');
+      await reportsService.exportReport(template.id, 'pdf');
       toast.success('Report export started. You will be notified when it\'s ready.');
     } catch (error: any) {
       toast.error('Failed to export report');

@@ -202,7 +202,7 @@ const ModelsPage = () => {
         </Paper>
       ) : viewMode === 'grid' ? (
         <Grid container spacing={3}>
-          {models.map((model) => (
+          {models.map((model: any) => (
             <Grid item xs={12} sm={6} md={4} key={model.id}>
               <ModelCard
                 model={model}

@@ -59,7 +59,7 @@ export const modelsService = {
     throw new Error('Model creation not yet implemented in backend');
   },
 
-  async updateModel(_modelId: string, data: UpdateModelProfileData): Promise<ModelProfile> {
+  async updateModel(_modelId: string, _data: UpdateModelProfileData): Promise<ModelProfile> {
     throw new Error('Model update not yet implemented in backend');
   },
 
@@ -73,16 +73,16 @@ export const modelsService = {
     return [];
   },
 
-  async uploadContent(_modelId: string, file: File, metadata: Partial<ModelContent>): Promise<ModelContent> {
+  async uploadContent(_modelId: string, _file: File, metadata: Partial<ModelContent>): Promise<ModelContent> {
     // Use orchestration content post endpoint
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', _file);
     
     const { data } = await apiClient.post('/orchestration/content/post', {
       model_id: _modelId,
-      text: _metadata.title || '',
+      text: metadata.title || '',
       media_urls: [],
-      is_free: _metadata.is_free || false,
+      is_free: metadata.is_free || false,
       publish_immediately: true,
       post_to_onlyfans: true,
       post_to_inflow: true });
@@ -90,7 +90,7 @@ export const modelsService = {
     return data;
   },
 
-  async deleteContent(_modelId: string, contentId: string): Promise<void> {
+  async deleteContent(_modelId: string, _contentId: string): Promise<void> {
     throw new Error('Content deletion not yet implemented');
   },
 
@@ -151,6 +151,7 @@ export const modelsService = {
     }
     
     const analytics = await this.getModelAnalytics(
+      _modelId,
       startDate.toISOString().split('T')[0],
       endDate.toISOString().split('T')[0]
     );
@@ -158,14 +159,14 @@ export const modelsService = {
     return analytics;
   },
 
-  async toggleModelStatus(_modelId: string, isActive: boolean): Promise<ModelProfile> {
+  async toggleModelStatus(_modelId: string, _isActive: boolean): Promise<ModelProfile> {
     throw new Error('Status toggle not implemented in backend');
   },
 
-  async uploadAvatar(_modelId: string, file: File): Promise<{ avatar_url: string }> {
+  async uploadAvatar(_modelId: string, _file: File): Promise<{ avatar_url: string }> {
     throw new Error('Avatar upload not implemented in backend');
   },
 
-  async uploadCover(_modelId: string, file: File): Promise<{ cover_image_url: string }> {
+  async uploadCover(_modelId: string, _file: File): Promise<{ cover_image_url: string }> {
     throw new Error('Cover upload not implemented in backend');
   } };

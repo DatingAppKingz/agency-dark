@@ -37,7 +37,7 @@ export const formatBytes = (bytes: number): string => {
   return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
 };
 
-export const formatDate = (date: string | Date, format = 'MMM d, yyyy'): string => {
+export const formatDate = (date: string | Date, _format = 'MMM d, yyyy'): string => {
   // This is a simplified version. In production, use date-fns or similar
   const d = new Date(date);
   const options: Intl.DateTimeFormatOptions = {

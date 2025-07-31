@@ -135,7 +135,7 @@ export const whitelabelApi = {
   },
 
   // Domain Settings (placeholder - not in backend yet)
-  async getDomainSettings(agencyId: string): Promise<DomainSettings> {
+  async getDomainSettings(_agencyId: string): Promise<DomainSettings> {
     console.warn('Domain settings not implemented in backend');
     return {
       subdomain: 'agency',
@@ -143,12 +143,12 @@ export const whitelabelApi = {
       verified: false };
   },
 
-  async updateDomainSettings(agencyId: string, settings: Partial<DomainSettings>): Promise<DomainSettings> {
+  async updateDomainSettings(_agencyId: string, settings: Partial<DomainSettings>): Promise<DomainSettings> {
     console.warn('Domain settings update not implemented in backend');
     return { ...settings } as DomainSettings;
   },
 
-  async verifyDomain(agencyId: string, domain: string): Promise<{ verified: boolean; dns_records: any[] }> {
+  async verifyDomain(_agencyId: string, _domain: string): Promise<{ verified: boolean; dns_records: any[] }> {
     console.warn('Domain verification not implemented in backend');
     return { verified: false, dns_records: [] };
   } };

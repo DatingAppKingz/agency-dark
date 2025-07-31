@@ -51,7 +51,7 @@ export const UserDialog = ({ open, onClose, onSubmit, user, loading }: UserDialo
     formState: { errors },
     reset,
   } = useForm<CreateUserData | UpdateUserData>({
-    resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema),
+    resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema) as any,
     defaultValues: user || {
       role: UserRole.AGENCY_MEMBER,
     },

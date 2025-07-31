@@ -206,7 +206,7 @@ export const analyticsService = {
     }
   },
 
-  async getMessageChart(period: 'day' | 'week' | 'month' = 'month') {
+  async getMessageChart(_period: 'day' | 'week' | 'month' = 'month') {
     console.warn('Message chart not directly available in analytics API');
     return { labels: [], datasets: [] };
   } };

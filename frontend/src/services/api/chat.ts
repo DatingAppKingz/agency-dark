@@ -81,7 +81,7 @@ export const chatApi = {
   },
 
   // Placeholder methods for features not directly available in backend
-  async getConversation(event: string): Promise<Conversation> {
+  async getConversation(_event: string): Promise<Conversation> {
     console.warn('Single conversation endpoint not available, use getConversations');
     throw new Error('Not implemented');
   },

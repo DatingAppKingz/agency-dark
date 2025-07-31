@@ -62,7 +62,7 @@ const DashboardPage = () => {
         <ToggleButtonGroup
           value={viewMode}
           exclusive
-          onChange={(newMode) => newMode && setViewMode(newMode)}
+          onChange={(_, newMode) => newMode && setViewMode(newMode)}
           size="small"
         >
           <ToggleButton value="classic">

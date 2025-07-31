@@ -68,7 +68,7 @@ const UsersPage = () => {
   const toggleStatus = useToggleUserStatus();
   const [bulkActionAnchor, setBulkActionAnchor] = useState<null | HTMLElement>(null);
 
-  const users = data?.items || [];
+  const users = data?.data || [];
   const totalCount = data?.total || 0;
 
   const handleChangePage = (_: unknown, newPage: number) => {
@@ -82,7 +82,7 @@ const UsersPage = () => {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = users.map((user) => user.id);
+      const newSelected = users.map((user: any) => user.id);
       setSelected(newSelected);
     } else {
       setSelected([]);
@@ -120,7 +120,7 @@ const UsersPage = () => {
   };
 
   const handleEdit = () => {
-    const user = users.find((u) => u.id === selectedUserId);
+    const user = users.find((u: any) => u.id === selectedUserId);
     if (user) {
       setEditingUser(user);
       setDialogOpen(true);
@@ -136,7 +136,7 @@ const UsersPage = () => {
   };
 
   const handleToggleStatus = async () => {
-    const user = users.find((u) => u.id === selectedUserId);
+    const user = users.find((u: any) => u.id === selectedUserId);
     if (user) {
       await toggleStatus.mutateAsync({
         userId: user.id,
@@ -181,7 +181,7 @@ const UsersPage = () => {
     const headers = Object.keys(csvData[0] || {});
     const csvString = [
       headers.join(','),
-      ...csvData.map(row => headers.map(header => row[header]).join(','))
+      ...csvData.map(row => headers.map(header => (row as any)[header]).join(','))
     ].join('\n');
     
     // Download file

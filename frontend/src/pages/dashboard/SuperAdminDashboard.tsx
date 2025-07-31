@@ -41,9 +41,9 @@ export const SuperAdminDashboard = () => {
 
   const platformMetrics = useMemo(() => [
     { label: 'Active Models', value: stats?.active_models || 0, change: 12, icon: People, color: 'primary' as const },
-    { label: 'Messages/Day', value: stats?.daily_messages || 0, change: 5, icon: ShowChart, color: 'info' as const },
-    { label: 'Avg Revenue/User', value: `$${stats?.avg_revenue_per_user || 0}`, icon: Paid, color: 'success' as const },
-    { label: 'Conversion Rate', value: `${stats?.conversion_rate || 0}%`, change: -2, icon: TrendingUp, color: 'warning' as const },
+    { label: 'Messages/Day', value: (stats as any)?.daily_messages || 0, change: 5, icon: ShowChart, color: 'info' as const },
+    { label: 'Avg Revenue/User', value: `$${(stats as any)?.avg_revenue_per_user || 0}`, icon: Paid, color: 'success' as const },
+    { label: 'Conversion Rate', value: `${(stats as any)?.conversion_rate || 0}%`, change: -2, icon: TrendingUp, color: 'warning' as const },
   ], [stats]);
 
   const recentActivities = useMemo(() => [
@@ -145,8 +145,8 @@ export const SuperAdminDashboard = () => {
         <Grid item xs={12} md={6} lg={3}>
           <AnalyticsWidget
             title="Monthly Active Users"
-            value={stats?.monthly_active_users || 0}
-            previousValue={stats?.prev_monthly_active_users || 0}
+            value={(stats as any)?.monthly_active_users || 0}
+            previousValue={(stats as any)?.prev_monthly_active_users || 0}
             format="number"
             icon={<Groups />}
             color="primary"
@@ -156,7 +156,7 @@ export const SuperAdminDashboard = () => {
         <Grid item xs={12} md={6} lg={3}>
           <AnalyticsWidget
             title="Avg Session Duration"
-            value={stats?.avg_session_duration || '0m'}
+            value={(stats as any)?.avg_session_duration || '0m'}
             icon={<ShowChart />}
             color="info"
             loading={statsLoading}
@@ -165,8 +165,8 @@ export const SuperAdminDashboard = () => {
         <Grid item xs={12} md={6} lg={3}>
           <AnalyticsWidget
             title="Platform Commission"
-            value={stats?.platform_commission || 0}
-            previousValue={stats?.prev_platform_commission || 0}
+            value={(stats as any)?.platform_commission || 0}
+            previousValue={(stats as any)?.prev_platform_commission || 0}
             format="currency"
             icon={<Paid />}
             color="success"

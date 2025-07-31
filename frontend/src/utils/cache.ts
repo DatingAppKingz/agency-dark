@@ -30,7 +30,9 @@ class CacheManager {
     // Implement LRU eviction if cache is too large
     if (this.cache.size > this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
 
     // Save to localStorage for persistence
@@ -193,7 +195,7 @@ export const cache = new CacheManager();
 
 // API Cache decorator
 export function cacheAPI(ttl: number = 300000) {
-  return function (event: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_event: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {

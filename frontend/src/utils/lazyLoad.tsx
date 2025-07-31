@@ -28,7 +28,7 @@ export function lazyLoad<T extends ComponentType<any>>(
 }
 
 // Named exports helper
-export function lazyLoadNamed<T extends ComponentType<any>>(
+export function lazyLoadNamed(
   importFunc: () => Promise<any>,
   componentName: string
 ) {

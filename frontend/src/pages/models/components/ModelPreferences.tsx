@@ -18,7 +18,7 @@ interface ModelPreferencesProps {
   modelId: string;
 }
 
-export const ModelPreferences = ({ modelId }: ModelPreferencesProps) => {
+export const ModelPreferences = ({ modelId: _modelId }: ModelPreferencesProps) => {
   const { success } = useToast();
   
   const [preferences, setPreferences] = useState({

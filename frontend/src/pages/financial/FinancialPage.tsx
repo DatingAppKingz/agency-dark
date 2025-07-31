@@ -55,7 +55,7 @@ const FinancialPage = () => {
 
   // Get model/agency ID based on user role
   const modelId = user?.role === 'model' ? user.id : undefined;
-  const agencyId = ['agency_owner', 'agency_admin'].includes(user?.role || '') ? user.agency_id : undefined;
+  const agencyId = ['agency_owner', 'agency_admin'].includes(user?.role || '') ? user?.agency_id : undefined;
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);

@@ -39,46 +39,21 @@ const ReportViewerPage: React.FC = () => {
   const [widgets, setWidgets] = useState<ReportWidget[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [setAutoRefreshTimer] = useState<NodeJS.Timeout | null>(null);
+  const [, setAutoRefreshTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Fetch template
   const { data: template, isPending: loadingTemplate } = useQuery<ReportTemplate>({
     queryKey: ['report-template', templateId],
     queryFn: () => reportsService.getTemplate(templateId!),
-    enabled: !!templateId,
-    onSuccess: (data) => {
-      // Initialize widgets from template
-      const initialWidgets = data.widgets.map((w: any) => ({
-        ...w,
-        loading: true,
-        data: null,
-        error: null }));
-      setWidgets(initialWidgets);
-    } });
+    enabled: !!templateId });
 
   // Fetch report data
   const { data: reportData, refetch: refetchData } = useQuery({
-    queryKey: ['report-data', templateId, template?.dateRange, template?.globalFilters],
+    queryKey: ['report-data', templateId, (template as any)?.dateRange, (template as any)?.globalFilters],
     queryFn: () => reportsService.getReportData(templateId!, {
-      dateRange: template?.dateRange,
-      filters: template?.globalFilters }),
-    enabled: !!templateId && !!template,
-    onSuccess: (data) => {
-      // Update widgets with data
-      const updatedWidgets = widgets.map(widget => {
-        const widgetData = data.widgets.find(w => w.widgetId === widget.id);
-        if (widgetData) {
-          return { ...widget, data: widgetData.data, loading: false };
-        }
-        return { ...widget, loading: false, error: 'No data available' };
-      });
-      setWidgets(updatedWidgets);
-      setRefreshing(false);
-    },
-    onError: () => {
-      setRefreshing(false);
-      toast.error('Failed to load report data');
-    } });
+      dateRange: (template as any)?.dateRange,
+      filters: (template as any)?.globalFilters }),
+    enabled: !!templateId && !!template });
 
   // Export report
   const exportReport = useMutation({
@@ -91,13 +66,28 @@ const ReportViewerPage: React.FC = () => {
       toast.error(error.response?.data?.detail || 'Failed to export report');
     } });
 
+  // Update widgets when report data changes
+  useEffect(() => {
+    if (reportData && template) {
+      const updatedWidgets = template.widgets.map(widget => {
+        const widgetData = (reportData as any).widgets?.[widget.id];
+        if (widgetData) {
+          return { ...widget, data: widgetData.data, loading: false };
+        }
+        return { ...widget, loading: false, error: 'No data available' };
+      });
+      setWidgets(updatedWidgets);
+      setRefreshing(false);
+    }
+  }, [reportData, template]);
+
   // Setup auto-refresh
   useEffect(() => {
     if (template?.refreshInterval && template.refreshInterval > 0) {
       const timer = setInterval(() => {
         handleRefresh();
       }, template.refreshInterval * 1000);
-      setAutoRefreshTimer(timer);
+      setAutoRefreshTimer(timer as any);
 
       return () => {
         if (timer) {
@@ -124,7 +114,7 @@ const ReportViewerPage: React.FC = () => {
 
   const handleShare = () => {
     // TODO: Implement share functionality
-    toast.info('Share functionality coming soon');
+    toast('Share functionality coming soon');
     setAnchorEl(null);
   };
 

@@ -55,12 +55,12 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
   // Load configuration and values
   useEffect(() => {
     const loadData = async () => {
-      if (!user?.agencyId) return;
+      if (!user?.agency_id) return;
       
       setIsLoading(true);
       try {
         // Load config
-        const fieldConfig = await customFieldsApi.getConfig(user.agencyId);
+        const fieldConfig = await customFieldsApi.getConfig(user.agency_id);
         setConfig(fieldConfig);
         
         // Load values if entityId provided
@@ -80,7 +80,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
     };
     
     loadData();
-  }, [user?.agencyId, entityId, entityType]);
+  }, [user?.agency_id, entityId, entityType]);
 
   // Get fields for specific entity type
   const getFieldsForEntity = useCallback((type: EntityType): CustomField[] => {
@@ -116,12 +116,12 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
 
   // Create field
   const createField = useCallback(async (field: Omit<CustomField, 'id' | 'agencyId' | 'createdAt' | 'updatedAt'>) => {
-    if (!config || !user?.agencyId) return;
+    if (!config || !user?.agency_id) return;
     
     const newField: CustomField = {
       ...field,
       id: `field_${Date.now()}`,
-      agencyId: user.agencyId,
+      agencyId: user.agency_id!,
       createdAt: new Date(),
       updatedAt: new Date() };
     
@@ -133,7 +133,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
     setConfig(updatedConfig);
     
     return newField;
-  }, [config, user?.agencyId]);
+  }, [config, user?.agency_id]);
 
   // Update field
   const updateField = useCallback(async (fieldId: string, updates: Partial<CustomField>) => {
@@ -229,6 +229,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
         id: `value_${Date.now()}_${fieldId}`,
         fieldId,
         entityId,
+        entityType,
         value,
         createdAt: new Date(),
         updatedAt: new Date() }));

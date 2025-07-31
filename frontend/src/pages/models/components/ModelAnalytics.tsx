@@ -37,7 +37,7 @@ interface ModelAnalyticsProps {
   modelId: string;
 }
 
-export const ModelAnalytics = ({ modelId }: ModelAnalyticsProps) => {
+export const ModelAnalytics = ({ modelId: _modelId }: ModelAnalyticsProps) => {
   const [period, setPeriod] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
 
   // Mock data - replace with real API calls
@@ -215,7 +215,7 @@ export const ModelAnalytics = ({ modelId }: ModelAnalyticsProps) => {
         <Grid item xs={12} lg={8}>
           <ChartWidget
             title="Subscriber Growth"
-            data={subscriberGrowthData}
+            data={subscriberGrowthData as any}
             type="area"
             height={350}
             dataKey="subscribers"
@@ -312,7 +312,7 @@ export const ModelAnalytics = ({ modelId }: ModelAnalyticsProps) => {
         <Grid item xs={12} md={6}>
           <ChartWidget
             title="Message Volume"
-            data={messageVolumeData}
+            data={messageVolumeData as any}
             type="bar"
             height={300}
             dataKey="total"

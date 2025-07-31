@@ -51,7 +51,7 @@ const WhiteLabelPage = () => {
   // Check if user has permission
   const canAccessWhiteLabel = ['super_admin', 'agency_owner'].includes(user?.role || '');
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
   };
 

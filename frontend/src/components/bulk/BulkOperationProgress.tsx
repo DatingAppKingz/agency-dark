@@ -146,7 +146,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
               label={operation.status}
               size="small"
               color={getStatusColor(operation.status)}
-              icon={getStatusIcon(operation.status)}
+              icon={getStatusIcon(operation.status) as any}
             />
           </Box>
           <Box display="flex" gap={1}>

@@ -85,7 +85,7 @@ export const AgencyFeaturesManager: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [moduleDialog, setModuleDialog] = useState(false);
   const [integrationDialog, setIntegrationDialog] = useState(false);
-  const [setSettingsDialog] = useState<string | null>(null);
+  const [, setSettingsDialog] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   // Module form state
