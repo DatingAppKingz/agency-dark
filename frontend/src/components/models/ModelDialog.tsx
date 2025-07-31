@@ -51,11 +51,11 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
   
   // Fetch users with MODEL role for selection
   const { data: usersData } = useUsers({
-    role: UserRole.MODEL,
     size: 100, // Get all model users
-  });
+    // TODO: Add role filter when backend supports it
+  } as any);
   
-  const availableUsers = usersData?.items.filter(user => 
+  const availableUsers = usersData?.data?.filter((user: any) => 
     // Only show users that don't have a model profile yet (when creating)
     !isEditing || user.id === model.user_id
   ) || [];

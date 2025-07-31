@@ -324,7 +324,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
           {transactions && (
             <TablePagination
               component="div"
-              count={transactions.data.total}
+              count={transactions.total || 0}
               page={page}
               onPageChange={(_, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}

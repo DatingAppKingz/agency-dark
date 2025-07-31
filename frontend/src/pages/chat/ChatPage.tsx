@@ -79,7 +79,7 @@ const ChatPage = () => {
     const loadConversations = async () => {
       try {
         setIsLoadingConversations(true);
-        const data = await chatApi.getConversations();
+        const data = await chatApi.getConversations(user?.id || '');
         setConversations(data);
       } catch (err) {
         error('Failed to load conversations');
@@ -130,7 +130,7 @@ const ChatPage = () => {
   // Socket event handlers
   useEffect(() => {
     socket.on('new_message', (event: Message) => {
-      addMessage();
+      addMessage(event);
 
       // Update conversation's last message
       const conversation = getConversation(event.conversation_id);
@@ -172,7 +172,7 @@ const ChatPage = () => {
     });
 
     socket.on('message_updated', (event: Message) => {
-      updateMessage();
+      updateMessage(event);
     });
 
     socket.on('message_deleted', ({ conversation_id, message_id }: any) => {

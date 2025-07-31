@@ -162,7 +162,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
               fill={defaultColor}
               dataKey={dataKey}
             >
-              {data.map((index) => (
+              {data.map((_entry, index) => (
                 <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
               ))}
             </Pie>

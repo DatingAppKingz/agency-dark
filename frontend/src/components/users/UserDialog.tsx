@@ -107,8 +107,8 @@ export const UserDialog = ({ open, onClose, onSubmit, user, loading }: UserDialo
                 fullWidth
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
-                error={!!errors.password}
-                helperText={errors.password?.message}
+                error={!!(errors as any).password}
+                helperText={(errors as any).password?.message}
                 margin="normal"
                 InputProps={{
                   endAdornment: (

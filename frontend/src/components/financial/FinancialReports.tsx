@@ -248,7 +248,7 @@ export const FinancialReports = ({ modelId, agencyId }: FinancialReportsProps) =
                 fill="#8884d8"
                 dataKey="amount"
               >
-                {summaryData?.top_revenue_sources.map((index) => (
+                {summaryData?.top_revenue_sources.map((_source, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

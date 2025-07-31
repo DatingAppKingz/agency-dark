@@ -5,7 +5,8 @@ import { useDashboardStats, useModelPerformance } from '@/hooks/useAnalytics';
 import apiClient from '@/services/api/client';
 
 export const DashboardDebug = () => {
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
+  const token = localStorage.getItem('access_token');
   const { data: stats, isPending: statsLoading, error: statsError } = useDashboardStats();
   const { data: models, isPending: modelsLoading, error: modelsError } = useModelPerformance('month');
   const [directAPIResult, setDirectAPIResult] = useState<any>(null);

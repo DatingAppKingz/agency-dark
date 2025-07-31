@@ -177,7 +177,7 @@ export const InvoiceGenerator = ({
   const onSubmit = async (_data: InvoiceFormData) => {
     try {
       if (onSave) {
-        await onSave();
+        await onSave(getValues());
       }
       success('Invoice saved successfully');
       handleClose();

@@ -54,7 +54,7 @@ export const FanAssignment = ({
       
       loadModels();
     }
-  }, [open, error]);
+  }, [open]);
 
   const handleAssign = async () => {
     try {

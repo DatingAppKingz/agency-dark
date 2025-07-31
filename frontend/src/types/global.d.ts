@@ -44,4 +44,22 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
+// Process global for environment checks
+declare global {
+  interface Window {
+    process?: {
+      env: {
+        NODE_ENV?: string;
+      };
+    };
+  }
+}
+
+// For compatibility
+declare const process: {
+  env: {
+    NODE_ENV?: string;
+  };
+};
+
 export {};

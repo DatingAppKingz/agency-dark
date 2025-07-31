@@ -268,7 +268,7 @@ View Conversation: {{conversationUrl}}
               <InputLabel>Select Template</InputLabel>
               <Select
                 value={selectedTemplate}
-                onChange={() => setSelectedTemplate(event.target.value)}
+                onChange={(e) => setSelectedTemplate(e.target.value)}
                 label="Select Template"
               >
                 {templates.map(template => (
@@ -434,7 +434,7 @@ View Conversation: {{conversationUrl}}
                   fullWidth
                   label="Test Address"
                   value={testEmail}
-                  onChange={() => setTestEmail(event.target.value)}
+                  onChange={(e) => setTestEmail(e.target.value)}
                   size="small"
                 />
                 <Button

@@ -16,6 +16,7 @@ export interface Message {
   message_type?: 'text' | 'voice' | 'image' | 'video';
   attachments?: MessageAttachment[];
   created_at: string;
+  updated_at?: string;
   read_at?: string;
   delivered_at?: string;
   is_automated?: boolean;
@@ -29,6 +30,7 @@ export interface MessageAttachment {
   filename: string;
   size: number;
   duration?: number; // for audio/video
+  mime_type?: string;
 }
 
 export interface Conversation {

@@ -232,7 +232,7 @@ export const useAgencyFeatures = () => {
     if (!config) return 0;
     const limit = config.limits[limitType];
     if (!limit || typeof limit !== 'object') return 0;
-    return (limit.current / limit.max) * 100;
+    return ((limit as any).current / (limit as any).max) * 100;
   }, [config]);
 
   return {
