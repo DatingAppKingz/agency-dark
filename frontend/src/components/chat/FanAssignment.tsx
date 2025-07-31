@@ -12,7 +12,6 @@ import {
 import { User } from '@/types/auth';
 import { ChatUser } from '@/types/chat';
 import { useToast } from '@/components/common/Toaster';
-import { useModels } from '@/hooks/useModels';
 
 interface FanAssignmentProps {
   open: boolean;
