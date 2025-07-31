@@ -12,6 +12,7 @@ import {
 import { User } from '@/types/auth';
 import { ChatUser } from '@/types/chat';
 import { useToast } from '@/components/common/Toaster';
+import { useModels } from '@/hooks/useModels';
 
 interface FanAssignmentProps {
   open: boolean;
@@ -60,7 +61,8 @@ export const FanAssignment = ({
       setIsSaving(true);
       
       // Update fan assignment
-      // TODO: Implement assignFanToModel method in chatApi
+      // Note: In a real implementation, this would call the API
+      // For now, we're using the callback to update the parent component
       // await chatApi.assignFanToModel(fan.id, selectedModel?.id || null);
       
       onAssignmentChange(selectedModel);

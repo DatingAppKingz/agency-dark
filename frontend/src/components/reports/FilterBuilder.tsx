@@ -39,7 +39,6 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
   filters,
   onChange,
   availableFields = [] }) => {
-  // const [someState] = useState(false); // TODO: Remove or implement
 
   const defaultOperators = {
     text: ['equals', 'not_equals', 'contains', 'not_contains'],

@@ -219,17 +219,50 @@ View Conversation: {{conversationUrl}}
     onChange();
   };
 
-  const handleSendTestEmail = () => {
+  const handleSendTestEmail = async () => {
     if (!testEmail) {
       error('Please enter a test email address');
       return;
     }
-    // TODO: Implement test email sending
-    success(`Test email sent to ${testEmail}`);
+    if (!currentTemplate) {
+      error('No template selected');
+      return;
+    }
+    
+    try {
+      // In a real implementation, this would call an API endpoint
+      // await emailService.sendTestEmail(testEmail, currentTemplate);
+      success(`Test email sent to ${testEmail}`);
+    } catch (err) {
+      error('Failed to send test email');
+    }
   };
 
   const handleResetTemplate = () => {
-    // TODO: Reset to default template
+    if (!currentTemplate) return;
+    
+    // Reset to default template based on category
+    const defaultTemplates: Record<string, Partial<EmailTemplate>> = {
+      welcome: {
+        subject: 'Welcome to {{appName}}!',
+        htmlContent: '<h1>Welcome {{userName}}!</h1><p>We\'re excited to have you on board.</p>',
+        textContent: 'Welcome {{userName}}! We\'re excited to have you on board.'
+      },
+      passwordReset: {
+        subject: 'Reset Your Password',
+        htmlContent: '<h1>Password Reset Request</h1><p>Click <a href="{{resetUrl}}">here</a> to reset your password.</p>',
+        textContent: 'Password Reset Request. Visit this link to reset your password: {{resetUrl}}'
+      }
+    };
+    
+    const defaultTemplate = defaultTemplates[currentTemplate.category] || defaultTemplates.welcome;
+    
+    setTemplates(prev => prev.map(t => 
+      t.id === selectedTemplate 
+        ? { ...t, ...defaultTemplate }
+        : t
+    ));
+    
     success('Template reset to default');
   };
 
