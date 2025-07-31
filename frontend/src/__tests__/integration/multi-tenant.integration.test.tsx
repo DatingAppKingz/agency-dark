@@ -43,7 +43,7 @@ const server = setupServer(
     // Regular users only see their agency's users
     const users = currentUser?.agency_id === 'agency-1' ? [
       createMockUser({ id: '1', agency_id: 'agency-1' }),
-    ] documents: [];
+    ] : [];
     
     return res(ctx.json({ data: users, total: users.length }));
   }),

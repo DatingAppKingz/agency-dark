@@ -43,9 +43,9 @@ export const LanguageSelector: React.FC = () => {
           onClick={handleClick}
           size="small"
           sx={{ ml: 2 }}
-          aria-controls={Boolean(anchorEl) ? 'language-menu' : undefined}
+          aria-controls={anchorEl ? 'language-menu' : undefined}
           aria-haspopup="true"
-          aria-expanded={Boolean(anchorEl) ? 'true' : undefined}
+          aria-expanded={anchorEl ? 'true' : undefined}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Language />

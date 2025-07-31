@@ -64,7 +64,7 @@ class PerformanceMonitor {
 
     // Cumulative Layout Shift (CLS)
     let clsValue = 0;
-    let clsEntries: PerformanceEntry[] = [];
+    const clsEntries: PerformanceEntry[] = [];
     
     try {
       const clsObserver = new PerformanceObserver((list) => {

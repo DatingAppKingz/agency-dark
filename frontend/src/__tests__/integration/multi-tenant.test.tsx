@@ -1,5 +1,4 @@
 import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { render } from '@/__tests__/utils/test-utils';
 import ModelsPage from '@/pages/models/ModelsPage';
 import ChatPage from '@/pages/chat/ChatPage';
