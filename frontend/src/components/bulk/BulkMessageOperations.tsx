@@ -39,7 +39,7 @@ import { toast } from 'react-hot-toast';
 import { bulkOperationsService } from '@/services/api/bulkOperations';
 import { useModels } from '@/hooks/useModels';
 import { ModelProfile } from '@/types/models';
-import { BulkOperationType } from '@/types/bulkOperations';
+import { BulkOperationType, BulkOperationCreate } from '@/types/bulkOperations';
 import MediaUploader from '@/components/media/MediaUploader';
 
 interface BulkMessageFormData {
@@ -101,13 +101,13 @@ const BulkMessageOperations: React.FC = () => {
 
   // Create bulk operation
   const createBulkOperation = useMutation({
-    mutationFn: (data: any) => bulkOperationsService.createBulkOperation(data),
+    mutationFn: (data: BulkOperationCreate) => bulkOperationsService.createBulkOperation(data),
     onSuccess: () => {
       toast.success('Bulk operation created successfully');
       queryClient.invalidateQueries({ queryKey: ['bulk-operations'] });
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { detail?: string } } }) => {
       toast.error(error.response?.data?.detail || 'Failed to create bulk operation');
     } });
 

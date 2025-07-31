@@ -38,7 +38,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { financialApi } from '@/services/api/financial';
-import type { Payout } from '@/types/financial';
+import type { Payout, PaymentMethod } from '@/types/financial';
 
 const requestPayoutSchema = z.object({
   amount: z.number().min(10, 'Minimum payout amount is $10'),
@@ -259,7 +259,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                     </TableCell>
                   </TableRow>
                 ) : (
-                  payouts?.items?.map((payout: any) => (
+                  payouts?.items?.map((payout: Payout) => (
                     <TableRow key={payout.id}>
                       <TableCell>{formatDate(payout.requested_at)}</TableCell>
                       <TableCell>
@@ -352,7 +352,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                 error={!!errors.payment_method_id}
                 helperText={errors.payment_method_id?.message}
               >
-                {paymentMethods?.map((method: any) => (
+                {paymentMethods?.map((method: PaymentMethod) => (
                   <MenuItem key={method.id} value={method.id}>
                     {method.type.replace('_', ' ').toUpperCase()}
                     {method.is_default && ' (Default)'}

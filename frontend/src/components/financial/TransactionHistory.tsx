@@ -273,7 +273,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
                     </TableCell>
                   </TableRow>
                 ) : (
-                  transactions?.items?.map((transaction: any) => (
+                  transactions?.items?.map((transaction: Transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>{formatDate(transaction.created_at)}</TableCell>
                       <TableCell>

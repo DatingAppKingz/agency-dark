@@ -20,7 +20,7 @@ import {
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { financialApi } from '@/services/api/financial';
-import type { Revenue } from '@/types/financial';
+import type { Revenue, RevenueBreakdown } from '@/types/financial';
 
 interface StatCardProps {
   title: string;
@@ -116,7 +116,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
   const formatChartData = () => {
     if (!revenueHistory) return [];
     
-    return revenueHistory.map((rev: any) => ({
+    return revenueHistory.map((rev: Revenue) => ({
       period: new Date(rev.start_date).toLocaleDateString('en-US', {
         month: 'short',
         day: period === 'daily' ? 'numeric' : undefined,
@@ -131,7 +131,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
   const formatBreakdownData = () => {
     if (!currentRevenue?.breakdown) return [];
     
-    return currentRevenue.breakdown.map((item: any) => ({
+    return currentRevenue.breakdown.map((item: RevenueBreakdown) => ({
       name: item.source.charAt(0).toUpperCase() + item.source.slice(1).replace('_', ' '),
       value: item.amount,
       percentage: item.percentage,

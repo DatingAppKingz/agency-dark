@@ -61,7 +61,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
       toast.success('Operation cancelled');
       queryClient.invalidateQueries({ queryKey: ['bulk-operation', operationId] });
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { detail?: string } } }) => {
       toast.error(error.response?.data?.detail || 'Failed to cancel operation');
     } });
 
@@ -72,7 +72,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
       toast.success('Operation retry started');
       queryClient.invalidateQueries({ queryKey: ['bulk-operation', operationId] });
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { detail?: string } } }) => {
       toast.error(error.response?.data?.detail || 'Failed to retry operation');
     } });
 

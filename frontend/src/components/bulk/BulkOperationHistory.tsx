@@ -74,7 +74,7 @@ const BulkOperationHistory: React.FC = () => {
       toast.success('Operation cancelled');
       queryClient.invalidateQueries({ queryKey: ['bulk-operations'] });
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { detail?: string } } }) => {
       toast.error(error.response?.data?.detail || 'Failed to cancel operation');
     } });
 
@@ -85,7 +85,7 @@ const BulkOperationHistory: React.FC = () => {
       toast.success('Operation restarted');
       queryClient.invalidateQueries({ queryKey: ['bulk-operations'] });
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { detail?: string } } }) => {
       toast.error(error.response?.data?.detail || 'Failed to retry operation');
     } });
 
@@ -103,7 +103,7 @@ const BulkOperationHistory: React.FC = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast.success('Results downloaded');
-    } catch (error: any) {
+    } catch (error) {
       toast.error('Failed to download results');
     }
   };

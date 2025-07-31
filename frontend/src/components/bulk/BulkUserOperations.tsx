@@ -50,7 +50,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { bulkOperationsService } from '@/services/api/bulkOperations';
 import { userService } from '@/services/api/users';
-import { BulkOperationType } from '@/types/bulkOperations';
+import { BulkOperationType, BulkOperationCreate } from '@/types/bulkOperations';
 import { UserRole } from '@/types/auth';
 import BulkOperationProgress from './BulkOperationProgress';
 
@@ -91,7 +91,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
 
   // Create bulk operation
   const createBulkOperation = useMutation({
-    mutationFn: (data: any) => bulkOperationsService.createBulkOperation(data),
+    mutationFn: (data: BulkOperationCreate) => bulkOperationsService.createBulkOperation(data),
     onSuccess: (response) => {
       toast.success('Bulk operation started');
       setActiveOperation(response.id);
@@ -100,7 +100,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
       resetSelection();
       setShowBulkDialog(false);
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { detail?: string } } }) => {
       toast.error(error.response?.data?.detail || 'Failed to start bulk operation');
     } });
 
