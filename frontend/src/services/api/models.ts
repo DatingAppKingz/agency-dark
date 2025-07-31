@@ -8,6 +8,7 @@ import {
   CreateModelProfileData, 
   UpdateModelProfileData 
 } from '@/types/models';
+import { logger } from '@/utils/logger';
 import { QueryParams } from '@/types/api';
 
 export const modelsService = {
@@ -69,7 +70,7 @@ export const modelsService = {
 
   // Model Content - placeholder
   async getModelContent(_modelId: string): Promise<ModelContent[]> {
-    console.warn('Content management through orchestration API');
+    logger.warn('Content management through orchestration API');
     return [];
   },
 
@@ -114,22 +115,22 @@ export const modelsService = {
 
   // Placeholder methods for features not in backend yet
   async getAvailability(_modelId: string): Promise<ModelAvailability[]> {
-    console.warn('Availability not implemented in backend');
+    logger.warn('Availability not implemented in backend');
     return [];
   },
 
   async updateAvailability(_modelId: string, availability: ModelAvailability[]): Promise<ModelAvailability[]> {
-    console.warn('Availability update not implemented in backend');
+    logger.warn('Availability update not implemented in backend');
     return availability;
   },
 
   async getPreferences(_modelId: string): Promise<ModelPreferences> {
-    console.warn('Preferences not implemented in backend');
+    logger.warn('Preferences not implemented in backend');
     return {} as ModelPreferences;
   },
 
   async updatePreferences(_modelId: string, preferences: Partial<ModelPreferences>): Promise<ModelPreferences> { 
-    console.warn('Preferences update not implemented in backend');
+    logger.warn('Preferences update not implemented in backend');
     return preferences as ModelPreferences;
     },
 

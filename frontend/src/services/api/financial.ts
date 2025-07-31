@@ -8,6 +8,7 @@ import type {
   Invoice,
   FinancialReport,
   FinancialSummary } from '@/types/financial';
+import { logger } from '@/utils/logger';
 
 export interface TransactionFilters extends QueryParams {
   type?: Transaction['type'];
@@ -195,7 +196,7 @@ export const financialApi = {
 
   // Legacy methods that aren't directly available in backend
   async getTransactions(filters?: TransactionFilters): Promise<PaginatedResponse<Transaction>> {
-    console.warn('Transaction listing not directly available, use billing cycles');
+    logger.warn('Transaction listing not directly available, use billing cycles');
     return {
       items: [],
       total: 0,
@@ -249,13 +250,13 @@ export const financialApi = {
   },
 
   async getRevenueHistory(_params: any): Promise<Revenue[]> {
-    console.warn('Revenue history not directly available');
+    logger.warn('Revenue history not directly available');
     return [];
   },
 
   // Reports
   async getReports(params?: QueryParams): Promise<PaginatedResponse<FinancialReport>> {
-    console.warn('Financial reports not directly available');
+    logger.warn('Financial reports not directly available');
     return {
       items: [],
       total: 0,

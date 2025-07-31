@@ -6,6 +6,7 @@ import {
   ChatStats 
 } from '@/types/chat';
 import { QueryParams } from '@/types/api';
+import { logger } from '@/utils/logger';
 
 export const chatApi = {
   // Note: Backend uses orchestration endpoints for messaging
@@ -82,7 +83,7 @@ export const chatApi = {
 
   // Placeholder methods for features not directly available in backend
   async getConversation(_event: string): Promise<Conversation> {
-    console.warn('Single conversation endpoint not available, use getConversations');
+    logger.warn('Single conversation endpoint not available, use getConversations');
     throw new Error('Not implemented');
   },
 
@@ -96,37 +97,37 @@ export const chatApi = {
   },
 
   async archiveConversation(_conversationId: string): Promise<void> {
-    console.warn('Archive functionality not available in backend');
+    logger.warn('Archive functionality not available in backend');
   },
 
   async pinConversation(_conversationId: string, _isPinned: boolean): Promise<void> {
-    console.warn('Pin functionality not available in backend');
+    logger.warn('Pin functionality not available in backend');
   },
 
   async assignChatter(_conversationId: string, _chatterId: string): Promise<void> {
-    console.warn('Chatter assignment managed through orchestration');
+    logger.warn('Chatter assignment managed through orchestration');
   },
 
   async updateConversation(conversationId: string, data: Partial<Conversation>): Promise<Conversation> {
-    console.warn('Conversation update not available in backend');
+    logger.warn('Conversation update not available in backend');
     return { id: conversationId, ...data } as Conversation;
   },
 
   async markAsRead(_conversationId: string, _messageIds?: string[]): Promise<void> { 
-    console.warn('Mark as read not available in backend');
+    logger.warn('Mark as read not available in backend');
   },
 
   async deleteMessage(_conversationId: string, _messageId: string): Promise<void> {
-    console.warn('Message deletion not available in backend');
+    logger.warn('Message deletion not available in backend');
   },
 
   async sendTypingStatus(_conversationId: string, isTyping: boolean): Promise<void> {
     // This would be handled by Socket.IO in real-time
-    console.log('Typing status:', isTyping);
+    logger.info('Typing status:', isTyping);
   },
 
   async getChatStats(): Promise<ChatStats> {
-    console.warn('Chat stats not directly available, use analytics endpoints');
+    logger.warn('Chat stats not directly available, use analytics endpoints');
     return {
       total_conversations: 0,
       active_chats: 0,
@@ -135,23 +136,23 @@ export const chatApi = {
   },
 
   async searchConversations(_searchTerm: string): Promise<Conversation[]> {
-    console.warn('Search not implemented in backend');
+    logger.warn('Search not implemented in backend');
     return [];
   },
 
   async getCannedResponses(): Promise<Array<{ id: string; title: string; content: string }>> {
-    console.warn('Canned responses not available from backend');
+    logger.warn('Canned responses not available from backend');
     return [];
   },
 
   async createCannedResponse(_title: string, _content: string): Promise<void> {
-    console.warn('Canned response creation not available in backend');
+    logger.warn('Canned response creation not available in backend');
   },
 
   async blockUser(_conversationId: string, _userId: string): Promise<void> {
-    console.warn('User blocking not implemented in backend');
+    logger.warn('User blocking not implemented in backend');
   },
 
   async reportUser(_conversationId: string, _userId: string, _reason: string): Promise<void> {
-    console.warn('User reporting not implemented in backend');
+    logger.warn('User reporting not implemented in backend');
   } };

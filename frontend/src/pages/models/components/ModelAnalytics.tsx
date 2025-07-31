@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { logger } from '@/utils/logger';
 import {
   Box,
   Grid,
@@ -176,7 +177,7 @@ export const ModelAnalytics = ({ modelId: _modelId }: ModelAnalyticsProps) => {
   };
 
   const handleExport = () => {
-    console.log('Exporting analytics data...');
+    logger.info('Exporting analytics data...');
   };
 
   return (

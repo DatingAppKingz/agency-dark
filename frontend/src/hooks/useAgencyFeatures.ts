@@ -8,6 +8,7 @@ import {
   FeatureUsage,
   FEATURE_CATALOG,
   IntegrationType } from '@/types/agencyFeatures';
+import { logger } from '@/utils/logger';
 
 const STORAGE_KEY = 'agency_features';
 
@@ -60,7 +61,7 @@ export const useAgencyFeatures = () => {
         const featureConfig = await agencyFeaturesApi.getConfig(user.agency_id);
         setConfig(featureConfig);
       } catch (error) {
-        console.error('Error loading agency features:', error);
+        logger.error('Error loading agency features:', error);
       } finally {
         setIsLoading(false);
       }
@@ -76,7 +77,7 @@ export const useAgencyFeatures = () => {
       await agencyFeaturesApi.saveConfig(newConfig);
       setConfig(newConfig);
     } catch (error) {
-      console.error('Error saving agency features:', error);
+      logger.error('Error saving agency features:', error);
       throw error;
     } finally {
       setIsSaving(false);
