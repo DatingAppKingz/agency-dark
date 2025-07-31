@@ -35,7 +35,7 @@ export const RegisterPage = () => (
 );
 
 export const UsersPage = () => {
-  const role = (window as any).mockUserRole || 'AGENCY_ADMIN';
+  const role = (window as { mockUserRole?: string }).mockUserRole || 'AGENCY_ADMIN';
   if (role === 'MODEL') {
     return <div>Access Denied</div>;
   }
@@ -84,7 +84,7 @@ export const AdminDashboard = () => (
 );
 
 export const SettingsPage = () => {
-  const role = (window as any).mockUserRole || 'AGENCY_ADMIN';
+  const role = (window as { mockUserRole?: string }).mockUserRole || 'AGENCY_ADMIN';
   return (
     <div>
       <h1>Settings</h1>

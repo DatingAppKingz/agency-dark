@@ -206,7 +206,7 @@ const BulkMessageOperations: React.FC = () => {
         <InputLabel>Recipient Type</InputLabel>
         <Select
           value={formData.recipientType}
-          onChange={(e) => setFormData({ ...formData, recipientType: e.target.value as any })}
+          onChange={(e) => setFormData({ ...formData, recipientType: e.target.value as 'all' | 'active' | 'selected' | 'filter' })}
           label="Recipient Type"
         >
           <MenuItem value="all">All Subscribers</MenuItem>
@@ -318,7 +318,7 @@ const BulkMessageOperations: React.FC = () => {
                 <InputLabel>Send As</InputLabel>
                 <Select
                   value={formData.sendAs}
-                  onChange={(e) => setFormData({ ...formData, sendAs: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, sendAs: e.target.value as 'model' | 'agency' })}
                   label="Send As"
                 >
                   <MenuItem value="model">Model</MenuItem>
@@ -347,7 +347,7 @@ const BulkMessageOperations: React.FC = () => {
                 <InputLabel>Priority</InputLabel>
                 <Select
                   value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'low' | 'normal' | 'high' })}
                   label="Priority"
                 >
                   <MenuItem value="low">Low</MenuItem>

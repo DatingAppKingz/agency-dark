@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { socketManager } from '@/services/socket/socketManager';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/common/Toaster';
+import { logger } from '@/utils/logger';
 
 const SocketContext = createContext(socketManager);
 
@@ -22,7 +23,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       socketManager.connect();
 
       socketManager.on('connect', () => {
-        console.log('Connected to chat server');
+        logger.info('Connected to chat server');
       });
 
       socketManager.on('disconnect', (reason) => {

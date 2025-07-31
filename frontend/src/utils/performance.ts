@@ -1,4 +1,5 @@
 // Performance monitoring utilities
+import { logger } from './logger';
 
 interface PerformanceMetrics {
   FCP?: number; // First Contentful Paint
@@ -32,7 +33,7 @@ class PerformanceMonitor {
       });
       fcpObserver.observe({ entryTypes: ['paint'] });
     } catch (e) {
-      console.warn('FCP observer not supported');
+      logger.warn('FCP observer not supported');
     }
 
     // Largest Contentful Paint (LCP)
@@ -45,7 +46,7 @@ class PerformanceMonitor {
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
     } catch (e) {
-      console.warn('LCP observer not supported');
+      logger.warn('LCP observer not supported');
     }
 
     // First Input Delay (FID)
@@ -59,7 +60,7 @@ class PerformanceMonitor {
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
     } catch (e) {
-      console.warn('FID observer not supported');
+      logger.warn('FID observer not supported');
     }
 
     // Cumulative Layout Shift (CLS)
@@ -69,7 +70,7 @@ class PerformanceMonitor {
     try {
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const layoutShift = entry as any;
+          const layoutShift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
           if (!layoutShift.hadRecentInput) {
             clsValue += layoutShift.value;
             clsEntries.push(entry);
@@ -80,7 +81,7 @@ class PerformanceMonitor {
       });
       clsObserver.observe({ entryTypes: ['layout-shift'] });
     } catch (e) {
-      console.warn('CLS observer not supported');
+      logger.warn('CLS observer not supported');
     }
 
     // Time to First Byte (TTFB)
@@ -107,13 +108,13 @@ class PerformanceMonitor {
   }
 
   public logMetrics(): void {
-    console.group('Performance Metrics');
-    console.log('FCP:', this.metrics.FCP ? `${this.metrics.FCP}ms` : 'Not measured');
-    console.log('LCP:', this.metrics.LCP ? `${this.metrics.LCP}ms` : 'Not measured');
-    console.log('FID:', this.metrics.FID ? `${this.metrics.FID}ms` : 'Not measured');
-    console.log('CLS:', this.metrics.CLS || 'Not measured');
+    logger.group('Performance Metrics');
+    logger.info('FCP:', this.metrics.FCP ? `${this.metrics.FCP}ms` : 'Not measured');
+    logger.info('LCP:', this.metrics.LCP ? `${this.metrics.LCP}ms` : 'Not measured');
+    logger.info('FID:', this.metrics.FID ? `${this.metrics.FID}ms` : 'Not measured');
+    logger.info('CLS:', this.metrics.CLS || 'Not measured');
     console.log('TTFB:', this.metrics.TTFB ? `${this.metrics.TTFB}ms` : 'Not measured');
-    console.groupEnd();
+    logger.groupEnd();
   }
 }
 

@@ -321,7 +321,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
             select
             label="Status"
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'pending' | 'paid')}
             size="small"
             sx={{ minWidth: 120 }}
           >
@@ -335,7 +335,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
             select
             label="Sort By"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as 'name' | 'earnings' | 'commission')}
             size="small"
             sx={{ minWidth: 120 }}
           >

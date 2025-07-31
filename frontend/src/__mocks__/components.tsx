@@ -14,7 +14,7 @@ export const PermissionGate: React.FC<PermissionGateProps> = ({
   requireAll = true, 
   children 
 }) => {
-  const mockPermissions = (window as any).mockPermissions || [];
+  const mockPermissions = (window as { mockPermissions?: string[] }).mockPermissions || [];
   
   let hasPermission = false;
   if (permission) {
@@ -37,7 +37,7 @@ interface RoleGuardProps {
 }
 
 export const RoleGuard: React.FC<RoleGuardProps> = ({ roles, fallback, children }) => {
-  const mockRole = (window as any).mockUserRole || 'AGENCY_ADMIN';
+  const mockRole = (window as { mockUserRole?: string }).mockUserRole || 'AGENCY_ADMIN';
   const hasRole = roles.includes(mockRole);
   
   if (!hasRole) {

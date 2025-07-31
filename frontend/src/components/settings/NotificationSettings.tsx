@@ -130,7 +130,7 @@ export const NotificationSettings = () => {
             <Typography variant="h6">Push Notifications</Typography>
             <Chip
               label={status.text}
-              color={status.color as any}
+              color={status.color as 'success' | 'error' | 'warning'}
               size="small"
               icon={status.icon}
             />
