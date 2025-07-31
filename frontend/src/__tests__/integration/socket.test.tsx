@@ -33,7 +33,7 @@ describe('Socket.IO Connection', () => {
         useAuthStore: () => mockAuthStore,
       }));
 
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
 
       expect(io).toHaveBeenCalledWith(
         expect.any(String),
@@ -54,13 +54,13 @@ describe('Socket.IO Connection', () => {
         }),
       }));
 
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
 
       expect(io).not.toHaveBeenCalled();
     });
 
     it('should handle connection events', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
 
       // Simulate connection
       act(() => {
@@ -77,7 +77,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should handle disconnection events', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
 
       // Simulate disconnection
       act(() => {
@@ -94,7 +94,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should handle reconnection attempts', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
 
       // Simulate reconnect attempt
       act(() => {
@@ -113,7 +113,7 @@ describe('Socket.IO Connection', () => {
 
   describe('Message Handling', () => {
     it('should emit chat messages', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
       const socket = result.current;
 
       const message = {
@@ -130,7 +130,7 @@ describe('Socket.IO Connection', () => {
 
     it('should handle incoming messages', () => {
       const messageHandler = jest.fn();
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
       const socket = result.current;
 
       act(() => {
@@ -157,7 +157,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should emit typing status', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
       const socket = result.current;
 
       act(() => {
@@ -175,7 +175,7 @@ describe('Socket.IO Connection', () => {
 
     it('should handle typing status updates', () => {
       const typingHandler = jest.fn();
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
       const socket = result.current;
 
       act(() => {
@@ -203,7 +203,7 @@ describe('Socket.IO Connection', () => {
 
   describe('Room Management', () => {
     it('should join conversation room', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
       const socket = result.current;
 
       act(() => {
@@ -216,7 +216,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should leave conversation room', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
       const socket = result.current;
 
       act(() => {
@@ -232,7 +232,7 @@ describe('Socket.IO Connection', () => {
   describe('Error Handling', () => {
     it('should handle connection errors', () => {
       const errorHandler = jest.fn();
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
       const socket = result.current;
 
       act(() => {
@@ -254,7 +254,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should handle authentication errors', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
 
       const authError = { message: 'Invalid token' };
 
@@ -274,7 +274,7 @@ describe('Socket.IO Connection', () => {
 
   describe('Cleanup', () => {
     it('should cleanup event listeners on unmount', () => {
-      const { result, unmount } = renderHook(() => useSocket());
+      const { unmount } = renderHook(() => useSocket());
 
       unmount();
 
@@ -283,7 +283,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should remove specific event listeners', () => {
-      const { result } = renderHook(() => useSocket());
+      renderHook(() => useSocket());
       const socket = result.current;
       const handler = jest.fn();
 

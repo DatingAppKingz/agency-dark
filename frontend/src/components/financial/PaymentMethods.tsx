@@ -164,15 +164,18 @@ export const PaymentMethods = () => {
   };
 
   const getMethodDetails = (method: PaymentMethod) => { switch (method.type) {
-      case 'bank_account':
+      case 'bank_account': {
         const bank = method.details as BankDetails;
         return `${bank.bank_name } - ****${bank.account_number.slice(-4)}`;
-      case 'paypal':
+      }
+      case 'paypal': {
         const paypal = method.details as PayPalDetails;
         return paypal.email;
-      case 'crypto_wallet':
+      }
+      case 'crypto_wallet': {
         const crypto = method.details as CryptoWalletDetails;
         return `${crypto.currency} - ${crypto.address.slice(0, 6)}...${crypto.address.slice(-4)}`;
+      }
       default:
         return '';
     }

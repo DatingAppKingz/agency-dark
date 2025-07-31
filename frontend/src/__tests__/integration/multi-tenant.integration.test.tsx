@@ -1,11 +1,11 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+// import userEvent from '@testing-library/user-event';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { render, createMockUser, createMockAgency, createMockModel, createMockChat } from '@/test-utils/test-utils';
+import { render, createMockUser, createMockModel, createMockChat } from '@/test-utils/test-utils';
 import { useAuthStore, apiClient } from '../../__mocks__/services';
-import { ModelsPage, ChatsPage, UsersPage, AnalyticsPage } from '../../__mocks__/pages';
+import { ModelsPage, UsersPage, AnalyticsPage } from '../../__mocks__/pages';
 
 // Setup MSW server with agency-aware endpoints
 const server = setupServer(
@@ -27,7 +27,7 @@ const server = setupServer(
   }),
   
   rest.get('/api/users', (req, res, ctx) => {
-    const currentUser = useAuthStore.getState().user;
+    const _currentUser = useAuthStore.getState().user;
     
     if (currentUser?.role === 'SUPER_ADMIN') {
       // Super admin can see all users
@@ -49,7 +49,7 @@ const server = setupServer(
   }),
   
   rest.get('/api/chats', (req, res, ctx) => {
-    const currentUser = useAuthStore.getState().user;
+    const _currentUser = useAuthStore.getState().user;
     const agencyFilter = req.url.searchParams.get('agency_id');
     
     // Ensure agency filter matches user's agency
@@ -118,7 +118,7 @@ describe('Multi-Tenant Isolation Tests', () => {
       server.use(
         rest.get('/api/models/:id', (req, res, ctx) => {
           const modelId = req.params.id;
-          const currentUser = useAuthStore.getState().user;
+          const _currentUser = useAuthStore.getState().user;
           
           // Model from different agency
           if (modelId === 'model-from-agency-2') {
@@ -201,7 +201,7 @@ describe('Multi-Tenant Isolation Tests', () => {
       server.use(
         rest.put('/api/models/:id', (req, res, ctx) => {
           const modelId = req.params.id;
-          const currentUser = useAuthStore.getState().user;
+          const _currentUser = useAuthStore.getState().user;
           
           // Check if model belongs to user's agency
           if (modelId === 'model-agency-2') {
@@ -431,7 +431,7 @@ describe('Multi-Tenant Isolation Tests', () => {
       };
 
       // Simulate receiving events
-      const eventHandler = jest.fn();
+      const _eventHandler = jest.fn();
       mockSocket.on.mockImplementation((event, handler) => {
         if (event === 'model:update') {
           // Simulate receiving updates
@@ -499,10 +499,10 @@ describe('Multi-Tenant Isolation Tests', () => {
         isAuthenticated: true,
       });
 
-      let capturedFormData: any;
+      let _capturedFormData: any;
       server.use(
         rest.post('/api/upload', (req, res, ctx) => {
-          capturedFormData = req.body;
+          _capturedFormData = req.body;
           return res(ctx.json({
             file_id: 'uploaded-1',
             agency_id: 'agency-1',
@@ -541,7 +541,7 @@ describe('Multi-Tenant Isolation Tests', () => {
 
       server.use(
         rest.get('/api/search', (req, res, ctx) => {
-          const query = req.url.searchParams.get('q');
+          const _query = req.url.searchParams.get('q');
           const agencyFilter = req.url.searchParams.get('agency_id');
           
           if (agencyFilter !== 'agency-1') {
