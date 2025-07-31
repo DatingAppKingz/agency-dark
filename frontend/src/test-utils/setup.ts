@@ -3,7 +3,7 @@ import { cleanup } from '@testing-library/react';
 
 // Add TextEncoder/TextDecoder polyfills for Node.js environment
 if (typeof globalThis.TextEncoder === 'undefined') {
-  // @ts-ignore
+  // @ts-expect-error - Node.js util module types
   const { TextEncoder, TextDecoder } = await import('util');
   globalThis.TextEncoder = TextEncoder;
   globalThis.TextDecoder = TextDecoder as any;

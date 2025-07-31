@@ -2,11 +2,13 @@
 
 // Node.js globals for test environment
 declare global {
+  /* eslint-disable no-var */
   var TextEncoder: typeof TextEncoder;
   var TextDecoder: typeof TextDecoder;
   var ResizeObserver: typeof ResizeObserver;
   var MutationObserver: typeof MutationObserver;
   var IntersectionObserver: typeof IntersectionObserver;
+  /* eslint-enable no-var */
   
   namespace NodeJS {
     interface Timeout {

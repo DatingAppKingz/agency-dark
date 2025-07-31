@@ -14,7 +14,7 @@ export const ResponsiveGrid = ({
   children,
   ...props
 }: ResponsiveGridProps) => {
-  const { } = useResponsive();
+  useResponsive(); // TODO: Use responsive values if needed
   
   return (
     <Grid

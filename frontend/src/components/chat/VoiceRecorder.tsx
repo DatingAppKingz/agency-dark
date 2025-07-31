@@ -22,7 +22,7 @@ interface VoiceRecorderProps {
 
 export const VoiceRecorder = ({ onSendAudio, disabled }: VoiceRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [] = useState(false);
+  // const [someState] = useState(false); // TODO: Remove or implement
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);

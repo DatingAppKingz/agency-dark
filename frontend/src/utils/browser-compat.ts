@@ -149,7 +149,7 @@ export const browserCompat = {
           
           requestAnimationFrame(animation);
         } else {
-          originalScrollTo.apply(window, arguments as any);
+          originalScrollTo.apply(window, [x, y] as any);
         }
       };
     }

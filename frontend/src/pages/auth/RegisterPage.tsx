@@ -46,7 +46,7 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword: _confirmPassword, ...registerData } = data;
       await registerUser(registerData);
       success('Registration successful!');
       navigate('/dashboard');

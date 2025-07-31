@@ -51,7 +51,7 @@ const DAYS_OF_WEEK = [
   'Saturday',
 ];
 
-export const ModelAvailability = ({ }: ModelAvailabilityProps) => {
+export const ModelAvailability = (_props: ModelAvailabilityProps) => {
   const [autoReplyEnabled, setAutoReplyEnabled] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSlot, setEditingSlot] = useState<AvailabilitySlot | null>(null);

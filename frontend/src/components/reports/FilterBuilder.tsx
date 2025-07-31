@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
@@ -39,7 +39,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
   filters,
   onChange,
   availableFields = [] }) => {
-  const [] = useState(false);
+  // const [someState] = useState(false); // TODO: Remove or implement
 
   const defaultOperators = {
     text: ['equals', 'not_equals', 'contains', 'not_contains'],

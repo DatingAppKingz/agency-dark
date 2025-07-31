@@ -68,7 +68,7 @@ const ReportsPage: React.FC = () => {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { } = useAuth();
+  useAuth(); // TODO: Use auth values if needed
 
   // Fetch templates
   const { data: templates, isPending } = useQuery({

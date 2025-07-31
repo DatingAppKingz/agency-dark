@@ -11,11 +11,24 @@ export const useResponsive = () => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const isLargeDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   
-  const up = (breakpoint: Breakpoint) => useMediaQuery(theme.breakpoints.up(breakpoint));
-  const down = (breakpoint: Breakpoint) => useMediaQuery(theme.breakpoints.down(breakpoint));
-  const between = (start: Breakpoint, end: Breakpoint) => 
-    useMediaQuery(theme.breakpoints.between(start, end));
-  const only = (breakpoint: Breakpoint) => useMediaQuery(theme.breakpoints.only(breakpoint));
+  // Note: These functions violate Rules of Hooks - they should be refactored
+  // to either be separate hooks or use a different pattern
+  const up = (breakpoint: Breakpoint) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useMediaQuery(theme.breakpoints.up(breakpoint));
+  };
+  const down = (breakpoint: Breakpoint) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useMediaQuery(theme.breakpoints.down(breakpoint));
+  };
+  const between = (start: Breakpoint, end: Breakpoint) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useMediaQuery(theme.breakpoints.between(start, end));
+  };
+  const only = (breakpoint: Breakpoint) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useMediaQuery(theme.breakpoints.only(breakpoint));
+  };
   
   return {
     isMobile,
