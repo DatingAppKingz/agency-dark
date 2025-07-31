@@ -39,7 +39,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValue
     if (value !== undefined && value !== message) {
       setMessage(value);
     }
-  }, [value]);
+  }, [value, message]);
 
   const handleSend = () => {
     if (message.trim() || attachments.length > 0) {

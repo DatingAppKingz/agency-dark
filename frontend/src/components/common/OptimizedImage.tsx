@@ -81,7 +81,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         observerRef.current.disconnect();
       }
     };
-  }, [src, lazy, priority, width, quality]);
+  }, [src, lazy, priority, width, quality, getOptimizedUrl]);
 
   const handleLoad = () => {
     setLoading(false);
@@ -108,7 +108,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         document.head.removeChild(link);
       };
     }
-  }, [src, priority, width, quality]);
+  }, [src, priority, width, quality, getOptimizedUrl]);
 
   const containerStyle = {
     position: 'relative' as const,

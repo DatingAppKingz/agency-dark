@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -142,8 +142,8 @@ export const MessageSearch = ({ open, onClose, conversationId, onMessageSelect }
     setIsSearching(false);
   };
 
-  const debouncedSearch = useCallback(
-    debounce((term: string) => performSearch(term), 300),
+  const debouncedSearch = useMemo(
+    () => debounce((term: string) => performSearch(term), 300),
     [conversationId, searchFilters]
   );
 

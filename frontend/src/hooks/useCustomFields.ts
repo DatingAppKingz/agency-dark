@@ -242,7 +242,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
     } finally {
       setIsSaving(false);
     }
-  }, [entityId, values]);
+  }, [entityId, entityType, values]);
 
   // Validate field value
   const validateField = useCallback((field: CustomField, value: FieldValue): string | null => {
@@ -311,7 +311,7 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
     });
     
     return errors;
-  }, [config, getFieldsForEntity, validateField, values]);
+  }, [config, entityType, getFieldsForEntity, validateField, values]);
 
   return {
     config,

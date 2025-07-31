@@ -89,6 +89,7 @@ const ChatPage = () => {
     };
 
     loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load messages when conversation changes
@@ -125,6 +126,7 @@ const ChatPage = () => {
       // Leave conversation room
       socket.leaveConversation(activeConversationId);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeConversationId]);
 
   // Socket event handlers

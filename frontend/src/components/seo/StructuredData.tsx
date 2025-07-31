@@ -25,7 +25,7 @@ export const StructuredData = ({ type, data }: StructuredDataProps) => {
     return () => {
       document.head.removeChild(script);
     };
-  }, [type, data]);
+  }, [type, data, structuredData]);
 
   return null;
 };
