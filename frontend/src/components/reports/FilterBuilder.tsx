@@ -165,7 +165,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
 
       case 'select':
         const options = fieldConfig?.options || [];
-        if (filter.operator === 'in' || filter.operator === 'not_in') {
+        if (filter.operator === 'in' || (filter.operator as any) === 'not_in') {
           return (
             <Autocomplete
               multiple
@@ -292,7 +292,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                         <Select
                           value={filter.operator}
                           onChange={(e) =>
-                            updateFilter(filter.id, { operator: e.target.value })
+                            updateFilter(filter.id, { operator: e.target.value as any })
                           }
                           label="Operator"
                         >

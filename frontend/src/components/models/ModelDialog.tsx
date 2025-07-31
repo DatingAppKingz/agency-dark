@@ -64,7 +64,7 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
     handleSubmit,
     formState: { errors },
     reset } = useForm<CreateModelProfileData | UpdateModelProfileData>({
-    resolver: zodResolver(isEditing ? updateModelSchema : createModelSchema),
+    resolver: zodResolver(isEditing ? updateModelSchema : createModelSchema) as any,
     defaultValues: model ? {
       stage_name: model.stage_name,
       bio: model.bio || '',

@@ -222,7 +222,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
   const renderBulkDialog = () => {
     if (!bulkOperation) return null;
 
-    const dialogTitles: Record<BulkOperationType, string> = {
+    const dialogTitles: Partial<Record<BulkOperationType, string>> = {
       [BulkOperationType.USER_ACTIVATE]: 'Activate Users',
       [BulkOperationType.USER_DEACTIVATE]: 'Deactivate Users',
       [BulkOperationType.USER_UPDATE]: 'Update Users',

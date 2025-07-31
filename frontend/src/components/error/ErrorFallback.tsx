@@ -34,7 +34,7 @@ export const ErrorFallback = ({ error, resetError, showDetails = false }: ErrorF
           We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
         </Typography>
 
-        {showDetails && process.env.NODE_ENV === 'development' && (
+        {showDetails && import.meta.env.MODE === 'development' && (
           <Paper
             sx={{
               p: 2,

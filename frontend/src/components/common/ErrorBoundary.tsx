@@ -9,7 +9,7 @@ export const ErrorBoundary = () => {
     <ErrorFallback
       error={error }
       resetError={() => window.location.reload()}
-      showDetails={process.env.NODE_ENV === 'development'}
+      showDetails={import.meta.env.MODE === 'development'}
     />
   );
 };

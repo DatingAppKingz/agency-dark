@@ -90,7 +90,7 @@ export const MessageSearch = ({ open, onClose, conversationId, onMessageSelect }
           created_at: new Date(Date.now() - 86400000).toISOString(),
           updated_at: new Date(Date.now() - 86400000).toISOString(),
           delivered_at: new Date(Date.now() - 86400000).toISOString(),
-          read_at: null,
+          read_at: undefined,
           is_automated: false,
           attachments: [
             {

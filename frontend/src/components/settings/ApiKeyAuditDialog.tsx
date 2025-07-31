@@ -7,13 +7,6 @@ import {
   Button,
   Box,
   Typography,
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
-  TimelineOppositeContent,
   Chip,
   Alert,
   Skeleton,
@@ -21,6 +14,15 @@ import {
   Tooltip,
   Paper,
 } from '@mui/material';
+import {
+  Timeline,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineOppositeContent,
+} from '@mui/lab';
 import {
   Add as CreateIcon,
   Visibility as ViewIcon,
