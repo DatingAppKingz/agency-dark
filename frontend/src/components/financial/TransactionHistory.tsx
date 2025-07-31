@@ -166,7 +166,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
           <Button
             variant="outlined"
             startIcon={<Download />}
-            onClick={(event) => setMenuAnchor(eevent.currentTarget)}
+            onClick={(event) => setMenuAnchor(event.currentTarget)}
           >
             Export
           </Button>
@@ -264,7 +264,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
                       <CircularProgress size={40} />
                     </TableCell>
                   </TableRow>
-                ) : transactions?.data?.items.length === 0 ? (
+                ) : transactions?.items?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center">
                       <Typography variant="body2" color="textSecondary">
@@ -273,7 +273,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
                     </TableCell>
                   </TableRow>
                 ) : (
-                  transactions?.data?.items.map((transaction) => (
+                  transactions?.items?.map((transaction: any) => (
                     <TableRow key={transaction.id}>
                       <TableCell>{formatDate(transaction.created_at)}</TableCell>
                       <TableCell>
@@ -321,7 +321,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
             </Table>
           </TableContainer>
 
-          {transactions?.data && (
+          {transactions && (
             <TablePagination
               component="div"
               count={transactions.data.total}

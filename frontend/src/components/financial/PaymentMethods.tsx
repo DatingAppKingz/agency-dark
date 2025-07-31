@@ -26,7 +26,7 @@ import {
   StarBorder,
   AccountBalance,
   CreditCard,
-  Currency as Bitcoin } from '@mui/icons-material';
+  AttachMoney as Bitcoin } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

@@ -119,7 +119,7 @@ export const InvoiceGenerator = ({
   };
 
   const handlePrint = useReactToPrint({
-    content: () => invoiceRef.current,
+    contentRef: invoiceRef,
     documentTitle: `Invoice_${watch('invoice_number')}` });
 
   const handleDownloadPDF = async () => {
@@ -174,7 +174,7 @@ export const InvoiceGenerator = ({
     }
   };
 
-  const onSubmit = async (event: InvoiceFormData) => {
+  const onSubmit = async (_data: InvoiceFormData) => {
     try {
       if (onSave) {
         await onSave();

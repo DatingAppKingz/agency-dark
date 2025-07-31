@@ -25,7 +25,7 @@ export const VoiceMessagePlayer = ({ attachment, compact = false }: VoiceMessage
   const [loading, setLoading] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     return () => {

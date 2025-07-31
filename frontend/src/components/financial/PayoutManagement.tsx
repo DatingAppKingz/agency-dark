@@ -82,7 +82,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
       agency_id: agencyId }) });
 
   const requestPayoutMutation = useMutation({
-    mutationFn: financialApi.requestPayout,
+    mutationFn: financialApi.createPayout,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payouts'] });
       queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
@@ -100,7 +100,8 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
   const onSubmitRequest = (data: RequestPayoutForm) => {
     requestPayoutMutation.mutate({
       ...data,
-      model_id: modelId });
+      model_id: modelId
+    });
   };
 
   const handleCancelPayout = (payoutId: string) => {
@@ -258,7 +259,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                     </TableCell>
                   </TableRow>
                 ) : (
-                  payouts?.data?.items.map((payout) => (
+                  payouts?.items?.map((payout: any) => (
                     <TableRow key={payout.id}>
                       <TableCell>{formatDate(payout.requested_at)}</TableCell>
                       <TableCell>
@@ -351,7 +352,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                 error={!!errors.payment_method_id}
                 helperText={errors.payment_method_id?.message}
               >
-                {paymentMethods?.data?.map((method) => (
+                {paymentMethods?.map((method: any) => (
                   <MenuItem key={method.id} value={method.id}>
                     {method.type.replace('_', ' ').toUpperCase()}
                     {method.is_default && ' (Default)'}

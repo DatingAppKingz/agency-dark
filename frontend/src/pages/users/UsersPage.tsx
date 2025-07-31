@@ -263,7 +263,7 @@ const UsersPage = () => {
             <Box display="flex" gap={1}>
               <Button 
                 color="inherit" 
-                onClick={(event) => setBulkActionAnchor(eevent.currentTarget)}
+                onClick={(event) => setBulkActionAnchor(event.currentTarget)}
                 endIcon={<MoreVert />}
               >
                 Bulk Actions

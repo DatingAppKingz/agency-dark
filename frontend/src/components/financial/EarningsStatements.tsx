@@ -163,7 +163,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
   };
 
   const handlePrint = useReactToPrint({
-    content: () => statementRef.current,
+    contentRef: statementRef,
     documentTitle: `Earnings_Statement_${selectedStatement?.period}` });
 
   const handleGenerateStatement = async () => {
@@ -173,7 +173,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
       await new Promise(resolve => setTimeout(resolve, 2000));
       success('Statement generated successfully');
     } catch (err) {
-      error('Failed to generate ');
+      error('Failed to generate statement');
     } finally {
       setIsGenerating(false);
     }
@@ -184,7 +184,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
       // TODO: Implement download
       success('Statement downloaded successfully');
     } catch (err) {
-      error('Failed to download ');
+      error('Failed to download statement');
     }
   };
 
@@ -193,7 +193,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
       // TODO: Implement email
       success('Statement sent via email');
     } catch (err) {
-      error('Failed to send ');
+      error('Failed to send statement');
     }
   };
 
@@ -503,7 +503,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedStatement();
+                                  setSelectedStatement(statement);
                                 }}
                               >
                                 <Visibility />
@@ -512,7 +512,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDownloadStatement();
+                                  handleDownloadStatement(statement);
                                 }}
                               >
                                 <Download />
@@ -521,7 +521,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleEmailStatement();
+                                  handleEmailStatement(statement);
                                 }}
                               >
                                 <Email />

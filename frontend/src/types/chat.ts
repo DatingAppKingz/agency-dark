@@ -67,6 +67,13 @@ export interface SendMessageData {
   conversation_id: string;
   content: string;
   attachments?: File[];
+  // Properties for backend API
+  fan_id?: string;
+  text?: string;
+  media_urls?: string[];
+  price?: number;
+  model_id?: string;
+  sender_id?: string;
 }
 
 export interface NewMessage {

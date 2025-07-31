@@ -6,7 +6,7 @@ import {
   FolderOff,
   ReceiptLong,
   ChatBubbleOutline,
-  GroupOff,
+  GroupRemove as GroupOff,
   AssignmentLateOutlined,
 } from '@mui/icons-material';
 

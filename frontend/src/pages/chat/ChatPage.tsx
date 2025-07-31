@@ -406,7 +406,7 @@ const ChatPage = () => {
                       <VideoCall />
                     </IconButton>
                     <IconButton
-                      onClick={(event) => setChatMenuAnchor(eevent.currentTarget)}
+                      onClick={(event) => setChatMenuAnchor(event.currentTarget)}
                     >
                       <MoreVert />
                     </IconButton>

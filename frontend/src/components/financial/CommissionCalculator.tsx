@@ -36,7 +36,7 @@ export const CommissionCalculator = ({ modelId, agencyId }: CommissionCalculator
 
   const { data: commissionRates, isPending } = useQuery({
     queryKey: ['commission-rates', modelId, agencyId],
-    queryFn: () => financialApi.getCommissionRates({ model_id: modelId, agency_id: agencyId }) });
+    queryFn: () => financialApi.getCommissionRules({ model_id: modelId, agency_id: agencyId }) });
 
   const calculateMutation = useMutation({
     mutationFn: financialApi.calculateCommission,
@@ -64,7 +64,7 @@ export const CommissionCalculator = ({ modelId, agencyId }: CommissionCalculator
     return `${(value * 100).toFixed(2)}%`;
   };
 
-  const currentRate = commissionRates?.data?.[0];
+  const currentRate = commissionRates?.[0];
   const hasTiers = currentRate?.tiers && currentRate.tiers.length > 0;
 
   const getApplicableTier = (revenue: number) => {

@@ -109,14 +109,14 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: summary?.data?.currency || 'USD',
+      currency: summary?.currency || 'USD',
     }).format(amount);
   };
 
   const formatChartData = () => {
-    if (!revenueHistory?.data) return [];
+    if (!revenueHistory) return [];
     
-    return revenueHistory.data.map((rev) => ({
+    return revenueHistory.map((rev: any) => ({
       period: new Date(rev.start_date).toLocaleDateString('en-US', {
         month: 'short',
         day: period === 'daily' ? 'numeric' : undefined,
@@ -129,9 +129,9 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
   };
 
   const formatBreakdownData = () => {
-    if (!currentRevenue?.data?.breakdown) return [];
+    if (!currentRevenue?.breakdown) return [];
     
-    return currentRevenue.data.breakdown.map((item) => ({
+    return currentRevenue.breakdown.map((item: any) => ({
       name: item.source.charAt(0).toUpperCase() + item.source.slice(1).replace('_', ' '),
       value: item.amount,
       percentage: item.percentage,
@@ -146,7 +146,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
     );
   }
 
-  if (!summary?.data || !currentRevenue?.data) {
+  if (!summary || !currentRevenue) {
     return (
       <Alert severity="error">Failed to load financial data</Alert>
     );
@@ -173,7 +173,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Revenue"
-            value={formatCurrency(summary.data.total_revenue)}
+            value={formatCurrency(summary.total_revenue)}
             icon={<AttachMoney />}
             color="primary"
           />
@@ -181,7 +181,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Available Balance"
-            value={formatCurrency(summary.data.available_balance)}
+            value={formatCurrency(summary.available_balance)}
             icon={<AccountBalance />}
             color="success"
           />
@@ -189,7 +189,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Payouts"
-            value={formatCurrency(summary.data.total_payouts)}
+            value={formatCurrency(summary.total_payouts)}
             icon={<Receipt />}
             color="info"
           />
@@ -197,7 +197,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Pending Payouts"
-            value={formatCurrency(summary.data.pending_payouts)}
+            value={formatCurrency(summary.pending_payouts)}
             icon={<Receipt />}
             color="warning"
           />
@@ -273,7 +273,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
                     Gross Revenue
                   </Typography>
                   <Typography variant="h6">
-                    {formatCurrency(currentRevenue.data.gross_revenue)}
+                    {formatCurrency(currentRevenue.gross_revenue)}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -281,7 +281,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
                     Commission
                   </Typography>
                   <Typography variant="h6">
-                    {formatCurrency(currentRevenue.data.commission)}
+                    {formatCurrency(currentRevenue.commission)}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -289,7 +289,7 @@ export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => 
                     Net Revenue
                   </Typography>
                   <Typography variant="h6">
-                    {formatCurrency(currentRevenue.data.net_revenue)}
+                    {formatCurrency(currentRevenue.net_revenue)}
                   </Typography>
                 </Grid>
               </Grid>

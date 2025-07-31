@@ -7,6 +7,15 @@ declare global {
   var ResizeObserver: typeof ResizeObserver;
   var MutationObserver: typeof MutationObserver;
   var IntersectionObserver: typeof IntersectionObserver;
+  
+  namespace NodeJS {
+    interface Timeout {
+      ref(): this;
+      unref(): this;
+      refresh(): this;
+      [Symbol.toPrimitive](): number;
+    }
+  }
 }
 
 // Notification API extension

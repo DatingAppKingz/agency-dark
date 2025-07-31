@@ -15,7 +15,7 @@ export const UserProfilePage = lazyLoad(() => import('@/pages/profile/UserProfil
 
 // Model Management
 export const ModelsPage = lazyLoad(() => import('@/pages/models/ModelsPage'));
-export const ModelDetailsPage = lazyLoad(() => import('@/pages/models/ModelDetailsPage'));
+export const ModelDetailsPage = lazyLoad(() => import('@/pages/models/ModelDetailPage'));
 
 // Chat
 export const ChatPage = lazyLoadWithRetry(() => import('@/pages/chat/ChatPage'));
@@ -31,7 +31,7 @@ export const PayoutsPage = lazyLoad(() => import('@/pages/financial/PayoutsPage'
 // Settings
 export const SettingsPage = lazyLoad(() => import('@/pages/settings/SettingsPage'));
 export const WhiteLabelPage = lazyLoad(() => import('@/pages/settings/WhiteLabelPage'));
-export const LanguageSettings = lazyLoad(() => import('@/pages/settings/LanguageSettings'));
+export const LanguageSettings = lazyLoad(() => import('@/pages/settings/LanguageSettings').then(module => ({ default: module.LanguageSettings })));
 
 // Agency
 export const AgencySettingsPage = lazyLoad(() => import('@/pages/agency/AgencySettingsPage'));

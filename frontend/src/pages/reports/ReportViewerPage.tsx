@@ -10,7 +10,8 @@ import {
   Alert,
   Menu,
   MenuItem,
-  Tooltip } from '@mui/material';
+  Tooltip,
+  Chip } from '@mui/material';
 import {
   ArrowBack as BackIcon,
   Edit as EditIcon,
@@ -191,7 +192,7 @@ const ReportViewerPage: React.FC = () => {
               </IconButton>
             </Tooltip>
 
-            <IconButton onClick={(event) => setAnchorEl(eevent.currentTarget)}>
+            <IconButton onClick={(event) => setAnchorEl(event.currentTarget)}>
               <MoreIcon />
             </IconButton>
           </Box>
