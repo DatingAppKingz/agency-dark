@@ -30,9 +30,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  FormGroup,
-  FormControlLabel,
-} from '@mui/material';
+  FormControlLabel } from '@mui/material';
 import {
   Add,
   Settings,
@@ -45,10 +43,9 @@ import {
   AttachMoney,
   People,
   Autorenew,
-  CloudSync,
-} from '@mui/icons-material';
+  CloudSync } from '@mui/icons-material';
 import { useAgencyFeatures } from '@/hooks/useAgencyFeatures';
-import { FeatureCategory, IntegrationType, CustomModule } from '@/types/agencyFeatures';
+import { FeatureCategory, IntegrationType } from '@/types/agencyFeatures';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -70,30 +67,25 @@ const categoryIcons: Record<FeatureCategory, React.ReactElement> = {
   automation: <Autorenew />,
   integrations: <CloudSync />,
   security: <Security />,
-  customization: <Extension />,
-};
+  customization: <Extension /> };
 
 export const AgencyFeaturesManager: React.FC = () => {
   const {
     config,
-    isLoading,
+    isPending,
     toggleFeature,
-    updateFeatureSettings,
     addCustomModule,
     updateCustomModule,
     deleteCustomModule,
     addIntegration,
     updateIntegration,
     deleteIntegration,
-    isFeatureEnabled,
-    checkLimit,
-    getLimitUsage,
-  } = useAgencyFeatures();
+    getLimitUsage } = useAgencyFeatures();
 
   const [tabValue, setTabValue] = useState(0);
   const [moduleDialog, setModuleDialog] = useState(false);
   const [integrationDialog, setIntegrationDialog] = useState(false);
-  const [settingsDialog, setSettingsDialog] = useState<string | null>(null);
+  const [setSettingsDialog] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   // Module form state
@@ -102,15 +94,13 @@ export const AgencyFeaturesManager: React.FC = () => {
     description: '',
     route: '',
     component: '',
-    permissions: [] as string[],
-  });
+    permissions: [] as string[] });
 
   // Integration form state
   const [integrationForm, setIntegrationForm] = useState({
     type: 'webhook' as IntegrationType,
     name: '',
-    config: {},
-  });
+    config: {} });
 
   const handleCreateModule = async () => {
     if (!moduleForm.name || !moduleForm.route) return;
@@ -118,8 +108,7 @@ export const AgencyFeaturesManager: React.FC = () => {
     await addCustomModule({
       ...moduleForm,
       enabled: true,
-      order: config?.customModules.length || 0,
-    });
+      order: config?.customModules.length || 0 });
 
     setModuleDialog(false);
     setModuleForm({
@@ -127,8 +116,7 @@ export const AgencyFeaturesManager: React.FC = () => {
       description: '',
       route: '',
       component: '',
-      permissions: [],
-    });
+      permissions: [] });
   };
 
   const handleCreateIntegration = async () => {
@@ -144,11 +132,10 @@ export const AgencyFeaturesManager: React.FC = () => {
     setIntegrationForm({
       type: 'webhook',
       name: '',
-      config: {},
-    });
+      config: {} });
   };
 
-  if (isLoading || !config) {
+  if (isPending || !config) {
     return <Box>Loading features...</Box>;
   }
 
@@ -164,7 +151,7 @@ export const AgencyFeaturesManager: React.FC = () => {
   return (
     <Box>
       <Paper sx={{ mb: 3 }}>
-        <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
+        <Tabs value={tabValue} onChange={(v) => setTabValue(v)}>
           <Tab label="Features" />
           <Tab label="Custom Modules" />
           <Tab label="Integrations" />
@@ -197,8 +184,7 @@ export const AgencyFeaturesManager: React.FC = () => {
                         border: 1,
                         borderColor: 'divider',
                         borderRadius: 1,
-                        mb: 1,
-                      }}
+                        mb: 1 }}
                     >
                       <ListItemText
                         primary={feature.name}
@@ -306,8 +292,7 @@ export const AgencyFeaturesManager: React.FC = () => {
                   border: 1,
                   borderColor: 'divider',
                   borderRadius: 1,
-                  mb: 1,
-                }}
+                  mb: 1 }}
               >
                 <ListItemText
                   primary={

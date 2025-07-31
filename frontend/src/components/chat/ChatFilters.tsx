@@ -14,18 +14,15 @@ import {
   Badge,
   Popover,
   Divider,
-  Button,
-} from '@mui/material';
+  Button } from '@mui/material';
 import {
   FilterList,
-  Clear,
   Inbox,
   Star,
   Archive,
   Person,
-  Group,
-} from '@mui/icons-material';
-import { ChatFilters as ChatFiltersType } from '@/types/chat';
+  Group } from '@mui/icons-material';
+import { ChatFilters as ChatFiltersType          } from '@/types/chat';
 import { useAuthStore } from '@/store/authStore';
 import { User } from '@/types';
 
@@ -53,21 +50,17 @@ export const ChatFilters = ({
     setAnchorEl(null);
   };
 
-  const handleStatusChange = (
-    event: React.MouseEvent<HTMLElement>,
+  const handleStatusChange = (event: React.MouseEvent<HTMLElement>,
     newStatus: string | null,
-  ) => {
-    if (newStatus !== null) {
-      onFiltersChange({ status: newStatus as ChatFiltersType['status'] });
+  ) => { if (newStatus !== null) {
+      onFiltersChange({ status: newStatus as ChatFiltersType['status']          });
     }
   };
 
-  const handleAssignedToChange = (
-    event: React.MouseEvent<HTMLElement>,
+  const handleAssignedToChange = (event: React.MouseEvent<HTMLElement>,
     newAssignedTo: string | null,
-  ) => {
-    if (newAssignedTo !== null) {
-      onFiltersChange({ assigned_to: newAssignedTo as ChatFiltersType['assigned_to'] });
+  ) => { if (newAssignedTo !== null) {
+      onFiltersChange({ assigned_to: newAssignedTo as ChatFiltersType['assigned_to']          });
     }
   };
 
@@ -81,8 +74,7 @@ export const ChatFilters = ({
       status: 'all',
       assigned_to: 'me',
       model_id: undefined,
-      tags: [],
-    });
+      tags: [] });
     handleClose();
   };
 
@@ -167,12 +159,10 @@ export const ChatFilters = ({
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'right',
-        }}
+          horizontal: 'right' }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'right',
-        }}
+          horizontal: 'right' }}
       >
         <Paper sx={{ p: 3, width: 320 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
@@ -224,7 +214,7 @@ export const ChatFilters = ({
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button onClick={handleClearFilters}>
-              Clear All
+              All
             </Button>
             <Button variant="contained" onClick={handleClose}>
               Apply

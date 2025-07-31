@@ -24,7 +24,7 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 const ForgotPasswordPage = () => {
   const { success, error } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, setIsLoading] = useState(false);
 
   const {
     register,
@@ -96,10 +96,10 @@ const ForgotPasswordPage = () => {
           fullWidth
           variant="contained"
           size="large"
-          disabled={isLoading}
+          disabled={isPending}
           sx={{ mt: 3, mb: 2 }}
         >
-          {isLoading ? 'Sending...' : 'Send Reset Link'}
+          {isPending ? 'Sending...' : 'Send Reset Link'}
         </Button>
 
         <Box sx={{ textAlign: 'center' }}>

@@ -28,16 +28,12 @@ import {
   Tab,
   Checkbox,
   FormGroup,
-  FormLabel,
-} from '@mui/material';
+  FormLabel } from '@mui/material';
 import {
   Add,
   Edit,
   Delete,
-  DragIndicator,
-  ExpandMore,
-  Settings,
-} from '@mui/icons-material';
+  ExpandMore } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import { CustomField, FieldType, EntityType, SelectOption } from '@/types/customFields';
@@ -61,9 +57,7 @@ export const CustomFieldEditor: React.FC = () => {
     updateField,
     deleteField,
     createSection,
-    updateSection,
-    deleteSection,
-  } = useCustomFields();
+    deleteSection } = useCustomFields();
 
   const [tabValue, setTabValue] = useState(0);
   const [fieldDialog, setFieldDialog] = useState(false);
@@ -81,14 +75,12 @@ export const CustomFieldEditor: React.FC = () => {
     required: false,
     section: '',
     appliesTo: [] as EntityType[],
-    options: [] as SelectOption[],
-  });
+    options: [] as SelectOption[] });
 
   // Section form state
   const [sectionForm, setSectionForm] = useState({
     name: '',
-    description: '',
-  });
+    description: '' });
 
   const fieldTypes: { value: FieldType; label: string }[] = [
     { value: 'text', label: 'Text' },
@@ -130,8 +122,7 @@ export const CustomFieldEditor: React.FC = () => {
       appliesTo: fieldForm.appliesTo,
       options: fieldForm.options.length > 0 ? fieldForm.options : undefined,
       visible: true,
-      order: config?.fields.length || 0,
-    });
+      order: config?.fields.length || 0 });
 
     setFieldDialog(false);
     resetFieldForm();
@@ -149,8 +140,7 @@ export const CustomFieldEditor: React.FC = () => {
       required: fieldForm.required,
       section: fieldForm.section || undefined,
       appliesTo: fieldForm.appliesTo,
-      options: fieldForm.options.length > 0 ? fieldForm.options : undefined,
-    });
+      options: fieldForm.options.length > 0 ? fieldForm.options : undefined });
 
     setFieldDialog(false);
     setEditingField(null);
@@ -168,8 +158,7 @@ export const CustomFieldEditor: React.FC = () => {
       required: field.required,
       section: field.section || '',
       appliesTo: field.appliesTo,
-      options: field.options || [],
-    });
+      options: field.options || [] });
     setFieldDialog(true);
   };
 
@@ -184,8 +173,7 @@ export const CustomFieldEditor: React.FC = () => {
     await createSection({
       name: sectionForm.name,
       description: sectionForm.description,
-      order: config?.sections.length || 0,
-    });
+      order: config?.sections.length || 0 });
 
     setSectionDialog(false);
     setSectionForm({ name: '', description: '' });
@@ -201,15 +189,13 @@ export const CustomFieldEditor: React.FC = () => {
       required: false,
       section: '',
       appliesTo: [],
-      options: [],
-    });
+      options: [] });
   };
 
   const handleAddOption = () => {
     setFieldForm(prev => ({
       ...prev,
-      options: [...prev.options, { value: '', label: '' }],
-    }));
+      options: [...prev.options, { value: '', label: '' }] }));
   };
 
   const handleUpdateOption = (index: number, field: 'value' | 'label', value: string) => {
@@ -217,15 +203,13 @@ export const CustomFieldEditor: React.FC = () => {
       ...prev,
       options: prev.options.map((opt, i) =>
         i === index ? { ...opt, [field]: value } : opt
-      ),
-    }));
+      ) }));
   };
 
   const handleRemoveOption = (index: number) => {
     setFieldForm(prev => ({
       ...prev,
-      options: prev.options.filter((_, i) => i !== index),
-    }));
+      options: prev.options.filter((_, i) => i !== index) }));
   };
 
   if (!config) {
@@ -235,10 +219,10 @@ export const CustomFieldEditor: React.FC = () => {
   return (
     <Box>
       <Paper sx={{ mb: 3 }}>
-        <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
+        <Tabs value={tabValue} onChange={(v) => setTabValue(v)}>
           <Tab label="Custom Fields" />
           <Tab label="Sections" />
-          <Tab label="Entity Settings" />
+          <Tab label="Entity " />
         </Tabs>
 
         <TabPanel value={tabValue} index={0}>
@@ -262,8 +246,7 @@ export const CustomFieldEditor: React.FC = () => {
                   border: 1,
                   borderColor: 'divider',
                   borderRadius: 1,
-                  mb: 1,
-                }}
+                  mb: 1 }}
               >
                 <ListItemText
                   primary={
@@ -324,8 +307,7 @@ export const CustomFieldEditor: React.FC = () => {
                   border: 1,
                   borderColor: 'divider',
                   borderRadius: 1,
-                  mb: 1,
-                }}
+                  mb: 1 }}
               >
                 <ListItemText
                   primary={section.name}
@@ -345,7 +327,7 @@ export const CustomFieldEditor: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={tabValue} index={2}>
-          {/* Entity Settings Tab */}
+          {/* Entity Tab */}
           <Typography variant="h6" gutterBottom>
             Default Fields by Entity Type
           </Typography>
@@ -462,17 +444,15 @@ export const CustomFieldEditor: React.FC = () => {
                     control={
                       <Checkbox
                         checked={fieldForm.appliesTo.includes(value)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
+                        onChange={() => {
+                          if (.target.checked) {
                             setFieldForm(prev => ({
                               ...prev,
-                              appliesTo: [...prev.appliesTo, value],
-                            }));
+                              appliesTo: [...prev.appliesTo, value] }));
                           } else {
                             setFieldForm(prev => ({
                               ...prev,
-                              appliesTo: prev.appliesTo.filter(t => t !== value),
-                            }));
+                              appliesTo: prev.appliesTo.filter(t => t !== value) }));
                           }
                         }}
                       />
@@ -503,13 +483,13 @@ export const CustomFieldEditor: React.FC = () => {
                     <TextField
                       label="Value"
                       value={option.value}
-                      onChange={(e) => handleUpdateOption(index, 'value', e.target.value)}
+                      onChange={() => handleUpdateOption(index, 'value', .target.value)}
                       size="small"
                     />
                     <TextField
                       label="Label"
                       value={option.label}
-                      onChange={(e) => handleUpdateOption(index, 'label', e.target.value)}
+                      onChange={() => handleUpdateOption(index, 'label', .target.value)}
                       size="small"
                     />
                     <IconButton

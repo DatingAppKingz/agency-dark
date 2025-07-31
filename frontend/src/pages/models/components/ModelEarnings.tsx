@@ -15,12 +15,11 @@ import {
   TextField,
   InputAdornment,
   ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material';
+  ToggleButtonGroup } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Download, Search, TrendingUp, TrendingDown } from '@mui/icons-material';
+import { Download, Search, TrendingUp } from '@mui/icons-material';
 import { ChartWidget } from '@/components/dashboard/ChartWidget';
 import { format, subDays } from 'date-fns';
 
@@ -42,32 +41,28 @@ export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
       type: 'subscription',
       description: 'Monthly subscription - John D.',
       amount: 9.99,
-      status: 'completed',
-    },
+      status: 'completed' },
     {
       id: '2',
       date: '2025-01-24',
       type: 'tip',
       description: 'Tip from Mike R.',
       amount: 50.00,
-      status: 'completed',
-    },
+      status: 'completed' },
     {
       id: '3',
       date: '2025-01-23',
       type: 'content',
       description: 'Photo set purchase - Sarah M.',
       amount: 15.00,
-      status: 'completed',
-    },
+      status: 'completed' },
     {
       id: '4',
       date: '2025-01-23',
       type: 'message',
       description: 'Paid message - Emma L.',
       amount: 5.00,
-      status: 'pending',
-    },
+      status: 'pending' },
   ];
 
   const summary = {
@@ -76,8 +71,7 @@ export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
     tips: 450.00,
     content: 150.00,
     messages: 43.40,
-    pendingPayout: 327.80,
-  };
+    pendingPayout: 327.80 };
 
   // Mock revenue chart data
   const revenueChartData = useMemo(() => {
@@ -91,8 +85,7 @@ export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
         tips: baseValue * 0.25,
         content: baseValue * 0.1,
         messages: baseValue * 0.05,
-        total: baseValue,
-      };
+        total: baseValue };
     });
   }, [chartPeriod]);
 
@@ -255,8 +248,7 @@ export const ModelEarnings = ({ modelId }: ModelEarningsProps) => {
                     <InputAdornment position="start">
                       <Search />
                     </InputAdornment>
-                  ),
-                }}
+                  ) }}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={2}>

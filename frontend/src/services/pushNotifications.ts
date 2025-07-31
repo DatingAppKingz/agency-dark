@@ -147,7 +147,7 @@ class PushNotificationService {
       body: 'This is a test notification from AgencyDark',
       icon: '/icon-192x192.png',
       badge: '/icon-72x72.png',
-      vibrate: [200, 100, 200],
+      // vibrate: [200, 100, 200], // Not part of standard NotificationOptions
       data: {
         url: '/',
         timestamp: Date.now(),

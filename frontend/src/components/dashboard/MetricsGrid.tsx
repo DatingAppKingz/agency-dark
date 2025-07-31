@@ -5,10 +5,8 @@ import {
   Grid,
   Typography,
   Box,
-  Divider,
   Skeleton,
-  useTheme,
-} from '@mui/material';
+  useTheme } from '@mui/material';
 import { SvgIconComponent } from '@mui/icons-material';
 
 interface Metric {
@@ -30,8 +28,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
   title,
   metrics,
   columns = 4,
-  loading = false,
-}) => {
+  loading = false }) => {
   const theme = useTheme();
 
   const gridColumns = 12 / columns;
@@ -81,16 +78,14 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
                   sx={{
                     pr: isLastInRow ? 2 : 0,
                     borderRight: isLastInRow ? `1px solid ${theme.palette.divider}` : 'none',
-                    pb: !isLastRow ? 2 : 0,
-                  }}
+                    pb: !isLastRow ? 2 : 0 }}
                 >
                   <Box display="flex" alignItems="center" gap={1} mb={1}>
                     {Icon && (
                       <Icon
                         sx={{
                           fontSize: 20,
-                          color: metric.color ? theme.palette[metric.color].main : theme.palette.text.secondary,
-                        }}
+                          color: metric.color ? theme.palette[metric.color].main : theme.palette.text.secondary }}
                       />
                     )}
                     <Typography variant="body2" color="textSecondary">

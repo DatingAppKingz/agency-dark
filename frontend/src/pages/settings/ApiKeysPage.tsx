@@ -11,19 +11,14 @@ import {
   Grid,
   Card,
   CardContent,
-  Chip,
-  Link,
-} from '@mui/material';
+  Chip } from '@mui/material';
 import {
-  Key as KeyIcon,
-  Security as SecurityIcon,
+  Key as SecurityIcon,
   Info as InfoIcon,
   Book as DocsIcon,
-  Warning as WarningIcon,
-} from '@mui/icons-material';
+  Warning as WarningIcon } from '@mui/icons-material';
 import { ApiKeyProvider } from '@/types/apiKeys';
 import ApiKeyManager from '@/components/settings/ApiKeyManager';
-import PageLoader from '@/components/common/PageLoader';
 import { useAuth } from '@/hooks/useAuth';
 
 interface TabPanelProps {

@@ -16,8 +16,7 @@ import {
   Button,
   TextField,
   Switch,
-  FormControlLabel,
-} from '@mui/material';
+  FormControlLabel } from '@mui/material';
 import {
   Close,
   Settings,
@@ -26,8 +25,7 @@ import {
   LockOpen,
   Visibility,
   VisibilityOff,
-  DragIndicator,
-} from '@mui/icons-material';
+  DragIndicator } from '@mui/icons-material';
 import { useDashboardCustomization } from '@/hooks/useDashboardCustomization';
 import { WidgetConfig, WidgetType } from '@/types/dashboard';
 import { StatsCard } from './StatsCard';
@@ -49,8 +47,7 @@ const widgetComponents: Record<WidgetType, React.ComponentType<any>> = {
   'recent-items': () => <div>Recent Items Widget</div>,
   'calendar': () => <div>Calendar Widget</div>,
   'tasks': () => <div>Tasks Widget</div>,
-  'custom': () => <div>Custom Widget</div>,
-};
+  'custom': () => <div>Custom Widget</div> };
 
 interface CustomizableDashboardProps {
   editMode?: boolean;
@@ -59,19 +56,16 @@ interface CustomizableDashboardProps {
 
 export const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
   editMode = false,
-  onEditModeChange,
-}) => {
+  onEditModeChange }) => {
   const {
     currentLayout,
     updateWidgetPosition,
     toggleWidgetVisibility,
     removeWidget,
-    updateWidgetSettings,
-    addWidget,
-  } = useDashboardCustomization();
+    addWidget } = useDashboardCustomization();
 
   const [settingsAnchor, setSettingsAnchor] = useState<null | HTMLElement>(null);
-  const [selectedWidget, setSelectedWidget] = useState<WidgetConfig | null>(null);
+  const [setSelectedWidget] = useState<WidgetConfig | null>(null);
   const [addWidgetDialog, setAddWidgetDialog] = useState(false);
   const [newWidgetType, setNewWidgetType] = useState<WidgetType>('stats-card');
   const [newWidgetTitle, setNewWidgetTitle] = useState('');
@@ -89,9 +83,7 @@ export const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
           y: widget.position.y,
           w: widget.position.w,
           h: widget.position.h,
-          static: !editMode,
-        })),
-    };
+          static: !editMode })) };
   }, [currentLayout, editMode]);
 
   const handleLayoutChange = useCallback(
@@ -103,8 +95,7 @@ export const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
           x: item.x,
           y: item.y,
           w: item.w,
-          h: item.h,
-        });
+          h: item.h });
       });
     },
     [editMode, updateWidgetPosition]
@@ -128,8 +119,7 @@ export const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
       type: newWidgetType,
       title: newWidgetTitle,
       position: { x: 0, y: 0, w: 4, h: 3 },
-      visible: true,
-    };
+      visible: true };
 
     addWidget(newWidget);
     setAddWidgetDialog(false);
@@ -191,9 +181,7 @@ export const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
                   opacity: widget.visible ? 1 : 0.5,
                   position: 'relative',
                   '&:hover .widget-controls': {
-                    opacity: 1,
-                  },
-                }}
+                    opacity: 1 } }}
               >
                 {/* Widget controls */}
                 {editMode && (
@@ -210,8 +198,7 @@ export const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
                       transition: 'opacity 0.2s',
                       zIndex: 10,
                       backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      borderRadius: '0 0 0 8px',
-                    }}
+                      borderRadius: '0 0 0 8px' }}
                   >
                     <Tooltip title="Drag to reposition">
                       <IconButton size="small" sx={{ cursor: 'move' }}>

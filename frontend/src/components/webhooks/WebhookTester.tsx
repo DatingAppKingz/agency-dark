@@ -220,7 +220,7 @@ const WebhookTester: React.FC<WebhookTesterProps> = ({ webhooks }) => {
                   variant="contained"
                   startIcon={<SendIcon />}
                   onClick={handleSendTest}
-                  disabled={!selectedWebhook || testWebhook.isLoading}
+                  disabled={!selectedWebhook || testWebhook.isPending}
                   fullWidth
                 >
                   Send Test Webhook

@@ -5,17 +5,15 @@ import {
   LinearProgress,
   Typography,
   Paper,
-  Fade,
-} from '@mui/material';
+  Fade } from '@mui/material';
 import {
   Mic,
   Stop,
   Send,
   Delete,
   PlayArrow,
-  Pause,
-} from '@mui/icons-material';
-import { format } from 'date-fns';
+  Pause } from '@mui/icons-material';
+
 
 interface VoiceRecorderProps {
   onSendAudio: (audioBlob: Blob, duration: number) => void;
@@ -24,7 +22,7 @@ interface VoiceRecorderProps {
 
 export const VoiceRecorder = ({ onSendAudio, disabled }: VoiceRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -158,8 +156,7 @@ export const VoiceRecorder = ({ onSendAudio, disabled }: VoiceRecorderProps) => 
             alignItems: 'center',
             gap: 2,
             backgroundColor: 'error.main',
-            color: 'white',
-          }}
+            color: 'white' }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box
@@ -172,9 +169,7 @@ export const VoiceRecorder = ({ onSendAudio, disabled }: VoiceRecorderProps) => 
                 '@keyframes pulse': {
                   '0%': { opacity: 1 },
                   '50%': { opacity: 0.3 },
-                  '100%': { opacity: 1 },
-                },
-              }}
+                  '100%': { opacity: 1 } } }}
             />
             <Typography variant="body2">Recording</Typography>
           </Box>
@@ -189,9 +184,7 @@ export const VoiceRecorder = ({ onSendAudio, disabled }: VoiceRecorderProps) => 
               sx={{
                 backgroundColor: 'rgba(255,255,255,0.3)',
                 '& .MuiLinearProgress-bar': {
-                  backgroundColor: 'white',
-                },
-              }}
+                  backgroundColor: 'white' } }}
             />
           </Box>
           
@@ -213,8 +206,7 @@ export const VoiceRecorder = ({ onSendAudio, disabled }: VoiceRecorderProps) => 
             p: 2,
             display: 'flex',
             alignItems: 'center',
-            gap: 2,
-          }}
+            gap: 2 }}
         >
           <IconButton onClick={togglePlayback} color="primary">
             {isPlaying ? <Pause /> : <PlayArrow />}
@@ -248,8 +240,7 @@ export const VoiceRecorder = ({ onSendAudio, disabled }: VoiceRecorderProps) => 
         position: 'absolute',
         right: 48,
         top: '50%',
-        transform: 'translateY(-50%)',
-      }}
+        transform: 'translateY(-50%)' }}
     >
       <Mic />
     </IconButton>

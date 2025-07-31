@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -15,14 +15,12 @@ import {
   Typography,
   Tabs,
   Tab,
-  Fab,
   SpeedDial,
   SpeedDialIcon,
   SpeedDialAction,
   Chip,
   InputAdornment,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   Edit,
   Delete,
@@ -30,10 +28,8 @@ import {
   TextFields,
   QuickreplyOutlined,
   Search,
-  Category,
   Close,
-  Save,
-} from '@mui/icons-material';
+  Save } from '@mui/icons-material';
 import { useToast } from '@/components/common/Toaster';
 
 interface CannedResponse {
@@ -84,8 +80,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
     title: '',
     content: '',
     category: '',
-    shortcut: '',
-  });
+    shortcut: '' });
 
   // Mock data - replace with API call
   const [responses, setResponses] = useState<CannedResponse[]>([
@@ -97,8 +92,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
       shortcut: '/welcome',
       usage_count: 150,
       created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    },
+      updated_at: '2024-01-01T00:00:00Z' },
     {
       id: '2',
       title: 'Thank You',
@@ -107,8 +101,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
       shortcut: '/thanks',
       usage_count: 230,
       created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    },
+      updated_at: '2024-01-01T00:00:00Z' },
     {
       id: '3',
       title: 'New Content Alert',
@@ -117,8 +110,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
       shortcut: '/new',
       usage_count: 89,
       created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    },
+      updated_at: '2024-01-01T00:00:00Z' },
     {
       id: '4',
       title: 'Custom Request Info',
@@ -127,8 +119,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
       shortcut: '/custom',
       usage_count: 67,
       created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    },
+      updated_at: '2024-01-01T00:00:00Z' },
     {
       id: '5',
       title: 'Subscription Benefits',
@@ -137,8 +128,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
       shortcut: '/benefits',
       usage_count: 112,
       created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    },
+      updated_at: '2024-01-01T00:00:00Z' },
   ]);
 
   const categories = ['All', 'Greetings', 'Promotions', 'Business', 'Personal'];
@@ -160,16 +150,14 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
         title: response.title,
         content: response.content,
         category: response.category,
-        shortcut: response.shortcut || '',
-      });
+        shortcut: response.shortcut || '' });
     } else {
       setEditingResponse(null);
       setFormData({
         title: '',
         content: '',
         category: 'Greetings',
-        shortcut: '',
-      });
+        shortcut: '' });
     }
     setDialogOpen(true);
   };
@@ -181,8 +169,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
       title: '',
       content: '',
       category: '',
-      shortcut: '',
-    });
+      shortcut: '' });
   };
 
   const handleSave = async () => {
@@ -192,8 +179,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
         const updated = {
           ...editingResponse,
           ...formData,
-          updated_at: new Date().toISOString(),
-        };
+          updated_at: new Date().toISOString() };
         setResponses(responses.map(r => r.id === editingResponse.id ? updated : r));
         success('Response updated successfully');
       } else {
@@ -203,8 +189,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
           ...formData,
           usage_count: 0,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+          updated_at: new Date().toISOString() };
         setResponses([...responses, newResponse]);
         success('Response created successfully');
       }
@@ -285,8 +270,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
                 <InputAdornment position="start">
                   <Search />
                 </InputAdornment>
-              ),
-            }}
+              ) }}
             sx={{ mb: 2 }}
           />
 
@@ -295,7 +279,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
             onChange={(_, value) => setSelectedCategory(value)}
             sx={{ mb: 2 }}
           >
-            {categories.map((category, index) => (
+            {categories.map((category, ) => (
               <Tab key={category} label={category} />
             ))}
           </Tabs>
@@ -309,9 +293,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
                   onClick={() => handleUseResponse(response)}
                   sx={{
                     '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                  }}
+                      backgroundColor: 'action.hover' } }}
                 >
                   <ListItemText
                     primary={
@@ -339,8 +321,7 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
+                          overflow: 'hidden' }}
                       >
                         {response.content}
                       </Typography>
@@ -420,13 +401,12 @@ export const CannedResponses = ({ onSelectResponse }: CannedResponsesProps) => {
           <TextField
             fullWidth
             select
-            label="Category"
+            label=""
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             margin="normal"
             SelectProps={{
-              native: true,
-            }}
+              native: true }}
           >
             <option value="">Select a category</option>
             {categories.slice(1).map((category) => (

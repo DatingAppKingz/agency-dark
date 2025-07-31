@@ -5,7 +5,7 @@ import { User, LoginCredentials, RegisterData } from '@/types/auth';
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
+  isPending: boolean;
   error: string | null;
   
   // Actions
@@ -19,61 +19,61 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
-  isLoading: true,
+  isPending: true,
   error: null,
 
   login: async (credentials) => {
-    set({ isLoading: true, error: null });
+    set({ isPending: true, error: null });
     try {
       const response = await authService.login(credentials);
       set({
         user: response.user,
         isAuthenticated: true,
-        isLoading: false,
+        isPending: false,
       });
     } catch (error: any) {
       set({
         error: error.response?.data?.detail || 'Login failed',
-        isLoading: false,
+        isPending: false,
       });
       throw error;
     }
   },
 
   register: async (data) => {
-    set({ isLoading: true, error: null });
+    set({ isPending: true, error: null });
     try {
       const response = await authService.register(data);
       set({
         user: response.user,
         isAuthenticated: true,
-        isLoading: false,
+        isPending: false,
       });
     } catch (error: any) {
       set({
         error: error.response?.data?.detail || 'Registration failed',
-        isLoading: false,
+        isPending: false,
       });
       throw error;
     }
   },
 
   logout: async () => {
-    set({ isLoading: true });
+    set({ isPending: true });
     try {
       await authService.logout();
     } finally {
       set({
         user: null,
         isAuthenticated: false,
-        isLoading: false,
+        isPending: false,
         error: null,
       });
     }
   },
 
   checkAuth: async () => {
-    set({ isLoading: true });
+    set({ isPending: true });
     try {
       const user = await authService.checkAuth();
       if (user) {
@@ -83,7 +83,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           set({
             user,
             isAuthenticated: true,
-            isLoading: false,
+            isPending: false,
           });
         } else {
           // Try to get a new token
@@ -91,21 +91,21 @@ export const useAuthStore = create<AuthState>((set) => ({
           set({
             user,
             isAuthenticated: true,
-            isLoading: false,
+            isPending: false,
           });
         }
       } else {
         set({
           user: null,
           isAuthenticated: false,
-          isLoading: false,
+          isPending: false,
         });
       }
     } catch (error) {
       set({
         user: null,
         isAuthenticated: false,
-        isLoading: false,
+        isPending: false,
       });
     }
   },

@@ -14,16 +14,11 @@ import {
   ListItemSecondaryAction,
   Tooltip,
   IconButton,
-  Alert,
-} from '@mui/material';
+  Alert } from '@mui/material';
 import {
   Speed,
-  Memory,
-  Storage,
-  NetworkCheck,
   Refresh,
-  Info,
-} from '@mui/icons-material';
+  Info } from '@mui/icons-material';
 import { usePerformanceMetrics, getResourceTimings, analyzeBundleSize, getMemoryUsage } from '@/utils/performance';
 import { cache } from '@/utils/cache';
 
@@ -40,8 +35,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, unit, icon, statu
   const statusColors = {
     good: 'success.main',
     warning: 'warning.main',
-    error: 'error.main',
-  };
+    error: 'error.main' };
 
   return (
     <Card>
@@ -96,8 +90,7 @@ export const PerformanceDashboard: React.FC = () => {
       LCP: { good: 2500, warning: 4000 },
       FID: { good: 100, warning: 300 },
       CLS: { good: 0.1, warning: 0.25 },
-      TTFB: { good: 800, warning: 1800 },
-    };
+      TTFB: { good: 800, warning: 1800 } };
 
     const threshold = thresholds[metric];
     if (!threshold) return 'good';
@@ -165,7 +158,7 @@ export const PerformanceDashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Bundle & Memory Info */}
+      {/* Bundle & Info */}
       <Typography variant="h6" gutterBottom>Resource Usage</Typography>
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={6}>
@@ -193,7 +186,7 @@ export const PerformanceDashboard: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="subtitle1" gutterBottom>
-                Memory Usage
+                Usage
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">

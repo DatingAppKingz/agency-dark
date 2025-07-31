@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+
 import {
   Box,
   Grid,
@@ -13,23 +13,19 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
-} from '@mui/material';
+  TableRow } from '@mui/material';
 import {
   TrendingUp,
   TrendingDown,
   People,
   AttachMoney,
   ChatBubble,
-  Percent,
-} from '@mui/icons-material';
+  Percent } from '@mui/icons-material';
 import {
   LineChart,
   Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -38,8 +34,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-} from 'recharts';
+  ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
@@ -53,7 +48,7 @@ interface PlatformAnalyticsProps {
 
 export const PlatformAnalytics = ({ dateRange, refreshKey }: PlatformAnalyticsProps) => {
   // Mock data - replace with actual API calls
-  const { data: metricsData, isLoading } = useQuery({
+  const { data: metricsData, isPending } = useQuery({
     queryKey: ['platform-metrics', dateRange, refreshKey],
     queryFn: async () => {
       // Simulated API call
@@ -63,9 +58,7 @@ export const PlatformAnalytics = ({ dateRange, refreshKey }: PlatformAnalyticsPr
           change: 12.5,
           chartData: Array.from({ length: 30 }, (_, i) => ({
             date: format(new Date(2024, 0, i + 1), 'MMM d'),
-            revenue: Math.floor(Math.random() * 5000) + 3000,
-          })),
-        },
+            revenue: Math.floor(Math.random() * 5000) + 3000 })) },
         users: {
           total: 3542,
           active: 2847,
@@ -74,19 +67,15 @@ export const PlatformAnalytics = ({ dateRange, refreshKey }: PlatformAnalyticsPr
           chartData: Array.from({ length: 30 }, (_, i) => ({
             date: format(new Date(2024, 0, i + 1), 'MMM d'),
             active: Math.floor(Math.random() * 200) + 2500,
-            new: Math.floor(Math.random() * 20) + 5,
-          })),
-        },
+            new: Math.floor(Math.random() * 20) + 5 })) },
         agencies: {
           total: 45,
           active: 42,
-          revenue_share: 65000,
-        },
+          revenue_share: 65000 },
         messages: {
           total: 45291,
           average_per_user: 12.8,
-          change: -2.1,
-        },
+          change: -2.1 },
         topAgencies: [
           { name: 'Elite Models Agency', models: 25, revenue: 45000, growth: 15.2 },
           { name: 'Premier Talent', models: 18, revenue: 38000, growth: 8.7 },
@@ -99,14 +88,12 @@ export const PlatformAnalytics = ({ dateRange, refreshKey }: PlatformAnalyticsPr
           { name: 'Tips', value: 35000, percentage: 28 },
           { name: 'PPV', value: 15000, percentage: 12 },
           { name: 'Messages', value: 10430, percentage: 8 },
-        ],
-      };
-    },
-  });
+        ] };
+    } });
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  if (isLoading) {
+  if (isPending) {
     return <LinearProgress />;
   }
 
@@ -254,7 +241,7 @@ export const PlatformAnalytics = ({ dateRange, refreshKey }: PlatformAnalyticsPr
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {metricsData?.revenueByType.map((entry, index) => (
+                  {metricsData?.revenueByType.map((index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

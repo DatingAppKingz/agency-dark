@@ -43,7 +43,7 @@ const ModelsPage = () => {
   });
 
   // API hooks
-  const { data, isLoading } = useModels({
+  const { data, isPending } = useModels({
     search: filters.search,
     // Add other query params as needed
   });
@@ -178,7 +178,7 @@ const ModelsPage = () => {
         </Grid>
       </Paper>
 
-      {isLoading ? (
+      {isPending ? (
         <Grid container spacing={3}>
           <LoadingCards />
         </Grid>

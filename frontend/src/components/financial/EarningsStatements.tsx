@@ -18,31 +18,20 @@ import {
   MenuItem,
   Paper,
   Divider,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-} from '@mui/material';
+  LinearProgress } from '@mui/material';
 import {
   Download,
   Email,
   Print,
-  CalendarToday,
-  TrendingUp,
-  TrendingDown,
-  AttachMoney,
   Receipt,
-  Assessment,
-  Visibility,
-} from '@mui/icons-material';
+  Visibility } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useQuery } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { useToast } from '@/components/common/Toaster';
-import { financialApi } from '@/services/api/financial';
+
 import { useReactToPrint } from 'react-to-print';
 import { useRef } from 'react';
 
@@ -88,7 +77,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Mock data - replace with actual API calls
-  const { data: statements, isLoading: isStatementsLoading } = useQuery({
+  const { data: statements, isPending: isStatementsLoading } = useQuery({
     queryKey: ['earnings-statements', selectedPeriod, startDate, endDate, modelId, agencyId],
     queryFn: async () => {
       // Mock data
@@ -103,13 +92,11 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
             platform_fees: 3000,
             payment_processing: 450,
             chargebacks: 100,
-            other: 50,
-          },
+            other: 50 },
           net_earnings: 11400,
           status: 'paid' as const,
           generated_at: '2025-01-01T00:00:00Z',
-          paid_at: '2025-01-05T00:00:00Z',
-        },
+          paid_at: '2025-01-05T00:00:00Z' },
         {
           id: '2',
           period: 'November 2024',
@@ -120,12 +107,10 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
             platform_fees: 2600,
             payment_processing: 390,
             chargebacks: 50,
-            other: 0,
-          },
+            other: 0 },
           net_earnings: 9960,
           status: 'final' as const,
-          generated_at: '2024-12-01T00:00:00Z',
-        },
+          generated_at: '2024-12-01T00:00:00Z' },
         {
           id: '3',
           period: 'October 2024',
@@ -136,16 +121,13 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
             platform_fees: 2300,
             payment_processing: 345,
             chargebacks: 200,
-            other: 25,
-          },
+            other: 25 },
           net_earnings: 8630,
           status: 'paid' as const,
           generated_at: '2024-11-01T00:00:00Z',
-          paid_at: '2024-11-05T00:00:00Z',
-        },
+          paid_at: '2024-11-05T00:00:00Z' },
       ];
-    },
-  });
+    } });
 
   const { data: earningsBreakdown } = useQuery({
     queryKey: ['earnings-breakdown', selectedStatement?.id],
@@ -157,17 +139,14 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
         ppv_content: 2500,
         custom_requests: 1500,
         referrals: 500,
-        other: 0,
-      };
+        other: 0 };
     },
-    enabled: !!selectedStatement,
-  });
+    enabled: !!selectedStatement });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+      currency: 'USD' }).format(amount);
   };
 
   const getStatusColor = (status: EarningsStatement['status']) => {
@@ -185,37 +164,36 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
 
   const handlePrint = useReactToPrint({
     content: () => statementRef.current,
-    documentTitle: `Earnings_Statement_${selectedStatement?.period}`,
-  });
+    documentTitle: `Earnings_Statement_${selectedStatement?.period}` });
 
   const handleGenerateStatement = async () => {
     try {
       setIsGenerating(true);
-      // TODO: Implement statement generation
+      // TODO: Implement generation
       await new Promise(resolve => setTimeout(resolve, 2000));
       success('Statement generated successfully');
     } catch (err) {
-      error('Failed to generate statement');
+      error('Failed to generate ');
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleDownloadStatement = async (statement: EarningsStatement) => {
+  const handleDownloadStatement = async (event: EarningsStatement) => {
     try {
       // TODO: Implement download
       success('Statement downloaded successfully');
     } catch (err) {
-      error('Failed to download statement');
+      error('Failed to download ');
     }
   };
 
-  const handleEmailStatement = async (statement: EarningsStatement) => {
+  const handleEmailStatement = async (event: EarningsStatement) => {
     try {
       // TODO: Implement email
       success('Statement sent via email');
     } catch (err) {
-      error('Failed to send statement');
+      error('Failed to send ');
     }
   };
 
@@ -422,7 +400,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
             select
             label="Period"
             value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value as 'monthly' | 'weekly' | 'custom')}
+            onChange={ (e) => setSelectedPeriod(e.target.value as 'monthly' | 'weekly' | 'custom')    }
             size="small"
             sx={{ minWidth: 120 }}
           >
@@ -464,7 +442,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
       </Box>
 
       <Grid container spacing={3}>
-        {/* Statements List */}
+        {/* Statements */}
         <Grid item xs={12} md={selectedStatement ? 4 : 12}>
           <Card>
             <CardContent>
@@ -525,7 +503,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedStatement(statement);
+                                  setSelectedStatement();
                                 }}
                               >
                                 <Visibility />
@@ -534,7 +512,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDownloadStatement(statement);
+                                  handleDownloadStatement();
                                 }}
                               >
                                 <Download />
@@ -543,7 +521,7 @@ export const EarningsStatements = ({ modelId, agencyId }: EarningsStatementsProp
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleEmailStatement(statement);
+                                  handleEmailStatement();
                                 }}
                               >
                                 <Email />

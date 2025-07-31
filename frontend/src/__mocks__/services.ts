@@ -1,7 +1,7 @@
 // Mock services for testing
 
 export const apiClient = {
-  get: jest.fn((url, config) => {
+  get: jest.fn((url) => {
     if (url.includes('/test-headers')) {
       return Promise.resolve({ data: { success: true }, status: 200 });
     }

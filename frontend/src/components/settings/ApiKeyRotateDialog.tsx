@@ -15,15 +15,13 @@ import {
   Step,
   StepLabel,
   StepContent,
-  Paper,
-} from '@mui/material';
+  Paper } from '@mui/material';
 import {
   Visibility as ViewIcon,
   VisibilityOff as HideIcon,
   ContentCopy as CopyIcon,
   Warning as WarningIcon,
-  CheckCircle as CheckIcon,
-} from '@mui/icons-material';
+  CheckCircle as CheckIcon } from '@mui/icons-material';
 import { ApiKey } from '@/types/apiKeys';
 import { useRotateApiKey, useValidateApiKey } from '@/hooks/useApiKeys';
 import { toast } from 'react-hot-toast';
@@ -37,12 +35,11 @@ interface ApiKeyRotateDialogProps {
 const ApiKeyRotateDialog: React.FC<ApiKeyRotateDialogProps> = ({
   open,
   onClose,
-  apiKey,
-}) => {
+  apiKey }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [newKey, setNewKey] = useState('');
   const [showKey, setShowKey] = useState(false);
-  const [isValidated, setIsValidated] = useState(false);
+  const [setIsValidated] = useState(false);
   const [confirmText, setConfirmText] = useState('');
 
   const rotateKey = useRotateApiKey();
@@ -52,8 +49,7 @@ const ApiKeyRotateDialog: React.FC<ApiKeyRotateDialogProps> = ({
     try {
       const result = await validateKey.mutateAsync({
         provider: apiKey.provider,
-        key: newKey,
-      });
+        key: newKey });
       
       if (result.valid) {
         setIsValidated(true);
@@ -75,8 +71,7 @@ const ApiKeyRotateDialog: React.FC<ApiKeyRotateDialogProps> = ({
     try {
       await rotateKey.mutateAsync({
         id: apiKey.id,
-        data: { new_key: newKey },
-      });
+        data: { new_key: newKey } });
       setActiveStep(2);
     } catch (error) {
       // Error is handled by the hook
@@ -153,15 +148,14 @@ const ApiKeyRotateDialog: React.FC<ApiKeyRotateDialogProps> = ({
                         {showKey ? <HideIcon /> : <ViewIcon />}
                       </IconButton>
                     </InputAdornment>
-                  ),
-                }}
+                  ) }}
               />
               <Button
                 variant="contained"
                 onClick={handleValidateNewKey}
-                disabled={!newKey || validateKey.isLoading}
+                disabled={!newKey || validateKey.isPending}
               >
-                {validateKey.isLoading ? 'Validating...' : 'Validate & Continue'}
+                {validateKey.isPending ? 'Validating...' : 'Validate & Continue'}
               </Button>
             </StepContent>
           </Step>
@@ -195,10 +189,10 @@ const ApiKeyRotateDialog: React.FC<ApiKeyRotateDialogProps> = ({
                   onClick={handleRotate}
                   disabled={
                     confirmText !== apiKey.name || 
-                    rotateKey.isLoading
+                    rotateKey.isPending
                   }
                 >
-                  {rotateKey.isLoading ? 'Rotating...' : 'Rotate API Key'}
+                  {rotateKey.isPending ? 'Rotating...' : 'Rotate API Key'}
                 </Button>
                 <Button onClick={() => setActiveStep(0)}>Back</Button>
               </Box>

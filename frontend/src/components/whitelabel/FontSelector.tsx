@@ -12,14 +12,10 @@ import {
   TextField,
   Button,
   Divider,
-  Chip,
-} from '@mui/material';
+  Chip } from '@mui/material';
 import {
-  FormatSize,
-  TextFields,
   RestartAlt,
-  Add,
-} from '@mui/icons-material';
+  Add } from '@mui/icons-material';
 
 interface FontSelectorProps {
   onChange: () => void;
@@ -52,17 +48,14 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
     customFonts: [],
     sizes: {
       base: 16,
-      scale: 1.2,
-    },
+      scale: 1.2 },
     weights: {
       light: 300,
       regular: 400,
       medium: 500,
-      bold: 700,
-    },
+      bold: 700 },
     lineHeight: 1.5,
-    letterSpacing: 0,
-  });
+    letterSpacing: 0 });
 
   const [customFontUrl, setCustomFontUrl] = useState('');
 
@@ -102,16 +95,14 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
   const handleSizeChange = (field: 'base' | 'scale', value: number) => {
     setFontSettings(prev => ({
       ...prev,
-      sizes: { ...prev.sizes, [field]: value },
-    }));
+      sizes: { ...prev.sizes, [field]: value } }));
     onChange();
   };
 
   const handleWeightChange = (weight: keyof FontSettings['weights'], value: number) => {
     setFontSettings(prev => ({
       ...prev,
-      weights: { ...prev.weights, [weight]: value },
-    }));
+      weights: { ...prev.weights, [weight]: value } }));
     onChange();
   };
 
@@ -119,8 +110,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
     if (customFontUrl && !fontSettings.customFonts.includes(customFontUrl)) {
       setFontSettings(prev => ({
         ...prev,
-        customFonts: [...prev.customFonts, customFontUrl],
-      }));
+        customFonts: [...prev.customFonts, customFontUrl] }));
       setCustomFontUrl('');
       onChange();
     }
@@ -129,8 +119,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
   const removeCustomFont = (font: string) => {
     setFontSettings(prev => ({
       ...prev,
-      customFonts: prev.customFonts.filter(f => f !== font),
-    }));
+      customFonts: prev.customFonts.filter(f => f !== font) }));
     onChange();
   };
 
@@ -142,17 +131,14 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
       customFonts: [],
       sizes: {
         base: 16,
-        scale: 1.2,
-      },
+        scale: 1.2 },
       weights: {
         light: 300,
         regular: 400,
         medium: 500,
-        bold: 700,
-      },
+        bold: 700 },
       lineHeight: 1.5,
-      letterSpacing: 0,
-    });
+      letterSpacing: 0 });
     onChange();
   };
 
@@ -167,8 +153,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
       h6: base,
       body1: base,
       body2: Math.round(base * 0.875),
-      caption: Math.round(base * 0.75),
-    };
+      caption: Math.round(base * 0.75) };
   };
 
   const typographyScale = generateTypographyScale();
@@ -198,7 +183,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                   <InputLabel>Primary Font</InputLabel>
                   <Select
                     value={fontSettings.primary}
-                    onChange={(e) => handleFontChange('primary', e.target.value)}
+                    onChange={() => handleFontChange('primary', .target.value)}
                     label="Primary Font"
                   >
                     {googleFonts.map(font => (
@@ -215,7 +200,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                   <InputLabel>Secondary Font</InputLabel>
                   <Select
                     value={fontSettings.secondary}
-                    onChange={(e) => handleFontChange('secondary', e.target.value)}
+                    onChange={() => handleFontChange('secondary', .target.value)}
                     label="Secondary Font"
                   >
                     {googleFonts.map(font => (
@@ -232,7 +217,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                   <InputLabel>Monospace Font</InputLabel>
                   <Select
                     value={fontSettings.mono}
-                    onChange={(e) => handleFontChange('mono', e.target.value)}
+                    onChange={() => handleFontChange('mono', .target.value)}
                     label="Monospace Font"
                   >
                     {monoFonts.map(font => (
@@ -258,7 +243,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
               <Typography gutterBottom>Base Size: {fontSettings.sizes.base}px</Typography>
               <Slider
                 value={fontSettings.sizes.base}
-                onChange={(e, value) => handleSizeChange('base', value as number)}
+                onChange={(value) => handleSizeChange('base', value as number)}
                 min={12}
                 max={20}
                 marks
@@ -270,7 +255,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
               <Typography gutterBottom>Scale Ratio: {fontSettings.sizes.scale}</Typography>
               <Slider
                 value={fontSettings.sizes.scale}
-                onChange={(e, value) => handleSizeChange('scale', value as number)}
+                onChange={(value) => handleSizeChange('scale', value as number)}
                 min={1.1}
                 max={1.5}
                 step={0.05}
@@ -291,8 +276,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                     sx={{
                       fontSize: `${size}px`,
                       fontFamily: fontSettings.primary,
-                      ml: 2,
-                    }}
+                      ml: 2 }}
                   >
                     {size}px
                   </Typography>
@@ -316,7 +300,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                 </Typography>
                 <Slider
                   value={value}
-                  onChange={(e, val) => handleWeightChange(weight as keyof FontSettings['weights'], val as number)}
+                  onChange={(val) => handleWeightChange(weight as keyof FontSettings['weights'], val as number)}
                   min={100}
                   max={900}
                   step={100}
@@ -336,7 +320,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
             </Typography>
             <Slider
               value={fontSettings.lineHeight}
-              onChange={(e, value) => {
+              onChange={(value) => {
                 setFontSettings(prev => ({ ...prev, lineHeight: value as number }));
                 onChange();
               }}
@@ -359,7 +343,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
             </Typography>
             <Slider
               value={fontSettings.letterSpacing}
-              onChange={(e, value) => {
+              onChange={(value) => {
                 setFontSettings(prev => ({ ...prev, letterSpacing: value as number }));
                 onChange();
               }}
@@ -390,7 +374,7 @@ export const FontSelector = ({ onChange }: FontSelectorProps) => {
                 fullWidth
                 label="Font URL"
                 value={customFontUrl}
-                onChange={(e) => setCustomFontUrl(e.target.value)}
+                onChange={() => setCustomFontUrl(event.target.value)}
                 placeholder="https://fonts.googleapis.com/css2?family=..."
               />
               <Button

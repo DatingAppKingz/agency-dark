@@ -1,5 +1,4 @@
 // Mock pages for testing
-import React from 'react';
 
 export const LoginPage = () => (
   <div>

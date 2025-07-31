@@ -14,17 +14,13 @@ import {
   Typography,
   Box,
   LinearProgress,
-  Alert,
-  TextField,
-  Chip,
-} from '@mui/material';
+  Alert } from '@mui/material';
 import {
   Download,
   Description,
   PictureAsPdf,
   TableChart,
-  Image as ImageIcon,
-} from '@mui/icons-material';
+  Image } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -59,8 +55,7 @@ export const ExportConversation = ({ open, onClose, conversation }: ExportConver
     includeMetadata: true,
     dateRange: 'all',
     startDate: null,
-    endDate: null,
-  });
+    endDate: null });
 
   const handleExport = async () => {
     if (!conversation) return;
@@ -232,19 +227,15 @@ export const ExportConversation = ({ open, onClose, conversation }: ExportConver
         fan: conversation?.fan,
         model: conversation?.model,
         created_at: conversation?.created_at,
-        exported_at: new Date().toISOString(),
-      },
+        exported_at: new Date().toISOString() },
       messages: options.includeMetadata ? messages : messages.map(msg => ({
         content: msg.content,
         sender_type: msg.sender_type,
         created_at: msg.created_at,
         attachments: msg.attachments?.map(att => ({
           type: att.type,
-          filename: att.filename,
-        })),
-      })),
-      total_messages: messages.length,
-    };
+          filename: att.filename })) })),
+      total_messages: messages.length };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
@@ -264,8 +255,7 @@ export const ExportConversation = ({ open, onClose, conversation }: ExportConver
       includeMetadata: true,
       dateRange: 'all',
       startDate: null,
-      endDate: null,
-    });
+      endDate: null });
     setExportProgress(0);
     onClose();
   };

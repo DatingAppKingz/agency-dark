@@ -12,29 +12,22 @@ import {
   Tabs,
   CircularProgress,
   Alert,
-  IconButton,
-  Divider,
   Paper,
-  Chip,
-} from '@mui/material';
+  Chip } from '@mui/material';
 import {
   Download,
   TrendingUp,
   TrendingDown,
   Assessment,
-  CalendarToday,
-  Print,
-  Email,
   Schedule,
-  FilterList,
-} from '@mui/icons-material';
+  FilterList } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
-import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
-import { financialApi } from '@/services/api/financial';
+import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
+
 import { useToast } from '@/components/common/Toaster';
 
 interface FinancialReportsProps {
@@ -75,7 +68,7 @@ export const FinancialReports = ({ modelId, agencyId }: FinancialReportsProps) =
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Mock data - replace with actual API calls
-  const { data: summaryData, isLoading: isSummaryLoading } = useQuery({
+  const { data: summaryData, isPending: isSummaryLoading } = useQuery({
     queryKey: ['financial-summary', startDate, endDate, modelId, agencyId],
     queryFn: async () => {
       // Mock data
@@ -110,16 +103,13 @@ export const FinancialReports = ({ modelId, agencyId }: FinancialReportsProps) =
           { model: 'Model C', revenue: 22000, growth: -5 },
           { model: 'Model D', revenue: 20000, growth: 10 },
           { model: 'Model E', revenue: 20000, growth: 30 },
-        ],
-      };
-    },
-  });
+        ] };
+    } });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+      currency: 'USD' }).format(amount);
   };
 
   const handleExportReport = async (format: 'pdf' | 'csv' | 'xlsx') => {
@@ -258,7 +248,7 @@ export const FinancialReports = ({ modelId, agencyId }: FinancialReportsProps) =
                 fill="#8884d8"
                 dataKey="amount"
               >
-                {summaryData?.top_revenue_sources.map((entry, index) => (
+                {summaryData?.top_revenue_sources.map((index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -582,15 +572,13 @@ export const FinancialReports = ({ modelId, agencyId }: FinancialReportsProps) =
                             height: 8,
                             backgroundColor: 'divider',
                             borderRadius: 1,
-                            overflow: 'hidden',
-                          }}
+                            overflow: 'hidden' }}
                         >
                           <Box
                             sx={{
                               width: `${(model.revenue / 35000) * 100}%`,
                               height: '100%',
-                              backgroundColor: 'primary.main',
-                            }}
+                              backgroundColor: 'primary.main' }}
                           />
                         </Box>
                       </Box>

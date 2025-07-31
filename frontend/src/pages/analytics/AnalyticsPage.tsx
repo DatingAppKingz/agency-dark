@@ -6,23 +6,16 @@ import {
   Paper,
   Tab,
   Tabs,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Button,
-  IconButton,
-} from '@mui/material';
+  IconButton } from '@mui/material';
 import {
-  DateRange,
   TrendingUp,
   People,
   AttachMoney,
   ChatBubble,
   Refresh,
   Download,
-  Compare,
-} from '@mui/icons-material';
+  Compare } from '@mui/icons-material';
 import { DateRangePicker } from '@/components/common/DateRangePicker';
 import { PlatformAnalytics } from '@/components/analytics/PlatformAnalytics';
 import { AgencyAnalytics } from '@/components/analytics/AgencyAnalytics';
@@ -55,8 +48,7 @@ const AnalyticsPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [dateRange, setDateRange] = useState({
     start: startOfMonth(subMonths(new Date(), 1)),
-    end: endOfMonth(new Date()),
-  });
+    end: endOfMonth(new Date()) });
   const [comparisonMode, setComparisonMode] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 

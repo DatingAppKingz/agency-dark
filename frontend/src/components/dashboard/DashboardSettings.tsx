@@ -16,16 +16,13 @@ import {
   TextField,
   Chip,
   Tooltip,
-  Alert,
-} from '@mui/material';
+  Alert } from '@mui/material';
 import {
   Delete,
-  Edit,
   Check,
   Add,
   RestartAlt,
-  ContentCopy,
-} from '@mui/icons-material';
+  ContentCopy } from '@mui/icons-material';
 import { useDashboardCustomization } from '@/hooks/useDashboardCustomization';
 
 export const DashboardSettings: React.FC = () => {
@@ -35,8 +32,7 @@ export const DashboardSettings: React.FC = () => {
     createLayout,
     deleteLayout,
     switchLayout,
-    resetToDefault,
-  } = useDashboardCustomization();
+    resetToDefault } = useDashboardCustomization();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState('');
@@ -100,8 +96,7 @@ export const DashboardSettings: React.FC = () => {
                 borderColor: layout.id === currentLayout?.id ? 'primary.main' : 'divider',
                 borderRadius: 1,
                 mb: 1,
-                backgroundColor: layout.id === currentLayout?.id ? 'action.selected' : 'transparent',
-              }}
+                backgroundColor: layout.id === currentLayout?.id ? 'action.selected' : 'transparent' }}
             >
               <ListItemText
                 primary={
@@ -182,7 +177,7 @@ export const DashboardSettings: React.FC = () => {
               Row height: {currentLayout.rowHeight}px
             </Typography>
             <Alert severity="info" sx={{ mt: 2 }}>
-              To customize your dashboard, enable Edit Mode from the dashboard view.
+              To customize your dashboard, enable Mode from the dashboard view.
               You can drag and drop widgets, resize them, and add new ones.
             </Alert>
           </Box>

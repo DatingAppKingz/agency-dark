@@ -1,0 +1,16 @@
+{
+  "summary": {
+    "total": 0,
+    "unusedImports": 0,
+    "implicitAny": 0,
+    "missingProperties": 0,
+    "otherTypeErrors": 0
+  },
+  "errors": {
+    "unusedImports": [],
+    "implicitAny": [],
+    "missingProperties": [],
+    "typeErrors": [],
+    "other": []
+  }
+}

@@ -16,43 +16,21 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Checkbox,
-  IconButton,
-  Avatar,
-  AvatarGroup,
-  LinearProgress,
-  Tooltip,
   Stepper,
   Step,
   StepLabel,
   FormGroup,
   FormControlLabel,
   Switch,
-  Grid,
-} from '@mui/material';
+  Grid } from '@mui/material';
 import {
   Send as SendIcon,
   Delete as DeleteIcon,
-  Schedule as ScheduleIcon,
-  PersonAdd as PersonAddIcon,
-  Group as GroupIcon,
-  FilterList as FilterIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  Warning as WarningIcon,
-  Visibility as PreviewIcon,
+  Schedule as PreviewIcon,
   AttachFile as AttachIcon,
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
-  Cancel as CancelIcon,
-} from '@mui/icons-material';
+  Cancel } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -60,6 +38,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { bulkOperationsService } from '@/services/api/bulkOperations';
 import { useModels } from '@/hooks/useModels';
+import { ModelProfile } from '@/types/models';
 import { BulkOperationType } from '@/types/bulkOperations';
 import MediaUploader from '@/components/media/MediaUploader';
 
@@ -77,7 +56,7 @@ interface BulkMessageFormData {
   attachments: {
     images: string[];
     videos: string[];
-    files: string[];
+    documents: string[];
   };
   sendAs: 'model' | 'agency';
   modelId?: string;
@@ -100,14 +79,12 @@ const BulkMessageOperations: React.FC = () => {
     attachments: {
       images: [],
       videos: [],
-      files: [],
-    },
+      documents: [] },
     sendAs: 'model',
     scheduledAt: undefined,
     priority: 'normal',
     trackOpens: true,
-    trackClicks: true,
-  });
+    trackClicks: true });
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [recipientCount, setRecipientCount] = useState(0);
 
@@ -115,14 +92,12 @@ const BulkMessageOperations: React.FC = () => {
   const { data: models } = useModels();
 
   // Get recipient count based on filters
-  const { data: recipients, isLoading: loadingRecipients } = useQuery({
+  const { data: recipients, isPending: loadingRecipients } = useQuery({
     queryKey: ['bulk-recipients', formData.recipientType, formData.filters],
     queryFn: () => bulkOperationsService.getRecipientCount({
       type: formData.recipientType,
-      filters: formData.filters,
-    }),
-    enabled: selectedOperation === 'send',
-  });
+      filters: formData.filters }),
+    enabled: selectedOperation === 'send' });
 
   // Create bulk operation
   const createBulkOperation = useMutation({
@@ -134,8 +109,7 @@ const BulkMessageOperations: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to create bulk operation');
-    },
-  });
+    } });
 
   useEffect(() => {
     if (recipients) {
@@ -155,14 +129,12 @@ const BulkMessageOperations: React.FC = () => {
       attachments: {
         images: [],
         videos: [],
-        files: [],
-      },
+        documents: [] },
       sendAs: 'model',
       scheduledAt: undefined,
       priority: 'normal',
       trackOpens: true,
-      trackClicks: true,
-    });
+      trackClicks: true });
     setActiveStep(0);
     setSelectedMessages([]);
   };
@@ -199,12 +171,9 @@ const BulkMessageOperations: React.FC = () => {
         priority: formData.priority,
         tracking: {
           track_opens: formData.trackOpens,
-          track_clicks: formData.trackClicks,
-        },
-      },
+          track_clicks: formData.trackClicks } },
       scheduled_at: formData.scheduledAt,
-      notes: `Bulk message to ${recipientCount} recipients`,
-    };
+      notes: `Bulk message to ${recipientCount} recipients` };
 
     createBulkOperation.mutate(operationData);
   };
@@ -222,8 +191,7 @@ const BulkMessageOperations: React.FC = () => {
       operation_params: {
         permanent: false, // Soft delete by default
       },
-      notes: `Bulk delete ${selectedMessages.length} messages`,
-    };
+      notes: `Bulk delete ${selectedMessages.length} messages` };
 
     createBulkOperation.mutate(operationData);
   };
@@ -327,14 +295,13 @@ const BulkMessageOperations: React.FC = () => {
               Attachments
             </Typography>
             <MediaUploader
-              onUpload={(files) => {
-                // Handle file uploads
+              onUpload={() => {
+                // Handle uploads
                 toast.success('Files uploaded successfully');
               }}
               accept={{
                 'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
-                'video/*': ['.mp4', '.mov', '.avi'],
-              }}
+                'video/*': ['.mp4', '.mov', '.avi'] }}
               maxFiles={10}
             />
           </Box>
@@ -367,9 +334,9 @@ const BulkMessageOperations: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, modelId: e.target.value })}
                     label="Select Model"
                   >
-                    {models?.map((model) => (
+                    {models?.map((model: ModelProfile) => (
                       <MenuItem key={model.id} value={model.id}>
-                        {model.stage_name || model.username}
+                        {model.stage_name || model.user?.full_name || 'Unknown Model'}
                       </MenuItem>
                     ))}
                   </Select>
@@ -457,19 +424,19 @@ const BulkMessageOperations: React.FC = () => {
 
               {(formData.attachments.images.length > 0 || 
                 formData.attachments.videos.length > 0 || 
-                formData.attachments.files.length > 0) && (
+                formData.attachments.audio.length > 0) && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Attachments
                   </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
-                    {formData.attachments.images.map((img, idx) => (
+                    {formData.attachments.images.map((idx) => (
                       <Chip key={idx} icon={<ImageIcon />} label={`Image ${idx + 1}`} size="small" />
                     ))}
-                    {formData.attachments.videos.map((vid, idx) => (
+                    {formData.attachments.videos.map((idx) => (
                       <Chip key={idx} icon={<VideoIcon />} label={`Video ${idx + 1}`} size="small" />
                     ))}
-                    {formData.attachments.files.map((file, idx) => (
+                    {formData.attachments.files.map((idx) => (
                       <Chip key={idx} icon={<AttachIcon />} label={`File ${idx + 1}`} size="small" />
                     ))}
                   </Box>
@@ -501,7 +468,7 @@ const BulkMessageOperations: React.FC = () => {
                 </Typography>
                 <Typography>
                   {formData.sendAs === 'model' ? 
-                    models?.find(m => m.id === formData.modelId)?.stage_name || 'Model' : 
+                    models?.find((m: ModelProfile) => m.id === formData.modelId)?.stage_name || 'Model' : 
                     'Agency'}
                 </Typography>
               </Box>
@@ -626,7 +593,7 @@ const BulkMessageOperations: React.FC = () => {
               <Button
                 variant="contained"
                 onClick={activeStep === 2 ? handleSendBulkMessage : handleNext}
-                disabled={createBulkOperation.isLoading}
+                disabled={createBulkOperation.isPending}
               >
                 {activeStep === 2 ? (formData.scheduledAt ? 'Schedule' : 'Send Now') : 'Next'}
               </Button>

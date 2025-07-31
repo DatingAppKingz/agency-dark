@@ -4,15 +4,13 @@ import {
   Box,
   Container,
   Typography,
-  Button,
   IconButton,
   Paper,
   CircularProgress,
   Alert,
   Menu,
   MenuItem,
-  Tooltip,
-} from '@mui/material';
+  Tooltip } from '@mui/material';
 import {
   ArrowBack as BackIcon,
   Edit as EditIcon,
@@ -21,9 +19,7 @@ import {
   Share as ShareIcon,
   Schedule as ScheduleIcon,
   MoreVert as MoreIcon,
-  Fullscreen as FullscreenIcon,
-  Print as PrintIcon,
-} from '@mui/icons-material';
+  Fullscreen as PrintIcon } from '@mui/icons-material';
 import GridLayout, { WidthProvider } from 'react-grid-layout';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
@@ -42,10 +38,10 @@ const ReportViewerPage: React.FC = () => {
   const [widgets, setWidgets] = useState<ReportWidget[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [autoRefreshTimer, setAutoRefreshTimer] = useState<NodeJS.Timeout | null>(null);
+  const [setAutoRefreshTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Fetch template
-  const { data: template, isLoading: loadingTemplate } = useQuery({
+  const { data: template, isPending: loadingTemplate } = useQuery({
     queryKey: ['report-template', templateId],
     queryFn: () => reportsService.getTemplate(templateId!),
     enabled: !!templateId,
@@ -55,19 +51,16 @@ const ReportViewerPage: React.FC = () => {
         ...w,
         loading: true,
         data: null,
-        error: null,
-      }));
+        error: null }));
       setWidgets(initialWidgets);
-    },
-  });
+    } });
 
   // Fetch report data
   const { data: reportData, refetch: refetchData } = useQuery({
     queryKey: ['report-data', templateId, template?.dateRange, template?.globalFilters],
     queryFn: () => reportsService.getReportData(templateId!, {
       dateRange: template?.dateRange,
-      filters: template?.globalFilters,
-    }),
+      filters: template?.globalFilters }),
     enabled: !!templateId && !!template,
     onSuccess: (data) => {
       // Update widgets with data
@@ -84,20 +77,18 @@ const ReportViewerPage: React.FC = () => {
     onError: () => {
       setRefreshing(false);
       toast.error('Failed to load report data');
-    },
-  });
+    } });
 
   // Export report
   const exportReport = useMutation({
     mutationFn: (format: 'pdf' | 'excel' | 'csv') =>
       reportsService.exportReport(templateId!, format),
-    onSuccess: (exportData) => {
+    onSuccess: () => {
       toast.success('Report export started. You will be notified when it\'s ready.');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to export report');
-    },
-  });
+    } });
 
   // Setup auto-refresh
   useEffect(() => {
@@ -149,8 +140,7 @@ const ReportViewerPage: React.FC = () => {
           height: '100vh',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-        }}
+          justifyContent: 'center' }}
       >
         <CircularProgress />
       </Box>
@@ -201,7 +191,7 @@ const ReportViewerPage: React.FC = () => {
               </IconButton>
             </Tooltip>
 
-            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+            <IconButton onClick={(event) => setAnchorEl(eevent.currentTarget)}>
               <MoreIcon />
             </IconButton>
           </Box>
@@ -246,8 +236,7 @@ const ReportViewerPage: React.FC = () => {
               x: w.x,
               y: w.y,
               w: w.w,
-              h: w.h,
-            }))}
+              h: w.h }))}
             cols={12}
             rowHeight={60}
             isDraggable={false}
@@ -260,16 +249,14 @@ const ReportViewerPage: React.FC = () => {
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  overflow: 'hidden',
-                }}
+                  overflow: 'hidden' }}
               >
                 <Box
                   sx={{
                     p: 2,
                     borderBottom: 1,
                     borderColor: 'divider',
-                    bgcolor: 'background.default',
-                  }}
+                    bgcolor: 'background.default' }}
                 >
                   <Typography variant="h6" noWrap>
                     {widget.chartConfig.title}
@@ -293,8 +280,7 @@ const ReportViewerPage: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        bgcolor: 'rgba(255, 255, 255, 0.8)',
-                      }}
+                        bgcolor: 'rgba(255, 255, 255, 0.8)' }}
                     >
                       <CircularProgress />
                     </Box>

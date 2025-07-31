@@ -16,8 +16,6 @@ import {
   Menu,
   MenuItem,
   LinearProgress,
-  Avatar,
-  Tooltip,
   Button,
   Dialog,
   DialogTitle,
@@ -28,8 +26,7 @@ import {
   Tab,
   TextField,
   InputAdornment,
-  TablePagination,
-} from '@mui/material';
+  TablePagination } from '@mui/material';
 import {
   MoreVert as MoreIcon,
   Refresh as RefreshIcon,
@@ -42,8 +39,7 @@ import {
   Warning as WarningIcon,
   Schedule as PendingIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon,
-} from '@mui/icons-material';
+  FilterList } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
@@ -64,15 +60,13 @@ const BulkOperationHistory: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch operations
-  const { data: operations, isLoading, refetch } = useQuery({
+  const { data: operations, isPending, refetch } = useQuery({
     queryKey: ['bulk-operations', activeTab, searchQuery, page, rowsPerPage],
     queryFn: () => bulkOperationsService.getBulkOperations({
       status: activeTab === 'all' ? undefined : activeTab,
       search: searchQuery || undefined,
       limit: rowsPerPage,
-      offset: page * rowsPerPage,
-    }),
-  });
+      offset: page * rowsPerPage }) });
 
   // Cancel operation
   const cancelOperation = useMutation({
@@ -83,8 +77,7 @@ const BulkOperationHistory: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to cancel operation');
-    },
-  });
+    } });
 
   // Retry operation
   const retryOperation = useMutation({
@@ -95,8 +88,7 @@ const BulkOperationHistory: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to retry operation');
-    },
-  });
+    } });
 
   // Download results
   const downloadResults = async (operation: BulkOperation) => {
@@ -154,8 +146,7 @@ const BulkOperationHistory: React.FC = () => {
       [BulkOperationStatus.PROCESSING]: { color: 'primary' as const, label: 'Processing' },
       [BulkOperationStatus.PENDING]: { color: 'default' as const, label: 'Pending' },
       [BulkOperationStatus.CANCELLED]: { color: 'default' as const, label: 'Cancelled' },
-      [BulkOperationStatus.PARTIALLY_COMPLETED]: { color: 'warning' as const, label: 'Partial' },
-    };
+      [BulkOperationStatus.PARTIALLY_COMPLETED]: { color: 'warning' as const, label: 'Partial' } };
 
     const config = statusConfig[status] || { color: 'default' as const, label: status };
     return <Chip size="small" color={config.color} label={config.label} />;
@@ -174,8 +165,7 @@ const BulkOperationHistory: React.FC = () => {
       [BulkOperationType.CONTENT_UPLOAD]: 'Upload Content',
       [BulkOperationType.CONTENT_DELETE]: 'Delete Content',
       [BulkOperationType.CONTENT_PUBLISH]: 'Publish Content',
-      [BulkOperationType.ANALYTICS_EXPORT]: 'Export Analytics',
-    };
+      [BulkOperationType.ANALYTICS_EXPORT]: 'Export Analytics' };
     return labels[type] || type;
   };
 
@@ -201,7 +191,7 @@ const BulkOperationHistory: React.FC = () => {
               <Button
                 startIcon={<RefreshIcon />}
                 onClick={() => refetch()}
-                disabled={isLoading}
+                disabled={isPending}
               >
                 Refresh
               </Button>
@@ -220,8 +210,7 @@ const BulkOperationHistory: React.FC = () => {
                   <InputAdornment position="start">
                     <SearchIcon />
                   </InputAdornment>
-                ),
-              }}
+                ) }}
               sx={{ flexGrow: 1 }}
             />
           </Box>
@@ -257,7 +246,7 @@ const BulkOperationHistory: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {isLoading ? (
+                {isPending ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center">
                       <LinearProgress />

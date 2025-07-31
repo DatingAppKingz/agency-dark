@@ -20,8 +20,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert,
-} from '@mui/material';
+  Alert } from '@mui/material';
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -31,12 +30,10 @@ import {
   FileCopy as DuplicateIcon,
   Download as ExportIcon,
   Schedule as ScheduleIcon,
-  Share as ShareIcon,
-  Assessment as ReportIcon,
+  Share as ReportIcon,
   ShowChart as ChartIcon,
   TableChart as TableIcon,
-  Dashboard as DashboardIcon,
-} from '@mui/icons-material';
+  Dashboard as DashboardIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
@@ -71,23 +68,20 @@ const ReportsPage: React.FC = () => {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { } = useAuth();
 
   // Fetch templates
-  const { data: templates, isLoading } = useQuery({
+  const { data: templates, isPending } = useQuery({
     queryKey: ['report-templates', activeTab, searchTerm],
     queryFn: () => reportsService.getTemplates({
       type: activeTab === 0 ? undefined : Object.values(ReportType)[activeTab - 1],
-      search: searchTerm,
-    }),
-  });
+      search: searchTerm }) });
 
   // Fetch predefined templates
   const { data: predefinedTemplates } = useQuery({
     queryKey: ['predefined-templates'],
     queryFn: () => reportsService.getPredefinedTemplates(),
-    enabled: activeTab === 0,
-  });
+    enabled: activeTab === 0 });
 
   // Delete template
   const deleteTemplate = useMutation({
@@ -100,8 +94,7 @@ const ReportsPage: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to delete template');
-    },
-  });
+    } });
 
   // Duplicate template
   const duplicateTemplate = useMutation({
@@ -116,8 +109,7 @@ const ReportsPage: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to duplicate template');
-    },
-  });
+    } });
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, template: ReportTemplate) => {
     setAnchorEl(event.currentTarget);
@@ -142,7 +134,7 @@ const ReportsPage: React.FC = () => {
 
   const handleExportReport = async (template: ReportTemplate) => {
     try {
-      const exportData = await reportsService.exportReport(template.id, 'pdf');
+      const result = await reportsService.exportReport(template.id, 'pdf');
       toast.success('Report export started. You will be notified when it\'s ready.');
     } catch (error: any) {
       toast.error('Failed to export report');
@@ -253,8 +245,7 @@ const ReportsPage: React.FC = () => {
               <InputAdornment position="start">
                 <SearchIcon />
               </InputAdornment>
-            ),
-          }}
+            ) }}
           sx={{ mb: 3 }}
         />
 
@@ -284,7 +275,7 @@ const ReportsPage: React.FC = () => {
             </>
           )}
           <Grid container spacing={3}>
-            {isLoading ? (
+            {isPending ? (
               <Grid item xs={12}>
                 <Typography variant="body1" color="text.secondary" align="center">
                   Loading reports...
@@ -305,7 +296,7 @@ const ReportsPage: React.FC = () => {
         {[ReportType.REVENUE, ReportType.USER_ACTIVITY, ReportType.MESSAGE_ANALYTICS, ReportType.CONTENT_PERFORMANCE, ReportType.SUBSCRIPTION_METRICS].map((type, index) => (
           <TabPanel key={type} value={activeTab} index={index + 1}>
             <Grid container spacing={3}>
-              {isLoading ? (
+              {isPending ? (
                 <Grid item xs={12}>
                   <Typography variant="body1" color="text.secondary" align="center">
                     Loading reports...
@@ -393,7 +384,7 @@ const ReportsPage: React.FC = () => {
                   deleteTemplate.mutate(selectedTemplate.id);
                 }
               }}
-              disabled={deleteTemplate.isLoading}
+              disabled={deleteTemplate.isPending}
             >
               Delete
             </Button>
@@ -421,7 +412,7 @@ const ReportsPage: React.FC = () => {
                   duplicateTemplate.mutate({ id: selectedTemplate.id, name: duplicateName });
                 }
               }}
-              disabled={!duplicateName || duplicateTemplate.isLoading}
+              disabled={!duplicateName || duplicateTemplate.isPending}
             >
               Duplicate
             </Button>

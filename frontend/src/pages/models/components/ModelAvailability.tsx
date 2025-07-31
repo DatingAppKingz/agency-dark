@@ -22,8 +22,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-} from '@mui/material';
+  MenuItem } from '@mui/material';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -52,7 +51,7 @@ const DAYS_OF_WEEK = [
   'Saturday',
 ];
 
-export const ModelAvailability = ({ modelId }: ModelAvailabilityProps) => {
+export const ModelAvailability = ({ }: ModelAvailabilityProps) => {
   const [autoReplyEnabled, setAutoReplyEnabled] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSlot, setEditingSlot] = useState<AvailabilitySlot | null>(null);
@@ -64,37 +63,32 @@ export const ModelAvailability = ({ modelId }: ModelAvailabilityProps) => {
       dayOfWeek: 1,
       startTime: new Date('2025-01-01T09:00:00'),
       endTime: new Date('2025-01-01T17:00:00'),
-      isActive: true,
-    },
+      isActive: true },
     {
       id: '2',
       dayOfWeek: 2,
       startTime: new Date('2025-01-01T09:00:00'),
       endTime: new Date('2025-01-01T17:00:00'),
-      isActive: true,
-    },
+      isActive: true },
     {
       id: '3',
       dayOfWeek: 3,
       startTime: new Date('2025-01-01T10:00:00'),
       endTime: new Date('2025-01-01T18:00:00'),
-      isActive: true,
-    },
+      isActive: true },
   ]);
 
   const [formData, setFormData] = useState({
     dayOfWeek: 0,
     startTime: new Date('2025-01-01T09:00:00'),
-    endTime: new Date('2025-01-01T17:00:00'),
-  });
+    endTime: new Date('2025-01-01T17:00:00') });
 
   const handleAddSlot = () => {
     setEditingSlot(null);
     setFormData({
       dayOfWeek: 0,
       startTime: new Date('2025-01-01T09:00:00'),
-      endTime: new Date('2025-01-01T17:00:00'),
-    });
+      endTime: new Date('2025-01-01T17:00:00') });
     setDialogOpen(true);
   };
 
@@ -103,8 +97,7 @@ export const ModelAvailability = ({ modelId }: ModelAvailabilityProps) => {
     setFormData({
       dayOfWeek: slot.dayOfWeek,
       startTime: slot.startTime,
-      endTime: slot.endTime,
-    });
+      endTime: slot.endTime });
     setDialogOpen(true);
   };
 
@@ -131,8 +124,7 @@ export const ModelAvailability = ({ modelId }: ModelAvailabilityProps) => {
       const newSlot: AvailabilitySlot = {
         id: Date.now().toString(),
         ...formData,
-        isActive: true,
-      };
+        isActive: true };
       setAvailability([...availability, newSlot]);
     }
     setDialogOpen(false);
@@ -163,7 +155,7 @@ export const ModelAvailability = ({ modelId }: ModelAvailabilityProps) => {
                   multiline
                   rows={3}
                   label="Auto-reply message"
-                  defaultValue="Hi! I'm currently offline. I'll respond to your message as soon as I'm back online. My usual hours are Monday-Friday 9AM-5PM EST."
+                  defaultValue="Hi! I'm currently offline. I'll respond to your message as I'm back online. My usual hours are Monday-Friday 9AM-5PM EST."
                   sx={{ mt: 2 }}
                 />
               )}

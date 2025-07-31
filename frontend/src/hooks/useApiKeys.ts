@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { apiKeysService } from '@/services/api/apiKeys';
 import {
-  ApiKey,
   ApiKeyCreateRequest,
   ApiKeyUpdateRequest,
   ApiKeyRotateRequest,
@@ -14,32 +13,28 @@ const QUERY_KEY = 'apiKeys';
 export const useApiKeys = (filters?: ApiKeyFilters) => {
   return useQuery({
     queryKey: [QUERY_KEY, filters],
-    queryFn: () => apiKeysService.list(filters),
-  });
+    queryFn: () => apiKeysService.list(filters) });
 };
 
 export const useApiKey = (id: string | null) => {
   return useQuery({
     queryKey: [QUERY_KEY, id],
     queryFn: () => id ? apiKeysService.get(id) : null,
-    enabled: !!id,
-  });
+    enabled: !!id });
 };
 
 export const useApiKeyUsageStats = (id: string | null, days: number = 30) => {
   return useQuery({
     queryKey: [QUERY_KEY, 'usage', id, days],
     queryFn: () => id ? apiKeysService.getUsageStats(id, days) : null,
-    enabled: !!id,
-  });
+    enabled: !!id });
 };
 
 export const useApiKeyAuditLogs = (id: string | null) => {
   return useQuery({
     queryKey: [QUERY_KEY, 'audit', id],
     queryFn: () => id ? apiKeysService.getAuditLogs(id) : null,
-    enabled: !!id,
-  });
+    enabled: !!id });
 };
 
 export const useCreateApiKey = () => {
@@ -53,8 +48,7 @@ export const useCreateApiKey = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to create API key');
-    },
-  });
+    } });
 };
 
 export const useUpdateApiKey = () => {
@@ -70,8 +64,7 @@ export const useUpdateApiKey = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to update API key');
-    },
-  });
+    } });
 };
 
 export const useRotateApiKey = () => {
@@ -87,8 +80,7 @@ export const useRotateApiKey = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to rotate API key');
-    },
-  });
+    } });
 };
 
 export const useDeleteApiKey = () => {
@@ -102,8 +94,7 @@ export const useDeleteApiKey = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to delete API key');
-    },
-  });
+    } });
 };
 
 export const useValidateApiKey = () => {
@@ -112,8 +103,7 @@ export const useValidateApiKey = () => {
       apiKeysService.validate(provider, key),
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to validate API key');
-    },
-  });
+    } });
 };
 
 export const useTestApiKey = () => {
@@ -128,14 +118,12 @@ export const useTestApiKey = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to test API key');
-    },
-  });
+    } });
 };
 
 export const useProviderScopes = (provider: string | null) => {
   return useQuery({
     queryKey: [QUERY_KEY, 'scopes', provider],
     queryFn: () => provider ? apiKeysService.getProviderScopes(provider) : null,
-    enabled: !!provider,
-  });
+    enabled: !!provider });
 };

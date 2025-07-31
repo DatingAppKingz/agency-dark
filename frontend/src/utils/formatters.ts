@@ -3,15 +3,13 @@ export const formatCurrency = (value: number, currency = 'USD'): string => {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
+    maximumFractionDigits: 2 }).format(value);
 };
 
 export const formatNumber = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
+    maximumFractionDigits: 2 }).format(value);
 };
 
 export const formatPercentage = (value: number, decimals = 1): string => {
@@ -45,8 +43,7 @@ export const formatDate = (date: string | Date, format = 'MMM d, yyyy'): string 
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'short',
-    day: 'numeric',
-  };
+    day: 'numeric' };
   return d.toLocaleDateString('en-US', options);
 };
 
@@ -57,8 +54,7 @@ export const formatDateTime = (date: string | Date): string => {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit',
-  };
+    minute: '2-digit' };
   return d.toLocaleDateString('en-US', options);
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Paper,
@@ -10,53 +10,36 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider,
   TextField,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
-  Chip,
-  Card,
-  CardContent,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert,
-  Tabs,
-  Tab,
-  Tooltip,
-  Menu,
   ListItemButton,
   Collapse,
   FormControlLabel,
-  Switch,
-} from '@mui/material';
+  Switch } from '@mui/material';
 import {
   Add as AddIcon,
   Save as SaveIcon,
-  SaveAs as SaveAsIcon,
-  Download as ExportIcon,
-  Schedule as ScheduleIcon,
-  Refresh as RefreshIcon,
+  SaveAs as ExportIcon,
+  Schedule as RefreshIcon,
   Settings as SettingsIcon,
-  Close as CloseIcon,
-  DragIndicator as DragIcon,
+  Close as DragIcon,
   ShowChart as LineChartIcon,
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
   TableChart as TableIcon,
   Dashboard as MetricIcon,
   FilterList as FilterIcon,
-  DateRange as DateRangeIcon,
-  ExpandLess,
+  DateRange as ExpandLess,
   ExpandMore,
   Delete as DeleteIcon,
-  Edit as EditIcon,
-  Fullscreen as FullscreenIcon,
-  FullscreenExit as ExitFullscreenIcon,
-} from '@mui/icons-material';
+  Edit as FullscreenIcon,
+  FullscreenExit as ExitFullscreenIcon } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -67,17 +50,12 @@ import { reportsService } from '@/services/api/reports';
 import {
   ReportWidget,
   ChartType,
-  ReportMetric,
-  ReportDimension,
   ReportFilter,
   DateRangeType,
-  ReportType,
-  ChartConfig,
-} from '@/types/reports';
+  ReportType } from '@/types/reports';
 import ChartWidget from './ChartWidget';
 import MetricSelector from './MetricSelector';
 import DimensionSelector from './DimensionSelector';
-import FilterBuilder from './FilterBuilder';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
@@ -98,9 +76,8 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
   const [dateRange, setDateRange] = useState({
     type: DateRangeType.LAST_30_DAYS,
     startDate: undefined as string | undefined,
-    endDate: undefined as string | undefined,
-  });
-  const [globalFilters, setGlobalFilters] = useState<ReportFilter[]>([]);
+    endDate: undefined as string | undefined });
+  const [globalFilters, ] = useState<ReportFilter[]>([]);
   const [refreshInterval, setRefreshInterval] = useState<number | undefined>(undefined);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [fullscreenWidget, setFullscreenWidget] = useState<string | null>(null);
@@ -112,29 +89,26 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Load template if provided
-  const { data: template, isLoading: loadingTemplate } = useQuery({
+  const { data: template, isPending: isTemplateLoading } = useQuery({
     queryKey: ['report-template', templateId],
     queryFn: () => reportsService.getTemplate(templateId!),
-    enabled: !!templateId,
-  });
+    enabled: !!templateId });
 
   // Get builder config
   const { data: builderConfig } = useQuery({
     queryKey: ['report-builder-config'],
-    queryFn: () => reportsService.getBuilderConfig(),
-  });
+    queryFn: () => reportsService.getBuilderConfig() });
 
   // Generate report data
   const generateReport = useMutation({
-    mutationFn: (widgetIds: string[]) => {
-      const widgetsToGenerate = widgets.filter(w => widgetIds.includes(w.id));
+    mutationFn: (event: string[]) => {
+      const widgetsToGenerate = widgets.filter(w => event.includes(w.id));
       return reportsService.generateReport({
         widgets: widgetsToGenerate.map(w => w.chartConfig),
         dateRange,
-        filters: globalFilters,
-      });
+        filters: globalFilters });
     },
-    onSuccess: (data, widgetIds) => {
+    onSuccess: (data, ) => {
       // Update widget data
       const updatedWidgets = widgets.map(widget => {
         const widgetData = data.widgets.find(w => w.widgetId === widget.id);
@@ -147,8 +121,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to generate report');
-    },
-  });
+    } });
 
   // Save template
   const saveTemplate = useMutation({
@@ -167,8 +140,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to save template');
-    },
-  });
+    } });
 
   const addWidget = (chartType: ChartType) => {
     const newWidget: ReportWidget = {
@@ -186,10 +158,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
         options: {
           showLegend: true,
           showGrid: true,
-          showTooltip: true,
-        },
-      },
-    };
+          showTooltip: true } } };
 
     setWidgets([...widgets, newWidget]);
     setSelectedWidget(newWidget.id);
@@ -215,8 +184,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
           x: layoutItem.x,
           y: layoutItem.y,
           w: layoutItem.w,
-          h: layoutItem.h,
-        };
+          h: layoutItem.h };
       }
       return widget;
     });
@@ -232,8 +200,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
       globalFilters,
       dateRange,
       refreshInterval,
-      isPublic: false,
-    };
+      isPublic: false };
 
     saveTemplate.mutate(templateData);
   };
@@ -248,7 +215,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
     { type: ChartType.BAR, icon: <BarChartIcon />, label: 'Bar Chart' },
     { type: ChartType.PIE, icon: <PieChartIcon />, label: 'Pie Chart' },
     { type: ChartType.TABLE, icon: <TableIcon />, label: 'Table' },
-    { type: ChartType.METRIC_CARD, icon: <MetricIcon />, label: 'Metric Card' },
+    { type: ChartType.METRIC_CARD, icon: <MetricIcon />, label: 'Metric ' },
   ];
 
   return (
@@ -265,9 +232,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
             width: 300,
             boxSizing: 'border-box',
             position: 'relative',
-            height: '100%',
-          },
-        }}
+            height: '100%' } }}
       >
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="h6">Report Builder</Typography>
@@ -356,9 +321,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
                         updateWidget(selectedWidget, {
                           chartConfig: {
                             ...widgets.find(w => w.id === selectedWidget)!.chartConfig,
-                            metrics,
-                          },
-                        });
+                            metrics } });
                       }
                     }}
                   />
@@ -383,9 +346,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
                         updateWidget(selectedWidget, {
                           chartConfig: {
                             ...widgets.find(w => w.id === selectedWidget)!.chartConfig,
-                            dimensions,
-                          },
-                        });
+                            dimensions } });
                       }
                     }}
                   />
@@ -430,8 +391,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
             bgcolor: 'background.paper',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
+            justifyContent: 'space-between' }}
         >
           <Box display="flex" alignItems="center" gap={1}>
             <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
@@ -475,8 +435,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
                 height: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-              }}
+                justifyContent: 'center' }}
             >
               <Paper sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h6" gutterBottom>
@@ -502,8 +461,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
                 x: w.x,
                 y: w.y,
                 w: w.w,
-                h: w.h,
-              }))}
+                h: w.h }))}
               cols={12}
               rowHeight={60}
               onLayoutChange={handleLayoutChange}
@@ -518,8 +476,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
                     flexDirection: 'column',
                     border: selectedWidget === widget.id ? 2 : 1,
                     borderColor: selectedWidget === widget.id ? 'primary.main' : 'divider',
-                    cursor: 'pointer',
-                  }}
+                    cursor: 'pointer' }}
                   onClick={() => setSelectedWidget(widget.id)}
                 >
                   <Box
@@ -530,8 +487,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
                       justifyContent: 'space-between',
                       borderBottom: 1,
                       borderColor: 'divider',
-                      bgcolor: 'background.default',
-                    }}
+                      bgcolor: 'background.default' }}
                   >
                     <Box display="flex" alignItems="center" gap={1}>
                       <IconButton size="small" className="drag-handle" sx={{ cursor: 'move' }}>
@@ -600,7 +556,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
           <Button
             variant="contained"
             onClick={handleSaveTemplate}
-            disabled={!templateName || saveTemplate.isLoading}
+            disabled={!templateName || saveTemplate.isPending}
           >
             Save
           </Button>
@@ -624,8 +580,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ templateId, onSave }) => 
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 borderBottom: 1,
-                borderColor: 'divider',
-              }}
+                borderColor: 'divider' }}
             >
               <Typography variant="h6">
                 {widgets.find(w => w.id === fullscreenWidget)?.chartConfig.title}

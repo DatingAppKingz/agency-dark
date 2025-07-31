@@ -7,8 +7,7 @@ import {
   ButtonGroup,
   Button,
   Skeleton,
-  useTheme,
-} from '@mui/material';
+  useTheme } from '@mui/material';
 import {
   LineChart,
   Line,
@@ -24,8 +23,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
-} from 'recharts';
+  Legend } from 'recharts';
 
 type ChartType = 'line' | 'area' | 'bar' | 'pie';
 type TimeRange = 'week' | 'month' | 'quarter' | 'year';
@@ -61,8 +59,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   color,
   colors,
   loading = false,
-  valueFormatter = (value) => value.toLocaleString(),
-}) => {
+  valueFormatter = (value) => value.toLocaleString() }) => {
   const theme = useTheme();
   const [selectedRange, setSelectedRange] = React.useState<TimeRange>('month');
 
@@ -116,8 +113,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
               formatter={valueFormatter}
               contentStyle={{
                 backgroundColor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
-              }}
+                border: `1px solid ${theme.palette.divider}` }}
             />
             <Area
               type="monotone"
@@ -147,8 +143,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
               formatter={valueFormatter}
               contentStyle={{
                 backgroundColor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
-              }}
+                border: `1px solid ${theme.palette.divider}` }}
             />
             <Bar dataKey={dataKey} fill={defaultColor} />
           </BarChart>
@@ -167,7 +162,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
               fill={defaultColor}
               dataKey={dataKey}
             >
-              {data.map((entry, index) => (
+              {data.map((index) => (
                 <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
               ))}
             </Pie>
@@ -175,8 +170,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
               formatter={valueFormatter}
               contentStyle={{
                 backgroundColor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
-              }}
+                border: `1px solid ${theme.palette.divider}` }}
             />
             <Legend />
           </PieChart>
@@ -201,8 +195,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
               formatter={valueFormatter}
               contentStyle={{
                 backgroundColor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
-              }}
+                border: `1px solid ${theme.palette.divider}` }}
             />
             <Line
               type="monotone"

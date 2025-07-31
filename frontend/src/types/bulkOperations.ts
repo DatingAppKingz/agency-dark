@@ -8,6 +8,8 @@ export enum BulkOperationType {
   USER_DELETE = 'user_delete',
   USER_ACTIVATE = 'user_activate',
   USER_DEACTIVATE = 'user_deactivate',
+  USER_CREATE = 'user_create',
+  USER_EXPORT = 'user_export',
   
   // Model operations
   MODEL_UPDATE = 'model_update',
@@ -25,6 +27,11 @@ export enum BulkOperationType {
   MESSAGE_SEND = 'message_send',
   MESSAGE_DELETE = 'message_delete',
   
+  // Content operations
+  CONTENT_UPLOAD = 'content_upload',
+  CONTENT_DELETE = 'content_delete',
+  CONTENT_PUBLISH = 'content_publish',
+  
   // Analytics operations
   ANALYTICS_EXPORT = 'analytics_export',
   
@@ -38,7 +45,9 @@ export enum BulkOperationStatus {
   VALIDATING = 'validating',
   SCHEDULED = 'scheduled',
   PROCESSING = 'processing',
+  IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
+  PARTIALLY_COMPLETED = 'partially_completed',
   FAILED = 'failed',
   CANCELLED = 'cancelled',
   ROLLED_BACK = 'rolled_back',
@@ -64,6 +73,8 @@ export interface BulkOperation {
   success_count: number;
   failed_count: number;
   progress_percentage: number;
+  progress_current?: number;
+  progress_total?: number;
   created_at: string;
   started_at?: string;
   completed_at?: string;

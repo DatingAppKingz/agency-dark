@@ -6,8 +6,7 @@ import {
   Tabs,
   Tab,
   Paper,
-  Button,
-} from '@mui/material';
+  Button } from '@mui/material';
 import {
   Person,
   Notifications,
@@ -15,8 +14,7 @@ import {
   Palette,
   Language,
   Key,
-  Webhook,
-} from '@mui/icons-material';
+  Webhook } from '@mui/icons-material';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
 
 interface TabPanelProps {

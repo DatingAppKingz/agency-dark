@@ -19,8 +19,8 @@ import { useDashboardStats, useAgencyStats } from '@/hooks/useAnalytics';
 import { useMemo } from 'react';
 
 export const SuperAdminDashboard = () => {
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: agencies, isLoading: agenciesLoading } = useAgencyStats();
+  const { data: stats, isPending: statsLoading } = useDashboardStats();
+  const { data: agencies, isPending: agenciesLoading } = useAgencyStats();
 
   // Mock data for charts and activities - replace with real API calls
   const revenueChartData = useMemo(() => [

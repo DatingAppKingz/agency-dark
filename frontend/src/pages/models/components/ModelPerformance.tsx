@@ -31,7 +31,7 @@ interface ModelPerformanceProps {
 
 export const ModelPerformance = ({ modelId }: ModelPerformanceProps) => {
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('month');
-  const { data: stats, isLoading } = useModelStats(modelId, period);
+  const { data: stats, isPending } = useModelStats(modelId, period);
 
   const handlePeriodChange = (_: React.MouseEvent<HTMLElement>, newPeriod: 'day' | 'week' | 'month' | null) => {
     if (newPeriod !== null) {
@@ -64,7 +64,7 @@ export const ModelPerformance = ({ modelId }: ModelPerformanceProps) => {
     { name: 'Tips', value: 5, color: '#ff7c7c' },
   ];
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <Box sx={{ p: 3 }}>
         <Grid container spacing={3}>

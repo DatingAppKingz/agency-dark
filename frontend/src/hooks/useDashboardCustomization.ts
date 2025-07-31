@@ -114,7 +114,7 @@ const defaultLayouts: Record<string, DashboardLayout> = {
 export const useDashboardCustomization = () => {
   const { user } = useAuthStore();
   const [preferences, setPreferences] = useState<UserDashboardPreferences | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isPending, setIsLoading] = useState(true);
 
   // Load preferences from localStorage
   useEffect(() => {
@@ -350,7 +350,7 @@ export const useDashboardCustomization = () => {
   return {
     preferences,
     currentLayout: getCurrentLayout(),
-    isLoading,
+    isPending,
     updateWidgetPosition,
     toggleWidgetVisibility,
     addWidget,

@@ -7,22 +7,20 @@ import {
   Integration,
   FeatureUsage,
   FEATURE_CATALOG,
-  IntegrationType,
-} from '@/types/agencyFeatures';
+  IntegrationType } from '@/types/agencyFeatures';
 
 const STORAGE_KEY = 'agency_features';
 
 // Mock API service - replace with actual API calls
 const agencyFeaturesApi = {
-  getConfig: async (agencyId: string): Promise<AgencyFeatureConfig> => {
-    const stored = localStorage.getItem(`${STORAGE_KEY}_${agencyId}`);
+  getConfig: async (event: string): Promise<AgencyFeatureConfig> => {
+    const stored = localStorage.getItem(`${STORAGE_KEY}_${}`);
     if (stored) {
       return JSON.parse(stored);
     }
     
     // Default config
     return {
-      agencyId,
       features: FEATURE_CATALOG.map(f => ({ ...f, enabled: false })),
       customModules: [],
       integrations: [],
@@ -32,36 +30,33 @@ const agencyFeaturesApi = {
         chatters: { current: 0, max: 30 },
         storage: { current: 0, max: 10240, unit: 'MB' },
         apiCalls: { current: 0, max: 10000, unit: 'per month' },
-        customLimits: {},
-      },
-      updatedAt: new Date(),
-    };
+        customLimits: {} },
+      updatedAt: new Date() };
   },
   
   saveConfig: async (config: AgencyFeatureConfig): Promise<void> => {
-    localStorage.setItem(`${STORAGE_KEY}_${config.agencyId}`, JSON.stringify(config));
+    localStorage.setItem(`${STORAGE_KEY}_${config.}`, JSON.stringify(config));
   },
   
-  getUsage: async (agencyId: string, featureId: string): Promise<FeatureUsage[]> => {
+  getUsage: async (event: string, : string): Promise<FeatureUsage[]> => {
     // Mock usage data
     return [];
-  },
-};
+  } };
 
 export const useAgencyFeatures = () => {
   const { user } = useAuthStore();
   const [config, setConfig] = useState<AgencyFeatureConfig | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isPending, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   // Load configuration
   useEffect(() => {
     const loadConfig = async () => {
-      if (!user?.agencyId) return;
+      if (!user?.) return;
       
       setIsLoading(true);
       try {
-        const featureConfig = await agencyFeaturesApi.getConfig(user.agencyId);
+        const featureConfig = await agencyFeaturesApi.getConfig(user.);
         setConfig(featureConfig);
       } catch (error) {
         console.error('Error loading agency features:', error);
@@ -71,7 +66,7 @@ export const useAgencyFeatures = () => {
     };
     
     loadConfig();
-  }, [user?.agencyId]);
+  }, [user?.]);
 
   // Save configuration
   const saveConfig = useCallback(async (newConfig: AgencyFeatureConfig) => {
@@ -88,35 +83,31 @@ export const useAgencyFeatures = () => {
   }, []);
 
   // Toggle feature
-  const toggleFeature = useCallback(async (featureId: string) => {
+  const toggleFeature = useCallback(async (event: string) => {
     if (!config) return;
     
     const updatedConfig = {
       ...config,
       features: config.features.map(feature =>
-        feature.id === featureId
-          ? { ...feature, enabled: !feature.enabled }
+        feature.id === ? { ...feature, enabled: !feature.enabled }
           : feature
       ),
-      updatedAt: new Date(),
-    };
+      updatedAt: new Date() };
     
     await saveConfig(updatedConfig);
   }, [config, saveConfig]);
 
   // Update feature settings
-  const updateFeatureSettings = useCallback(async (featureId: string, settings: Record<string, any>) => {
+  const updateFeatureSettings = useCallback(async (event: string, settings: Record<string, any>) => {
     if (!config) return;
     
     const updatedConfig = {
       ...config,
       features: config.features.map(feature =>
-        feature.id === featureId
-          ? { ...feature, settings: { ...feature.settings, ...settings } }
+        feature.id === ? { ...feature, settings: { ...feature.settings, ...settings } }
           : feature
       ),
-      updatedAt: new Date(),
-    };
+      updatedAt: new Date() };
     
     await saveConfig(updatedConfig);
   }, [config, saveConfig]);
@@ -127,14 +118,12 @@ export const useAgencyFeatures = () => {
     
     const newModule: CustomModule = {
       ...module,
-      id: `module_${Date.now()}`,
-    };
+      id: `module_${Date.now()}` };
     
     const updatedConfig = {
       ...config,
       customModules: [...config.customModules, newModule],
-      updatedAt: new Date(),
-    };
+      updatedAt: new Date() };
     
     await saveConfig(updatedConfig);
     return newModule;
@@ -151,8 +140,7 @@ export const useAgencyFeatures = () => {
           ? { ...module, ...updates }
           : module
       ),
-      updatedAt: new Date(),
-    };
+      updatedAt: new Date() };
     
     await saveConfig(updatedConfig);
   }, [config, saveConfig]);
@@ -164,8 +152,7 @@ export const useAgencyFeatures = () => {
     const updatedConfig = {
       ...config,
       customModules: config.customModules.filter(module => module.id !== moduleId),
-      updatedAt: new Date(),
-    };
+      updatedAt: new Date() };
     
     await saveConfig(updatedConfig);
   }, [config, saveConfig]);
@@ -180,14 +167,12 @@ export const useAgencyFeatures = () => {
       name,
       enabled: false,
       config,
-      status: 'disconnected',
-    };
+      status: 'disconnected' };
     
     const updatedConfig = {
       ...config,
       integrations: [...config.integrations, newIntegration],
-      updatedAt: new Date(),
-    };
+      updatedAt: new Date() };
     
     await saveConfig(updatedConfig);
     return newIntegration;
@@ -204,8 +189,7 @@ export const useAgencyFeatures = () => {
           ? { ...integration, ...updates }
           : integration
       ),
-      updatedAt: new Date(),
-    };
+      updatedAt: new Date() };
     
     await saveConfig(updatedConfig);
   }, [config, saveConfig]);
@@ -217,23 +201,22 @@ export const useAgencyFeatures = () => {
     const updatedConfig = {
       ...config,
       integrations: config.integrations.filter(integration => integration.id !== integrationId),
-      updatedAt: new Date(),
-    };
+      updatedAt: new Date() };
     
     await saveConfig(updatedConfig);
   }, [config, saveConfig]);
 
   // Check if feature is enabled
-  const isFeatureEnabled = useCallback((featureId: string): boolean => {
+  const isFeatureEnabled = useCallback((event: string): boolean => {
     if (!config) return false;
-    const feature = config.features.find(f => f.id === featureId);
+    const feature = config.features.find(f => f.id === );
     return feature?.enabled || false;
   }, [config]);
 
   // Get feature by ID
-  const getFeature = useCallback((featureId: string): Feature | undefined => {
+  const getFeature = useCallback((event: string): Feature | undefined => {
     if (!config) return undefined;
-    return config.features.find(f => f.id === featureId);
+    return config.features.find(f => f.id === );
   }, [config]);
 
   // Check limit
@@ -254,7 +237,7 @@ export const useAgencyFeatures = () => {
 
   return {
     config,
-    isLoading,
+    isPending,
     isSaving,
     toggleFeature,
     updateFeatureSettings,
@@ -267,6 +250,5 @@ export const useAgencyFeatures = () => {
     isFeatureEnabled,
     getFeature,
     checkLimit,
-    getLimitUsage,
-  };
+    getLimitUsage };
 };

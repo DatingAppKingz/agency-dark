@@ -47,7 +47,7 @@ const ApiKeyAuditDialog: React.FC<ApiKeyAuditDialogProps> = ({
   onClose,
   apiKey,
 }) => {
-  const { data: logs, isLoading, error } = useApiKeyAuditLogs(apiKey.id);
+  const { data: logs, isPending, error } = useApiKeyAuditLogs(apiKey.id);
 
   const getActionIcon = (action: ApiKeyAction) => {
     switch (action) {
@@ -135,7 +135,7 @@ Metadata: ${JSON.stringify(log.metadata, null, 2)}
       </DialogTitle>
       
       <DialogContent>
-        {isLoading && (
+        {isPending && (
           <Box>
             {[1, 2, 3, 4, 5].map((i) => (
               <Box key={i} mb={2}>

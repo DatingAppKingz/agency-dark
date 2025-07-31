@@ -6,8 +6,8 @@ import { useDashboardStats, useModelPerformance } from '@/hooks/useAnalytics';
 
 export const AgencyOwnerDashboard = () => {
   const navigate = useNavigate();
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: models, isLoading: modelsLoading } = useModelPerformance('month');
+  const { data: stats, isPending: statsLoading } = useDashboardStats();
+  const { data: models, isPending: modelsLoading } = useModelPerformance('month');
   
   console.log('📊 Dashboard Data:', {
     stats,

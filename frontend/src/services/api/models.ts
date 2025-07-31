@@ -8,7 +8,7 @@ import {
   CreateModelProfileData, 
   UpdateModelProfileData 
 } from '@/types/models';
-import { PaginatedResponse, QueryParams } from '@/types/api';
+import { QueryParams } from '@/types/api';
 
 export const modelsService = {
   // Note: Backend uses orchestration endpoints for model data
@@ -31,7 +31,7 @@ export const modelsService = {
 
   // Get unified fans for a model
   async getModelFans(modelId: string, params?: { limit?: number; offset?: number }): Promise<any> {
-    const { data } = await apiClient.get(`/orchestration/fans/${modelId}`, { params });
+    const { data } = await apiClient.get(`/orchestration/fans/${event}`, { params });
     return data;
   },
 
@@ -55,11 +55,11 @@ export const modelsService = {
     return data;
   },
 
-  async createModel(modelData: CreateModelProfileData): Promise<ModelProfile> {
+  async createModel(event: CreateModelProfileData): Promise<ModelProfile> {
     throw new Error('Model creation not yet implemented in backend');
   },
 
-  async updateModel(modelId: string, modelData: UpdateModelProfileData): Promise<ModelProfile> {
+  async updateModel(modelId: string, data: UpdateModelProfileData): Promise<ModelProfile> {
     throw new Error('Model update not yet implemented in backend');
   },
 
@@ -85,8 +85,7 @@ export const modelsService = {
       is_free: metadata.is_free || false,
       publish_immediately: true,
       post_to_onlyfans: true,
-      post_to_inflow: true,
-    });
+      post_to_inflow: true });
     
     return data;
   },
@@ -107,8 +106,7 @@ export const modelsService = {
     const { data } = await apiClient.post('/orchestration/messages/send', {
       fan_id: fanId,
       text,
-      price,
-    }, {
+      price }, {
       params: { model_id: modelId }
     });
     return data;
@@ -130,10 +128,10 @@ export const modelsService = {
     return {} as ModelPreferences;
   },
 
-  async updatePreferences(modelId: string, preferences: Partial<ModelPreferences>): Promise<ModelPreferences> {
+  async updatePreferences(modelId: string, preferences: Partial<ModelPreferences>): Promise<ModelPreferences> { 
     console.warn('Preferences update not implemented in backend');
     return preferences as ModelPreferences;
-  },
+    },
 
   async getStats(modelId: string, period: 'day' | 'week' | 'month' = 'month'): Promise<ModelStats> {
     // Use analytics endpoint
@@ -153,7 +151,6 @@ export const modelsService = {
     }
     
     const analytics = await this.getModelAnalytics(
-      modelId, 
       startDate.toISOString().split('T')[0],
       endDate.toISOString().split('T')[0]
     );
@@ -171,5 +168,4 @@ export const modelsService = {
 
   async uploadCover(modelId: string, file: File): Promise<{ cover_image_url: string }> {
     throw new Error('Cover upload not implemented in backend');
-  },
-};
+  } };

@@ -1,19 +1,16 @@
-import React, { useMemo } from 'react';
+import React, {  } from 'react';
 import {
   Box,
   Typography,
   CircularProgress,
   Alert,
-  Card,
-  CardContent,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-} from '@mui/material';
+  Paper } from '@mui/material';
 import {
   LineChart,
   Line,
@@ -29,8 +26,7 @@ import {
   Legend,
   ResponsiveContainer,
   Area,
-  AreaChart,
-} from 'recharts';
+  AreaChart } from 'recharts';
 import { ReportWidget, ChartType } from '@/types/reports';
 import { formatCurrency, formatNumber, formatPercentage } from '@/utils/formatters';
 
@@ -68,8 +64,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
             height: '100%',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-          }}
+            justifyContent: 'center' }}
         >
           <Typography variant="body2" color="text.secondary">
             No data available
@@ -136,7 +131,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
                 outerRadius="80%"
                 label={chartConfig.options?.showDataLabels}
               >
-                {data.map((entry: any, index: number) => (
+                {data.map((event: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -214,8 +209,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              p: 2,
-            }}
+              p: 2 }}
           >
             <Box textAlign="center">
               <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -248,8 +242,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
               height: '100%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-            }}
+              justifyContent: 'center' }}
           >
             <Typography variant="body2" color="text.secondary">
               Unsupported chart type: {chartConfig.type}
@@ -266,8 +259,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
           height: '100%',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-        }}
+          justifyContent: 'center' }}
       >
         <CircularProgress />
       </Box>

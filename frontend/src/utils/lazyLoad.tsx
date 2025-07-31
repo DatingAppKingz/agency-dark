@@ -8,16 +8,15 @@ const PageLoader = () => (
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: '60vh',
-    }}
+      minHeight: '60vh' }}
   >
     <CircularProgress />
   </Box>
 );
 
 // Wrapper function for lazy loading with Suspense
-export function lazyLoad<T extends ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>
+export function lazyLoad<extends ComponentType<any>>(
+  importFunc: () => Promise<{ default: }>
 ) {
   const LazyComponent = lazy(importFunc);
 
@@ -29,7 +28,7 @@ export function lazyLoad<T extends ComponentType<any>>(
 }
 
 // Named exports helper
-export function lazyLoadNamed<T extends ComponentType<any>>(
+export function lazyLoadNamed<extends ComponentType<any>>(
   importFunc: () => Promise<any>,
   componentName: string
 ) {
@@ -53,13 +52,13 @@ export function preloadComponent(
 }
 
 // Retry mechanism for failed lazy loads
-export function lazyLoadWithRetry<T extends ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>,
+export function lazyLoadWithRetry<extends ComponentType<any>>(
+  importFunc: () => Promise<{ default: }>,
   retries = 3,
   delay = 1000
 ) {
   return lazyLoad(() =>
-    new Promise<{ default: T }>((resolve, reject) => {
+    new Promise<{ default: }>((resolve, reject) => {
       const attemptImport = (attemptsLeft: number) => {
         importFunc()
           .then(resolve)

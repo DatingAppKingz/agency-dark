@@ -6,7 +6,6 @@ import {
   Paper,
   Button,
   IconButton,
-  Alert,
   List,
   ListItem,
   ListItemText,
@@ -14,16 +13,13 @@ import {
   FormControlLabel,
   Switch,
   TextField,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   CloudUpload,
   Delete,
   Image as ImageIcon,
   Visibility,
-  Link,
-  ContentCopy,
-} from '@mui/icons-material';
+  ContentCopy } from '@mui/icons-material';
 import { useToast } from '@/components/common/Toaster';
 
 interface LogoUploaderProps {
@@ -51,40 +47,35 @@ export const LogoUploader = ({ onChange }: LogoUploaderProps) => {
       url: '/logo-primary.png',
       dimensions: '512x512',
       maxSize: '1MB',
-      description: 'Main logo used in navigation and login',
-    },
+      description: 'Main logo used in navigation and login' },
     {
       id: 'light',
       name: 'Light Logo',
       url: '/logo-light.png',
       dimensions: '512x512',
       maxSize: '1MB',
-      description: 'Logo for dark backgrounds',
-    },
+      description: 'Logo for dark backgrounds' },
     {
       id: 'dark',
       name: 'Dark Logo',
       url: '/logo-dark.png',
       dimensions: '512x512',
       maxSize: '1MB',
-      description: 'Logo for light backgrounds',
-    },
+      description: 'Logo for light backgrounds' },
     {
       id: 'favicon',
       name: 'Favicon',
       url: '/favicon.ico',
       dimensions: '32x32',
       maxSize: '100KB',
-      description: 'Browser tab icon',
-    },
+      description: 'Browser tab icon' },
     {
       id: 'email',
       name: 'Email Logo',
       url: '/logo-email.png',
       dimensions: '600x200',
       maxSize: '500KB',
-      description: 'Logo for email templates',
-    },
+      description: 'Logo for email templates' },
   ]);
 
   const [brandingSettings, setBrandingSettings] = useState({
@@ -92,8 +83,7 @@ export const LogoUploader = ({ onChange }: LogoUploaderProps) => {
     tagline: 'Premium Content Management Platform',
     copyrightText: '© 2024 AgencyDark. All rights reserved.',
     showPoweredBy: false,
-    customCSS: '',
-  });
+    customCSS: '' });
 
   const handleFileSelect = (logoId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -173,8 +163,7 @@ export const LogoUploader = ({ onChange }: LogoUploaderProps) => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           backgroundColor: 'grey.100',
-                          overflow: 'hidden',
-                        }}
+                          overflow: 'hidden' }}
                       >
                         {logo.url ? (
                           <img
@@ -183,8 +172,7 @@ export const LogoUploader = ({ onChange }: LogoUploaderProps) => {
                             style={{
                               maxWidth: '100%',
                               maxHeight: '100%',
-                              objectFit: 'contain',
-                            }}
+                              objectFit: 'contain' }}
                           />
                         ) : (
                           <ImageIcon sx={{ fontSize: 40, color: 'grey.400' }} />

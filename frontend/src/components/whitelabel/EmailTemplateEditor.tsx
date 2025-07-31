@@ -12,9 +12,6 @@ import {
   InputLabel,
   Tabs,
   Tab,
-  List,
-  ListItem,
-  ListItemText,
   Chip,
   IconButton,
   Alert,
@@ -23,18 +20,15 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
-} from '@mui/material';
+  TableRow } from '@mui/material';
 import {
-  Email,
   Preview,
   Code,
   Send,
   Save,
   RestartAlt,
   ContentCopy,
-  Edit,
-} from '@mui/icons-material';
+  Edit } from '@mui/icons-material';
 import { useToast } from '@/components/common/Toaster';
 
 interface EmailTemplateEditorProps {
@@ -75,7 +69,7 @@ export const EmailTemplateEditor = ({ onChange }: EmailTemplateEditorProps) => {
   const [templates, setTemplates] = useState<EmailTemplate[]>([
     {
       id: 'welcome',
-      name: 'Welcome Email',
+      name: 'Welcome ',
       subject: 'Welcome to {{appName}}!',
       htmlContent: `<!DOCTYPE html>
 <html>
@@ -117,8 +111,7 @@ Go to Dashboard: {{dashboardUrl}}
 
 © 2024 {{appName}}. All rights reserved.`,
       variables: ['appName', 'userName', 'dashboardUrl'],
-      category: 'system',
-    },
+      category: 'system' },
     {
       id: 'password-reset',
       name: 'Password Reset',
@@ -166,8 +159,7 @@ If you didn't request this, please ignore this email.
 
 © 2024 {{appName}}. All rights reserved.`,
       variables: ['appName', 'userName', 'resetUrl'],
-      category: 'system',
-    },
+      category: 'system' },
     {
       id: 'new-message',
       name: 'New Message Notification',
@@ -215,8 +207,7 @@ View Conversation: {{conversationUrl}}
 
 © 2024 {{appName}}. All rights reserved.`,
       variables: ['appName', 'userName', 'senderName', 'messagePreview', 'conversationUrl'],
-      category: 'notification',
-    },
+      category: 'notification' },
   ]);
 
   const currentTemplate = templates.find(t => t.id === selectedTemplate);
@@ -253,8 +244,7 @@ View Conversation: {{conversationUrl}}
       resetUrl: 'https://app.agencydark.com/reset-password?token=abc123',
       senderName: 'Jane Smith',
       messagePreview: 'Hey! Just wanted to check in and see how you\'re doing...',
-      conversationUrl: 'https://app.agencydark.com/chat/123',
-    };
+      conversationUrl: 'https://app.agencydark.com/chat/123' };
 
     // Replace variables with sample data
     Object.entries(sampleData).forEach(([key, value]) => {
@@ -271,14 +261,14 @@ View Conversation: {{conversationUrl}}
         <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Email Templates
+              Templates
             </Typography>
             
             <FormControl fullWidth sx={{ mt: 2 }}>
               <InputLabel>Select Template</InputLabel>
               <Select
                 value={selectedTemplate}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
+                onChange={() => setSelectedTemplate(event.target.value)}
                 label="Select Template"
               >
                 {templates.map(template => (
@@ -312,11 +302,11 @@ View Conversation: {{conversationUrl}}
                 fullWidth
                 label="Subject"
                 value={currentTemplate.subject}
-                onChange={(e) => handleTemplateChange('subject', e.target.value)}
+                onChange={() => handleTemplateChange('subject', .target.value)}
                 sx={{ mb: 2 }}
               />
 
-              <Tabs value={editTab} onChange={(e, v) => setEditTab(v)} sx={{ mb: 2 }}>
+              <Tabs value={editTab} onChange={(v) => setEditTab(v)} sx={{ mb: 2 }}>
                 <Tab icon={<Code />} label="HTML" />
                 <Tab icon={<Edit />} label="Text" />
                 <Tab icon={<Preview />} label="Variables" />
@@ -328,7 +318,7 @@ View Conversation: {{conversationUrl}}
                   multiline
                   rows={15}
                   value={currentTemplate.htmlContent}
-                  onChange={(e) => handleTemplateChange('htmlContent', e.target.value)}
+                  onChange={() => handleTemplateChange('htmlContent', .target.value)}
                   sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
                 />
               </TabPanel>
@@ -339,7 +329,7 @@ View Conversation: {{conversationUrl}}
                   multiline
                   rows={15}
                   value={currentTemplate.textContent}
-                  onChange={(e) => handleTemplateChange('textContent', e.target.value)}
+                  onChange={() => handleTemplateChange('textContent', .target.value)}
                   sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
                 />
               </TabPanel>
@@ -427,16 +417,14 @@ View Conversation: {{conversationUrl}}
                   height: 500,
                   overflow: 'auto',
                   backgroundColor: 'grey.50',
-                  p: 2,
-                }}
+                  p: 2 }}
               >
                 <Box
                   sx={{
                     maxWidth: previewMode === 'mobile' ? 375 : '100%',
                     mx: 'auto',
                     backgroundColor: 'white',
-                    boxShadow: 1,
-                  }}
+                    boxShadow: 1 }}
                   dangerouslySetInnerHTML={{ __html: getPreviewContent() }}
                 />
               </Box>
@@ -444,9 +432,9 @@ View Conversation: {{conversationUrl}}
               <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
                 <TextField
                   fullWidth
-                  label="Test Email Address"
+                  label="Test Address"
                   value={testEmail}
-                  onChange={(e) => setTestEmail(e.target.value)}
+                  onChange={() => setTestEmail(event.target.value)}
                   size="small"
                 />
                 <Button

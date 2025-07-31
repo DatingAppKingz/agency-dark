@@ -15,9 +15,7 @@ import {
   IconButton,
   Chip,
   CircularProgress,
-  Divider,
-  Paper,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   Search,
   Close,
@@ -25,8 +23,7 @@ import {
   AccessTime,
   AttachFile,
   Image as ImageIcon,
-  VideoFile,
-} from '@mui/icons-material';
+  VideoFile } from '@mui/icons-material';
 import { debounce } from 'lodash';
 import { format } from 'date-fns';
 import { Message } from '@/types/chat';
@@ -51,8 +48,7 @@ export const MessageSearch = ({ open, onClose, conversationId, onMessageSelect }
   const [isSearching, setIsSearching] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     hasAttachments: false,
-    dateRange: 'all' as 'all' | 'today' | 'week' | 'month',
-  });
+    dateRange: 'all' as 'all' | 'today' | 'week' | 'month' });
 
   // Mock search function - replace with actual API call
   const performSearch = async (term: string) => {
@@ -80,12 +76,10 @@ export const MessageSearch = ({ open, onClose, conversationId, onMessageSelect }
           delivered_at: new Date().toISOString(),
           read_at: new Date().toISOString(),
           is_automated: false,
-          attachments: [],
-        },
+          attachments: [] },
         conversationName: 'John Doe',
         participantName: 'Sarah Model',
-        participantAvatar: 'S',
-      },
+        participantAvatar: 'S' },
       {
         message: {
           id: '2',
@@ -106,14 +100,11 @@ export const MessageSearch = ({ open, onClose, conversationId, onMessageSelect }
               thumbnail_url: 'https://example.com/thumb.jpg',
               filename: 'photo.jpg',
               size: 1024000,
-              mime_type: 'image/jpeg',
-            },
-          ],
-        },
+              mime_type: 'image/jpeg' },
+          ] },
         conversationName: 'Mike Smith',
         participantName: 'Mike Smith',
-        participantAvatar: 'M',
-      },
+        participantAvatar: 'M' },
     ];
 
     // Filter by conversation if specified
@@ -215,8 +206,7 @@ export const MessageSearch = ({ open, onClose, conversationId, onMessageSelect }
               <InputAdornment position="start">
                 <Search />
               </InputAdornment>
-            ),
-          }}
+            ) }}
           autoFocus
           sx={{ mb: 2 }}
         />
@@ -272,9 +262,7 @@ export const MessageSearch = ({ open, onClose, conversationId, onMessageSelect }
                   onClick={() => handleMessageClick(result)}
                   sx={{
                     '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                  }}
+                      backgroundColor: 'action.hover' } }}
                 >
                   <ListItemAvatar>
                     <Avatar>{result.participantAvatar}</Avatar>

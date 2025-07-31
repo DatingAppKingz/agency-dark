@@ -14,13 +14,11 @@ import {
   Alert,
   Checkbox,
   FormControl,
-  FormLabel,
-} from '@mui/material';
+  FormLabel } from '@mui/material';
 import {
   Block,
   Report,
-  Warning,
-} from '@mui/icons-material';
+  Warning } from '@mui/icons-material';
 import { useToast } from '@/components/common/Toaster';
 import { ChatUser } from '@/types/chat';
 
@@ -46,10 +44,9 @@ export const BlockReportDialog = ({
   onClose,
   user,
   onBlock,
-  onReport,
-}: BlockReportDialogProps) => {
+  onReport }: BlockReportDialogProps) => {
   const { error, success } = useToast();
-  const [action, setAction] = useState<'block' | 'report'>('block');
+  const [setAction] = useState<'block' | 'report'>('block');
   const [blockUser, setBlockUser] = useState(true);
   const [reportUser, setReportUser] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -91,7 +88,7 @@ export const BlockReportDialog = ({
 
       handleClose();
     } catch (err) {
-      error('Failed to complete action');
+      error('Failed to complete ');
     } finally {
       setIsSubmitting(false);
     }
@@ -120,7 +117,7 @@ export const BlockReportDialog = ({
       <DialogContent dividers>
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2">
-            You are taking action against <strong>{user.name}</strong>
+            You are taking against <strong>{user.name}</strong>
           </Typography>
         </Alert>
 

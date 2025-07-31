@@ -1,0 +1,141 @@
+groups:
+  - name: application_alerts
+    interval: 30s
+    rules:
+      # API Health Alerts
+      - alert: APIDown
+        expr: up{job="agencydark_backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "API is down"
+          description: "The AgencyDark API has been down for more than 2 minutes."
+          runbook_url: "https://docs.agencydark.com/runbooks/api-down"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{job="agencydark_backend",status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+          dashboard_url: "https://grafana.agencydark.com/d/api-errors"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="agencydark_backend"}[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile response time is {{ $value }}s (threshold: 2s)"
+
+      # Authentication Alerts
+      - alert: HighAuthenticationFailureRate
+        expr: rate(authentication_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "{{ $value }} authentication failures per second"
+
+      - alert: SuspiciousLoginActivity
+        expr: rate(login_attempts_total{result="failed"}[5m]) > 50
+        for: 2m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Possible brute force attack detected"
+          description: "{{ $value }} failed login attempts per second"
+
+      # Business Metrics
+      - alert: LowActiveUsers
+        expr: active_users_count < 100
+        for: 30m
+        labels:
+          severity: info
+          team: product
+        annotations:
+          summary: "Low number of active users"
+          description: "Only {{ $value }} active users in the last 30 minutes"
+
+      - alert: HighTransactionFailureRate
+        expr: rate(transactions_total{status="failed"}[5m]) / rate(transactions_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          team: payments
+        annotations:
+          summary: "High transaction failure rate"
+          description: "{{ $value | humanizePercentage }} of transactions are failing"
+
+      # Resource Usage
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes{job="agencydark_backend"} / 1024 / 1024 / 1024 > 4
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High memory usage in API"
+          description: "API is using {{ $value }}GB of memory"
+
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total{job="agencydark_backend"}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High CPU usage in API"
+          description: "API CPU usage is {{ $value | humanizePercentage }}"
+
+      # Queue Alerts
+      - alert: HighQueueBacklog
+        expr: celery_queue_length{queue="default"} > 1000
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High Celery queue backlog"
+          description: "{{ $value }} tasks in queue '{{ $labels.queue }}'"
+
+      - alert: CeleryWorkerDown
+        expr: up{job="celery"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Celery worker is down"
+          description: "Celery worker has been down for more than 5 minutes"
+
+      # WebSocket Alerts
+      - alert: HighWebSocketDisconnectRate
+        expr: rate(websocket_disconnections_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High WebSocket disconnect rate"
+          description: "{{ $value }} WebSocket disconnections per second"
+
+      - alert: WebSocketConnectionLimit
+        expr: websocket_active_connections > 5000
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "WebSocket connection limit approaching"
+          description: "{{ $value }} active WebSocket connections"

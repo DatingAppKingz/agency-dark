@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   DialogTitle,
   DialogContent,
@@ -280,11 +280,11 @@ const ApiKeyForm: React.FC<ApiKeyFormProps> = ({ onClose, editingKey }) => {
             disabled={
               !formData.name || 
               !formData.key || 
-              createKey.isLoading ||
+              createKey.isPending ||
               isValidating
             }
           >
-            {createKey.isLoading ? 'Creating...' : 'Create API Key'}
+            {createKey.isPending ? 'Creating...' : 'Create API Key'}
           </Button>
         </DialogActions>
       </form>

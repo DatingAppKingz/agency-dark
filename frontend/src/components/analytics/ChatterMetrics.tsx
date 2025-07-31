@@ -13,25 +13,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Avatar,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
+  Avatar } from '@mui/material';
 import {
   Speed,
   Message,
   Timer,
-  ThumbUp,
-  TrendingUp,
-  Info,
-} from '@mui/icons-material';
+  ThumbUp } from '@mui/icons-material';
 import {
   LineChart,
   Line,
   BarChart,
   Bar,
-  RadialBarChart,
-  RadialBar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -40,8 +32,7 @@ import {
   ResponsiveContainer,
   Cell,
   PieChart,
-  Pie,
-} from 'recharts';
+  Pie } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
@@ -54,7 +45,7 @@ interface ChatterMetricsProps {
 }
 
 export const ChatterMetrics = ({ dateRange, refreshKey }: ChatterMetricsProps) => {
-  const { data: metricsData, isLoading } = useQuery({
+  const { data: metricsData, isPending } = useQuery({
     queryKey: ['chatter-metrics', dateRange, refreshKey],
     queryFn: async () => {
       // Simulated API call
@@ -65,8 +56,7 @@ export const ChatterMetrics = ({ dateRange, refreshKey }: ChatterMetricsProps) =
           satisfactionRate: 92,
           conversationRate: 68,
           activeHours: 145,
-          messagesPerHour: 58.6,
-        },
+          messagesPerHour: 58.6 },
         performance: [
           { 
             name: 'Sarah Johnson',
@@ -122,8 +112,7 @@ export const ChatterMetrics = ({ dateRange, refreshKey }: ChatterMetricsProps) =
         activityChart: Array.from({ length: 24 }, (_, i) => ({
           hour: `${i}:00`,
           messages: Math.floor(Math.random() * 100) + 20,
-          responseTime: Math.random() * 2 + 1.5,
-        })),
+          responseTime: Math.random() * 2 + 1.5 })),
         responseTimeDistribution: [
           { range: '<1 min', count: 2500, percentage: 29 },
           { range: '1-3 min', count: 3500, percentage: 41 },
@@ -141,15 +130,12 @@ export const ChatterMetrics = ({ dateRange, refreshKey }: ChatterMetricsProps) =
           day: format(new Date(2024, 0, i + 1), 'EEE'),
           messages: Math.floor(Math.random() * 1500) + 1000,
           conversions: Math.floor(Math.random() * 30) + 15,
-          revenue: Math.floor(Math.random() * 3000) + 2000,
-        })),
-      };
-    },
-  });
+          revenue: Math.floor(Math.random() * 3000) + 2000 })) };
+    } });
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
-  if (isLoading) {
+  if (isPending) {
     return <LinearProgress />;
   }
 
@@ -288,7 +274,7 @@ export const ChatterMetrics = ({ dateRange, refreshKey }: ChatterMetricsProps) =
                   fill="#8884d8"
                   dataKey="count"
                 >
-                  {metricsData?.responseTimeDistribution.map((entry, index) => (
+                  {metricsData?.responseTimeDistribution.map((index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -418,9 +404,7 @@ export const ChatterMetrics = ({ dateRange, refreshKey }: ChatterMetricsProps) =
                       borderRadius: 5,
                       backgroundColor: 'grey.200',
                       '& .MuiLinearProgress-bar': {
-                        backgroundColor: COLORS[index % COLORS.length],
-                      },
-                    }}
+                        backgroundColor: COLORS[index % COLORS.length] } }}
                   />
                 </Box>
               ))}

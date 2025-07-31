@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { generateSitemapResponse } from '@/utils/sitemap-generator';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(event: NextApiRequest, res: NextApiResponse) {
   try {
     const sitemapResponse = await generateSitemapResponse();
     const xml = await sitemapResponse.text();

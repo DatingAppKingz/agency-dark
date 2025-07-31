@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Table,
   TableBody,
@@ -21,14 +19,12 @@ import {
   Tooltip,
   Alert,
   Skeleton,
-  TablePagination,
-} from '@mui/material';
+  TablePagination } from '@mui/material';
 import {
   Refresh as RefreshIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
-  PlayArrow as ReprocessIcon,
-} from '@mui/icons-material';
+  PlayArrow as ReprocessIcon } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -44,13 +40,11 @@ const WebhookDeadLetters: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch dead letters
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isPending, refetch } = useQuery({
     queryKey: ['webhook-dead-letters', page, rowsPerPage],
     queryFn: () => webhookService.getDeadLetters({
       limit: rowsPerPage,
-      offset: page * rowsPerPage,
-    }),
-  });
+      offset: page * rowsPerPage }) });
 
   // Reprocess mutation
   const reprocessDeadLetter = useMutation({
@@ -61,8 +55,7 @@ const WebhookDeadLetters: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to reprocess dead letter');
-    },
-  });
+    } });
 
   // Delete mutation
   const deleteDeadLetter = useMutation({
@@ -73,8 +66,7 @@ const WebhookDeadLetters: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to delete dead letter');
-    },
-  });
+    } });
 
   const handleReprocess = (deadLetterId: string) => {
     if (window.confirm('Are you sure you want to reprocess this webhook?')) {
@@ -108,7 +100,7 @@ const WebhookDeadLetters: React.FC = () => {
         <Button
           startIcon={<RefreshIcon />}
           onClick={() => refetch()}
-          disabled={isLoading}
+          disabled={isPending}
         >
           Refresh
         </Button>
@@ -141,7 +133,7 @@ const WebhookDeadLetters: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {isLoading ? (
+            {isPending ? (
               [...Array(5)].map((_, i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton /></TableCell>
@@ -204,7 +196,7 @@ const WebhookDeadLetters: React.FC = () => {
                         <IconButton
                           size="small"
                           onClick={() => handleReprocess(deadLetter.id)}
-                          disabled={reprocessDeadLetter.isLoading}
+                          disabled={reprocessDeadLetter.isPending}
                         >
                           <ReprocessIcon />
                         </IconButton>
@@ -214,7 +206,7 @@ const WebhookDeadLetters: React.FC = () => {
                       <IconButton
                         size="small"
                         onClick={() => handleDelete(deadLetter.id)}
-                        disabled={deleteDeadLetter.isLoading}
+                        disabled={deleteDeadLetter.isPending}
                       >
                         <DeleteIcon />
                       </IconButton>

@@ -15,8 +15,7 @@ import {
   Avatar,
   InputAdornment,
   FormControlLabel,
-  Switch,
-} from '@mui/material';
+  Switch } from '@mui/material';
 import { Close, PhotoCamera, AttachMoney } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,15 +29,13 @@ const createModelSchema = z.object({
   stage_name: z.string().min(2, 'Stage name must be at least 2 characters'),
   bio: z.string().optional(),
   subscription_price: z.number().min(0, 'Price must be positive'),
-  is_active: z.boolean(),
-});
+  is_active: z.boolean() });
 
 const updateModelSchema = z.object({
   stage_name: z.string().min(2, 'Stage name must be at least 2 characters'),
   bio: z.string().optional(),
   subscription_price: z.number().min(0, 'Price must be positive'),
-  is_active: z.boolean(),
-});
+  is_active: z.boolean() });
 
 interface ModelDialogProps {
   open: boolean;
@@ -68,25 +65,20 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
-    watch,
-  } = useForm<CreateModelProfileData | UpdateModelProfileData>({
+    watch } = useForm<CreateModelProfileData | UpdateModelProfileData>({
     resolver: zodResolver(isEditing ? updateModelSchema : createModelSchema),
     defaultValues: model ? {
       stage_name: model.stage_name,
       bio: model.bio || '',
       subscription_price: model.subscription_price,
-      is_active: model.is_active,
-    } : {
+      is_active: model.is_active } : {
       user_id: '',
       stage_name: '',
       bio: '',
       subscription_price: 9.99,
-      is_active: true,
-    },
-  });
+      is_active: true } });
 
-  const watchPrice = watch('subscription_price');
+  const subscriptionPrice = watch('subscription_price');
 
   useEffect(() => {
     if (model) {
@@ -104,8 +96,7 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
     // Ensure price is a number
     const formData = {
       ...data,
-      subscription_price: Number(data.subscription_price),
-    };
+      subscription_price: Number(data.subscription_price) };
     onSubmit(formData);
     handleClose();
   };
@@ -138,8 +129,7 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
                   position: 'absolute',
                   bottom: 0,
                   right: 0,
-                  backgroundColor: 'background.paper',
-                }}
+                  backgroundColor: 'background.paper' }}
                 component="label"
               >
                 <PhotoCamera />
@@ -219,8 +209,7 @@ export const ModelDialog = ({ open, onClose, onSubmit, model, loading }: ModelDi
                   <AttachMoney />
                 </InputAdornment>
               ),
-              inputProps: { min: 0, step: 0.01 },
-            }}
+              inputProps: { min: 0, step: 0.01 } }}
           />
 
           <Box sx={{ mt: 2 }}>

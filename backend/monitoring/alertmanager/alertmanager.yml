@@ -1,0 +1,166 @@
+global:
+  # SMTP configuration
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@agencydark.com'
+  smtp_auth_username: 'alerts@agencydark.com'
+  smtp_auth_password: 'your_smtp_password'
+  smtp_require_tls: true
+
+  # Slack configuration
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+  # PagerDuty configuration
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+# Templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default'
+  
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical'
+      group_wait: 0s
+      repeat_interval: 5m
+      continue: true
+
+    # Security alerts - security team
+    - match:
+        team: security
+      receiver: 'security'
+      group_wait: 0s
+      repeat_interval: 15m
+      continue: true
+
+    # Database alerts
+    - match_re:
+        alertname: '^(PostgreSQL|Database).*'
+      receiver: 'database'
+      group_wait: 30s
+      repeat_interval: 1h
+
+    # Payment/Transaction alerts
+    - match:
+        team: payments
+      receiver: 'payments'
+      group_wait: 1m
+      repeat_interval: 30m
+
+    # Infrastructure alerts
+    - match:
+        team: infrastructure
+      receiver: 'infrastructure'
+      group_wait: 1m
+      repeat_interval: 1h
+
+    # Low priority/info alerts
+    - match:
+        severity: info
+      receiver: 'info'
+      group_wait: 5m
+      repeat_interval: 24h
+
+# Receivers
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'oncall@agencydark.com'
+        headers:
+          Subject: '[AgencyDark] {{ .GroupLabels.alertname }} - {{ .GroupLabels.severity }}'
+    slack_configs:
+      - channel: '#alerts'
+        title: 'AgencyDark Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+
+  - name: 'critical'
+    email_configs:
+      - to: 'critical-alerts@agencydark.com'
+        headers:
+          Subject: '[CRITICAL] {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - channel: '#critical-alerts'
+        title: '🚨 CRITICAL ALERT'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+        color: 'danger'
+    pagerduty_configs:
+      - service_key: 'YOUR-PAGERDUTY-SERVICE-KEY'
+        severity: 'critical'
+        description: '{{ .GroupLabels.alertname }}: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+
+  - name: 'security'
+    email_configs:
+      - to: 'security@agencydark.com'
+        headers:
+          Subject: '[SECURITY] {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - channel: '#security-alerts'
+        title: '🔒 Security Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+        color: 'danger'
+    webhook_configs:
+      - url: 'https://siem.agencydark.com/webhook/alerts'
+        send_resolved: true
+
+  - name: 'database'
+    email_configs:
+      - to: 'dba@agencydark.com'
+        headers:
+          Subject: '[DB] {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - channel: '#database-alerts'
+        title: '🗄️ Database Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+        color: 'warning'
+
+  - name: 'payments'
+    email_configs:
+      - to: 'payments@agencydark.com'
+        headers:
+          Subject: '[PAYMENTS] {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - channel: '#payment-alerts'
+        title: '💳 Payment Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+        color: 'warning'
+
+  - name: 'infrastructure'
+    email_configs:
+      - to: 'infrastructure@agencydark.com'
+        headers:
+          Subject: '[INFRA] {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - channel: '#infrastructure-alerts'
+        title: '🏗️ Infrastructure Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+
+  - name: 'info'
+    slack_configs:
+      - channel: '#info-alerts'
+        title: 'ℹ️ Info'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        send_resolved: false
+
+# Inhibition rules
+inhibit_rules:
+  # Inhibit warning alerts if critical alert is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+  # Inhibit all alerts if system is in maintenance
+  - source_match:
+      alertname: 'MaintenanceMode'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance']

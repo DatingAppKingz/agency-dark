@@ -13,7 +13,6 @@ import {
   MenuItem,
   Alert,
   Chip,
-  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -31,25 +30,20 @@ import {
   DialogContent,
   DialogActions,
   LinearProgress,
-  Tooltip,
-} from '@mui/material';
+  Tooltip } from '@mui/material';
 import {
   Upload as UploadIcon,
-  Download as DownloadIcon,
-  Delete as DeleteIcon,
+  Download as DeleteIcon,
   Edit as EditIcon,
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
-  Schedule as ScheduleIcon,
-  AttachMoney as PriceIcon,
   Lock as LockIcon,
   LockOpen as UnlockIcon,
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
   Description as FileIcon,
-  CheckCircle as SuccessIcon,
-  Error as ErrorIcon,
-} from '@mui/icons-material';
+  CheckCircle,
+  Error } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -59,6 +53,7 @@ import { bulkOperationsService } from '@/services/api/bulkOperations';
 import { BulkOperationType } from '@/types/bulkOperations';
 import MediaUploader from '@/components/media/MediaUploader';
 import { useModels } from '@/hooks/useModels';
+import { ModelProfile } from '@/types/models';
 
 interface ContentItem {
   id: string;
@@ -85,8 +80,7 @@ const BulkContentOperations: React.FC = () => {
     is_locked: false,
     is_visible: true,
     scheduled_at: null as Date | null,
-    tags: [] as string[],
-  });
+    tags: [] as string[] });
   const [uploadData, setUploadData] = useState({
     files: [] as File[],
     modelId: '',
@@ -95,14 +89,13 @@ const BulkContentOperations: React.FC = () => {
     is_visible: true,
     scheduled_at: null as Date | null,
     auto_generate_thumbnails: true,
-    watermark: true,
-  });
+    watermark: true });
 
   const queryClient = useQueryClient();
   const { data: models } = useModels();
 
   // Mock content data - replace with actual API call
-  const { data: content, isLoading } = useQuery({
+  const { data: content, isPending } = useQuery({
     queryKey: ['content'],
     queryFn: async () => {
       // This would be replaced with actual API call
@@ -120,8 +113,7 @@ const BulkContentOperations: React.FC = () => {
             is_visible: true,
             created_at: new Date().toISOString(),
             views: 1234,
-            purchases: 56,
-          },
+            purchases: 56 },
           {
             id: '2',
             type: 'video' as const,
@@ -134,13 +126,10 @@ const BulkContentOperations: React.FC = () => {
             is_visible: true,
             created_at: new Date().toISOString(),
             views: 890,
-            purchases: 23,
-          },
+            purchases: 23 },
         ],
-        total: 2,
-      };
-    },
-  });
+        total: 2 };
+    } });
 
   // Create bulk operation
   const createBulkOperation = useMutation({
@@ -155,8 +144,7 @@ const BulkContentOperations: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to start bulk operation');
-    },
-  });
+    } });
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -204,10 +192,8 @@ const BulkContentOperations: React.FC = () => {
         entity_type: 'content',
         entity_ids: selectedContent,
         operation_params: {
-          permanent: false,
-        },
-        notes: `Bulk delete ${selectedContent.length} content items`,
-      };
+          permanent: false },
+        notes: `Bulk delete ${selectedContent.length} content items` };
 
       createBulkOperation.mutate(operationData);
     }
@@ -220,10 +206,8 @@ const BulkContentOperations: React.FC = () => {
       entity_ids: selectedContent,
       operation_params: {
         ...bulkEditData,
-        price: bulkEditData.price ? parseFloat(bulkEditData.price) : undefined,
-      },
-      notes: `Bulk update ${selectedContent.length} content items`,
-    };
+        price: bulkEditData.price ? parseFloat(bulkEditData.price) : undefined },
+      notes: `Bulk update ${selectedContent.length} content items` };
 
     createBulkOperation.mutate(operationData);
   };
@@ -246,10 +230,8 @@ const BulkContentOperations: React.FC = () => {
         scheduled_at: uploadData.scheduled_at,
         auto_generate_thumbnails: uploadData.auto_generate_thumbnails,
         watermark: uploadData.watermark,
-        file_count: uploadData.files.length,
-      },
-      notes: `Bulk upload ${uploadData.files.length} files`,
-    };
+        file_count: uploadData.files.length },
+      notes: `Bulk upload ${uploadData.files.length} files` };
 
     createBulkOperation.mutate(operationData);
   };
@@ -346,7 +328,7 @@ const BulkContentOperations: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {isLoading ? (
+                {isPending ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center">
                       <LinearProgress />
@@ -410,7 +392,7 @@ const BulkContentOperations: React.FC = () => {
                             </Tooltip>
                           ) : (
                             <Tooltip title="Unlocked">
-                              <LockOpen fontSize="small" />
+                              <UnlockIcon fontSize="small" />
                             </Tooltip>
                           )}
                           {item.is_visible ? (
@@ -458,8 +440,7 @@ const BulkContentOperations: React.FC = () => {
                 onUpload={(files) => setUploadData({ ...uploadData, files })}
                 accept={{
                   'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
-                  'video/*': ['.mp4', '.mov', '.avi'],
-                }}
+                  'video/*': ['.mp4', '.mov', '.avi'] }}
                 maxFiles={100}
                 multiple
               />
@@ -472,9 +453,9 @@ const BulkContentOperations: React.FC = () => {
                   onChange={(e) => setUploadData({ ...uploadData, modelId: e.target.value })}
                   label="Upload to Model"
                 >
-                  {models?.map((model) => (
+                  {models?.map((model: ModelProfile) => (
                     <MenuItem key={model.id} value={model.id}>
-                      {model.stage_name || model.username}
+                      {model.stage_name || model.user?.full_name || 'Unknown Model'}
                     </MenuItem>
                   ))}
                 </Select>
@@ -488,8 +469,7 @@ const BulkContentOperations: React.FC = () => {
                 value={uploadData.price}
                 onChange={(e) => setUploadData({ ...uploadData, price: e.target.value })}
                 InputProps={{
-                  startAdornment: '$',
-                }}
+                  startAdornment: '$' }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -500,8 +480,7 @@ const BulkContentOperations: React.FC = () => {
                   onChange={(newValue) => setUploadData({ ...uploadData, scheduled_at: newValue })}
                   slotProps={{
                     textField: {
-                      fullWidth: true,
-                    }
+                      fullWidth: true }
                   }}
                 />
               </LocalizationProvider>
@@ -579,8 +558,7 @@ const BulkContentOperations: React.FC = () => {
                 value={bulkEditData.price}
                 onChange={(e) => setBulkEditData({ ...bulkEditData, price: e.target.value })}
                 InputProps={{
-                  startAdornment: '$',
-                }}
+                  startAdornment: '$' }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -591,8 +569,7 @@ const BulkContentOperations: React.FC = () => {
                   onChange={(newValue) => setBulkEditData({ ...bulkEditData, scheduled_at: newValue })}
                   slotProps={{
                     textField: {
-                      fullWidth: true,
-                    }
+                      fullWidth: true }
                   }}
                 />
               </LocalizationProvider>
@@ -626,7 +603,7 @@ const BulkContentOperations: React.FC = () => {
           <Button
             variant="contained"
             onClick={executeBulkEdit}
-            disabled={createBulkOperation.isLoading}
+            disabled={createBulkOperation.isPending}
           >
             Update Content
           </Button>

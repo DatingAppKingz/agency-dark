@@ -13,9 +13,7 @@ import {
   MenuItem,
   Alert,
   Skeleton,
-  Stack,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   Key as KeyIcon,
   MoreVert as MoreIcon,
@@ -26,8 +24,7 @@ import {
   PlayArrow as TestIcon,
   History as HistoryIcon,
   TrendingUp as StatsIcon,
-  Warning as WarningIcon,
-} from '@mui/icons-material';
+  Warning as WarningIcon } from '@mui/icons-material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { format } from 'date-fns';
 import { ApiKey, ApiKeyProvider } from '@/types/apiKeys';
@@ -51,7 +48,7 @@ const ApiKeyManager: React.FC<ApiKeyManagerProps> = ({ provider }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
 
-  const { data, isLoading, error } = useApiKeys({ provider });
+  const { data, isPending, error } = useApiKeys({ provider });
   const deleteKey = useDeleteApiKey();
   const testKey = useTestApiKey();
 
@@ -125,8 +122,7 @@ const ApiKeyManager: React.FC<ApiKeyManagerProps> = ({ provider }) => {
       field: 'name',
       headerName: 'Name',
       flex: 1,
-      minWidth: 200,
-    },
+      minWidth: 200 },
     {
       field: 'provider',
       headerName: 'Provider',
@@ -137,8 +133,7 @@ const ApiKeyManager: React.FC<ApiKeyManagerProps> = ({ provider }) => {
           size="small"
           color={getProviderColor(params.value)}
         />
-      ),
-    },
+      ) },
     {
       field: 'key_prefix',
       headerName: 'API Key',
@@ -158,23 +153,20 @@ const ApiKeyManager: React.FC<ApiKeyManagerProps> = ({ provider }) => {
             </IconButton>
           </Box>
         );
-      },
-    },
+      } },
     {
       field: 'last_used',
       headerName: 'Last Used',
       width: 180,
       renderCell: (params) => (
         params.value ? format(new Date(params.value), 'MMM dd, yyyy HH:mm') : 'Never'
-      ),
-    },
+      ) },
     {
       field: 'usage_count',
       headerName: 'Usage',
       width: 100,
       align: 'center',
-      headerAlign: 'center',
-    },
+      headerAlign: 'center' },
     {
       field: 'is_active',
       headerName: 'Status',
@@ -185,8 +177,7 @@ const ApiKeyManager: React.FC<ApiKeyManagerProps> = ({ provider }) => {
           size="small"
           color={params.value ? 'success' : 'default'}
         />
-      ),
-    },
+      ) },
     {
       field: 'expires_at',
       headerName: 'Expires',
@@ -215,8 +206,7 @@ const ApiKeyManager: React.FC<ApiKeyManagerProps> = ({ provider }) => {
             </Typography>
           </Box>
         );
-      },
-    },
+      } },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -231,11 +221,10 @@ const ApiKeyManager: React.FC<ApiKeyManagerProps> = ({ provider }) => {
             <MoreIcon />
           </IconButton>
         </>
-      ),
-    },
+      ) },
   ];
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <Box>
         <Skeleton variant="rectangular" height={400} />

@@ -12,10 +12,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   allowedRoles 
 }) => {
-  const { isAuthenticated, isLoading, user } = useAuthStore();
+  const { isAuthenticated, isPending, user } = useAuthStore();
   const location = useLocation();
 
-  if (isLoading) {
+  if (isPending) {
     return <PageLoader />;
   }
 

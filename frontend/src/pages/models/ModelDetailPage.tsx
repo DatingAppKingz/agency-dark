@@ -53,8 +53,8 @@ const ModelDetailPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   
-  const { data: model, isLoading: modelLoading } = useModel(modelId!);
-  const { data: stats, isLoading: statsLoading } = useModelStats(modelId!, 'month');
+  const { data: model, isPending: modelLoading } = useModel(modelId!);
+  const { data: stats, isPending: statsLoading } = useModelStats(modelId!, 'month');
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

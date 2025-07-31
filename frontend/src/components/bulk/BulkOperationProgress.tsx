@@ -8,14 +8,12 @@ import {
   Chip,
   IconButton,
   Alert,
-  Button,
   Collapse,
   Table,
   TableBody,
   TableCell,
   TableRow,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   CheckCircle as SuccessIcon,
   Error as ErrorIcon,
@@ -24,8 +22,7 @@ import {
   ExpandMore as ExpandIcon,
   ExpandLess as CollapseIcon,
   Refresh as RefreshIcon,
-  Download as DownloadIcon,
-} from '@mui/icons-material';
+  Download as DownloadIcon } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { bulkOperationsService } from '@/services/api/bulkOperations';
@@ -40,24 +37,22 @@ interface BulkOperationProgressProps {
 const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
   operationId,
   onComplete,
-  showDetails = true,
-}) => {
+  showDetails = true }) => {
   const [expanded, setExpanded] = React.useState(false);
   const queryClient = useQueryClient();
 
   // Fetch operation details
-  const { data: operation, isLoading } = useQuery({
+  const { data: operation, isPending } = useQuery({
     queryKey: ['bulk-operation', operationId],
     queryFn: () => bulkOperationsService.getBulkOperation(operationId),
-    refetchInterval: (data) => {
+    refetchInterval: (query) => {
       // Poll while operation is in progress
-      if (data?.status === BulkOperationStatus.PROCESSING || 
-          data?.status === BulkOperationStatus.VALIDATING) {
+      if (query.state.data?.status === BulkOperationStatus.PROCESSING || 
+          query.state.data?.status === BulkOperationStatus.VALIDATING) {
         return 1000; // Poll every second
       }
       return false;
-    },
-  });
+    } });
 
   // Cancel operation
   const cancelOperation = useMutation({
@@ -68,8 +63,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to cancel operation');
-    },
-  });
+    } });
 
   // Retry operation
   const retryOperation = useMutation({
@@ -80,8 +74,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to retry operation');
-    },
-  });
+    } });
 
   useEffect(() => {
     if (operation && onComplete) {
@@ -93,7 +86,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
     }
   }, [operation, onComplete]);
 
-  if (isLoading || !operation) {
+  if (isPending || !operation) {
     return (
       <Card>
         <CardContent>
@@ -161,7 +154,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
               <IconButton
                 size="small"
                 onClick={() => cancelOperation.mutate()}
-                disabled={cancelOperation.isLoading}
+                disabled={cancelOperation.isPending}
               >
                 <CancelIcon />
               </IconButton>
@@ -170,7 +163,7 @@ const BulkOperationProgress: React.FC<BulkOperationProgressProps> = ({
               <IconButton
                 size="small"
                 onClick={() => retryOperation.mutate()}
-                disabled={retryOperation.isLoading}
+                disabled={retryOperation.isPending}
               >
                 <RefreshIcon />
               </IconButton>

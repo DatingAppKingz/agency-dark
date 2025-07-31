@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -14,15 +14,13 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Divider,
   InputAdornment,
   CircularProgress,
-  Grid,
-} from '@mui/material';
+  Grid } from '@mui/material';
 import { Calculate, TrendingUp } from '@mui/icons-material';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { financialApi } from '@/services/api/financial';
-import type { Commission } from '@/types/financial';
+import type { CommissionTier } from '@/types/financial';
 
 interface CommissionCalculatorProps {
   modelId?: string;
@@ -36,17 +34,15 @@ export const CommissionCalculator = ({ modelId, agencyId }: CommissionCalculator
     rate: number;
   } | null>(null);
 
-  const { data: commissionRates, isLoading } = useQuery({
+  const { data: commissionRates, isPending } = useQuery({
     queryKey: ['commission-rates', modelId, agencyId],
-    queryFn: () => financialApi.getCommissionRates({ model_id: modelId, agency_id: agencyId }),
-  });
+    queryFn: () => financialApi.getCommissionRates({ model_id: modelId, agency_id: agencyId }) });
 
   const calculateMutation = useMutation({
     mutationFn: financialApi.calculateCommission,
     onSuccess: (data) => {
       setCalculatedCommission(data.data);
-    },
-  });
+    } });
 
   const handleCalculate = () => {
     const numAmount = parseFloat(amount);
@@ -54,16 +50,14 @@ export const CommissionCalculator = ({ modelId, agencyId }: CommissionCalculator
       calculateMutation.mutate({
         amount: numAmount,
         model_id: modelId,
-        agency_id: agencyId,
-      });
+        agency_id: agencyId });
     }
   };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
-    }).format(value);
+      currency: 'USD' }).format(value);
   };
 
   const formatPercentage = (value: number) => {
@@ -76,14 +70,14 @@ export const CommissionCalculator = ({ modelId, agencyId }: CommissionCalculator
   const getApplicableTier = (revenue: number) => {
     if (!hasTiers || !currentRate?.tiers) return null;
     
-    return currentRate.tiers.find((tier) => {
+    return currentRate.tiers.find((tier: CommissionTier) => {
       const minOk = revenue >= tier.min_revenue;
       const maxOk = !tier.max_revenue || revenue <= tier.max_revenue;
       return minOk && maxOk;
     });
   };
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
         <CircularProgress />
@@ -111,8 +105,7 @@ export const CommissionCalculator = ({ modelId, agencyId }: CommissionCalculator
                   onChange={(e) => setAmount(e.target.value)}
                   fullWidth
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                  }}
+                    startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                   helperText="Enter the revenue amount to calculate commission"
                 />
                 
@@ -175,14 +168,13 @@ export const CommissionCalculator = ({ modelId, agencyId }: CommissionCalculator
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {currentRate.tiers!.map((tier, index) => {
+                            {currentRate.tiers!.map((tier: CommissionTier, index: number) => {
                               const isApplicable = amount && getApplicableTier(parseFloat(amount))?.min_revenue === tier.min_revenue;
                               return (
                                 <TableRow 
                                   key={index}
                                   sx={{
-                                    backgroundColor: isApplicable ? 'action.selected' : undefined,
-                                  }}
+                                    backgroundColor: isApplicable ? 'action.selected' : undefined }}
                                 >
                                   <TableCell>
                                     {formatCurrency(tier.min_revenue)} - {tier.max_revenue ? formatCurrency(tier.max_revenue) : 'Above'}

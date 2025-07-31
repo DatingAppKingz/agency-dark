@@ -27,29 +27,24 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListItemSecondaryAction,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   Download,
   Description,
   PictureAsPdf,
   Email,
   Visibility,
-  CheckCircle,
-  Warning,
   Schedule,
   Info,
   Upload,
-  Close,
-} from '@mui/icons-material';
+  Close } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useToast } from '@/components/common/Toaster';
-import { financialApi } from '@/services/api/financial';
+
 
 interface TaxDocumentsProps {
   modelId?: string;
@@ -86,14 +81,13 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [previewDialog, setPreviewDialog] = useState<{ open: boolean; document?: TaxDocument }>({
-    open: false,
-  });
+    open: false });
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadType, setUploadType] = useState<TaxDocument['type']>('W-9');
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Mock data - replace with actual API calls
-  const { data: documents, isLoading: isDocumentsLoading, refetch } = useQuery({
+  const { data: documents, isPending: isDocumentsLoading, refetch } = useQuery({
     queryKey: ['tax-documents', selectedYear, modelId, agencyId],
     queryFn: async () => {
       // Mock data
@@ -106,8 +100,7 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
           created_at: new Date().toISOString(),
           file_url: '/documents/1099-nec-2024.pdf',
           file_size: 245000,
-          deadline: '2025-01-31',
-        },
+          deadline: '2025-01-31' },
         {
           id: '2',
           type: 'W-9' as const,
@@ -116,21 +109,18 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
           created_at: new Date().toISOString(),
           signed_at: new Date().toISOString(),
           file_url: '/documents/w9-signed.pdf',
-          file_size: 189000,
-        },
+          file_size: 189000 },
         {
           id: '3',
           type: '1099-K' as const,
           year: selectedYear,
           status: 'pending' as const,
           created_at: new Date().toISOString(),
-          deadline: '2025-01-31',
-        },
+          deadline: '2025-01-31' },
       ];
-    },
-  });
+    } });
 
-  const { data: taxSummary, isLoading: isSummaryLoading } = useQuery({
+  const { data: taxSummary, isPending: isSummaryPending } = useQuery({
     queryKey: ['tax-summary', selectedYear, modelId, agencyId],
     queryFn: async () => {
       // Mock data
@@ -143,17 +133,13 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
           q1: 7000,
           q2: 7000,
           q3: 7000,
-          q4: 7000,
-        },
-      };
-    },
-  });
+          q4: 7000 } };
+    } });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+      currency: 'USD' }).format(amount);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -193,23 +179,23 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
   const handleGenerateDocument = async (type: TaxDocument['type']) => {
     try {
       setIsGenerating(true);
-      // TODO: Implement document generation
+      // TODO: Implement generation
       await new Promise(resolve => setTimeout(resolve, 2000));
-      success(`${type} document generated successfully`);
+      success(`${type} generated successfully`);
       refetch();
     } catch (err) {
-      error('Failed to generate document');
+      error('Failed to generate ');
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleDownloadDocument = async (document: TaxDocument) => {
+  const handleDownloadDocument = async (event: TaxDocument) => {
     try {
-      // TODO: Implement document download
+      // TODO: Implement download
       success('Document downloaded successfully');
     } catch (err) {
-      error('Failed to download document');
+      error('Failed to download ');
     }
   };
 
@@ -218,14 +204,14 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
 
     try {
       setIsGenerating(true);
-      // TODO: Implement document upload
+      // TODO: Implement upload
       await new Promise(resolve => setTimeout(resolve, 2000));
       success('Document uploaded successfully');
       setUploadDialogOpen(false);
       setUploadFile(null);
       refetch();
     } catch (err) {
-      error('Failed to upload document');
+      error('Failed to upload ');
     } finally {
       setIsGenerating(false);
     }
@@ -536,7 +522,7 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
               fullWidth
               label="Document Type"
               value={uploadType}
-              onChange={(e) => setUploadType(e.target.value as TaxDocument['type'])}
+              onChange={ (e) => setUploadType(e.target.value as TaxDocument['type'])    }
               margin="normal"
             >
               <MenuItem value="W-9">W-9</MenuItem>
@@ -557,17 +543,14 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
                 cursor: 'pointer',
                 '&:hover': {
                   borderColor: 'primary.main',
-                  backgroundColor: 'action.hover',
-                },
-              }}
+                  backgroundColor: 'action.hover' } }}
               onClick={() => {
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = '.pdf,.jpg,.jpeg,.png';
-                input.onchange = (e) => {
-                  const file = (e.target as HTMLInputElement).files?.[0];
+                input.onchange = (e) => { const file = (e.target as HTMLInputElement).files?.[0];
                   if (file) setUploadFile(file);
-                };
+                    };
                 input.click();
               }}
             >
@@ -623,8 +606,7 @@ export const TaxDocuments = ({ modelId, agencyId }: TaxDocumentsProps) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: 'grey.100',
-            }}
+              backgroundColor: 'grey.100' }}
           >
             <Typography variant="body1" color="textSecondary">
               Document preview would be displayed here

@@ -8,18 +8,14 @@ import {
   Chip,
   CircularProgress,
   Menu,
-  MenuItem,
-} from '@mui/material';
+  MenuItem } from '@mui/material';
 import {
   MoreVert,
   Done,
   DoneAll,
   AttachFile,
-  Image,
-  VideoFile,
   PlayCircleOutline,
-  Mic,
-} from '@mui/icons-material';
+  Mic } from '@mui/icons-material';
 import { format, isToday, isYesterday } from 'date-fns';
 import { Message, MessageAttachment } from '@/types/chat';
 import { useAuthStore } from '@/store/authStore';
@@ -30,10 +26,10 @@ import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 interface MessageThreadProps {
   messages: Message[];
   conversationId: string;
-  isLoading?: boolean;
+  isPending?: boolean;
 }
 
-export const MessageThread = ({ messages, conversationId, isLoading }: MessageThreadProps) => {
+export const MessageThread = ({ messages, isPending }: MessageThreadProps) => {
   const { user } = useAuthStore();
   const { typingStatuses } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -83,8 +79,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
               maxWidth: 300,
               maxHeight: 300,
               borderRadius: 1,
-              cursor: 'pointer',
-            }}
+              cursor: 'pointer' }}
             onClick={() => setPreviewAttachment(attachment)}
           />
         );
@@ -101,8 +96,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
               sx={{
                 maxWidth: 300,
                 maxHeight: 300,
-                borderRadius: 1,
-              }}
+                borderRadius: 1 }}
             />
             <PlayCircleOutline
               sx={{
@@ -112,8 +106,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
                 transform: 'translate(-50%, -50%)',
                 fontSize: 64,
                 color: 'white',
-                filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))',
-              }}
+                filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))' }}
             />
           </Box>
         );
@@ -147,7 +140,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
 
   const messageGroups = groupMessagesByDate(messages);
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
         <CircularProgress />
@@ -182,16 +175,14 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
                 sx={{
                   display: 'flex',
                   justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
-                  mb: 2,
-                }}
+                  mb: 2 }}
               >
                 <Box
                   sx={{
                     maxWidth: '70%',
                     display: 'flex',
                     flexDirection: isOwnMessage ? 'row-reverse' : 'row',
-                    gap: 1,
-                  }}
+                    gap: 1 }}
                 >
                   {!isOwnMessage && (
                     <Avatar sx={{ width: 32, height: 32 }}>
@@ -206,8 +197,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
                         backgroundColor: isOwnMessage ? 'primary.main' : 'background.paper',
                         color: isOwnMessage ? 'primary.contrastText' : 'text.primary',
                         borderRadius: 2,
-                        position: 'relative',
-                      }}
+                        position: 'relative' }}
                     >
                       {message.is_automated && (
                         <Chip
@@ -246,8 +236,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
                           alignItems: 'center',
                           gap: 0.5,
                           mt: 0.5,
-                          justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
-                        }}
+                          justifyContent: isOwnMessage ? 'flex-end' : 'flex-start' }}
                       >
                         <Typography variant="caption" sx={{ opacity: 0.7 }}>
                           {formatMessageDate(message.created_at)}
@@ -271,8 +260,7 @@ export const MessageThread = ({ messages, conversationId, isLoading }: MessageTh
                           top: 4,
                           right: 4,
                           opacity: 0,
-                          '&:hover': { opacity: 1 },
-                        }}
+                          '&:hover': { opacity: 1 } }}
                         onClick={(e) => handleMenuOpen(e, message)}
                       >
                         <MoreVert fontSize="small" />

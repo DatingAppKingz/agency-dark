@@ -152,8 +152,7 @@ export const analyticsService = {
         new_users_today: 0,
         revenue_today: 0,
         messages_today: 0,
-        active_chats: 0,
-      };
+        active_chats: 0 };
     }
   },
 
@@ -190,14 +189,12 @@ export const analyticsService = {
             label: 'Total Revenue',
             data: data.data.map((d: any) => d.revenue),
             borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.1)',
-          },
+            backgroundColor: 'rgba(75, 192, 192, 0.1)' },
           {
             label: 'Tips',
             data: data.data.map((d: any) => d.tips),
             borderColor: 'rgb(255, 99, 132)',
-            backgroundColor: 'rgba(255, 99, 132, 0.1)',
-          }
+            backgroundColor: 'rgba(255, 99, 132, 0.1)' }
         ]
       };
     } catch (error) {
@@ -212,5 +209,4 @@ export const analyticsService = {
   async getMessageChart(period: 'day' | 'week' | 'month' = 'month') {
     console.warn('Message chart not directly available in analytics API');
     return { labels: [], datasets: [] };
-  },
-};
+  } };

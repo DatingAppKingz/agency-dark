@@ -1,4 +1,4 @@
-import { Box, Typography, Button, SvgIcon } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import {
   Inbox,
   SearchOff,

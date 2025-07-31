@@ -12,18 +12,14 @@ import {
   CardContent,
   Skeleton,
   Alert,
-  Chip,
-} from '@mui/material';
+  Chip } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
   AccessTime as TimeIcon,
   Error as ErrorIcon,
-  CheckCircle as SuccessIcon,
-} from '@mui/icons-material';
+  CheckCircle as SuccessIcon } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   XAxis,
@@ -32,8 +28,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   BarChart,
-  Bar,
-} from 'recharts';
+  Bar } from 'recharts';
 import { format } from 'date-fns';
 import { ApiKey } from '@/types/apiKeys';
 import { useApiKeyUsageStats } from '@/hooks/useApiKeys';
@@ -47,9 +42,8 @@ interface ApiKeyStatsDialogProps {
 const ApiKeyStatsDialog: React.FC<ApiKeyStatsDialogProps> = ({
   open,
   onClose,
-  apiKey,
-}) => {
-  const { data: stats, isLoading, error } = useApiKeyUsageStats(apiKey.id);
+  apiKey }) => {
+  const { data: stats, isPending, error } = useApiKeyUsageStats(apiKey.id);
 
   const formatNumber = (num: number): string => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -89,7 +83,7 @@ const ApiKeyStatsDialog: React.FC<ApiKeyStatsDialogProps> = ({
       </DialogTitle>
       
       <DialogContent>
-        {isLoading && (
+        {isPending && (
           <Box>
             <Grid container spacing={3}>
               {[1, 2, 3, 4].map((i) => (

@@ -23,8 +23,7 @@ class CacheManager {
     const item: CacheItem<T> = {
       data,
       timestamp: Date.now(),
-      ttl,
-    };
+      ttl };
 
     this.cache.set(key, item);
     
@@ -98,8 +97,7 @@ class CacheManager {
       itemCount: this.cache.size,
       totalSizeBytes: totalSize,
       totalSizeKB: (totalSize / 1024).toFixed(2),
-      expiredCount,
-    };
+      expiredCount };
   }
 
   // LocalStorage methods
@@ -195,7 +193,7 @@ export const cache = new CacheManager();
 
 // API Cache decorator
 export function cacheAPI(ttl: number = 300000) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (event: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {

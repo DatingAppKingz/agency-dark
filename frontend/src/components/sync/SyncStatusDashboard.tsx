@@ -7,7 +7,6 @@ import {
   Grid,
   Button,
   Chip,
-  IconButton,
   LinearProgress,
   Alert,
   Dialog,
@@ -28,8 +27,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Skeleton,
-} from '@mui/material';
+  Skeleton } from '@mui/material';
 import {
   Sync as SyncIcon,
   Schedule as ScheduleIcon,
@@ -39,12 +37,11 @@ import {
   Warning as WarningIcon,
   PlayArrow as PlayIcon,
   Refresh as RefreshIcon,
-  CloudSync as CloudSyncIcon,
-} from '@mui/icons-material';
+  CloudSync as CloudSyncIcon } from '@mui/icons-material';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { SyncPlatform, SyncStatus, SyncHistoryItem } from '@/types/sync';
+import { SyncPlatform, SyncStatus } from '@/types/sync';
 import { syncService } from '@/services/api/sync';
 import { useModels } from '@/hooks/useModels';
 
@@ -58,8 +55,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [scheduleData, setScheduleData] = useState({
     platform: SyncPlatform.ALL,
-    delay_minutes: 0,
-  });
+    delay_minutes: 0 });
   const [forceFullSync, setForceFullSync] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -67,14 +63,14 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
   const { data: models } = useModels();
 
   // Get sync stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isPending: statsLoading } = useQuery({
     queryKey: ['sync-stats', agencyId],
     queryFn: () => syncService.getStats(agencyId),
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Get sync status for selected model
-  const { data: status, isLoading: statusLoading } = useQuery({
+  const { data: status, isPending: isStatusLoading } = useQuery({
     queryKey: ['sync-status', selectedModel],
     queryFn: () => syncService.getStatus(selectedModel),
     enabled: !!selectedModel,
@@ -85,8 +81,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
   const { data: history } = useQuery({
     queryKey: ['sync-history', selectedModel],
     queryFn: () => syncService.getHistory(selectedModel, 20),
-    enabled: !!selectedModel && showHistory,
-  });
+    enabled: !!selectedModel && showHistory });
 
   // Sync now mutation
   const syncNow = useMutation({
@@ -94,8 +89,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
       syncService.syncNow({
         model_id: selectedModel,
         platform,
-        force_full_sync: forceFullSync,
-      }),
+        force_full_sync: forceFullSync }),
     onSuccess: () => {
       toast.success('Sync started successfully');
       queryClient.invalidateQueries({ queryKey: ['sync-status'] });
@@ -103,8 +97,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to start sync');
-    },
-  });
+    } });
 
   // Schedule sync mutation
   const scheduleSync = useMutation({
@@ -112,8 +105,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
       syncService.scheduleSync({
         model_id: selectedModel,
         platform: scheduleData.platform,
-        delay_minutes: scheduleData.delay_minutes,
-      }),
+        delay_minutes: scheduleData.delay_minutes }),
     onSuccess: () => {
       toast.success('Sync scheduled successfully');
       setShowScheduleDialog(false);
@@ -121,8 +113,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to schedule sync');
-    },
-  });
+    } });
 
   // Sync all models
   const syncAll = useMutation({
@@ -134,8 +125,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to start bulk sync');
-    },
-  });
+    } });
 
   // Auto-select first model if none selected
   useEffect(() => {
@@ -291,7 +281,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
                 variant="contained"
                 startIcon={<CloudSyncIcon />}
                 onClick={() => syncAll.mutate(SyncPlatform.ALL)}
-                disabled={syncAll.isLoading}
+                disabled={syncAll.isPending}
               >
                 Sync All Models
               </Button>
@@ -368,7 +358,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
                 variant="contained"
                 startIcon={<PlayIcon />}
                 onClick={() => syncNow.mutate(SyncPlatform.ALL)}
-                disabled={syncNow.isLoading || status?.status === SyncStatus.RUNNING}
+                disabled={syncNow.isPending || status?.status === SyncStatus.RUNNING}
               >
                 Sync All Platforms
               </Button>
@@ -378,7 +368,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
                   variant="outlined"
                   startIcon={<SyncIcon />}
                   onClick={() => syncNow.mutate(SyncPlatform.INFLOW)}
-                  disabled={syncNow.isLoading || status?.status === SyncStatus.RUNNING}
+                  disabled={syncNow.isPending || status?.status === SyncStatus.RUNNING}
                 >
                   Sync Inflow
                 </Button>
@@ -389,7 +379,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
                   variant="outlined"
                   startIcon={<SyncIcon />}
                   onClick={() => syncNow.mutate(SyncPlatform.ONLYFANS)}
-                  disabled={syncNow.isLoading || status?.status === SyncStatus.RUNNING}
+                  disabled={syncNow.isPending || status?.status === SyncStatus.RUNNING}
                 >
                   Sync OnlyFans
                 </Button>
@@ -537,7 +527,7 @@ const SyncStatusDashboard: React.FC<SyncStatusDashboardProps> = ({ modelId, agen
           <Button
             variant="contained"
             onClick={() => scheduleSync.mutate()}
-            disabled={scheduleSync.isLoading}
+            disabled={scheduleSync.isPending}
           >
             Schedule
           </Button>

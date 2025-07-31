@@ -17,7 +17,7 @@ import {
   Receipt,
   AccountBalance,
 } from '@mui/icons-material';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { financialApi } from '@/services/api/financial';
 import type { Revenue } from '@/types/financial';
@@ -80,17 +80,17 @@ interface RevenueOverviewProps {
 export const RevenueOverview = ({ modelId, agencyId }: RevenueOverviewProps) => {
   const [period, setPeriod] = useState<Revenue['period']>('monthly');
 
-  const { data: summary, isLoading: summaryLoading } = useQuery({
+  const { data: summary, isPending: summaryLoading } = useQuery({
     queryKey: ['financial-summary', modelId, agencyId],
     queryFn: () => financialApi.getFinancialSummary({ model_id: modelId, agency_id: agencyId }),
   });
 
-  const { data: currentRevenue, isLoading: revenueLoading } = useQuery({
+  const { data: currentRevenue, isPending: revenueLoading } = useQuery({
     queryKey: ['revenue', period, modelId, agencyId],
     queryFn: () => financialApi.getRevenue({ period, model_id: modelId, agency_id: agencyId }),
   });
 
-  const { data: revenueHistory, isLoading: historyLoading } = useQuery({
+  const { data: revenueHistory, isPending: historyLoading } = useQuery({
     queryKey: ['revenue-history', period, modelId, agencyId],
     queryFn: () => financialApi.getRevenueHistory({ 
       period, 

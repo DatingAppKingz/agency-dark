@@ -2,30 +2,19 @@ import { useState } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Paper,
   Button,
-  TextField,
-  Switch,
-  FormControlLabel,
-  Divider,
   Alert,
   Tabs,
-  Tab,
-  IconButton,
-  InputAdornment,
-} from '@mui/material';
+  Tab } from '@mui/material';
 import {
   Palette,
   Image,
   FontDownload,
-  Language,
   Email,
   Domain,
   Save,
-  Refresh,
-  Upload,
-} from '@mui/icons-material';
+  Refresh } from '@mui/icons-material';
 import { ThemeCustomizer } from '@/components/whitelabel/ThemeCustomizer';
 import { LogoUploader } from '@/components/whitelabel/LogoUploader';
 import { FontSelector } from '@/components/whitelabel/FontSelector';
@@ -179,8 +168,7 @@ const WhiteLabelPage = () => {
             minHeight: 200,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-          }}
+            justifyContent: 'center' }}
         >
           <Typography color="text.secondary">
             Preview will update as you make changes

@@ -19,23 +19,19 @@ import {
   TableRow,
   Chip,
   IconButton,
-  FormControlLabel,
   Switch,
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
-} from '@mui/material';
+  ListItemSecondaryAction } from '@mui/material';
 import {
-  Domain,
   ContentCopy,
   CheckCircle,
   Error as ErrorIcon,
   Refresh,
   Delete,
   Add,
-  Security,
-} from '@mui/icons-material';
+  Security } from '@mui/icons-material';
 import { useToast } from '@/components/common/Toaster';
 
 interface DomainSettingsProps {
@@ -52,14 +48,14 @@ interface DomainRecord {
 interface CustomDomain {
   id: string;
   domain: string;
-  status: 'pending' | 'verified' | 'active' | 'error';
-  sslStatus: 'pending' | 'active' | 'error';
+  status: 'pending' | 'verified' | 'active' | '';
+  sslStatus: 'pending' | 'active' | '';
   createdAt: string;
   verifiedAt?: string;
 }
 
 export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
-  const { success, error } = useToast();
+  const { success } = useToast();
   const [newDomain, setNewDomain] = useState('');
   const [activeStep, setActiveStep] = useState(0);
   const [domains, setDomains] = useState<CustomDomain[]>([
@@ -69,16 +65,14 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
       status: 'active',
       sslStatus: 'active',
       createdAt: '2024-01-15',
-      verifiedAt: '2024-01-15',
-    },
+      verifiedAt: '2024-01-15' },
   ]);
 
   const [domainSettings, setDomainSettings] = useState({
     enforceSSL: true,
     allowSubdomains: false,
     customHeaders: '',
-    redirectWWW: true,
-  });
+    redirectWWW: true });
 
   const dnsRecords: DomainRecord[] = [
     { type: 'A', name: '@', value: '192.168.1.1', ttl: 3600 },
@@ -94,14 +88,13 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
       domain: newDomain,
       status: 'pending',
       sslStatus: 'pending',
-      createdAt: new Date().toISOString().split('T')[0],
-    };
+      createdAt: new Date().toISOString().split('T')[0] };
 
     setDomains([...domains, domain]);
     setNewDomain('');
     setActiveStep(1);
     onChange();
-    success('Domain added. Please configure DNS records.');
+    success('added. Please configure DNS records.');
   };
 
   const handleVerifyDomain = (domainId: string) => {
@@ -111,7 +104,7 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
         ? { ...d, status: 'verified', verifiedAt: new Date().toISOString().split('T')[0] }
         : d
     ));
-    success('Domain verified successfully');
+    success('verified successfully');
     onChange();
   };
 
@@ -121,13 +114,13 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
         ? { ...d, status: 'active', sslStatus: 'active' }
         : d
     ));
-    success('Domain activated successfully');
+    success('activated successfully');
     onChange();
   };
 
   const handleRemoveDomain = (domainId: string) => {
     setDomains(prev => prev.filter(d => d.id !== domainId));
-    success('Domain removed');
+    success('removed');
     onChange();
   };
 
@@ -141,8 +134,8 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
       case 'active':
       case 'verified':
         return <CheckCircle color="success" fontSize="small" />;
-      case 'error':
-        return <ErrorIcon color="error" fontSize="small" />;
+      case '':
+        return <ErrorIcon color="" fontSize="small" />;
       default:
         return <Refresh color="warning" fontSize="small" />;
     }
@@ -151,17 +144,16 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
   return (
     <Box>
       <Grid container spacing={3}>
-        {/* Add Domain */}
+        {/* Add */}
         <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Add Custom Domain
-            </Typography>
+              Add Custom </Typography>
             
             <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
               <TextField
                 fullWidth
-                label="Domain Name"
+                label="Name"
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
                 placeholder="app.yourdomain.com"
@@ -173,25 +165,24 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
                 onClick={handleAddDomain}
                 disabled={!newDomain}
               >
-                Add Domain
-              </Button>
+                Add </Button>
             </Box>
           </Paper>
         </Grid>
 
-        {/* Domain Setup Steps */}
+        {/* Setup Steps */}
         {domains.some(d => d.status === 'pending') && (
           <Grid item xs={12}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Domain Setup Guide
+                Setup Guide
               </Typography>
               
               <Stepper activeStep={activeStep} orientation="vertical">
                 <Step>
-                  <StepLabel>Add Domain</StepLabel>
+                  <StepLabel>Add </StepLabel>
                   <StepContent>
-                    <Typography>Domain added successfully. Proceed to DNS configuration.</Typography>
+                    <Typography>added successfully. Proceed to DNS configuration.</Typography>
                     <Button onClick={() => setActiveStep(1)} sx={{ mt: 2 }}>
                       Continue
                     </Button>
@@ -246,7 +237,7 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
                 </Step>
                 
                 <Step>
-                  <StepLabel>Verify Domain</StepLabel>
+                  <StepLabel>Verify </StepLabel>
                   <StepContent>
                     <Typography>
                       Click verify to check if DNS records are properly configured.
@@ -265,13 +256,12 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
                       }}
                       sx={{ mt: 2 }}
                     >
-                      Verify Domain
-                    </Button>
+                      Verify </Button>
                   </StepContent>
                 </Step>
                 
                 <Step>
-                  <StepLabel>Activate Domain</StepLabel>
+                  <StepLabel>Activate </StepLabel>
                   <StepContent>
                     <Typography>
                       Your domain is verified! Click activate to start using it.
@@ -288,8 +278,7 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
                       }}
                       sx={{ mt: 2 }}
                     >
-                      Activate Domain
-                    </Button>
+                      Activate </Button>
                   </StepContent>
                 </Step>
               </Stepper>
@@ -297,7 +286,7 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
           </Grid>
         )}
 
-        {/* Domain List */}
+        {/* List */}
         <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
@@ -308,7 +297,7 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Domain</TableCell>
+                    <TableCell></TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>SSL</TableCell>
                     <TableCell>Created</TableCell>
@@ -356,7 +345,7 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
                         )}
                         <IconButton
                           size="small"
-                          color="error"
+                          color=""
                           onClick={() => handleRemoveDomain(domain.id)}
                         >
                           <Delete />
@@ -370,11 +359,11 @@ export const DomainSettings = ({ onChange }: DomainSettingsProps) => {
           </Paper>
         </Grid>
 
-        {/* Domain Settings */}
+        {/* Settings */}
         <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Domain Settings
+              Settings
             </Typography>
             
             <List>

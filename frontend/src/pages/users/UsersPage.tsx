@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -56,7 +56,7 @@ const UsersPage = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // API hooks
-  const { data, isLoading } = useUsers({
+  const { data, isPending } = useUsers({
     page: page + 1,
     size: rowsPerPage,
     search: userFilters.search,
@@ -263,7 +263,7 @@ const UsersPage = () => {
             <Box display="flex" gap={1}>
               <Button 
                 color="inherit" 
-                onClick={(e) => setBulkActionAnchor(e.currentTarget)}
+                onClick={(event) => setBulkActionAnchor(eevent.currentTarget)}
                 endIcon={<MoreVert />}
               >
                 Bulk Actions
@@ -328,7 +328,7 @@ const UsersPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
+              {isPending ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">
                     Loading...

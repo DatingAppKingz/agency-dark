@@ -4,7 +4,6 @@ import {
   Paper,
   Typography,
   Switch,
-  FormControlLabel,
   Button,
   Divider,
   Alert,
@@ -12,15 +11,13 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  Chip,
-} from '@mui/material';
+  Chip } from '@mui/material';
 import {
   Notifications,
   NotificationsActive,
   NotificationsOff,
   Check,
-  Close,
-} from '@mui/icons-material';
+  Close } from '@mui/icons-material';
 import { pushNotifications } from '@/services/pushNotifications';
 import { useToast } from '@/components/common/Toaster';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -49,8 +46,7 @@ export const NotificationSettings = () => {
     queryFn: async () => {
       const response = await apiClient.get('/users/notification-preferences');
       return response.data;
-    },
-  });
+    } });
 
   // Update preferences mutation
   const updatePreferences = useMutation({
@@ -64,8 +60,7 @@ export const NotificationSettings = () => {
     },
     onError: () => {
       error('Failed to update preferences');
-    },
-  });
+    } });
 
   useEffect(() => {
     const initPushNotifications = async () => {

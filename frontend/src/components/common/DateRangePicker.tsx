@@ -2,19 +2,13 @@ import { useState } from 'react';
 import {
   Box,
   TextField,
-  IconButton,
   Popover,
   Paper,
   Typography,
   Button,
-  Stack,
-} from '@mui/material';
+  Stack } from '@mui/material';
 import {
-  DateRange as DateRangeIcon,
-  ChevronLeft,
-  ChevronRight,
-  Today,
-} from '@mui/icons-material';
+  DateRange as DateRangeIcon } from '@mui/icons-material';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 
 interface DateRangePickerProps {
@@ -30,8 +24,7 @@ export const DateRangePicker = ({
   endDate,
   onStartDateChange,
   onEndDateChange,
-  disabled = false,
-}: DateRangePickerProps) => {
+  disabled = false }: DateRangePickerProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -45,7 +38,7 @@ export const DateRangePicker = ({
   const open = Boolean(anchorEl);
 
   const presetRanges = [
-    { label: 'Today', start: new Date(), end: new Date() },
+    { label: '', start: new Date(), end: new Date() },
     { label: 'Yesterday', start: subDays(new Date(), 1), end: subDays(new Date(), 1) },
     { label: 'Last 7 Days', start: subDays(new Date(), 7), end: new Date() },
     { label: 'Last 30 Days', start: subDays(new Date(), 30), end: new Date() },
@@ -79,8 +72,7 @@ export const DateRangePicker = ({
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'left',
-        }}
+          horizontal: 'left' }}
       >
         <Paper sx={{ p: 3, width: 400 }}>
           <Typography variant="h6" gutterBottom>

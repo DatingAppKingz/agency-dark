@@ -2,12 +2,14 @@ import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 
 // Add TextEncoder/TextDecoder polyfills for Node.js environment
-import { TextEncoder, TextDecoder } from 'util';
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as any;
+if (typeof globalThis.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  globalThis.TextEncoder = TextEncoder;
+  globalThis.TextDecoder = TextDecoder as any;
+}
 
 // Mock import.meta for Vite environment variables
-(global as any).import = {
+(globalThis as any).import = {
   meta: {
     env: {
       VITE_API_URL: 'http://localhost:8000',
@@ -41,7 +43,7 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+globalThis.IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
   observe() {}
@@ -52,7 +54,7 @@ global.IntersectionObserver = class IntersectionObserver {
 };
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
+globalThis.ResizeObserver = class ResizeObserver {
   constructor() {}
   disconnect() {}
   observe() {}
@@ -71,7 +73,7 @@ const localStorageMock = {
   length: 0,
   key: jest.fn(),
 };
-global.localStorage = localStorageMock as any;
+globalThis.localStorage = localStorageMock as any;
 
 // Mock sessionStorage
-global.sessionStorage = localStorageMock as any;
+globalThis.sessionStorage = localStorageMock as any;

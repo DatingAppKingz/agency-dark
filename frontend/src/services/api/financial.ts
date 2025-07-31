@@ -8,8 +8,7 @@ import type {
   Commission,
   Invoice,
   FinancialReport,
-  FinancialSummary,
-} from '@/types/financial';
+  FinancialSummary } from '@/types/financial';
 
 export interface TransactionFilters extends QueryParams {
   type?: Transaction['type'];
@@ -114,24 +113,23 @@ export const financialApi = {
         recipient_id: filters?.user_id || filters?.model_id,
         status: filters?.status,
         limit: filters?.limit,
-        offset: filters?.offset,
-      }
+        offset: filters?.offset }
     });
     return data;
   },
 
-  async getPayout(id: string) {
+  async getPayout(payoutId: string) {
     // Not available in backend yet
     throw new Error('Get single payout not implemented');
   },
 
-  async createPayout(data: any) {
-    const { data: response } = await apiClient.post('/financial/payouts', data);
+  async createPayout(payoutData: any) {
+    const { data: response } = await apiClient.post('/financial/payouts', payoutData);
     return response;
   },
 
-  async processPayout(id: string) {
-    const { data } = await apiClient.post(`/financial/payouts/${id}/process`);
+  async processPayout(payoutId: string) {
+    const { data } = await apiClient.post(`/financial/payouts/${payoutId}/process`);
     return data;
   },
 
@@ -161,90 +159,86 @@ export const financialApi = {
         due_date_start: filters?.start_date,
         due_date_end: filters?.end_date,
         limit: filters?.limit,
-        offset: filters?.offset,
-      }
+        offset: filters?.offset }
     });
     return data;
   },
 
-  async getInvoice(id: string) {
+  async getInvoice(invoiceId: string) {
     // Not directly available, use getInvoices with filtering
     const invoices = await this.getInvoices();
-    return invoices.find((inv: any) => inv.id === id);
+    return invoices.find((inv: any) => inv.id === invoiceId);
   },
 
-  async createInvoice(data: Partial<Invoice>) {
-    const { data: response } = await apiClient.post('/financial/invoices', data);
+  async createInvoice(invoiceData: Partial<Invoice>) {
+    const { data: response } = await apiClient.post('/financial/invoices', invoiceData);
     return response;
   },
 
-  async updateInvoice(id: string, data: Partial<Invoice>) {
-    const { data: response } = await apiClient.put(`/financial/invoices/${id}`, data);
+  async updateInvoice(invoiceId: string, updateData: Partial<Invoice>) {
+    const { data: response } = await apiClient.put(`/financial/invoices/${invoiceId}`, updateData);
     return response;
   },
 
-  async sendInvoice(id: string) {
-    const { data } = await apiClient.post(`/financial/invoices/${id}/send`);
+  async sendInvoice(invoiceId: string) {
+    const { data } = await apiClient.post(`/financial/invoices/${invoiceId}/send`);
     return data;
   },
 
-  async downloadInvoice(id: string) {
-    return apiClient.get(`/financial/invoices/${id}/pdf`, { responseType: 'blob' });
+  async downloadInvoice(invoiceId: string) {
+    return apiClient.get(`/financial/invoices/${invoiceId}/pdf`, { responseType: 'blob' });
   },
 
   // Legacy methods that aren't directly available in backend
   async getTransactions(filters?: TransactionFilters): Promise<PaginatedResponse<Transaction>> {
     console.warn('Transaction listing not directly available, use billing cycles');
     return {
-      data: [],
+      documents: [],
       total: 0,
       page: filters?.page || 1,
-      pages: 0,
-    };
+      pages: 0 };
   },
 
-  async getTransaction(id: string): Promise<Transaction> {
+  async getTransaction(transactionId: string): Promise<Transaction> {
     throw new Error('Transaction detail not implemented');
   },
 
-  async cancelPayout(id: string): Promise<Payout> {
+  async cancelPayout(payoutId: string): Promise<Payout> {
     throw new Error('Payout cancellation not implemented');
   },
 
   // Payment methods not in backend
-  async getPaymentMethods(): Promise<PaymentMethod[]> {
-    // Use wallets as payment methods
-    return this.getWallets({ active_only: true });
+  async getPaymentMethods(): Promise<PaymentMethod[]> { // Use wallets as payment methods
+    return this.getWallets({ active_only: true                                                                                                                                     });
   },
 
-  async getPaymentMethod(id: string): Promise<PaymentMethod> {
+  async getPaymentMethod(methodId: string): Promise<PaymentMethod> {
     throw new Error('Payment method detail not implemented');
   },
 
-  async createPaymentMethod(data: Partial<PaymentMethod>): Promise<PaymentMethod> {
+  async createPaymentMethod(event: Partial<PaymentMethod>): Promise<PaymentMethod> {
     // Map to wallet creation
-    return this.createWallet(data);
+    return this.createWallet();
   },
 
-  async updatePaymentMethod(id: string, data: Partial<PaymentMethod>): Promise<PaymentMethod> {
+  async updatePaymentMethod(methodId: string, updateData: Partial<PaymentMethod>): Promise<PaymentMethod> {
     throw new Error('Payment method update not implemented');
   },
 
-  async deletePaymentMethod(id: string): Promise<void> {
+  async deletePaymentMethod(methodId: string): Promise<void> {
     throw new Error('Payment method deletion not implemented');
   },
 
-  async setDefaultPaymentMethod(id: string): Promise<PaymentMethod> {
+  async setDefaultPaymentMethod(methodId: string): Promise<PaymentMethod> {
     throw new Error('Default payment method not implemented');
   },
 
   // Revenue - use analytics
   async getRevenue(params: RevenueParams): Promise<Revenue> {
-    const analytics = await apiClient.get(`/orchestration/analytics/${params.model_id}`, {
+    const { data: analytics } = await apiClient.get(`/orchestration/analytics/${params.model_id}`, {
       params: {
         start_date: params.start_date,
-        end_date: params.end_date,
-      }
+        end_date: params.end_date }
     });
     return analytics.data;
   },
@@ -255,26 +249,25 @@ export const financialApi = {
   },
 
   // Reports
-  async getReports(filters?: QueryParams): Promise<PaginatedResponse<FinancialReport>> {
+  async getReports(params?: QueryParams): Promise<PaginatedResponse<FinancialReport>> {
     console.warn('Financial reports not directly available');
     return {
-      data: [],
+      documents: [],
       total: 0,
-      page: filters?.page || 1,
-      pages: 0,
-    };
+      page: params?.page || 1,
+      pages: 0 };
   },
 
-  async generateReport(data: any): Promise<FinancialReport> {
+  async generateReport(event: any): Promise<FinancialReport> {
     throw new Error('Report generation not implemented');
   },
 
-  async downloadReport(id: string, format: 'pdf' | 'csv' = 'pdf'): Promise<any> {
+  async downloadReport(reportId: string, format: 'pdf' | 'csv' = 'pdf'): Promise<any> {
     throw new Error('Report download not implemented');
   },
 
   async getFinancialSummary(params?: any): Promise<FinancialSummary> {
-    // Combine data from various endpoints
+    // Combine from various endpoints
     const [billingCycles, payouts, invoices] = await Promise.all([
       this.getBillingCycles({ ...params, limit: 1 }),
       this.getPayouts({ ...params, limit: 10 }),
@@ -288,11 +281,9 @@ export const financialApi = {
       total_commission: 0,
       billing_cycles: billingCycles,
       recent_payouts: payouts,
-      pending_invoices: invoices.filter((inv: any) => inv.status === 'pending'),
-    } as FinancialSummary;
+      pending_invoices: invoices.filter((inv: any) => inv.status === 'pending') } as FinancialSummary;
   },
 
   async exportTransactions(filters: TransactionFilters & { format: 'csv' | 'pdf' }): Promise<any> {
     throw new Error('Transaction export not implemented');
-  },
-};
+  } };

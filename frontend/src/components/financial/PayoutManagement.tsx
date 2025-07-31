@@ -24,18 +24,15 @@ import {
   TablePagination,
   CircularProgress,
   InputAdornment,
-  Grid,
-} from '@mui/material';
+  Grid } from '@mui/material';
 import {
   Add,
   Cancel,
   Download,
   Refresh,
   Search,
-  FilterList,
   AccountBalance,
-  PaymentOutlined,
-} from '@mui/icons-material';
+  PaymentOutlined } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,8 +42,7 @@ import type { Payout, PaymentMethod } from '@/types/financial';
 
 const requestPayoutSchema = z.object({
   amount: z.number().min(10, 'Minimum payout amount is $10'),
-  payment_method_id: z.string().min(1, 'Payment method is required'),
-});
+  payment_method_id: z.string().min(1, 'Payment method is required') });
 
 type RequestPayoutForm = z.infer<typeof requestPayoutSchema>;
 
@@ -65,20 +61,17 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
   const [selectedPayout, setSelectedPayout] = useState<Payout | null>(null);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<RequestPayoutForm>({
-    resolver: zodResolver(requestPayoutSchema),
-  });
+    resolver: zodResolver(requestPayoutSchema) });
 
   const { data: paymentMethods } = useQuery({
     queryKey: ['payment-methods'],
-    queryFn: () => financialApi.getPaymentMethods(),
-  });
+    queryFn: () => financialApi.getPaymentMethods() });
 
   const { data: summary } = useQuery({
     queryKey: ['financial-summary', modelId, agencyId],
-    queryFn: () => financialApi.getFinancialSummary({ model_id: modelId, agency_id: agencyId }),
-  });
+    queryFn: () => financialApi.getFinancialSummary({ model_id: modelId, agency_id: agencyId }) });
 
-  const { data: payouts, isLoading, refetch } = useQuery({
+  const { data: payouts, isPending, refetch } = useQuery({
     queryKey: ['payouts', page, rowsPerPage, statusFilter, searchTerm, modelId, agencyId],
     queryFn: () => financialApi.getPayouts({
       page: page + 1,
@@ -86,9 +79,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
       status: statusFilter || undefined,
       search: searchTerm || undefined,
       model_id: modelId,
-      agency_id: agencyId,
-    }),
-  });
+      agency_id: agencyId }) });
 
   const requestPayoutMutation = useMutation({
     mutationFn: financialApi.requestPayout,
@@ -97,22 +88,19 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
       queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
       setRequestDialogOpen(false);
       reset();
-    },
-  });
+    } });
 
   const cancelPayoutMutation = useMutation({
     mutationFn: financialApi.cancelPayout,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payouts'] });
       queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
-    },
-  });
+    } });
 
   const onSubmitRequest = (data: RequestPayoutForm) => {
     requestPayoutMutation.mutate({
       ...data,
-      model_id: modelId,
-    });
+      model_id: modelId });
   };
 
   const handleCancelPayout = (payoutId: string) => {
@@ -139,8 +127,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
   const formatCurrency = (amount: number, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency,
-    }).format(amount);
+      currency }).format(amount);
   };
 
   const formatDate = (date: string) => {
@@ -149,8 +136,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
-    });
+      minute: '2-digit' });
   };
 
   return (
@@ -226,8 +212,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                   <InputAdornment position="start">
                     <Search />
                   </InputAdornment>
-                ),
-              }}
+                ) }}
             />
             <TextField
               select
@@ -258,7 +243,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                 </TableRow>
               </TableHead>
               <TableBody>
-                {isLoading ? (
+                {isPending ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center">
                       <CircularProgress size={40} />
@@ -356,8 +341,7 @@ export const PayoutManagement = ({ modelId, agencyId }: PayoutManagementProps) =
                 error={!!errors.amount}
                 helperText={errors.amount?.message}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                }}
+                  startAdornment: <InputAdornment position="start">$</InputAdornment> }}
               />
               <TextField
                 select

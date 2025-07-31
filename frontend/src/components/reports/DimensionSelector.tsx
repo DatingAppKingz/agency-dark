@@ -21,8 +21,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-} from '@mui/material';
+  Button } from '@mui/material';
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -32,8 +31,7 @@ import {
   Description as ContentIcon,
   Language as PlatformIcon,
   Category as CategoryIcon,
-  Delete as DeleteIcon,
-} from '@mui/icons-material';
+  Delete } from '@mui/icons-material';
 import { ReportDimension } from '@/types/reports';
 
 interface DimensionSelectorProps {
@@ -50,8 +48,7 @@ interface DimensionSelectorProps {
 const DimensionSelector: React.FC<DimensionSelectorProps> = ({
   availableDimensions,
   selectedDimensions,
-  onChange,
-}) => {
+  onChange }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingDimension, setEditingDimension] = useState<ReportDimension | null>(null);
 
@@ -115,8 +112,7 @@ const DimensionSelector: React.FC<DimensionSelectorProps> = ({
             <InputAdornment position="start">
               <SearchIcon />
             </InputAdornment>
-          ),
-        }}
+          ) }}
         sx={{ mb: 2 }}
       />
 
@@ -227,8 +223,7 @@ const DimensionSelector: React.FC<DimensionSelectorProps> = ({
                     onChange={(e) =>
                       setEditingDimension({
                         ...editingDimension,
-                        groupBy: e.target.value as any,
-                      })
+                        groupBy: e.target.value as any })
                     }
                   >
                     <MenuItem value="day">Day</MenuItem>

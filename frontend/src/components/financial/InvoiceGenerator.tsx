@@ -18,10 +18,7 @@ import {
   TableRow,
   IconButton,
   Divider,
-  MenuItem,
-  Chip,
-  Alert,
-} from '@mui/material';
+  MenuItem } from '@mui/material';
 import {
   Add,
   Delete,
@@ -29,8 +26,7 @@ import {
   Download,
   Email,
   Close,
-  Receipt,
-} from '@mui/icons-material';
+  Receipt } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useToast } from '@/components/common/Toaster';
@@ -71,8 +67,7 @@ export const InvoiceGenerator = ({
   open,
   onClose,
   prefilledData,
-  onSave,
-}: InvoiceGeneratorProps) => {
+  onSave }: InvoiceGeneratorProps) => {
   const { error, success } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
@@ -84,8 +79,7 @@ export const InvoiceGenerator = ({
     watch,
     setValue,
     reset,
-    formState: { errors },
-  } = useForm<InvoiceFormData>({
+    formState: { errors } } = useForm<InvoiceFormData>({
     defaultValues: {
       invoice_number: `INV-${Date.now()}`,
       invoice_date: format(new Date(), 'yyyy-MM-dd'),
@@ -99,14 +93,11 @@ export const InvoiceGenerator = ({
       discount: 0,
       payment_terms: '30',
       currency: 'USD',
-      ...prefilledData,
-    },
-  });
+      ...prefilledData } });
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'items',
-  });
+    name: 'items' });
 
   const watchItems = watch('items');
   const watchTaxRate = watch('tax_rate');
@@ -129,8 +120,7 @@ export const InvoiceGenerator = ({
 
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
-    documentTitle: `Invoice_${watch('invoice_number')}`,
-  });
+    documentTitle: `Invoice_${watch('invoice_number')}` });
 
   const handleDownloadPDF = async () => {
     if (!invoiceRef.current) return;
@@ -139,15 +129,13 @@ export const InvoiceGenerator = ({
       setIsGenerating(true);
       const canvas = await html2canvas(invoiceRef.current, {
         scale: 2,
-        logging: false,
-      });
+        logging: false });
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4',
-      });
+        format: 'a4' });
 
       const imgWidth = 210;
       const pageHeight = 295;
@@ -174,7 +162,7 @@ export const InvoiceGenerator = ({
     }
   };
 
-  const handleEmailInvoice = async (data: InvoiceFormData) => {
+  const handleEmailInvoice = async (event: InvoiceFormData) => {
     try {
       setIsGenerating(true);
       // TODO: Implement email sending
@@ -186,10 +174,10 @@ export const InvoiceGenerator = ({
     }
   };
 
-  const onSubmit = async (data: InvoiceFormData) => {
+  const onSubmit = async (event: InvoiceFormData) => {
     try {
       if (onSave) {
-        await onSave(data);
+        await onSave();
       }
       success('Invoice saved successfully');
       handleClose();
@@ -478,8 +466,7 @@ export const InvoiceGenerator = ({
                             fullWidth
                             size="small"
                             {...register(`items.${index}.description`, {
-                              required: 'Description is required',
-                            })}
+                              required: 'Description is required' })}
                             error={!!errors.items?.[index]?.description}
                           />
                         </TableCell>
@@ -491,8 +478,7 @@ export const InvoiceGenerator = ({
                             {...register(`items.${index}.quantity`, {
                               required: true,
                               min: 1,
-                              onChange: () => updateItemTotal(index),
-                            })}
+                              onChange: () => updateItemTotal(index) })}
                             error={!!errors.items?.[index]?.quantity}
                           />
                         </TableCell>
@@ -504,8 +490,7 @@ export const InvoiceGenerator = ({
                             {...register(`items.${index}.unit_price`, {
                               required: true,
                               min: 0,
-                              onChange: () => updateItemTotal(index),
-                            })}
+                              onChange: () => updateItemTotal(index) })}
                             error={!!errors.items?.[index]?.unit_price}
                           />
                         </TableCell>

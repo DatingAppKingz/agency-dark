@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Button,
   Table,
@@ -23,11 +21,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  FormGroup,
   FormControlLabel,
-  Checkbox,
   Switch,
-  Alert,
   Tabs,
   Tab,
   Badge,
@@ -35,29 +30,22 @@ import {
   Skeleton,
   Menu,
   ListItemIcon,
-  ListItemText,
-} from '@mui/material';
+  ListItemText } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Settings as SettingsIcon,
-  Send as SendIcon,
-  History as HistoryIcon,
-  Warning as WarningIcon,
-  CheckCircle as SuccessIcon,
+  Settings as HistoryIcon,
+  Warning as SuccessIcon,
   Error as ErrorIcon,
   MoreVert as MoreIcon,
-  Refresh as RefreshIcon,
-  BugReport as DebugIcon,
-  PlayArrow as TestIcon,
-  Storage as DeadLetterIcon,
-} from '@mui/icons-material';
+  Refresh as TestIcon,
+  Storage } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import { webhookService } from '@/services/api/webhooks';
-import { WebhookEvent, WebhookResponse, WebhookDelivery } from '@/types/webhooks';
+import { WebhookEvent, WebhookResponse } from '@/types/webhooks';
 import WebhookDeliveryHistory from './WebhookDeliveryHistory';
 import WebhookDeadLetters from './WebhookDeadLetters';
 import WebhookTester from './WebhookTester';
@@ -96,11 +84,10 @@ const WebhookManager: React.FC = () => {
     retry_enabled: true,
     max_retries: 3,
     timeout_seconds: 30,
-    custom_headers: {} as Record<string, string>,
-  });
+    custom_headers: {} as Record<string, string> });
 
   // Fetch webhooks
-  const { data: webhooks, isLoading } = useQuery({
+  const { data: webhooks, isPending } = useQuery({
     queryKey: ['webhooks'],
     queryFn: webhookService.listWebhooks,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -117,8 +104,7 @@ const WebhookManager: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to create webhook');
-    },
-  });
+    } });
 
   // Update webhook mutation
   const updateWebhook = useMutation({
@@ -132,8 +118,7 @@ const WebhookManager: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to update webhook');
-    },
-  });
+    } });
 
   // Delete webhook mutation
   const deleteWebhook = useMutation({
@@ -144,8 +129,7 @@ const WebhookManager: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to delete webhook');
-    },
-  });
+    } });
 
   // Test webhook mutation
   const testWebhook = useMutation({
@@ -155,8 +139,7 @@ const WebhookManager: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to send test webhook');
-    },
-  });
+    } });
 
   const resetForm = () => {
     setWebhookForm({
@@ -167,16 +150,14 @@ const WebhookManager: React.FC = () => {
       retry_enabled: true,
       max_retries: 3,
       timeout_seconds: 30,
-      custom_headers: {},
-    });
+      custom_headers: {} });
   };
 
   const handleCreateOrUpdate = () => {
     if (editingWebhook) {
       updateWebhook.mutate({
         id: editingWebhook.id,
-        data: webhookForm,
-      });
+        data: webhookForm });
     } else {
       createWebhook.mutate(webhookForm);
     }
@@ -191,8 +172,7 @@ const WebhookManager: React.FC = () => {
       retry_enabled: webhook.retry_enabled,
       max_retries: webhook.max_retries,
       timeout_seconds: webhook.timeout_seconds,
-      custom_headers: webhook.custom_headers,
-    });
+      custom_headers: webhook.custom_headers });
     setEditingWebhook(webhook);
     setShowCreateDialog(true);
   };
@@ -265,7 +245,7 @@ const WebhookManager: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
+              {isPending ? (
                 [...Array(3)].map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton /></TableCell>

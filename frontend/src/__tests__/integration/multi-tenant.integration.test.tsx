@@ -21,7 +21,7 @@ const server = setupServer(
     const models = agencyId === 'agency-1' ? [
       createMockModel({ id: 'model-1', agency_id: 'agency-1' }),
       createMockModel({ id: 'model-2', agency_id: 'agency-1' }),
-    ] : [];
+    ] documents: [];
 
     return res(ctx.json({ data: models, total: models.length }));
   }),
@@ -43,7 +43,7 @@ const server = setupServer(
     // Regular users only see their agency's users
     const users = currentUser?.agency_id === 'agency-1' ? [
       createMockUser({ id: '1', agency_id: 'agency-1' }),
-    ] : [];
+    ] documents: [];
     
     return res(ctx.json({ data: users, total: users.length }));
   }),

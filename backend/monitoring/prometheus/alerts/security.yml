@@ -1,0 +1,180 @@
+groups:
+  - name: security_alerts
+    interval: 30s
+    rules:
+      # Authentication & Authorization
+      - alert: UnauthorizedAPIAccess
+        expr: rate(http_requests_total{status="401"}[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High rate of unauthorized API access attempts"
+          description: "{{ $value }} unauthorized requests per second"
+
+      - alert: SuspiciousAPIKeyUsage
+        expr: rate(api_key_usage_total{status="invalid"}[5m]) > 5
+        for: 2m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Suspicious API key usage detected"
+          description: "{{ $value }} invalid API key attempts per second from {{ $labels.ip }}"
+
+      - alert: RateLimitAbuse
+        expr: rate(rate_limit_exceeded_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Rate limit abuse detected"
+          description: "{{ $value }} rate limit violations per second"
+
+      # Account Security
+      - alert: MultipleFailedLoginAttempts
+        expr: increase(login_attempts_total{result="failed"}[15m]) > 5 
+        for: 1m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Multiple failed login attempts for user"
+          description: "User {{ $labels.user_id }} has {{ $value }} failed login attempts"
+
+      - alert: AccountTakeover
+        expr: rate(login_success_total{suspicious="true"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Possible account takeover detected"
+          description: "Suspicious successful login for user {{ $labels.user_id }} from {{ $labels.ip }}"
+
+      - alert: PasswordResetAbuse
+        expr: rate(password_reset_requests_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High rate of password reset requests"
+          description: "{{ $value }} password reset requests per second"
+
+      # Data Security
+      - alert: DataExfiltration
+        expr: rate(data_export_bytes_total[5m]) > 1073741824
+        for: 5m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Possible data exfiltration detected"
+          description: "{{ $value | humanizeBytes }} per second being exported by {{ $labels.user_id }}"
+
+      - alert: UnusualDataAccess
+        expr: rate(sensitive_data_access_total{authorized="false"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Unauthorized sensitive data access"
+          description: "Unauthorized access to {{ $labels.data_type }} by {{ $labels.user_id }}"
+
+      # Fraud Detection
+      - alert: FraudulentTransaction
+        expr: fraud_score > 0.8
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Fraudulent transaction detected"
+          description: "Transaction {{ $labels.transaction_id }} has fraud score of {{ $value }}"
+
+      - alert: AnomalousSpendingPattern
+        expr: rate(transaction_amount_total[1h]) > 10000
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Anomalous spending pattern detected"
+          description: "User {{ $labels.user_id }} spending rate: ${{ $value }} per hour"
+
+      # System Security
+      - alert: SQLInjectionAttempt
+        expr: rate(sql_injection_attempts_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "SQL injection attempt detected"
+          description: "SQL injection attempt from IP {{ $labels.ip }} on endpoint {{ $labels.endpoint }}"
+
+      - alert: XSSAttempt
+        expr: rate(xss_attempts_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "XSS attempt detected"
+          description: "XSS attempt from IP {{ $labels.ip }} on endpoint {{ $labels.endpoint }}"
+
+      - alert: FileUploadSecurityViolation
+        expr: rate(malicious_file_uploads_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Malicious file upload detected"
+          description: "Malicious file '{{ $labels.filename }}' uploaded by {{ $labels.user_id }}"
+
+      # API Security
+      - alert: APIEndpointScanning
+        expr: rate(unique_endpoints_accessed_per_ip[5m]) > 50
+        for: 2m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "API endpoint scanning detected"
+          description: "IP {{ $labels.ip }} accessed {{ $value }} unique endpoints"
+
+      - alert: UnexpectedAPIUsagePattern
+        expr: stddev(api_requests_per_user[1h]) > 3 * avg(api_requests_per_user[1h])
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Unexpected API usage pattern"
+          description: "User {{ $labels.user_id }} showing unusual API usage pattern"
+
+      # Infrastructure Security
+      - alert: UnauthorizedSSHAccess
+        expr: rate(ssh_login_attempts_total{result="failed"}[5m]) > 10
+        for: 2m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Multiple failed SSH login attempts"
+          description: "{{ $value }} failed SSH attempts per second from {{ $labels.ip }}"
+
+      - alert: PrivilegeEscalation
+        expr: privilege_escalation_attempts_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Privilege escalation attempt detected"
+          description: "User {{ $labels.user_id }} attempted privilege escalation"

@@ -12,30 +12,21 @@ import {
   ListItemText,
   ListItemAvatar,
   Avatar,
-  Rating,
-  Button,
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-} from '@mui/material';
+  MenuItem } from '@mui/material';
 import {
   TrendingUp,
-  TrendingDown,
   AttachMoney,
   People,
   Favorite,
-  Message,
-  Schedule,
-  EmojiEvents,
-} from '@mui/icons-material';
+  Message } from '@mui/icons-material';
 import {
   LineChart,
   Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -44,10 +35,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  ScatterChart,
-  Scatter,
-} from 'recharts';
+  ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useState } from 'react';
@@ -63,7 +51,7 @@ interface ModelPerformanceProps {
 export const ModelPerformance = ({ dateRange, refreshKey }: ModelPerformanceProps) => {
   const [selectedModel, setSelectedModel] = useState('all');
 
-  const { data: performanceData, isLoading } = useQuery({
+  const { data: performanceData, isPending } = useQuery({
     queryKey: ['model-performance', dateRange, refreshKey, selectedModel],
     queryFn: async () => {
       // Simulated API call
@@ -76,20 +64,17 @@ export const ModelPerformance = ({ dateRange, refreshKey }: ModelPerformanceProp
           totalMessages: 12500,
           avgResponseTime: 3.2,
           contentPieces: 156,
-          fanEngagement: 78.5,
-        },
+          fanEngagement: 78.5 },
         earningsChart: Array.from({ length: 30 }, (_, i) => ({
           date: format(new Date(2024, 0, i + 1), 'MMM d'),
           earnings: Math.floor(Math.random() * 2000) + 1000,
           tips: Math.floor(Math.random() * 500) + 200,
-          subscriptions: Math.floor(Math.random() * 800) + 600,
-        })),
+          subscriptions: Math.floor(Math.random() * 800) + 600 })),
         subscriberGrowth: Array.from({ length: 30 }, (_, i) => ({
           date: format(new Date(2024, 0, i + 1), 'MMM d'),
           total: 600 + i * 8 + Math.floor(Math.random() * 20),
           new: Math.floor(Math.random() * 10) + 2,
-          lost: Math.floor(Math.random() * 3),
-        })),
+          lost: Math.floor(Math.random() * 3) })),
         topFans: [
           { name: 'JohnDoe123', spent: 2500, messages: 450, joinDate: '2023-06-15', tier: 'VIP' },
           { name: 'MikeSmith', spent: 1800, messages: 320, joinDate: '2023-08-20', tier: 'Premium' },
@@ -117,14 +102,12 @@ export const ModelPerformance = ({ dateRange, refreshKey }: ModelPerformanceProp
           { name: 'New Subscribers', target: 150, current: 125, percentage: 83 },
           { name: 'Content Posts', target: 200, current: 156, percentage: 78 },
           { name: 'Fan Engagement', target: 85, current: 78.5, percentage: 92 },
-        ],
-      };
-    },
-  });
+        ] };
+    } });
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  if (isLoading) {
+  if (isPending) {
     return <LinearProgress />;
   }
 
@@ -298,7 +281,7 @@ export const ModelPerformance = ({ dateRange, refreshKey }: ModelPerformanceProp
                   fill="#8884d8"
                   dataKey="revenue"
                 >
-                  {performanceData?.contentPerformance.map((entry, index) => (
+                  {performanceData?.contentPerformance.map((index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

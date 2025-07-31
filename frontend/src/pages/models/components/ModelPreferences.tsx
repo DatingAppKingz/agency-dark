@@ -10,8 +10,7 @@ import {
   Chip,
   Button,
   InputAdornment,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import { Add, AttachMoney } from '@mui/icons-material';
 import { useToast } from '@/components/common/Toaster';
 
@@ -28,8 +27,7 @@ export const ModelPreferences = ({ modelId }: ModelPreferencesProps) => {
     minTipAmount: 5,
     chatRatePerMinute: 0,
     contentCategories: ['Photos', 'Videos', 'Behind the Scenes', 'Personal Updates'],
-    blockedWords: ['spam', 'scam', 'meet', 'phone'],
-  });
+    blockedWords: ['spam', 'scam', 'meet', 'phone'] });
 
   const [newCategory, setNewCategory] = useState('');
   const [newBlockedWord, setNewBlockedWord] = useState('');
@@ -43,8 +41,7 @@ export const ModelPreferences = ({ modelId }: ModelPreferencesProps) => {
     if (newCategory && !preferences.contentCategories.includes(newCategory)) {
       setPreferences({
         ...preferences,
-        contentCategories: [...preferences.contentCategories, newCategory],
-      });
+        contentCategories: [...preferences.contentCategories, newCategory] });
       setNewCategory('');
     }
   };
@@ -52,16 +49,14 @@ export const ModelPreferences = ({ modelId }: ModelPreferencesProps) => {
   const handleRemoveCategory = (category: string) => {
     setPreferences({
       ...preferences,
-      contentCategories: preferences.contentCategories.filter(c => c !== category),
-    });
+      contentCategories: preferences.contentCategories.filter(c => c !== category) });
   };
 
   const handleAddBlockedWord = () => {
     if (newBlockedWord && !preferences.blockedWords.includes(newBlockedWord.toLowerCase())) {
       setPreferences({
         ...preferences,
-        blockedWords: [...preferences.blockedWords, newBlockedWord.toLowerCase()],
-      });
+        blockedWords: [...preferences.blockedWords, newBlockedWord.toLowerCase()] });
       setNewBlockedWord('');
     }
   };
@@ -69,8 +64,7 @@ export const ModelPreferences = ({ modelId }: ModelPreferencesProps) => {
   const handleRemoveBlockedWord = (word: string) => {
     setPreferences({
       ...preferences,
-      blockedWords: preferences.blockedWords.filter(w => w !== word),
-    });
+      blockedWords: preferences.blockedWords.filter(w => w !== word) });
   };
 
   return (
@@ -126,8 +120,7 @@ export const ModelPreferences = ({ modelId }: ModelPreferencesProps) => {
                     <AttachMoney />
                   </InputAdornment>
                 ),
-                inputProps: { min: 0, step: 1 },
-              }}
+                inputProps: { min: 0, step: 1 } }}
               sx={{ mb: 2 }}
             />
 
@@ -143,8 +136,7 @@ export const ModelPreferences = ({ modelId }: ModelPreferencesProps) => {
                     <AttachMoney />
                   </InputAdornment>
                 ),
-                inputProps: { min: 0, step: 0.01 },
-              }}
+                inputProps: { min: 0, step: 0.01 } }}
               helperText="Set to 0 for free chat"
             />
           </Paper>

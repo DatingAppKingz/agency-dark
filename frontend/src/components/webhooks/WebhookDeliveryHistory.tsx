@@ -25,7 +25,7 @@ interface WebhookDeliveryHistoryProps {
 }
 
 const WebhookDeliveryHistory: React.FC<WebhookDeliveryHistoryProps> = ({ webhookId }) => {
-  const { data: deliveries, isLoading } = useQuery({
+  const { data: deliveries, isPending } = useQuery({
     queryKey: ['webhook-deliveries', webhookId],
     queryFn: () => webhookService.getWebhookDeliveries(webhookId),
     enabled: !!webhookId,
@@ -59,7 +59,7 @@ const WebhookDeliveryHistory: React.FC<WebhookDeliveryHistoryProps> = ({ webhook
           Delivery History
         </Typography>
 
-        {isLoading ? (
+        {isPending ? (
           <Box>
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} height={60} sx={{ my: 1 }} />

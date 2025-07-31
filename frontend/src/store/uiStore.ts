@@ -12,7 +12,7 @@ interface UIState {
   setSidebarOpen: (open: boolean) => void;
   
   // Loading states
-  isLoading: boolean;
+  isPending: boolean;
   setLoading: (loading: boolean) => void;
   
   // Filters
@@ -42,8 +42,8 @@ export const useUIStore = create<UIState>()(
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       
       // Loading
-      isLoading: false,
-      setLoading: (loading) => set({ isLoading: loading }),
+      isPending: false,
+      setLoading: (loading) => set({ isPending: loading }),
       
       // Filters
       userFilters: {

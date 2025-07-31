@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import {
   Box,
   Grid,
-  Paper,
   Typography,
   Card,
   CardContent,
@@ -22,8 +21,7 @@ import {
   TableHead,
   TableRow,
   LinearProgress,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   TrendingUp,
   TrendingDown,
@@ -31,12 +29,8 @@ import {
   AttachMoney,
   Message,
   Favorite,
-  Share,
-  Visibility,
-  Download,
-  Star,
-} from '@mui/icons-material';
-import { ChartWidget, MetricsGrid, AnalyticsWidget } from '@/components/dashboard';
+  Download } from '@mui/icons-material';
+import { ChartWidget, MetricsGrid } from '@/components/dashboard';
 import { format, subDays } from 'date-fns';
 
 interface ModelAnalyticsProps {
@@ -59,8 +53,7 @@ export const ModelAnalytics = ({ modelId }: ModelAnalyticsProps) => {
       return {
         label: format(date, points <= 30 ? 'MMM d' : 'MMM'),
         subscribers: totalSubs,
-        growth: dailyGrowth,
-      };
+        growth: dailyGrowth };
     });
   }, [period]);
 
@@ -75,8 +68,7 @@ export const ModelAnalytics = ({ modelId }: ModelAnalyticsProps) => {
         label: `Period ${i + 1}`,
         sent,
         received,
-        total: sent + received,
-      };
+        total: sent + received };
     });
   }, [period]);
 
@@ -141,8 +133,7 @@ export const ModelAnalytics = ({ modelId }: ModelAnalyticsProps) => {
     contentPurchaseRate: 12.4,
     avgFanLifetimeValue: 125.50,
     churnRate: 4.2,
-    retentionRate: 95.8,
-  };
+    retentionRate: 95.8 };
 
   const metrics = [
     { 
@@ -397,8 +388,7 @@ export const ModelAnalytics = ({ modelId }: ModelAnalyticsProps) => {
                               bgcolor: getTierColor(fan.tier),
                               color: 'white',
                               fontSize: '0.7rem',
-                              height: 20,
-                            }} 
+                              height: 20 }} 
                           />
                         </Box>
                       }

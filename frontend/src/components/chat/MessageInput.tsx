@@ -7,17 +7,14 @@ import {
   MenuItem,
   Chip,
   LinearProgress,
-  InputAdornment,
-} from '@mui/material';
+  InputAdornment } from '@mui/material';
 import {
   Send,
   AttachFile,
   Image,
   VideoCall,
   Mic,
-  Close,
-  EmojiEmotions,
-} from '@mui/icons-material';
+  EmojiEmotions } from '@mui/icons-material';
 import { useToast } from '@/components/common/Toaster';
 import { VoiceRecorder } from './VoiceRecorder';
 
@@ -89,8 +86,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValue
     setAnchorEl(null);
   };
 
-  const handleFileSelect = (accept: string) => {
-    handleAttachmentClose();
+  const handleFileSelect = (accept: string) => { handleAttachmentClose();
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = accept;
@@ -98,7 +94,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValue
     input.onchange = (e) => {
       const files = Array.from((e.target as HTMLInputElement).files || []);
       handleFilesSelected(files);
-    };
+                     };
     input.click();
   };
 
@@ -180,8 +176,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled, value, onValue
                   <EmojiEmotions />
                 </IconButton>
               </InputAdornment>
-            ),
-          }}
+            ) }}
         />
         
         {onSendVoiceMessage && !message.trim() && attachments.length === 0 && (

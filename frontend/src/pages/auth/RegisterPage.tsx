@@ -31,7 +31,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { register: registerUser, isLoading } = useAuthStore();
+  const { register: registerUser, isPending } = useAuthStore();
   const { success, error } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -149,10 +149,10 @@ const RegisterPage = () => {
           fullWidth
           variant="contained"
           size="large"
-          disabled={isLoading}
+          disabled={isPending}
           sx={{ mt: 3, mb: 2 }}
         >
-          {isLoading ? 'Creating account...' : 'Create Account'}
+          {isPending ? 'Creating account...' : 'Create Account'}
         </Button>
 
         <Box sx={{ textAlign: 'center' }}>

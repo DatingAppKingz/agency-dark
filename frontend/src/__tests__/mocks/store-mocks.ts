@@ -15,7 +15,7 @@ export const mockAuthStore = {
   token: 'mock-token',
   refreshToken: 'mock-refresh-token',
   isAuthenticated: true,
-  isLoading: false,
+  isPending: false,
   login: jest.fn(),
   logout: jest.fn(),
   register: jest.fn(),

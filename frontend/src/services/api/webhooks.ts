@@ -4,10 +4,8 @@ import {
   WebhookUpdate,
   WebhookResponse,
   WebhookDelivery,
-  WebhookDeadLetter,
   WebhookTestResult,
-  PaginatedWebhookDeadLetters,
-} from '@/types/webhooks';
+  PaginatedWebhookDeadLetters } from '@/types/webhooks';
 
 export const webhookService = {
   // Webhook CRUD operations
@@ -49,8 +47,7 @@ export const webhookService = {
   // Webhook deliveries
   async getWebhookDeliveries(webhookId: string, limit: number = 100): Promise<WebhookDelivery[]> {
     const response = await apiClient.get(`/api/v1/webhooks/${webhookId}/deliveries`, {
-      params: { limit },
-    });
+      params: { limit } });
     return response.data;
   },
 
@@ -64,8 +61,7 @@ export const webhookService = {
       items,
       total: items.length, // This would ideally come from the backend
       page: Math.floor((params.offset || 0) / (params.limit || 100)) + 1,
-      per_page: params.limit || 100,
-    };
+      per_page: params.limit || 100 };
   },
 
   async reprocessDeadLetter(id: string): Promise<void> {
@@ -85,5 +81,4 @@ export const webhookService = {
   async getSignatureVerificationDocs(): Promise<any> {
     const response = await apiClient.get('/api/v1/webhooks/docs/signature');
     return response.data;
-  },
-};
+  } };

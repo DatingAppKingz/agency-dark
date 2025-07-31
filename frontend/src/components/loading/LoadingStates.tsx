@@ -2,7 +2,7 @@ import { Box, CircularProgress, Skeleton, Typography, LinearProgress } from '@mu
 import { keyframes } from '@mui/system';
 
 // Pulse animation for skeleton
-const pulse = keyframes`
+const = keyframes`
   0% {
     opacity: 0.6;
   }
@@ -24,8 +24,7 @@ export const FullPageLoader = ({ message }: { message?: string }) => {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        gap: 2,
-      }}
+        gap: 2 }}
     >
       <CircularProgress size={60} />
       {message && (
@@ -75,8 +74,7 @@ export const CardSkeleton = () => {
         p: 2,
         border: '1px solid',
         borderColor: 'divider',
-        borderRadius: 1,
-      }}
+        borderRadius: 1 }}
     >
       <Skeleton variant="rectangular" height={200} sx={{ mb: 2 }} />
       <Skeleton variant="text" width="80%" sx={{ mb: 1 }} />
@@ -100,8 +98,7 @@ export const TableSkeleton = ({ rows = 5, columns = 4 }: { rows?: number; column
           p: 2,
           borderBottom: '1px solid',
           borderColor: 'divider',
-          backgroundColor: 'grey.50',
-        }}
+          backgroundColor: 'grey.50' }}
       >
         {Array.from({ length: columns }).map((_, index) => (
           <Skeleton key={index} variant="text" width="20%" sx={{ mx: 1 }} />
@@ -116,8 +113,7 @@ export const TableSkeleton = ({ rows = 5, columns = 4 }: { rows?: number; column
             display: 'flex',
             p: 2,
             borderBottom: '1px solid',
-            borderColor: 'divider',
-          }}
+            borderColor: 'divider' }}
         >
           {Array.from({ length: columns }).map((_, colIndex) => (
             <Skeleton
@@ -137,8 +133,7 @@ export const TableSkeleton = ({ rows = 5, columns = 4 }: { rows?: number; column
 export const ProgressLoader = ({
   value,
   message,
-  showPercentage = true,
-}: {
+  showPercentage = true }: {
   value: number;
   message?: string;
   showPercentage?: boolean;
@@ -182,14 +177,10 @@ export const ShimmerLoader = ({ width = '100%', height = 20 }: { width?: string 
           left: 0,
           transform: 'translateX(-100%)',
           background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
-          animation: `shimmer 2s infinite`,
-        },
+          animation: `shimmer 2s infinite` },
         '@keyframes shimmer': {
           '100%': {
-            transform: 'translateX(100%)',
-          },
-        },
-      }}
+            transform: 'translateX(100%)' } } }}
     />
   );
 };

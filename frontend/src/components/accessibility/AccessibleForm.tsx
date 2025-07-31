@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { TextField, TextFieldProps, FormControl, FormLabel, FormHelperText, InputLabel, Select, SelectProps } from '@mui/material';
+import { TextField, TextFieldProps, FormControl, FormHelperText, InputLabel, Select, SelectProps } from '@mui/material';
 import { generateId } from '@/utils/accessibility';
 
 // Accessible TextField with proper ARIA attributes
@@ -35,11 +35,11 @@ export const AccessibleTextField = forwardRef<HTMLDivElement, TextFieldProps>((p
 AccessibleTextField.displayName = 'AccessibleTextField';
 
 // Accessible Select with proper ARIA attributes
-interface AccessibleSelectProps extends SelectProps {
+type AccessibleSelectProps = Omit<SelectProps, 'label'> & {
   label: string;
   helperText?: string;
   error?: boolean;
-}
+};
 
 export const AccessibleSelect = forwardRef<HTMLDivElement, AccessibleSelectProps>((props, ref) => {
   const { id = generateId('select'), label, helperText, error, required, children, ...rest } = props;

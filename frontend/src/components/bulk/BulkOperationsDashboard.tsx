@@ -23,7 +23,6 @@ import { bulkOperationsService } from '@/services/api/bulkOperations';
 import BulkMessageOperations from './BulkMessageOperations';
 import BulkUserOperations from './BulkUserOperations';
 import BulkContentOperations from './BulkContentOperations';
-import BulkOperationProgress from './BulkOperationProgress';
 import BulkOperationHistory from './BulkOperationHistory';
 
 interface TabPanelProps {

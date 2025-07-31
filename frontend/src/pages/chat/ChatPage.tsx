@@ -9,11 +9,9 @@ import {
   Avatar,
   IconButton,
   Chip,
-  Badge,
   Menu,
   MenuItem,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   VideoCall,
   Call,
@@ -24,9 +22,7 @@ import {
   Search,
   MoreVert,
   Block,
-  Report,
-  Download,
-} from '@mui/icons-material';
+  Download } from '@mui/icons-material';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageThread } from '@/components/chat/MessageThread';
 import { MessageInput } from '@/components/chat/MessageInput';
@@ -64,10 +60,9 @@ const ChatPage = () => {
     onlineUsers,
     filters,
     setFilters,
-    getUnreadCount,
-  } = useChatStore();
+    getUnreadCount } = useChatStore();
 
-  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
+  const [setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -134,33 +129,32 @@ const ChatPage = () => {
 
   // Socket event handlers
   useEffect(() => {
-    socket.on('new_message', (message: Message) => {
-      addMessage(message);
+    socket.on('new_message', (event: Message) => {
+      addMessage();
 
       // Update conversation's last message
-      const conversation = getConversation(message.conversation_id);
+      const conversation = getConversation(event.conversation_id);
       if (conversation) {
         updateConversation({
           ...conversation,
-          last_message: message,
-          updated_at: message.created_at,
+          last_message: event.content,
+          updated_at: event.created_at,
           unread_count:
-            message.conversation_id === activeConversationId
+            event.conversation_id === activeConversationId
               ? 0
-              : conversation.unread_count + 1,
-        });
+              : conversation.unread_count + 1 });
       }
 
-      // Send push notification if message is from another user and tab is not active
+      // Send push notification if is from another user and tab is not active
       if (
-        message.sender_id !== user?.id &&
-        message.conversation_id !== activeConversationId &&
+        event.sender_id !== user?.id &&
+        event.conversation_id !== activeConversationId &&
         permission === 'granted' &&
         isSubscribed &&
         document.hidden
       ) {
         const notificationTitle = conversation?.fan.name || 'New Message';
-        const notificationBody = message.content.substring(0, 100);
+        const notificationBody = event.content.substring(0, 100);
         
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           navigator.serviceWorker.ready.then((registration) => {
@@ -168,19 +162,17 @@ const ChatPage = () => {
               body: notificationBody,
               icon: '/icon-192x192.png',
               badge: '/icon-72x72.png',
-              tag: `message-${message.id}`,
+              tag: `message-${event.id}`,
               data: {
-                url: `/chat?conversation=${message.conversation_id}`,
-                conversationId: message.conversation_id,
-              },
-            });
+                url: `/chat?conversation=${event.conversation_id}`,
+                conversationId: event.conversation_id } });
           });
         }
       }
     });
 
-    socket.on('message_updated', (message: Message) => {
-      updateMessage(message);
+    socket.on('message_updated', (event: Message) => {
+      updateMessage();
     });
 
     socket.on('message_deleted', ({ conversation_id, message_id }: any) => {
@@ -237,16 +229,15 @@ const ChatPage = () => {
       const newMessage: NewMessage = {
         conversation_id: activeConversationId,
         content,
-        attachments: attachments ? await uploadAttachments(attachments) : undefined,
-      };
+        attachments: attachments ? await uploadAttachments(attachments) : undefined };
 
-      const message = await chatApi.sendMessage(newMessage);
+      const response = await chatApi.sendMessage(newMessage);
       
       // Message will be added via socket event
       success('Message sent');
       setMessageInputValue(''); // Reset input after sending
     } catch (err) {
-      error('Failed to send message');
+      error('Failed to send ');
     } finally {
       setIsSendingMessage(false);
     }
@@ -260,24 +251,22 @@ const ChatPage = () => {
 
       // Convert blob to file
       const audioFile = new File([audioBlob], `voice_${Date.now()}.webm`, {
-        type: 'audio/webm',
-      });
+        type: 'audio/webm' });
 
       const attachments = await uploadAttachments([audioFile]);
 
       const newMessage: NewMessage = {
         conversation_id: activeConversationId,
-        content: `🎤 Voice message (${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')})`,
+        content: `🎤 Voice (${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')})`,
         attachments,
-        message_type: 'voice',
-      };
+        message_type: 'voice' };
 
-      const message = await chatApi.sendMessage(newMessage);
+      const response = await chatApi.sendMessage(newMessage);
       
       // Message will be added via socket event
-      success('Voice message sent');
+      success('Voice sent');
     } catch (err) {
-      error('Failed to send voice message');
+      error('Failed to send voice ');
     } finally {
       setIsSendingMessage(false);
     }
@@ -288,13 +277,12 @@ const ChatPage = () => {
 
     socket.emit('typing', {
       conversation_id: activeConversationId,
-      is_typing: isTyping,
-    });
+      is_typing: isTyping });
   };
 
-  const uploadAttachments = async (files: File[]) => {
+  const uploadAttachments = async (event: File[]) => {
     // TODO: Implement file upload
-    // This would upload files to your storage service and return attachment metadata
+    // This would upload to your storage service and return attachment metadata
     return [];
   };
 
@@ -303,8 +291,7 @@ const ChatPage = () => {
 
     try {
       const updated = await chatApi.updateConversation(activeConversation.id, {
-        is_favorite: !activeConversation.is_favorite,
-      });
+        is_favorite: !activeConversation.is_favorite });
       updateConversation(updated);
     } catch (err) {
       error('Failed to update conversation');
@@ -347,8 +334,7 @@ const ChatPage = () => {
               borderColor: 'divider',
               overflow: 'hidden',
               display: 'flex',
-              flexDirection: 'column',
-            }}
+              flexDirection: 'column' }}
           >
             <ChatFilters
               filters={filters}
@@ -420,7 +406,7 @@ const ChatPage = () => {
                       <VideoCall />
                     </IconButton>
                     <IconButton
-                      onClick={(e) => setChatMenuAnchor(e.currentTarget)}
+                      onClick={(event) => setChatMenuAnchor(eevent.currentTarget)}
                     >
                       <MoreVert />
                     </IconButton>
@@ -432,7 +418,7 @@ const ChatPage = () => {
                   <MessageThread
                     messages={messages}
                     conversationId={activeConversationId}
-                    isLoading={isLoadingMessages}
+                    isPending={isLoadingMessages}
                   />
                 </Box>
 
@@ -459,8 +445,7 @@ const ChatPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  height: '100%',
-                }}
+                  height: '100%' }}
               >
                 <Typography variant="h6" color="text.secondary">
                   Select a conversation to start chatting
@@ -476,8 +461,8 @@ const ChatPage = () => {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         conversationId={activeConversationId || undefined}
-        onMessageSelect={(message) => {
-          // TODO: Implement scroll to message in thread
+        onMessageSelect={() => {
+          // TODO: Implement scroll to in thread
           setSearchOpen(false);
         }}
       />
@@ -505,11 +490,11 @@ const ChatPage = () => {
           setChatMenuAnchor(null);
           setBlockReportOpen(true);
         }} sx={{ color: 'error.main' }}>
-          <Block sx={{ mr: 1 }} /> Block or Report User
+          <Block sx={{ mr: 1 }} /> Block or User
         </MenuItem>
       </Menu>
 
-      {/* Block/Report Dialog */}
+      {/* Block/Dialog */}
       <BlockReportDialog
         open={blockReportOpen}
         onClose={() => setBlockReportOpen(false)}

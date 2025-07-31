@@ -17,21 +17,16 @@ import {
   DialogActions,
   TextField,
   MenuItem,
-  Alert,
   CircularProgress,
-  Paper,
-  Divider,
-} from '@mui/material';
+  Divider } from '@mui/material';
 import {
   Add,
   Delete,
   Edit,
-  Star,
   StarBorder,
   AccountBalance,
   CreditCard,
-  Currency as Bitcoin,
-} from '@mui/icons-material';
+  Currency as Bitcoin } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,23 +40,19 @@ const bankDetailsSchema = z.object({
   routing_number: z.string().optional(),
   bank_name: z.string().min(1, 'Bank name is required'),
   swift_code: z.string().optional(),
-  iban: z.string().optional(),
-});
+  iban: z.string().optional() });
 
 const paypalDetailsSchema = z.object({
-  email: z.string().email('Valid email is required'),
-});
+  email: z.string().email('Valid email is required') });
 
 const cryptoDetailsSchema = z.object({
   currency: z.string().min(1, 'Currency is required'),
   address: z.string().min(1, 'Wallet address is required'),
-  network: z.string().optional(),
-});
+  network: z.string().optional() });
 
 const paymentMethodSchema = z.object({
   type: z.enum(['bank_account', 'paypal', 'crypto_wallet']),
-  is_default: z.boolean().optional(),
-});
+  is_default: z.boolean().optional() });
 
 type PaymentMethodForm = z.infer<typeof paymentMethodSchema> & {
   bank_details?: z.infer<typeof bankDetailsSchema>;
@@ -79,24 +70,20 @@ export const PaymentMethods = () => {
     resolver: zodResolver(paymentMethodSchema),
     defaultValues: {
       type: 'bank_account',
-      is_default: false,
-    },
-  });
+      is_default: false } });
 
-  const watchedType = watch('type');
+  const type = watch('type');
 
-  const { data: paymentMethods, isLoading } = useQuery({
+  const { data: paymentMethods, isPending } = useQuery({
     queryKey: ['payment-methods'],
-    queryFn: () => financialApi.getPaymentMethods(),
-  });
+    queryFn: () => financialApi.getPaymentMethods() });
 
   const createMutation = useMutation({
     mutationFn: financialApi.createPaymentMethod,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
       handleCloseDialog();
-    },
-  });
+    } });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<PaymentMethod> }) =>
@@ -104,22 +91,19 @@ export const PaymentMethods = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
       handleCloseDialog();
-    },
-  });
+    } });
 
   const deleteMutation = useMutation({
     mutationFn: financialApi.deletePaymentMethod,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
-    },
-  });
+    } });
 
   const setDefaultMutation = useMutation({
     mutationFn: financialApi.setDefaultPaymentMethod,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
-    },
-  });
+    } });
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
@@ -132,8 +116,7 @@ export const PaymentMethods = () => {
     setFormType(method.type);
     reset({
       type: method.type,
-      is_default: method.is_default,
-    });
+      is_default: method.is_default });
     setDialogOpen(true);
   };
 
@@ -147,8 +130,7 @@ export const PaymentMethods = () => {
     const payload: any = {
       type: data.type,
       is_default: data.is_default,
-      details: {},
-    };
+      details: {} };
 
     switch (data.type) {
       case 'bank_account':
@@ -182,11 +164,10 @@ export const PaymentMethods = () => {
     }
   };
 
-  const getMethodDetails = (method: PaymentMethod) => {
-    switch (method.type) {
+  const getMethodDetails = (method: PaymentMethod) => { switch (method.type) {
       case 'bank_account':
         const bank = method.details as BankDetails;
-        return `${bank.bank_name} - ****${bank.account_number.slice(-4)}`;
+        return `${bank.bank_name } - ****${bank.account_number.slice(-4)}`;
       case 'paypal':
         const paypal = method.details as PayPalDetails;
         return paypal.email;
@@ -198,7 +179,7 @@ export const PaymentMethods = () => {
     }
   };
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
         <CircularProgress />
@@ -248,8 +229,7 @@ export const PaymentMethods = () => {
                           borderRadius: 2,
                           p: 1,
                           display: 'flex',
-                          alignItems: 'center',
-                        }}
+                          alignItems: 'center' }}
                       >
                         {getMethodIcon(method.type)}
                       </Box>
@@ -311,7 +291,7 @@ export const PaymentMethods = () => {
                   {...register('type')}
                   error={!!errors.type}
                   helperText={errors.type?.message}
-                  onChange={(e) => setFormType(e.target.value as PaymentMethod['type'])}
+                  onChange={ (e) => setFormType(e.target.value as PaymentMethod['type']) }
                 >
                   <MenuItem value="bank_account">Bank Account</MenuItem>
                   <MenuItem value="paypal">PayPal</MenuItem>

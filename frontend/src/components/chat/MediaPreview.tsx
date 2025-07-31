@@ -34,7 +34,7 @@ export const MediaPreview = ({ attachment, open, onClose }: MediaPreviewProps) =
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isPending, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
@@ -99,12 +99,12 @@ export const MediaPreview = ({ attachment, open, onClose }: MediaPreviewProps) =
               maxHeight: '100%',
               transform: `scale(${zoom}) rotate(${rotation}deg)`,
               transition: 'transform 0.3s ease',
-              display: isLoading ? 'none' : 'block',
+              display: isPending ? 'none' : 'block',
             }}
             onLoad={() => setIsLoading(false)}
             draggable={false}
           />
-          {isLoading && <CircularProgress />}
+          {isPending && <CircularProgress />}
         </Box>
       );
     }
@@ -126,13 +126,13 @@ export const MediaPreview = ({ attachment, open, onClose }: MediaPreviewProps) =
             style={{
               maxWidth: '100%',
               maxHeight: '100%',
-              display: isLoading ? 'none' : 'block',
+              display: isPending ? 'none' : 'block',
             }}
             onLoadedData={() => setIsLoading(false)}
             onEnded={() => setIsPlaying(false)}
             controls={false}
           />
-          {isLoading && <CircularProgress />}
+          {isPending && <CircularProgress />}
           
           {/* Video Controls Overlay */}
           <Box

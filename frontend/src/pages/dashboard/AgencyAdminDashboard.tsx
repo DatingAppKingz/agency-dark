@@ -4,7 +4,7 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { useDashboardStats } from '@/hooks/useAnalytics';
 
 export const AgencyAdminDashboard = () => {
-  const { data: stats, isLoading } = useDashboardStats();
+  const { data: stats, isPending } = useDashboardStats();
 
   return (
     <Box>
@@ -19,7 +19,7 @@ export const AgencyAdminDashboard = () => {
             value={stats?.active_models || 0}
             icon={<Person fontSize="large" />}
             color="primary"
-            loading={isLoading}
+            loading={isPending}
           />
         </Grid>
 
@@ -29,7 +29,7 @@ export const AgencyAdminDashboard = () => {
             value={stats?.active_chats || 0}
             icon={<Message fontSize="large" />}
             color="info"
-            loading={isLoading}
+            loading={isPending}
           />
         </Grid>
 
@@ -39,7 +39,7 @@ export const AgencyAdminDashboard = () => {
             value={stats?.messages_today || 0}
             icon={<Assignment fontSize="large" />}
             color="secondary"
-            loading={isLoading}
+            loading={isPending}
           />
         </Grid>
 
@@ -49,7 +49,7 @@ export const AgencyAdminDashboard = () => {
             value={stats?.new_users_today || 0}
             icon={<TrendingUp fontSize="large" />}
             color="success"
-            loading={isLoading}
+            loading={isPending}
           />
         </Grid>
       </Grid>

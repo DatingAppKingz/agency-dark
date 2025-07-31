@@ -21,8 +21,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-} from '@mui/material';
+  Button } from '@mui/material';
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -33,9 +32,7 @@ import {
   Message as MessageIcon,
   Image as ContentIcon,
   CreditCard as SubscriptionIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from '@mui/icons-material';
+  Edit as Delete } from '@mui/icons-material';
 import { ReportMetric, AggregationType } from '@/types/reports';
 
 interface MetricSelectorProps {
@@ -53,11 +50,10 @@ interface MetricSelectorProps {
 const MetricSelector: React.FC<MetricSelectorProps> = ({
   availableMetrics,
   selectedMetrics,
-  onChange,
-}) => {
+  onChange }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingMetric, setEditingMetric] = useState<ReportMetric | null>(null);
-  const [customMetricDialog, setCustomMetricDialog] = useState(false);
+  const [setCustomMetricDialog] = useState(false);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -113,8 +109,7 @@ const MetricSelector: React.FC<MetricSelectorProps> = ({
             <InputAdornment position="start">
               <SearchIcon />
             </InputAdornment>
-          ),
-        }}
+          ) }}
         sx={{ mb: 2 }}
       />
 
@@ -210,8 +205,7 @@ const MetricSelector: React.FC<MetricSelectorProps> = ({
                   onChange={(e) =>
                     setEditingMetric({
                       ...editingMetric,
-                      aggregation: e.target.value as AggregationType,
-                    })
+                      aggregation: e.target.value as AggregationType })
                   }
                 >
                   <MenuItem value={AggregationType.SUM}>Sum</MenuItem>
@@ -228,8 +222,7 @@ const MetricSelector: React.FC<MetricSelectorProps> = ({
                   onChange={(e) =>
                     setEditingMetric({
                       ...editingMetric,
-                      format: e.target.value as any,
-                    })
+                      format: e.target.value as any })
                   }
                 >
                   <MenuItem value="number">Number</MenuItem>

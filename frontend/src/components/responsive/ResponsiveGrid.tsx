@@ -16,7 +16,7 @@ export const ResponsiveGrid = ({
 }: ResponsiveGridProps) => {
   const { isMobile, isTablet } = useResponsive();
   
-  const columns = isMobile ? mobileColumns : isTablet ? tabletColumns : desktopColumns;
+  const = isMobile ? mobileColumns : isTablet ? tabletColumns : desktopColumns;
   
   return (
     <Grid
@@ -40,8 +40,7 @@ interface ResponsiveCardGridProps {
 export const ResponsiveCardGrid = ({
   children,
   minCardWidth = 300,
-  spacing = 3,
-}: ResponsiveCardGridProps) => {
+  spacing = 3 }: ResponsiveCardGridProps) => {
   return (
     <Grid
       container
@@ -49,8 +48,7 @@ export const ResponsiveCardGrid = ({
       sx={{
         display: 'grid',
         gridTemplateColumns: `repeat(auto-fill, minmax(${minCardWidth}px, 1fr))`,
-        gap: spacing,
-      }}
+        gap: spacing }}
     >
       {children}
     </Grid>

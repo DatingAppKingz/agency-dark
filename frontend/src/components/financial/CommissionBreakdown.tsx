@@ -17,28 +17,21 @@ import {
   MenuItem,
   Paper,
   Avatar,
-  LinearProgress,
-  Tooltip,
-  IconButton,
-  Divider,
-} from '@mui/material';
+  LinearProgress } from '@mui/material';
 import {
   TrendingUp,
   TrendingDown,
   Download,
   Person,
-  CalendarToday,
   AttachMoney,
   Assessment,
-  Info,
-  FilterList,
-} from '@mui/icons-material';
+  Info } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 import { useToast } from '@/components/common/Toaster';
 
 interface CommissionBreakdownProps {
@@ -78,7 +71,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
   const [isExporting, setIsExporting] = useState(false);
 
   // Mock data - replace with actual API calls
-  const { data: commissionData, isLoading } = useQuery({
+  const { data: commissionData, isPending } = useQuery({
     queryKey: ['commission-breakdown', startDate, endDate, filterStatus, agencyId],
     queryFn: async () => {
       // Mock data
@@ -93,8 +86,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
           net_earnings: 20000,
           transactions: 450,
           status: 'paid',
-          performance_change: 15.5,
-        },
+          performance_change: 15.5 },
         {
           model_id: '2',
           model_name: 'Emily Davis',
@@ -105,8 +97,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
           net_earnings: 13500,
           transactions: 320,
           status: 'active',
-          performance_change: -5.2,
-        },
+          performance_change: -5.2 },
         {
           model_id: '3',
           model_name: 'Jessica Martinez',
@@ -117,8 +108,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
           net_earnings: 18700,
           transactions: 380,
           status: 'active',
-          performance_change: 22.8,
-        },
+          performance_change: 22.8 },
         {
           model_id: '4',
           model_name: 'Ashley Thompson',
@@ -129,8 +119,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
           net_earnings: 12000,
           transactions: 280,
           status: 'pending',
-          performance_change: 8.3,
-        },
+          performance_change: 8.3 },
         {
           model_id: '5',
           model_name: 'Megan Wilson',
@@ -141,8 +130,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
           net_earnings: 8400,
           transactions: 220,
           status: 'active',
-          performance_change: -12.5,
-        },
+          performance_change: -12.5 },
       ];
 
       const summary: CommissionSummary = {
@@ -151,18 +139,15 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
         total_net_earnings: models.reduce((sum, m) => sum + m.net_earnings, 0),
         average_commission_rate: models.reduce((sum, m) => sum + m.commission_rate, 0) / models.length,
         total_models: models.length,
-        total_transactions: models.reduce((sum, m) => sum + m.transactions, 0),
-      };
+        total_transactions: models.reduce((sum, m) => sum + m.transactions, 0) };
 
       return { models, summary };
-    },
-  });
+    } });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+      currency: 'USD' }).format(amount);
   };
 
   const getStatusColor = (status: ModelCommission['status']) => {
@@ -208,8 +193,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
 
   const pieChartData = filteredModels?.map(model => ({
     name: model.model_name,
-    value: model.commission_amount,
-  }));
+    value: model.commission_amount }));
 
   const SummaryCards = () => (
     <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -385,11 +369,11 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {pieChartData?.map((entry, index) => (
+                      {pieChartData?.map((index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <RechartsTooltip formatter={(value) => formatCurrency(Number(value))} />
+                    <RechartsTooltip formatter={(value: number | string) => formatCurrency(Number(value))} />
                   </PieChart>
                 </ResponsiveContainer>
               </Box>
@@ -410,7 +394,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="model_name" angle={-45} textAnchor="end" height={80} />
                     <YAxis />
-                    <RechartsTooltip formatter={(value) => formatCurrency(Number(value))} />
+                    <RechartsTooltip formatter={(value: number | string) => formatCurrency(Number(value))} />
                     <Legend />
                     <Bar dataKey="gross_earnings" fill="#8884d8" name="Gross Earnings" />
                     <Bar dataKey="commission_amount" fill="#82ca9d" name="Commission" />
@@ -444,7 +428,7 @@ export const CommissionBreakdown = ({ agencyId }: CommissionBreakdownProps) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {isLoading ? (
+                    {isPending ? (
                       <TableRow>
                         <TableCell colSpan={8} align="center">
                           <LinearProgress />

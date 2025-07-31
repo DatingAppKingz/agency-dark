@@ -13,13 +13,11 @@ import {
   Chip,
   Grid,
   InputLabel,
-  Autocomplete,
-} from '@mui/material';
+  Autocomplete } from '@mui/material';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
-  FilterList as FilterIcon,
-} from '@mui/icons-material';
+  FilterList as FilterIcon } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -40,24 +38,21 @@ interface FilterBuilderProps {
 const FilterBuilder: React.FC<FilterBuilderProps> = ({
   filters,
   onChange,
-  availableFields = [],
-}) => {
-  const [showAddFilter, setShowAddFilter] = useState(false);
+  availableFields = [] }) => {
+  const [] = useState(false);
 
   const defaultOperators = {
     text: ['equals', 'not_equals', 'contains', 'not_contains'],
     number: ['equals', 'not_equals', 'greater_than', 'less_than', 'between'],
     date: ['equals', 'not_equals', 'greater_than', 'less_than', 'between'],
-    select: ['equals', 'not_equals', 'in', 'not_in'],
-  };
+    select: ['equals', 'not_equals', 'in', 'not_in'] };
 
   const addFilter = () => {
     const newFilter: ReportFilter = {
       id: `filter-${Date.now()}`,
       field: availableFields[0]?.field || '',
       operator: 'equals',
-      value: '',
-    };
+      value: '' };
     onChange([...filters, newFilter]);
   };
 
@@ -91,8 +86,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                     value={filter.value?.[0] ? new Date(filter.value[0]) : null}
                     onChange={(date) =>
                       updateFilter(filter.id, {
-                        value: [date?.toISOString(), filter.value?.[1] || ''],
-                      })
+                        value: [date?.toISOString(), filter.value?.[1] || ''] })
                     }
                     slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   />
@@ -103,8 +97,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                     value={filter.value?.[1] ? new Date(filter.value[1]) : null}
                     onChange={(date) =>
                       updateFilter(filter.id, {
-                        value: [filter.value?.[0] || '', date?.toISOString()],
-                      })
+                        value: [filter.value?.[0] || '', date?.toISOString()] })
                     }
                     slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   />
@@ -139,8 +132,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                   value={filter.value?.[0] || ''}
                   onChange={(e) =>
                     updateFilter(filter.id, {
-                      value: [e.target.value, filter.value?.[1] || ''],
-                    })
+                      value: [e.target.value, filter.value?.[1] || ''] })
                   }
                 />
               </Grid>
@@ -153,8 +145,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                   value={filter.value?.[1] || ''}
                   onChange={(e) =>
                     updateFilter(filter.id, {
-                      value: [filter.value?.[0] || '', e.target.value],
-                    })
+                      value: [filter.value?.[0] || '', e.target.value] })
                   }
                 />
               </Grid>
@@ -187,8 +178,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
               }
               onChange={(_, newValue) =>
                 updateFilter(filter.id, {
-                  value: newValue.map((v) => v.value),
-                })
+                  value: newValue.map((v) => v.value) })
               }
               renderInput={(params) => (
                 <TextField {...params} label="Values" size="small" />
@@ -257,8 +247,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
             borderRadius: 1,
             border: 1,
             borderColor: 'divider',
-            borderStyle: 'dashed',
-          }}
+            borderStyle: 'dashed' }}
         >
           <FilterIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
           <Typography variant="body2" color="text.secondary">
@@ -285,8 +274,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                             updateFilter(filter.id, {
                               field: e.target.value,
                               operator: 'equals',
-                              value: '',
-                            })
+                              value: '' })
                           }
                           label="Field"
                         >
@@ -335,8 +323,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                         display: 'block',
                         textAlign: 'center',
                         mt: 1,
-                        color: 'text.secondary',
-                      }}
+                        color: 'text.secondary' }}
                     >
                       AND
                     </Typography>

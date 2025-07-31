@@ -5,16 +5,10 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   TextField,
   Autocomplete,
-  Chip,
   Box,
-  Typography,
-} from '@mui/material';
+  Typography } from '@mui/material';
 import { User } from '@/types/auth';
 import { ChatUser } from '@/types/chat';
 import { modelApi } from '@/services/api/models';
@@ -39,7 +33,7 @@ export const FanAssignment = ({
   const { success, error } = useToast();
   const [selectedModel, setSelectedModel] = useState<User | null>(currentAssignee || null);
   const [models, setModels] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Load available models when dialog opens
@@ -119,12 +113,12 @@ export const FanAssignment = ({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Select Model"
+                label="Model"
                 placeholder="Search for a model..."
               />
             )}
-            loading={isLoading}
-            disabled={isLoading || isSaving}
+            loading={isPending}
+            disabled={isPending || isSaving}
           />
 
         </Box>

@@ -34,24 +34,18 @@ import {
   Grid,
   Divider,
   Tooltip,
-  LinearProgress,
-} from '@mui/material';
+  LinearProgress } from '@mui/material';
 import {
   Search as SearchIcon,
-  FilterList as FilterIcon,
-  MoreVert as MoreIcon,
+  FilterList as MoreIcon,
   PersonOff as DeactivateIcon,
   PersonAdd as ActivateIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
-  Group as GroupIcon,
-  Download as ExportIcon,
-  Upload as ImportIcon,
-  Assignment as AssignIcon,
+  Group as ExportIcon,
+  Upload as AssignIcon,
   CheckCircle as SuccessIcon,
-  Error as ErrorIcon,
-  Warning as WarningIcon,
-} from '@mui/icons-material';
+  Error as Warning } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { bulkOperationsService } from '@/services/api/bulkOperations';
@@ -87,14 +81,12 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
   const queryClient = useQueryClient();
 
   // Fetch users
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isPending } = useQuery({
     queryKey: ['users', role, filterRole, searchTerm],
     queryFn: () => userService.getUsers({
       role: role || filterRole || undefined,
       search: searchTerm || undefined,
-      limit: 100,
-    }),
-  });
+      limit: 100 }) });
 
   // Create bulk operation
   const createBulkOperation = useMutation({
@@ -109,8 +101,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Failed to start bulk operation');
-    },
-  });
+    } });
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -156,8 +147,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
       entity_type: 'users',
       entity_ids: selectedUsers,
       operation_params: bulkUpdateData,
-      notes: `Bulk ${bulkOperation} for ${selectedUsers.length} users`,
-    };
+      notes: `Bulk ${bulkOperation} for ${selectedUsers.length} users` };
 
     createBulkOperation.mutate(operationData);
   };
@@ -168,8 +158,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
       [UserRole.AGENCY_OWNER]: 'warning',
       [UserRole.AGENCY_ADMIN]: 'info',
       [UserRole.MODEL]: 'success',
-      [UserRole.CHATTER]: 'primary',
-    };
+      [UserRole.CHATTER]: 'primary' };
     return colors[role] || 'default';
   };
 
@@ -237,8 +226,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
       [BulkOperationType.USER_UPDATE]: 'Update Users',
       [BulkOperationType.USER_DELETE]: 'Delete Users',
       [BulkOperationType.MODEL_ASSIGN]: 'Assign Models',
-      [BulkOperationType.DATA_EXPORT]: 'Export Users',
-    };
+      [BulkOperationType.DATA_EXPORT]: 'Export Users' };
 
     return (
       <Dialog open={showBulkDialog} onClose={() => setShowBulkDialog(false)} maxWidth="sm" fullWidth>
@@ -345,7 +333,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
           <Button
             variant="contained"
             onClick={executeBulkOperation}
-            disabled={createBulkOperation.isLoading}
+            disabled={createBulkOperation.isPending}
             color={bulkOperation === BulkOperationType.USER_DELETE ? 'error' : 'primary'}
           >
             {bulkOperation === BulkOperationType.USER_DELETE ? 'Delete' : 'Confirm'}
@@ -386,8 +374,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
                     <InputAdornment position="start">
                       <SearchIcon />
                     </InputAdornment>
-                  ),
-                }}
+                  ) }}
               />
             </Grid>
             {!role && (
@@ -396,7 +383,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
                   <InputLabel>Filter by Role</InputLabel>
                   <Select
                     value={filterRole}
-                    onChange={(e) => setFilterRole(e.target.value as UserRole | '')}
+                    onChange={ (e) => setFilterRole(e.target.value as UserRole | '')       }
                     label="Filter by Role"
                   >
                     <MenuItem value="">All Roles</MenuItem>
@@ -437,7 +424,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {isLoading ? (
+                {isPending ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center">
                       <LinearProgress />
@@ -505,7 +492,7 @@ const BulkUserOperations: React.FC<BulkUserOperationsProps> = ({ role }) => {
                       <TableCell align="right">
                         <IconButton
                           size="small"
-                          onClick={(e) => setAnchorEl(e.currentTarget)}
+                          onClick={(event) => setAnchorEl(eevent.currentTarget)}
                         >
                           <MoreIcon />
                         </IconButton>

@@ -7,15 +7,12 @@ import {
   MenuItem,
   FormControlLabel,
   Switch,
-  Checkbox,
-  FormGroup,
   FormHelperText,
   Box,
   Typography,
   Rating,
   Chip,
-  OutlinedInput,
-} from '@mui/material';
+  OutlinedInput } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { CustomField, EntityType } from '@/types/customFields';
 import { useCustomFields } from '@/hooks/useCustomFields';
@@ -31,16 +28,14 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
   entityType,
   entityId,
   onSubmit,
-  readOnly = false,
-}) => {
+  readOnly = false }) => {
   const {
     fieldsBySection,
     values,
     updateValue,
     validateField,
     validateAll,
-    saveValues,
-  } = useCustomFields(entityType, entityId);
+    saveValues } = useCustomFields(entityType, entityId);
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
@@ -51,8 +46,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
     const error = validateField(field, value);
     setErrors(prev => ({
       ...prev,
-      [fieldId]: error || '',
-    }));
+      [fieldId]: error || '' }));
   };
 
   const handleSubmit = async () => {
@@ -80,7 +74,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             fullWidth
             label={field.label}
             value={value}
-            onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
+            onChange={() => handleFieldChange(field.id, .target.value, field)}
             placeholder={field.placeholder}
             required={field.required}
             error={Boolean(error)}
@@ -88,8 +82,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             disabled={readOnly}
             type={field.type === 'email' ? 'email' : field.type === 'url' ? 'url' : 'text'}
             InputProps={{
-              readOnly,
-            }}
+              readOnly }}
           />
         );
 
@@ -100,7 +93,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             fullWidth
             label={field.label}
             value={value}
-            onChange={(e) => handleFieldChange(field.id, Number(e.target.value), field)}
+            onChange={() => handleFieldChange(field.id, Number(.target.value), field)}
             placeholder={field.placeholder}
             required={field.required}
             error={Boolean(error)}
@@ -111,9 +104,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
               readOnly,
               inputProps: {
                 min: field.validation?.min,
-                max: field.validation?.max,
-              },
-            }}
+                max: field.validation?.max } }}
           />
         );
 
@@ -124,7 +115,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             fullWidth
             label={field.label}
             value={value}
-            onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
+            onChange={() => handleFieldChange(field.id, .target.value, field)}
             placeholder={field.placeholder}
             required={field.required}
             error={Boolean(error)}
@@ -133,8 +124,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             multiline
             rows={4}
             InputProps={{
-              readOnly,
-            }}
+              readOnly }}
           />
         );
 
@@ -145,7 +135,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             control={
               <Switch
                 checked={Boolean(value)}
-                onChange={(e) => handleFieldChange(field.id, e.target.checked, field)}
+                onChange={() => handleFieldChange(field.id, .target.checked, field)}
                 disabled={readOnly}
               />
             }
@@ -159,7 +149,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             <InputLabel>{field.label}</InputLabel>
             <Select
               value={value}
-              onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
+              onChange={() => handleFieldChange(field.id, .target.value, field)}
               label={field.label}
               disabled={readOnly}
               required={field.required}
@@ -180,14 +170,14 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             <InputLabel>{field.label}</InputLabel>
             <Select
               multiple
-              value={Array.isArray(value) ? value : []}
-              onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
+              value={Array.isArray(value) ? value documents: []}
+              onChange={() => handleFieldChange(field.id, .target.value, field)}
               input={<OutlinedInput label={field.label} />}
               renderValue={(selected) => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {(selected as string[]).map((val) => {
+                  { (selected as string[]).map((val) => {
                     const option = field.options?.find(opt => opt.value === val);
-                    return <Chip key={val} label={option?.label || val} size="small" />;
+                    return <Chip key={val            } label={option?.label || val} size="small" />;
                   })}
                 </Box>
               )}
@@ -217,9 +207,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
                 fullWidth: true,
                 required: field.required,
                 error: Boolean(error),
-                helperText: error || field.description,
-              },
-            }}
+                helperText: error || field.description } }}
           />
         );
 
@@ -236,9 +224,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
                 fullWidth: true,
                 required: field.required,
                 error: Boolean(error),
-                helperText: error || field.description,
-              },
-            }}
+                helperText: error || field.description } }}
           />
         );
 
@@ -248,7 +234,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             <Typography component="legend">{field.label}</Typography>
             <Rating
               value={Number(value) || 0}
-              onChange={(e, newValue) => handleFieldChange(field.id, newValue, field)}
+              onChange={(newValue) => handleFieldChange(field.id, newValue, field)}
               disabled={readOnly}
               max={field.validation?.max || 5}
             />
@@ -269,13 +255,12 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             <input
               type="color"
               value={value || '#000000'}
-              onChange={(e) => handleFieldChange(field.id, e.target.value, field)}
+              onChange={() => handleFieldChange(field.id, .target.value, field)}
               disabled={readOnly}
               style={{
                 width: '100%',
                 height: 40,
-                cursor: readOnly ? 'not-allowed' : 'pointer',
-              }}
+                cursor: readOnly ? 'not-allowed' : 'pointer' }}
             />
             {(error || field.description) && (
               <FormHelperText error={Boolean(error)}>
@@ -293,8 +278,8 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
             </Typography>
             <input
               type="file"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
+              onChange={() => {
+                const file = .target.files?.[0];
                 if (file) {
                   handleFieldChange(field.id, file, field);
                 }
@@ -302,8 +287,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
               disabled={readOnly}
               style={{
                 width: '100%',
-                padding: '8px 0',
-              }}
+                padding: '8px 0' }}
             />
             {(error || field.description) && (
               <FormHelperText error={Boolean(error)}>

@@ -6,25 +6,16 @@ import {
   Paper,
   TextField,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Switch,
   FormControlLabel,
   Slider,
   IconButton,
-  Tooltip,
-  Chip,
-} from '@mui/material';
+  Chip } from '@mui/material';
 import {
-  Palette,
   Brightness4,
   Brightness7,
-  FormatColorFill,
   RestartAlt,
-  ContentCopy,
-} from '@mui/icons-material';
+  ContentCopy } from '@mui/icons-material';
 import { HexColorPicker } from 'react-colorful';
 import { useTheme } from '@mui/material/styles';
 
@@ -33,7 +24,7 @@ interface ThemeCustomizerProps {
 }
 
 export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
-  const theme = useTheme();
+  const = useTheme();
   const [darkMode, setDarkMode] = useState(false);
   const [colors, setColors] = useState({
     primary: '#1976d2',
@@ -44,8 +35,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
     info: '#0288d1',
     background: '#ffffff',
     surface: '#f5f5f5',
-    text: '#000000',
-  });
+    text: '#000000' });
   const [borderRadius, setBorderRadius] = useState(8);
   const [elevation, setElevation] = useState(1);
   const [showColorPicker, setShowColorPicker] = useState<string | null>(null);
@@ -70,8 +60,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
       info: '#0288d1',
       background: '#ffffff',
       surface: '#f5f5f5',
-      text: '#000000',
-    });
+      text: '#000000' });
     setBorderRadius(8);
     setElevation(1);
     onChange();
@@ -101,8 +90,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
                   Theme Mode
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Choose between light and dark theme
-                </Typography>
+                  Choose between light and dark </Typography>
               </Box>
               <FormControlLabel
                 control={
@@ -134,8 +122,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
                     setColors(prev => ({
                       ...prev,
                       primary: preset.primary,
-                      secondary: preset.secondary,
-                    }));
+                      secondary: preset.secondary }));
                     onChange();
                   }}
                   sx={{
@@ -143,9 +130,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
                     color: preset.primary,
                     '&:hover': {
                       backgroundColor: preset.primary,
-                      color: 'white',
-                    },
-                  }}
+                      color: 'white' } }}
                 >
                   {preset.name}
                 </Button>
@@ -154,13 +139,12 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
           </Paper>
         </Grid>
 
-        {/* Color Palette */}
+        {/* Color */}
         <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
               <Typography variant="h6">
-                Color Palette
-              </Typography>
+                Color </Typography>
               <Button
                 startIcon={<RestartAlt />}
                 onClick={handleReset}
@@ -182,8 +166,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
                         borderRadius: 1,
                         border: 1,
                         borderColor: 'divider',
-                        cursor: 'pointer',
-                      }}
+                        cursor: 'pointer' }}
                       onClick={() => setShowColorPicker(showColorPicker === key ? null : key)}
                     />
                     <Box sx={{ flexGrow: 1 }}>
@@ -225,10 +208,10 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
             <Box sx={{ px: 2 }}>
               <Slider
                 value={borderRadius}
-                onChange={(e, value) => {
+                onChange={ (value) => {
                   setBorderRadius(value as number);
                   onChange();
-                }}
+                 }}
                 min={0}
                 max={24}
                 marks
@@ -260,10 +243,10 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
             <Box sx={{ px: 2 }}>
               <Slider
                 value={elevation}
-                onChange={(e, value) => {
+                onChange={ (value) => {
                   setElevation(value as number);
                   onChange();
-                }}
+                 }}
                 min={0}
                 max={24}
                 marks
@@ -281,8 +264,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
+                    cursor: 'pointer' }}
                   onClick={() => {
                     setElevation(elev);
                     onChange();
@@ -320,8 +302,7 @@ export const ThemeCustomizer = ({ onChange }: ThemeCustomizerProps) => {
                       <ContentCopy />
                     </IconButton>
                   </InputAdornment>
-                ),
-              }}
+                ) }}
             />
           </Paper>
         </Grid>

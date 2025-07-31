@@ -8,7 +8,6 @@ import {
   Button,
   Grid,
   Switch,
-  FormControlLabel,
   Divider,
   Alert,
   Tab,
@@ -24,22 +23,17 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  MenuItem,
-} from '@mui/material';
+  MenuItem } from '@mui/material';
 import {
   Business,
   Edit,
   Save,
   Cancel,
-  Add,
   Delete,
   PersonAdd,
-  Settings,
   Payment,
   People,
-  Email,
-  Link,
-} from '@mui/icons-material';
+  Link } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -51,14 +45,12 @@ const agencySchema = z.object({
   phone: z.string().optional(),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
   address: z.string().optional(),
-  description: z.string().max(500, 'Description must be less than 500 characters').optional(),
-});
+  description: z.string().max(500, 'Description must be less than 500 characters').optional() });
 
 const inviteSchema = z.object({
   email: z.string().email('Invalid email address'),
   role: z.enum(['agency_admin', 'model', 'chatter']),
-  message: z.string().optional(),
-});
+  message: z.string().optional() });
 
 type AgencyFormData = z.infer<typeof agencySchema>;
 type InviteFormData = z.infer<typeof inviteSchema>;
@@ -91,15 +83,13 @@ const AgencySettingsPage = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [apiKeys, setApiKeys] = useState({
     onlyFansApiEnabled: false,
-    inflowApiEnabled: false,
-  });
+    inflowApiEnabled: false });
 
   const {
     register: registerAgency,
     handleSubmit: handleAgencySubmit,
     formState: { errors: agencyErrors },
-    reset: resetAgency,
-  } = useForm<AgencyFormData>({
+    reset: resetAgency } = useForm<AgencyFormData>({
     resolver: zodResolver(agencySchema),
     defaultValues: {
       name: 'Premium Marketing Agency',
@@ -107,18 +97,14 @@ const AgencySettingsPage = () => {
       phone: '+1 234 567 8900',
       website: 'https://agency.com',
       address: '123 Business St, New York, NY 10001',
-      description: 'Leading OnlyFans marketing agency specializing in growth and monetization.',
-    },
-  });
+      description: 'Leading OnlyFans marketing agency specializing in growth and monetization.' } });
 
   const {
     register: registerInvite,
     handleSubmit: handleInviteSubmit,
     formState: { errors: inviteErrors },
-    reset: resetInvite,
-  } = useForm<InviteFormData>({
-    resolver: zodResolver(inviteSchema),
-  });
+    reset: resetInvite } = useForm<InviteFormData>({
+    resolver: zodResolver(inviteSchema) });
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
@@ -138,8 +124,7 @@ const AgencySettingsPage = () => {
   const handleApiKeyToggle = (key: keyof typeof apiKeys) => {
     setApiKeys(prev => ({
       ...prev,
-      [key]: !prev[key],
-    }));
+      [key]: !prev[key] }));
   };
 
   // Mock data
@@ -168,8 +153,7 @@ const AgencySettingsPage = () => {
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 3 }}>
-        Agency Settings
-      </Typography>
+        Agency </Typography>
 
       <Card>
         <Tabs value={tab} onChange={handleTabChange}>
@@ -224,7 +208,7 @@ const AgencySettingsPage = () => {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Contact Email"
+                    label="Contact "
                     {...registerAgency('email')}
                     error={!!agencyErrors.email}
                     helperText={agencyErrors.email?.message}
@@ -279,8 +263,7 @@ const AgencySettingsPage = () => {
             <Divider sx={{ my: 3 }} />
 
             <Typography variant="h6" gutterBottom>
-              Agency Settings
-            </Typography>
+              Agency </Typography>
             <List>
               <ListItem>
                 <ListItemText
@@ -536,7 +519,7 @@ const AgencySettingsPage = () => {
             <Box display="flex" flexDirection="column" gap={2} pt={1}>
               <TextField
                 fullWidth
-                label="Email Address"
+                label="Address"
                 {...registerInvite('email')}
                 error={!!inviteErrors.email}
                 helperText={inviteErrors.email?.message}

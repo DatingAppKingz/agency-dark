@@ -13,19 +13,14 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Avatar,
-  AvatarGroup,
-} from '@mui/material';
+  Avatar } from '@mui/material';
 import {
   TrendingUp,
-  TrendingDown,
   People,
   AttachMoney,
   Star,
-  Schedule,
-} from '@mui/icons-material';
+  Schedule } from '@mui/icons-material';
 import {
-  LineChart,
   Line,
   AreaChart,
   Area,
@@ -41,8 +36,7 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  Radar,
-} from 'recharts';
+  Radar } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
@@ -55,7 +49,7 @@ interface AgencyAnalyticsProps {
 }
 
 export const AgencyAnalytics = ({ dateRange, refreshKey }: AgencyAnalyticsProps) => {
-  const { data: analyticsData, isLoading } = useQuery({
+  const { data: analyticsData, isPending } = useQuery({
     queryKey: ['agency-analytics', dateRange, refreshKey],
     queryFn: async () => {
       // Simulated API call
@@ -68,13 +62,11 @@ export const AgencyAnalytics = ({ dateRange, refreshKey }: AgencyAnalyticsProps)
           totalChatters: 15,
           avgResponseTime: 2.5,
           commissionEarned: 25500,
-          conversionRate: 68.5,
-        },
+          conversionRate: 68.5 },
         revenueChart: Array.from({ length: 30 }, (_, i) => ({
           date: format(new Date(2024, 0, i + 1), 'MMM d'),
           revenue: Math.floor(Math.random() * 3000) + 2000,
-          commission: Math.floor(Math.random() * 900) + 600,
-        })),
+          commission: Math.floor(Math.random() * 900) + 600 })),
         modelPerformance: [
           { 
             name: 'Emma Johnson', 
@@ -125,8 +117,7 @@ export const AgencyAnalytics = ({ dateRange, refreshKey }: AgencyAnalyticsProps)
         chatterPerformance: Array.from({ length: 7 }, (_, i) => ({
           day: format(new Date(2024, 0, i + 1), 'EEE'),
           messages: Math.floor(Math.random() * 500) + 300,
-          responseTime: Math.random() * 2 + 1,
-        })),
+          responseTime: Math.random() * 2 + 1 })),
         performanceMetrics: [
           { metric: 'Response Rate', value: 85, benchmark: 80 },
           { metric: 'Conversion', value: 68, benchmark: 65 },
@@ -134,12 +125,10 @@ export const AgencyAnalytics = ({ dateRange, refreshKey }: AgencyAnalyticsProps)
           { metric: 'Satisfaction', value: 92, benchmark: 85 },
           { metric: 'Growth', value: 78, benchmark: 75 },
           { metric: 'Efficiency', value: 82, benchmark: 80 },
-        ],
-      };
-    },
-  });
+        ] };
+    } });
 
-  if (isLoading) {
+  if (isPending) {
     return <LinearProgress />;
   }
 

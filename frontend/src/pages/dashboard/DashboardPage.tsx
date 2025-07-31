@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Grid, Box, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { ViewModule, Dashboard } from '@mui/icons-material';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types/auth';
@@ -62,7 +62,7 @@ const DashboardPage = () => {
         <ToggleButtonGroup
           value={viewMode}
           exclusive
-          onChange={(e, newMode) => newMode && setViewMode(newMode)}
+          onChange={(newMode) => newMode && setViewMode(newMode)}
           size="small"
         >
           <ToggleButton value="classic">

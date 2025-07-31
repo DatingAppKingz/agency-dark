@@ -1,0 +1,111 @@
+{{ define "agencydark.title" }}
+[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.alertname }}
+{{ end }}
+
+{{ define "agencydark.text" }}
+{{ range .Alerts }}
+*Alert:* {{ .Labels.alertname }} - {{ .Labels.severity | toUpper }}
+*Instance:* {{ .Labels.instance }}
+*Summary:* {{ .Annotations.summary }}
+*Description:* {{ .Annotations.description }}
+*Started:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+{{ if .Labels.runbook_url }}*Runbook:* <{{ .Labels.runbook_url }}|View Runbook>{{ end }}
+{{ if .Labels.dashboard_url }}*Dashboard:* <{{ .Labels.dashboard_url }}|View Dashboard>{{ end }}
+
+*Labels:*
+{{ range .Labels.SortedPairs }}  • {{ .Name }}: {{ .Value }}
+{{ end }}
+{{ end }}
+{{ end }}
+
+{{ define "agencydark.html" }}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .alert { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .critical { border-color: #f44336; background-color: #ffebee; }
+        .warning { border-color: #ff9800; background-color: #fff3e0; }
+        .info { border-color: #2196f3; background-color: #e3f2fd; }
+        .resolved { border-color: #4caf50; background-color: #e8f5e9; }
+        .label { display: inline-block; padding: 2px 6px; margin: 2px; background: #e0e0e0; border-radius: 3px; font-size: 12px; }
+        h2 { margin: 0 0 10px 0; }
+        .metadata { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>AgencyDark Alert Notification</h1>
+    
+    {{ range .Alerts }}
+    <div class="alert {{ .Labels.severity }}{{ if eq .Status "resolved" }} resolved{{ end }}">
+        <h2>{{ .Labels.alertname }}</h2>
+        <p><strong>Status:</strong> {{ .Status | toUpper }}</p>
+        <p><strong>Summary:</strong> {{ .Annotations.summary }}</p>
+        <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+        
+        <div class="metadata">
+            <p><strong>Instance:</strong> {{ .Labels.instance }}</p>
+            <p><strong>Started:</strong> {{ .StartsAt.Format "2006-01-02 15:04:05" }}</p>
+            {{ if ne .Status "firing" }}
+            <p><strong>Ended:</strong> {{ .EndsAt.Format "2006-01-02 15:04:05" }}</p>
+            {{ end }}
+        </div>
+        
+        {{ if .Labels.runbook_url }}
+        <p><a href="{{ .Labels.runbook_url }}">📚 View Runbook</a></p>
+        {{ end }}
+        
+        {{ if .Labels.dashboard_url }}
+        <p><a href="{{ .Labels.dashboard_url }}">📊 View Dashboard</a></p>
+        {{ end }}
+        
+        <div>
+            <strong>Labels:</strong>
+            {{ range .Labels.SortedPairs }}
+            <span class="label">{{ .Name }}: {{ .Value }}</span>
+            {{ end }}
+        </div>
+    </div>
+    {{ end }}
+    
+    <hr>
+    <p style="color: #666; font-size: 12px;">
+        This is an automated alert from AgencyDark monitoring system. 
+        For help, contact the on-call engineer or visit our 
+        <a href="https://docs.agencydark.com/monitoring">monitoring documentation</a>.
+    </p>
+</body>
+</html>
+{{ end }}
+
+{{ define "agencydark.pagerduty.description" }}
+{{ .GroupLabels.alertname }}: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}
+{{ end }}
+
+{{ define "agencydark.webhook.payload" }}
+{
+  "version": "4",
+  "groupKey": "{{ .GroupKey }}",
+  "status": "{{ .Status }}",
+  "receiver": "{{ .Receiver }}",
+  "groupLabels": {{ .GroupLabels | toJSON }},
+  "commonLabels": {{ .CommonLabels | toJSON }},
+  "commonAnnotations": {{ .CommonAnnotations | toJSON }},
+  "externalURL": "{{ .ExternalURL }}",
+  "alerts": [
+    {{ range $index, $alert := .Alerts }}
+    {{- if $index }},{{ end }}
+    {
+      "status": "{{ $alert.Status }}",
+      "labels": {{ $alert.Labels | toJSON }},
+      "annotations": {{ $alert.Annotations | toJSON }},
+      "startsAt": "{{ $alert.StartsAt }}",
+      "endsAt": "{{ $alert.EndsAt }}",
+      "generatorURL": "{{ $alert.GeneratorURL }}",
+      "fingerprint": "{{ $alert.Fingerprint }}"
+    }
+    {{- end }}
+  ]
+}
+{{ end }}

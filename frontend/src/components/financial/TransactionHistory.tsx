@@ -14,24 +14,18 @@ import {
   TableRow,
   TablePagination,
   Chip,
-  IconButton,
-  Tooltip,
   CircularProgress,
   InputAdornment,
   Button,
-  Menu,
-} from '@mui/material';
+  Menu } from '@mui/material';
 import {
   Search,
-  FilterList,
   Download,
-  MoreVert,
   TrendingUp,
   TrendingDown,
   SwapHoriz,
   Receipt,
-  Description,
-} from '@mui/icons-material';
+  Description } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -56,7 +50,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
 
-  const { data: transactions, isLoading } = useQuery({
+  const { data: transactions, isPending } = useQuery({
     queryKey: ['transactions', page, rowsPerPage, typeFilter, statusFilter, searchTerm, startDate, endDate, modelId, agencyId],
     queryFn: () => financialApi.getTransactions({
       page: page + 1,
@@ -67,9 +61,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
       start_date: startDate?.toISOString(),
       end_date: endDate?.toISOString(),
       model_id: modelId,
-      agency_id: agencyId,
-    }),
-  });
+      agency_id: agencyId }) });
 
   const getTypeIcon = (type: Transaction['type']) => {
     switch (type) {
@@ -119,8 +111,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
   const formatCurrency = (amount: number, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency,
-    }).format(amount);
+      currency }).format(amount);
   };
 
   const formatDate = (date: string) => {
@@ -129,8 +120,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
-    });
+      minute: '2-digit' });
   };
 
   const handleExport = async (format: 'csv' | 'pdf') => {
@@ -143,12 +133,10 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
         end_date: endDate?.toISOString(),
         model_id: modelId,
         agency_id: agencyId,
-        format,
-      });
+        format });
 
       const blob = new Blob([response.data], {
-        type: format === 'csv' ? 'text/csv' : 'application/pdf',
-      });
+        type: format === 'csv' ? 'text/csv' : 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -178,7 +166,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
           <Button
             variant="outlined"
             startIcon={<Download />}
-            onClick={(e) => setMenuAnchor(e.currentTarget)}
+            onClick={(event) => setMenuAnchor(eevent.currentTarget)}
           >
             Export
           </Button>
@@ -207,8 +195,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
                   <InputAdornment position="start">
                     <Search />
                   </InputAdornment>
-                ),
-              }}
+                ) }}
             />
             <TextField
               select
@@ -271,7 +258,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
                 </TableRow>
               </TableHead>
               <TableBody>
-                {isLoading ? (
+                {isPending ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center">
                       <CircularProgress size={40} />
@@ -295,8 +282,7 @@ export const TransactionHistory = ({ modelId, agencyId }: TransactionHistoryProp
                             sx={{
                               color: `${getTypeColor(transaction.type)}.main`,
                               display: 'flex',
-                              alignItems: 'center',
-                            }}
+                              alignItems: 'center' }}
                           >
                             {getTypeIcon(transaction.type)}
                           </Box>

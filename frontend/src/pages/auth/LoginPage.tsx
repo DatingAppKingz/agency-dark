@@ -27,7 +27,7 @@ const loginSchema = z.object({
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading } = useAuthStore();
+  const { login, isPending } = useAuthStore();
   const { success, error } = useToast();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -119,10 +119,10 @@ const LoginPage = () => {
           fullWidth
           variant="contained"
           size="large"
-          disabled={isLoading}
+          disabled={isPending}
           sx={{ mb: 2 }}
         >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          {isPending ? 'Signing in...' : 'Sign In'}
         </Button>
 
         <Box sx={{ textAlign: 'center' }}>
