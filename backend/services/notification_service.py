@@ -11,6 +11,7 @@ import aiosmtplib
 from twilio.rest import Client as TwilioClient
 from jinja2 import Template, Environment, meta
 import pytz
+import httpx
 
 from core.config import settings
 from core.logger import get_logger
@@ -21,6 +22,15 @@ from models.notification import (
 )
 from models.user import User
 from schemas.notification import NotificationCreate, BulkNotificationCreate
+from services.exceptions import (
+    NotificationException,
+    EmailDeliveryException,
+    SMSDeliveryException,
+    PushNotificationException,
+    InvalidNotificationTokenException,
+    WebhookDeliveryException,
+    TemplateProcessingException
+)
 
 logger = get_logger(__name__)
 
@@ -218,8 +228,12 @@ class NotificationService:
                 logger.info(f"Email sent successfully to {notification.email}")
                 return True
                 
+        except aiosmtplib.SMTPException as e:
+            logger.error(f"SMTP error sending email: {e}", extra={"error_type": "SMTPException"})
+            notification.error_message = f"SMTP error: {str(e)}"
+            return False
         except Exception as e:
-            logger.error(f"Error sending email: {e}")
+            logger.error(f"Unexpected error sending email: {e}", extra={"error_type": type(e).__name__})
             notification.error_message = str(e)
             return False
     
@@ -248,8 +262,13 @@ class NotificationService:
             return True
             
         except Exception as e:
-            logger.error(f"Error sending SMS: {e}")
-            notification.error_message = str(e)
+            error_type = type(e).__name__
+            if "TwilioException" in error_type or "TwilioRestException" in error_type:
+                logger.error(f"Twilio error sending SMS: {e}", extra={"error_type": error_type})
+                notification.error_message = f"Twilio error: {str(e)}"
+            else:
+                logger.error(f"Unexpected error sending SMS: {e}", extra={"error_type": error_type})
+                notification.error_message = str(e)
             return False
     
     async def _send_push(self, notification: Notification) -> bool:
@@ -292,7 +311,10 @@ class NotificationService:
             return success_count > 0
             
         except Exception as e:
-            logger.error(f"Error sending push notification: {e}")
+            logger.error(f"Error sending push notification: {e}", extra={
+                "error_type": type(e).__name__,
+                "user_id": str(notification.user_id)
+            })
             notification.error_message = str(e)
             return False
     
@@ -364,12 +386,20 @@ class NotificationService:
             return True
             
         except Exception as e:
-            logger.error(f"FCM notification failed: {e}")
+            error_str = str(e)
+            error_type = type(e).__name__
             
-            # Handle invalid token
-            if 'registration-token-not-registered' in str(e):
+            # Handle specific FCM errors
+            if 'registration-token-not-registered' in error_str:
                 token.is_active = False
-                logger.info(f"Deactivated invalid FCM token: {token.id}")
+                logger.warning(f"Deactivated invalid FCM token: {token.id}", extra={
+                    "error_type": "InvalidToken",
+                    "token_id": str(token.id)
+                })
+            elif 'message-rate-exceeded' in error_str:
+                logger.error(f"FCM rate limit exceeded: {e}", extra={"error_type": "RateLimit"})
+            else:
+                logger.error(f"FCM notification failed: {e}", extra={"error_type": error_type})
             
             return False
     
@@ -441,7 +471,19 @@ class NotificationService:
                 return False
                 
         except Exception as e:
-            logger.error(f"APNS notification failed: {e}")
+            error_type = type(e).__name__
+            error_str = str(e)
+            
+            # Handle specific APNS errors
+            if 'BadDeviceToken' in error_str or 'Unregistered' in error_str:
+                token.is_active = False
+                logger.warning(f"Deactivated invalid APNS token: {token.id}", extra={
+                    "error_type": "InvalidToken",
+                    "token_id": str(token.id)
+                })
+            else:
+                logger.error(f"APNS notification failed: {e}", extra={"error_type": error_type})
+            
             return False
     
     async def _send_web_push_notification(self, notification: Notification, token: 'UserPushToken') -> bool:
@@ -532,7 +574,10 @@ class NotificationService:
             return True
             
         except Exception as e:
-            logger.error(f"Error sending in-app notification: {e}")
+            logger.error(f"Error sending in-app notification: {e}", extra={
+                "error_type": type(e).__name__,
+                "user_id": str(notification.user_id)
+            })
             notification.error_message = str(e)
             return False
     
@@ -568,8 +613,26 @@ class NotificationService:
                         notification.error_message = f"Webhook returned status {response.status}"
                         return False
                         
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP error sending webhook to {webhook_url}: {e}", extra={
+                "error_type": "HTTPStatusError",
+                "status_code": e.response.status_code,
+                "url": webhook_url
+            })
+            notification.error_message = f"HTTP {e.response.status_code}: {str(e)}"
+            return False
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout sending webhook to {webhook_url}: {e}", extra={
+                "error_type": "TimeoutException",
+                "url": webhook_url
+            })
+            notification.error_message = f"Webhook timeout: {str(e)}"
+            return False
         except Exception as e:
-            logger.error(f"Error sending webhook: {e}")
+            logger.error(f"Unexpected error sending webhook: {e}", extra={
+                "error_type": type(e).__name__,
+                "url": webhook_url
+            })
             notification.error_message = str(e)
             return False
     

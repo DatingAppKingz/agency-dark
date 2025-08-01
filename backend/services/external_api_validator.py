@@ -11,6 +11,7 @@ from core.config import settings
 from core.logger import get_logger
 from models.user import User
 from models.external_api import ExternalAPICredential, APIProvider
+from services.exceptions import APIValidationException, APIConnectionException
 
 logger = get_logger(__name__)
 

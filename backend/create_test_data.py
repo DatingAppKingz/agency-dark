@@ -3,6 +3,7 @@
 
 import asyncio
 import random
+import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 import uuid
@@ -49,7 +50,7 @@ async def create_models(session: AsyncSession, agency_id: uuid.UUID, num_models:
             id=uuid.uuid4(),
             agency_id=agency_id,
             email=f"model{i+1}@example.com",
-            hashed_password=get_password_hash("password123"),
+            hashed_password=get_password_hash(os.getenv("TEST_MODEL_PASSWORD", "password123")),
             full_name=fake.name(),
             role=UserRole.MODEL,
             is_active=True,
@@ -76,7 +77,7 @@ async def create_chatters(session: AsyncSession, agency_id: uuid.UUID, num_chatt
             id=uuid.uuid4(),
             agency_id=agency_id,
             email=f"chatter{i+1}@example.com",
-            hashed_password=get_password_hash("password123"),
+            hashed_password=get_password_hash(os.getenv("TEST_MODEL_PASSWORD", "password123")),
             full_name=fake.name(),
             role=UserRole.CHATTER,
             is_active=True,

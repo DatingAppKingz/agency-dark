@@ -15,6 +15,7 @@ from models.user import User, UserRole
 from models.agency import Agency
 from models.model import Model, ModelStatus, Platform
 from api.v1.endpoints.auth_simple import get_password_hash
+from seed_config import get_seed_config, SEED_USERS
 
 # Override DATABASE_URL to use the external port
 DATABASE_URL = os.getenv(
@@ -87,7 +88,7 @@ async def seed_data():
         super_admin = User(
             email="admin@agencydark.com",
             username="admin",
-            password_hash=get_password_hash("admin123"),
+            password_hash=get_password_hash(SEED_USERS["super_admin"]["password"]),
             first_name="Super",
             last_name="Admin",
             role=UserRole.SUPER_ADMIN,
@@ -100,7 +101,7 @@ async def seed_data():
         agency1_owner = User(
             email="owner@elitemodels.com",
             username="elite_owner",
-            password_hash=get_password_hash("owner123"),
+            password_hash=get_password_hash(SEED_USERS["agency_owner"]["password"]),
             first_name="John",
             last_name="Elite",
             role=UserRole.AGENCY_OWNER,
@@ -112,7 +113,7 @@ async def seed_data():
         agency2_owner = User(
             email="owner@premiumcreators.com",
             username="premium_owner",
-            password_hash=get_password_hash("owner123"),
+            password_hash=get_password_hash(SEED_USERS["agency_owner"]["password"]),
             first_name="Jane",
             last_name="Premium",
             role=UserRole.AGENCY_OWNER,
@@ -125,7 +126,7 @@ async def seed_data():
         agency1_admin = User(
             email="admin@elitemodels.com",
             username="elite_admin",
-            password_hash=get_password_hash("admin123"),
+            password_hash=get_password_hash(SEED_USERS["super_admin"]["password"]),
             first_name="Admin",
             last_name="Elite",
             role=UserRole.AGENCY_ADMIN,
@@ -138,7 +139,7 @@ async def seed_data():
         model1_user = User(
             email="sarah@elitemodels.com",
             username="sarah_model",
-            password_hash=get_password_hash("model123"),
+            password_hash=get_password_hash(SEED_USERS["model"]["password"]),
             first_name="Sarah",
             last_name="Johnson",
             role=UserRole.MODEL,
@@ -150,7 +151,7 @@ async def seed_data():
         model2_user = User(
             email="emma@elitemodels.com",
             username="emma_model",
-            password_hash=get_password_hash("model123"),
+            password_hash=get_password_hash(SEED_USERS["model"]["password"]),
             first_name="Emma",
             last_name="Wilson",
             role=UserRole.MODEL,
@@ -162,7 +163,7 @@ async def seed_data():
         model3_user = User(
             email="olivia@premiumcreators.com",
             username="olivia_model",
-            password_hash=get_password_hash("model123"),
+            password_hash=get_password_hash(SEED_USERS["model"]["password"]),
             first_name="Olivia",
             last_name="Brown",
             role=UserRole.MODEL,
@@ -175,7 +176,7 @@ async def seed_data():
         chatter1 = User(
             email="mike@elitemodels.com",
             username="mike_chatter",
-            password_hash=get_password_hash("chatter123"),
+            password_hash=get_password_hash(SEED_USERS["chatter"]["password"]),
             first_name="Mike",
             last_name="Davis",
             role=UserRole.CHATTER,
@@ -187,7 +188,7 @@ async def seed_data():
         chatter2 = User(
             email="lisa@elitemodels.com",
             username="lisa_chatter",
-            password_hash=get_password_hash("chatter123"),
+            password_hash=get_password_hash(SEED_USERS["chatter"]["password"]),
             first_name="Lisa",
             last_name="Garcia",
             role=UserRole.CHATTER,
@@ -272,23 +273,29 @@ async def seed_data():
         await db.commit()
         
         print("\nInitial data seeded successfully!")
-        print("\nTest Accounts:")
-        print("==============\n")
-        print("Super Admin:")
-        print("  Email: admin@agencydark.com")
-        print("  Password: admin123\n")
         
-        print("Agency Owner (Elite Models):")
-        print("  Email: owner@elitemodels.com")
-        print("  Password: owner123\n")
-        
-        print("Model (Sarah):")
-        print("  Email: sarah@elitemodels.com")
-        print("  Password: model123\n")
-        
-        print("Chatter (Mike):")
-        print("  Email: mike@elitemodels.com")
-        print("  Password: chatter123\n")
+        # Only show test accounts in development
+        config = get_seed_config()
+        if config["environment"] == "development":
+            print("\nTest Accounts (DEVELOPMENT ONLY):")
+            print("=================================\n")
+            print("Super Admin:")
+            print(f"  Email: {SEED_USERS['super_admin']['email']}")
+            print("  Password: [Set via SEED_ADMIN_PASSWORD env var]\n")
+            
+            print("Agency Owner (Elite Models):")
+            print(f"  Email: {SEED_USERS['agency_owner']['email']}")
+            print("  Password: [Set via SEED_OWNER_PASSWORD env var]\n")
+            
+            print("Model (Sarah):")
+            print(f"  Email: {SEED_USERS['model']['email']}")
+            print("  Password: [Set via SEED_MODEL_PASSWORD env var]\n")
+            
+            print("Chatter (Mike):")
+            print(f"  Email: {SEED_USERS['chatter']['email']}")
+            print("  Password: [Set via SEED_CHATTER_PASSWORD env var]\n")
+        else:
+            print("\nRunning in production mode - test account details hidden.")
     
     await engine.dispose()
 
