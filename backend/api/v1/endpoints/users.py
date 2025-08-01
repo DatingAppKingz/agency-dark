@@ -5,10 +5,11 @@ from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_, or_, func
+from sqlalchemy.orm import selectinload
 from core.database import get_db
 from core.auth import get_current_user
-from core.domain.models import User, UserRole
+from models.user import User, UserRole
 from api.v1.dependencies import check_permissions
 from pydantic import BaseModel
 from datetime import datetime
@@ -62,8 +63,8 @@ async def list_users(
     - Models can only see themselves
     - Chatters can only see models they're assigned to
     """
-    # Build base query
-    query = select(User)
+    # Build base query with model profile eager loading
+    query = select(User).options(selectinload(User.model_profile))
     
     # Apply permission filters
     if current_user.role == UserRole.SUPER_ADMIN:
@@ -100,8 +101,8 @@ async def list_users(
         query = query.where(search_filter)
     
     # Count total results
-    count_query = select(User.id).select_from(query.subquery())
-    total_result = await db.execute(count_query.with_only_columns(select(count_query.alias().count())))
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
     
     # Apply pagination
@@ -120,14 +121,14 @@ async def list_users(
             agency_id=user.agency_id,
             email=user.email,
             full_name=user.full_name,
-            username=getattr(user, 'username', None),
-            stage_name=getattr(user, 'stage_name', user.full_name),
+            username=user.username,
+            stage_name=user.model_profile.stage_name if user.model_profile else user.full_name,
             role=user.role,
             is_active=user.is_active,
             is_verified=user.is_verified,
-            last_login=user.last_login,
+            last_login=user.last_login_at,
             created_at=user.created_at,
-            avatar_url=getattr(user, 'avatar_url', None)
+            avatar_url=user.avatar_url
         )
         user_list.append(user_data)
     
@@ -162,8 +163,8 @@ async def list_model_users(
             detail="Insufficient permissions to list models"
         )
     
-    # Build query
-    query = select(User).where(User.role == UserRole.MODEL)
+    # Build query with model profile eager loading
+    query = select(User).options(selectinload(User.model_profile)).where(User.role == UserRole.MODEL)
     
     # Apply agency filter based on user role
     if current_user.role != UserRole.SUPER_ADMIN:
@@ -185,14 +186,14 @@ async def list_model_users(
             agency_id=model.agency_id,
             email=model.email,
             full_name=model.full_name,
-            username=getattr(model, 'username', None),
-            stage_name=getattr(model, 'stage_name', model.full_name),
+            username=model.username,
+            stage_name=model.model_profile.stage_name if model.model_profile else model.full_name,
             role=model.role,
             is_active=model.is_active,
             is_verified=model.is_verified,
-            last_login=model.last_login,
+            last_login=model.last_login_at,
             created_at=model.created_at,
-            avatar_url=getattr(model, 'avatar_url', None)
+            avatar_url=model.avatar_url
         )
         for model in models
     ]
