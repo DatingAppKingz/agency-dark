@@ -73,6 +73,9 @@ class Agency(BaseModel):
     # Invoices
     invoices = relationship("Invoice", back_populates="agency", cascade="all, delete-orphan")
     
+    # Search
+    saved_searches = relationship("SavedSearch", back_populates="agency", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<Agency {self.name}>"
     

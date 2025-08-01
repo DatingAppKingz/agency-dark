@@ -125,6 +125,12 @@ class Settings(BaseSettings):
     CELERY_TASK_EAGER_PROPAGATES: bool = Field(True, env="CELERY_TASK_EAGER_PROPAGATES")
     TIMEZONE: str = Field("UTC", env="TIMEZONE")
     
+    # Elasticsearch configuration
+    ELASTICSEARCH_URL: str = Field("http://localhost:9200", env="ELASTICSEARCH_URL")
+    ELASTICSEARCH_USER: Optional[str] = Field(None, env="ELASTICSEARCH_USER")
+    ELASTICSEARCH_PASSWORD: Optional[str] = Field(None, env="ELASTICSEARCH_PASSWORD")
+    ELASTICSEARCH_VERIFY_CERTS: bool = Field(True, env="ELASTICSEARCH_VERIFY_CERTS")
+    
     # AWS S3 configuration for media storage
     AWS_ACCESS_KEY_ID: Optional[str] = Field(None, env="AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY: Optional[str] = Field(None, env="AWS_SECRET_ACCESS_KEY")

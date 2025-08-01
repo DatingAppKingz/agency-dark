@@ -50,6 +50,7 @@ celery_app.conf.update(
         Queue("media", Exchange("media"), routing_key="media"),
         Queue("export", Exchange("export"), routing_key="export"),
         Queue("long_running", Exchange("long_running"), routing_key="long_running"),
+        Queue("search", Exchange("search"), routing_key="search"),
     ),
     
     # Route tasks to specific queues
@@ -61,6 +62,7 @@ celery_app.conf.update(
         "tasks.media_tasks.*": {"queue": "media"},
         "tasks.export_tasks.*": {"queue": "export"},
         "tasks.maintenance_tasks.*": {"queue": "long_running"},
+        "tasks.search_tasks.*": {"queue": "search"},
     },
     
     # Beat schedule for periodic tasks

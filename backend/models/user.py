@@ -72,6 +72,9 @@ class User(BaseModel):
     # Performance metrics (for chatters)
     performance_metrics = relationship("ChatterPerformance", back_populates="chatter", cascade="all, delete-orphan")
     
+    # Search
+    saved_searches = relationship("SavedSearch", back_populates="user", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<User {self.email}>"
     
