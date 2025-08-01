@@ -19,6 +19,10 @@ from models.financial import (
 )
 from models.chat import Conversation as Chat
 from api.v1.endpoints.auth_simple import get_current_user
+from core.errors import NotFoundError, AuthorizationError, ValidationError as AppValidationError
+from core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 router = APIRouter()
@@ -126,11 +130,11 @@ async def verify_model_access(model_id: int, user: User, db: AsyncSession) -> Mo
         elif user.agency_id:
             stmt = stmt.where(Model.agency_id == user.agency_id)
         else:
-            raise HTTPException(status_code=403, detail="Access denied")
+            raise AuthorizationError("Access denied to model information")
     
     model = await db.scalar(stmt)
     if not model:
-        raise HTTPException(status_code=404, detail="Model not found")
+        raise NotFoundError("Model", model_id)
     
     return model
 

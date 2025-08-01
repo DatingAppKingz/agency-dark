@@ -16,6 +16,10 @@ from models.model_settings import ModelSettings, ModelSchedule
 from models.subscriber import Subscriber
 from models.financial import Transaction, TransactionStatus
 from api.v1.endpoints.auth_simple import get_current_user, get_password_hash
+from core.errors import DuplicateError, NotFoundError, AuthorizationError, ValidationError as AppValidationError
+from core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 router = APIRouter()

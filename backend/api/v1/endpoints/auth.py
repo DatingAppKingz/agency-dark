@@ -33,7 +33,16 @@ from core.domain.schemas import (
 from core.dependencies import CurrentUser, CurrentUserOptional
 from core.email.email_service import email_service
 from core.middleware.rate_limit import rate_limit
+from core.errors import (
+    DuplicateError,
+    NotFoundError,
+    AuthenticationError,
+    ValidationError as AppValidationError
+)
+from core.logger import get_logger
 import asyncio
+
+logger = get_logger(__name__)
 
 
 router = APIRouter()
@@ -52,18 +61,19 @@ async def register(
         select(User).where(User.email == user_data.email)
     )
     if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+        raise DuplicateError(
+            resource="User",
+            field="email",
+            value=user_data.email
         )
     
     # If agency_id is provided, verify it exists
     if user_data.agency_id:
         agency = await db.get(Agency, user_data.agency_id)
         if not agency:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Agency not found"
+            raise NotFoundError(
+                resource="Agency",
+                identifier=user_data.agency_id
             )
     
     # Create new user
@@ -114,23 +124,19 @@ async def login(
     if not user or not verify_password(credentials.password, user.hashed_password):
         # Add failed login attempt tracking
         await _track_failed_login(credentials.email, request.client.host if request.client else None, db)
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise AuthenticationError("Incorrect email or password")
     
     if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is disabled"
+        raise AppValidationError(
+            message="User account is disabled",
+            fields={"account": "This account has been disabled"}
         )
     
     # Check for account lockout
     if await _is_account_locked(user.id, db):
-        raise HTTPException(
-            status_code=status.HTTP_423_LOCKED,
-            detail="Account temporarily locked due to multiple failed login attempts"
+        raise AppValidationError(
+            message="Account temporarily locked due to multiple failed login attempts",
+            fields={"account": "Too many failed login attempts. Please try again later."}
         )
     
     # Generate token fingerprint for additional security
@@ -232,26 +238,17 @@ async def refresh_token(
         refresh_token = request.cookies.get("refresh_token")
     
     if not refresh_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token not provided"
-        )
+        raise AuthenticationError("Refresh token not provided")
     
     # Verify refresh token
     payload = decode_token(refresh_token, token_type="refresh")
     if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
-        )
+        raise AuthenticationError("Invalid refresh token")
     
     # Check if token is blacklisted
     jti = payload.get("jti")
     if jti and await token_blacklist_service.is_token_blacklisted(jti, db):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has been revoked"
-        )
+        raise AuthenticationError("Token has been revoked")
     
     # Find session
     result = await db.execute(
@@ -264,17 +261,16 @@ async def refresh_token(
     session = result.scalar_one_or_none()
     
     if not session:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired refresh token"
-        )
+        raise AuthenticationError("Invalid or expired refresh token")
     
     # Get user
     user = await db.get(User, session.user_id)
-    if not user or not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User not found or inactive"
+    if not user:
+        raise NotFoundError("User", session.user_id)
+    if not user.is_active:
+        raise AppValidationError(
+            message="User account is inactive",
+            fields={"account": "This account has been disabled"}
         )
     
     # Create new tokens

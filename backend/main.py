@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
 import uvicorn
@@ -14,15 +15,18 @@ from core.middleware.security import SecurityMiddleware, APIKeyMiddleware
 from core.middleware.enhanced_security import EnhancedAPIKeyMiddleware, APIKeyRateLimitMiddleware, SecurityHeadersMiddleware
 from core.middleware.rate_limit import AdvancedRateLimitMiddleware
 from core.middleware.fraud_detection import FraudDetectionMiddleware
+from core.middleware.debugging import DebuggingMiddleware, RequestBodyMiddleware, DatabaseQueryLoggingMiddleware, PerformanceProfilingMiddleware
 from core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 from core.realtime.server import socket_app
 from core.cache import initialize_cache, shutdown_cache
 from core.monitoring import monitoring_service
 from core.middleware.monitoring import monitoring_middleware
 from core.openapi import custom_openapi, setup_api_docs
+from core.errors import error_handler
+from core.logger import get_logger
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Use our enhanced logger instead of basic logging
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
@@ -84,7 +88,20 @@ app.openapi = lambda: custom_openapi(app)
 # Setup custom API documentation
 setup_api_docs(app)
 
+# Add global exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Handle all unhandled exceptions."""
+    return await error_handler(request, exc)
+
 # Add middleware in reverse order (last added is first executed)
+# Debugging middleware (only in debug mode)
+if settings.DEBUG:
+    app.add_middleware(PerformanceProfilingMiddleware)
+    app.add_middleware(RequestBodyMiddleware)
+    app.add_middleware(DatabaseQueryLoggingMiddleware, slow_query_threshold=1.0)
+
+app.add_middleware(DebuggingMiddleware)  # Request tracking and error handling
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(monitoring_middleware)
 app.add_middleware(AdvancedRateLimitMiddleware)  # New advanced rate limiting

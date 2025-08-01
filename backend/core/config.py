@@ -92,6 +92,11 @@ class Settings(BaseSettings):
     DEBUG: Optional[bool] = Field(False, env="DEBUG")
     SMTP_USER: Optional[str] = Field(None, env="SMTP_USER")
     
+    # Logging configuration
+    LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
+    LOG_FILE: Optional[str] = Field(None, env="LOG_FILE")
+    LOG_FORMAT: str = Field("json", env="LOG_FORMAT")  # "json" or "text"
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
