@@ -16,7 +16,10 @@ celery_app = Celery(
         "tasks.analytics",
         "tasks.notifications",
         "tasks.sync",
-        "tasks.financial"
+        "tasks.financial",
+        "tasks.media_tasks",
+        "tasks.export_tasks",
+        "tasks.maintenance_tasks"
     ]
 )
 
@@ -44,6 +47,9 @@ celery_app.conf.update(
         Queue("notifications", Exchange("notifications"), routing_key="notifications"),
         Queue("sync", Exchange("sync"), routing_key="sync"),
         Queue("financial", Exchange("financial"), routing_key="financial"),
+        Queue("media", Exchange("media"), routing_key="media"),
+        Queue("export", Exchange("export"), routing_key="export"),
+        Queue("long_running", Exchange("long_running"), routing_key="long_running"),
     ),
     
     # Route tasks to specific queues
@@ -52,6 +58,9 @@ celery_app.conf.update(
         "tasks.notifications.*": {"queue": "notifications"},
         "tasks.sync.*": {"queue": "sync"},
         "tasks.financial.*": {"queue": "financial"},
+        "tasks.media_tasks.*": {"queue": "media"},
+        "tasks.export_tasks.*": {"queue": "export"},
+        "tasks.maintenance_tasks.*": {"queue": "long_running"},
     },
     
     # Beat schedule for periodic tasks

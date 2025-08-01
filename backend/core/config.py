@@ -78,6 +78,24 @@ class Settings(BaseSettings):
             raise ValueError("DATABASE_URL must be a PostgreSQL URL")
         return v
     
+    @field_validator("CELERY_BROKER_URL", mode="before")
+    @classmethod
+    def set_celery_broker_url(cls, v: str, info: ValidationInfo) -> str:
+        if not v:
+            # Use Redis URL as default
+            redis_url = info.data.get("REDIS_URL", "")
+            return redis_url
+        return v
+    
+    @field_validator("CELERY_RESULT_BACKEND", mode="before")
+    @classmethod
+    def set_celery_result_backend(cls, v: str, info: ValidationInfo) -> str:
+        if not v:
+            # Use Redis URL as default
+            redis_url = info.data.get("REDIS_URL", "")
+            return redis_url
+        return v
+    
     # Additional fields from .env
     APP_NAME: Optional[str] = Field("AgencyDark", env="APP_NAME")
     APP_VERSION: Optional[str] = Field("1.0.0", env="APP_VERSION")
@@ -99,6 +117,40 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
     LOG_FILE: Optional[str] = Field(None, env="LOG_FILE")
     LOG_FORMAT: str = Field("json", env="LOG_FORMAT")  # "json" or "text"
+    
+    # Celery configuration
+    CELERY_BROKER_URL: str = Field("", env="CELERY_BROKER_URL")
+    CELERY_RESULT_BACKEND: str = Field("", env="CELERY_RESULT_BACKEND")
+    CELERY_TASK_ALWAYS_EAGER: bool = Field(False, env="CELERY_TASK_ALWAYS_EAGER")
+    CELERY_TASK_EAGER_PROPAGATES: bool = Field(True, env="CELERY_TASK_EAGER_PROPAGATES")
+    TIMEZONE: str = Field("UTC", env="TIMEZONE")
+    
+    # AWS S3 configuration for media storage
+    AWS_ACCESS_KEY_ID: Optional[str] = Field(None, env="AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY: Optional[str] = Field(None, env="AWS_SECRET_ACCESS_KEY")
+    AWS_REGION: str = Field("us-east-1", env="AWS_REGION")
+    AWS_S3_BUCKET: Optional[str] = Field(None, env="AWS_S3_BUCKET")
+    
+    # Twilio configuration for SMS
+    TWILIO_ACCOUNT_SID: Optional[str] = Field(None, env="TWILIO_ACCOUNT_SID")
+    TWILIO_AUTH_TOKEN: Optional[str] = Field(None, env="TWILIO_AUTH_TOKEN")
+    TWILIO_PHONE_NUMBER: Optional[str] = Field(None, env="TWILIO_PHONE_NUMBER")
+    
+    # Email settings
+    EMAIL_FROM: str = Field("noreply@agencydark.com", env="EMAIL_FROM")
+    SMTP_TLS: bool = Field(True, env="SMTP_TLS")
+    
+    # File paths
+    EXPORT_DIR: str = Field("./exports", env="EXPORT_DIR")
+    TEMP_DIR: str = Field("/tmp", env="TEMP_DIR")
+    MEDIA_ROOT: str = Field("./media", env="MEDIA_ROOT")
+    REPORTS_DIR: str = Field("./reports", env="REPORTS_DIR")
+    
+    # API settings
+    API_URL: str = Field("http://localhost:8000", env="API_URL")
+    
+    # Webhook settings
+    WEBHOOK_SECRET: Optional[str] = Field(None, env="WEBHOOK_SECRET")
     
     class Config:
         env_file = ".env"
