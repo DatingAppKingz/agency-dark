@@ -25,6 +25,7 @@ from core.openapi import custom_openapi, setup_api_docs
 from core.errors import error_handler
 from core.logger import get_logger
 from services.webhook_queue import get_webhook_processor, shutdown_processor
+from services.sync_scheduler import get_sync_scheduler, shutdown_scheduler
 
 # Use our enhanced logger instead of basic logging
 logger = get_logger(__name__)
@@ -58,9 +59,18 @@ async def lifespan(app: FastAPI):
     app.state.webhook_processor = processor
     logger.info("Webhook processor initialized")
     
+    # Initialize sync scheduler
+    scheduler = await get_sync_scheduler()
+    app.state.sync_scheduler = scheduler
+    logger.info("Sync scheduler initialized")
+    
     yield
     
     logger.info("Shutting down AgencyDark API...")
+    
+    # Stop sync scheduler
+    await shutdown_scheduler()
+    logger.info("Sync scheduler stopped")
     
     # Stop webhook processor
     await shutdown_processor()

@@ -15,6 +15,7 @@ from core.logger import get_logger
 from core.database import get_db
 from models.webhook import Webhook, WebhookDelivery, WebhookStatus
 from services.webhook_service import WebhookService
+from services.webhook_session_manager import get_webhook_session_manager
 
 logger = get_logger(__name__)
 
@@ -114,15 +115,13 @@ class WebhookProcessor:
     
     def __init__(
         self,
-        db: AsyncSession,
         max_workers: int = 10,
         batch_size: int = 50
     ):
-        self.db = db
         self.max_workers = max_workers
         self.batch_size = batch_size
         self.queue = WebhookQueue()
-        self.webhook_service = WebhookService(db)
+        self.session_manager = get_webhook_session_manager()
         self._workers: List[asyncio.Task] = []
         self._running = False
         self._session: Optional[aiohttp.ClientSession] = None
@@ -171,10 +170,11 @@ class WebhookProcessor:
     ) -> str:
         """Enqueue webhook for delivery."""
         # Get webhook configuration
-        result = await self.db.execute(
-            select(Webhook).where(Webhook.id == webhook_id)
-        )
-        webhook = result.scalar_one_or_none()
+        async with self.session_manager.get_session() as db:
+            result = await db.execute(
+                select(Webhook).where(Webhook.id == webhook_id)
+            )
+            webhook = result.scalar_one_or_none()
         
         if not webhook:
             raise ValueError(f"Webhook {webhook_id} not found")
@@ -194,18 +194,18 @@ class WebhookProcessor:
             timeout_seconds=webhook.timeout_seconds
         )
         
-        # Create delivery record
-        delivery = WebhookDelivery(
-            webhook_id=webhook_id,
-            event=event,
-            payload=payload,
-            attempt_count=0
-        )
-        self.db.add(delivery)
-        await self.db.commit()
+            # Create delivery record
+            delivery = WebhookDelivery(
+                webhook_id=webhook_id,
+                event=event,
+                payload=payload,
+                attempt_count=0
+            )
+            db.add(delivery)
+            await db.commit()
         
-        # Store delivery ID in task
-        task.id = str(delivery.id)
+            # Store delivery ID in task
+            task.id = str(delivery.id)
         
         # Enqueue task
         await self.queue.put(task)
@@ -222,18 +222,19 @@ class WebhookProcessor:
     ) -> List[str]:
         """Enqueue webhook for multiple recipients."""
         # Get target webhooks
-        query = select(Webhook).where(
-            and_(
-                Webhook.is_active == True,
-                Webhook.status == WebhookStatus.ACTIVE
+        async with self.session_manager.get_session() as db:
+            query = select(Webhook).where(
+                and_(
+                    Webhook.is_active == True,
+                    Webhook.status == WebhookStatus.ACTIVE
+                )
             )
-        )
-        
-        if webhook_ids:
-            query = query.where(Webhook.id.in_(webhook_ids))
-        
-        result = await self.db.execute(query)
-        webhooks = result.scalars().all()
+            
+            if webhook_ids:
+                query = query.where(Webhook.id.in_(webhook_ids))
+            
+            result = await db.execute(query)
+            webhooks = result.scalars().all()
         
         # Filter by event subscription
         target_webhooks = [
@@ -287,23 +288,27 @@ class WebhookProcessor:
     async def _deliver_webhook(self, task: WebhookTask) -> None:
         """Deliver webhook with retry logic."""
         # Get webhook and delivery records
-        result = await self.db.execute(
-            select(Webhook).where(Webhook.id == task.webhook_id)
-        )
-        webhook = result.scalar_one_or_none()
-        
-        if not webhook:
-            logger.error(f"Webhook {task.webhook_id} not found")
-            return
-        
-        result = await self.db.execute(
-            select(WebhookDelivery).where(WebhookDelivery.id == int(task.id))
-        )
-        delivery = result.scalar_one_or_none()
-        
-        if not delivery:
-            logger.error(f"Delivery record {task.id} not found")
-            return
+        async with self.session_manager.get_session() as db:
+            result = await db.execute(
+                select(Webhook).where(Webhook.id == task.webhook_id)
+            )
+            webhook = result.scalar_one_or_none()
+            
+            if not webhook:
+                logger.error(f"Webhook {task.webhook_id} not found")
+                return
+            
+            result = await db.execute(
+                select(WebhookDelivery).where(WebhookDelivery.id == int(task.id))
+            )
+            delivery = result.scalar_one_or_none()
+            
+            if not delivery:
+                logger.error(f"Delivery record {task.id} not found")
+                return
+            
+            # Create webhook service with this session
+            webhook_service = WebhookService(db)
         
         # Update attempt count
         task.attempt += 1
@@ -323,7 +328,7 @@ class WebhookProcessor:
             # Add signature if secret is configured
             if webhook.secret:
                 payload_bytes = json.dumps(task.payload).encode()
-                signature = self.webhook_service.generate_signature(
+                signature = webhook_service.generate_signature(
                     payload_bytes,
                     webhook.secret
                 )
@@ -423,9 +428,6 @@ class WebhookProcessor:
             if webhook.failed_calls > 10 and webhook.successful_calls == 0:
                 webhook.status = WebhookStatus.FAILED
                 logger.warning(f"Webhook {webhook.id} disabled due to repeated failures")
-            
-            # Save changes
-            await self.db.commit()
     
     def _calculate_retry_delay(self, attempt: int) -> timedelta:
         """Calculate exponential backoff delay."""
@@ -441,38 +443,39 @@ class WebhookProcessor:
                 await asyncio.sleep(60)
                 
                 # Find deliveries ready for retry
-                now = datetime.utcnow().isoformat()
-                result = await self.db.execute(
-                    select(WebhookDelivery).where(
-                        and_(
-                            WebhookDelivery.is_successful == False,
-                            WebhookDelivery.next_retry_at != None,
-                            WebhookDelivery.next_retry_at <= now
-                        )
-                    ).limit(self.batch_size)
-                )
-                deliveries = result.scalars().all()
-                
-                # Re-enqueue for retry
-                for delivery in deliveries:
-                    webhook = await self.db.get(Webhook, delivery.webhook_id)
-                    if webhook and webhook.is_active:
-                        task = WebhookTask(
-                            id=str(delivery.id),
-                            webhook_id=delivery.webhook_id,
-                            event=delivery.event,
-                            payload=delivery.payload,
-                            priority=QueuePriority.LOW,  # Retries are lower priority
-                            attempt=delivery.attempt_count,
-                            max_attempts=webhook.max_retries,
-                            headers=webhook.headers or {},
-                            timeout_seconds=webhook.timeout_seconds
-                        )
-                        await self.queue.put(task)
-                        
-                        # Clear retry time
-                        delivery.next_retry_at = None
-                        await self.db.commit()
+                async with self.session_manager.get_session() as db:
+                    now = datetime.utcnow().isoformat()
+                    result = await db.execute(
+                        select(WebhookDelivery).where(
+                            and_(
+                                WebhookDelivery.is_successful == False,
+                                WebhookDelivery.next_retry_at != None,
+                                WebhookDelivery.next_retry_at <= now
+                            )
+                        ).limit(self.batch_size)
+                    )
+                    deliveries = result.scalars().all()
+                    
+                    # Re-enqueue for retry
+                    for delivery in deliveries:
+                        webhook = await db.get(Webhook, delivery.webhook_id)
+                        if webhook and webhook.is_active:
+                            task = WebhookTask(
+                                id=str(delivery.id),
+                                webhook_id=delivery.webhook_id,
+                                event=delivery.event,
+                                payload=delivery.payload,
+                                priority=QueuePriority.LOW,  # Retries are lower priority
+                                attempt=delivery.attempt_count,
+                                max_attempts=webhook.max_retries,
+                                headers=webhook.headers or {},
+                                timeout_seconds=webhook.timeout_seconds
+                            )
+                            await self.queue.put(task)
+                            
+                            # Clear retry time
+                            delivery.next_retry_at = None
+                            await db.commit()
                 
                 if deliveries:
                     logger.info(f"Re-enqueued {len(deliveries)} webhooks for retry")
@@ -501,11 +504,8 @@ async def get_webhook_processor() -> WebhookProcessor:
     global _processor
     
     if not _processor:
-        # Get database session
-        async for db in get_db():
-            _processor = WebhookProcessor(db)
-            await _processor.start()
-            break
+        _processor = WebhookProcessor()
+        await _processor.start()
     
     return _processor
 

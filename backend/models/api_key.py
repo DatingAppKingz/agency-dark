@@ -55,6 +55,14 @@ class APIKey(BaseModel):
     key_metadata = Column("metadata", JSON, default=dict, nullable=False)
     deactivated_at = Column(DateTime(timezone=True), nullable=True)
     
+    # Sync configuration
+    sync_enabled = Column(Boolean, default=False, nullable=False)
+    sync_interval_minutes = Column(Integer, default=30, nullable=False)
+    last_sync_at = Column(DateTime(timezone=True), nullable=True)
+    last_sync_status = Column(String(50), nullable=True)
+    last_sync_error = Column(Text, nullable=True)
+    sync_failure_count = Column(Integer, default=0, nullable=False)
+    
     # Audit
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
