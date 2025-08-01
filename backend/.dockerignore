@@ -1,143 +1,72 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
+# Version control
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
 .Python
-env/
-venv/
-ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
+*.egg-info
 *.egg
-MANIFEST
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.hypothesis/
-*.cover
-.cache
-nosetests.xml
-coverage.xml
-*.log
+dist
+build
 
 # Virtual environments
-bin/
-include/
-share/
-pyvenv.cfg
+venv/
+env/
+ENV/
+.venv/
+.virtualenv/
 
-# IDEs
+# IDE files
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
-.project
-.pydevproject
-
-# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
-# Git
-.git/
-.gitignore
-.gitattributes
-
-# CI
-.github/
-.gitlab-ci.yml
-.travis.yml
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
 
 # Documentation
 docs/
 *.md
-LICENSE
-README.rst
+README.*
+CONTRIBUTING.*
+LICENSE*
 
-# Testing
-tests/
-test_*.py
-*_test.py
-conftest.py
-pytest.ini
-
-# Development files
+# Local development
 .env
 .env.*
-!.env.example
+*.log
+logs/
+uploads/
+exports/
+temp/
+reports/
+
+# Development files
 *.sqlite
 *.db
-*.pid
-*.seed
-*.pid.lock
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile.dev
+Makefile
 
-# Temporary files
-tmp/
-temp/
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Other
+node_modules/
+*.bak
 *.tmp
 *.temp
-
-# Logs
-logs/
-*.log
-
-# Docker
-Dockerfile*
-docker-compose*.yml
-.dockerignore
-
-# Alembic local files
-alembic.ini.local
-
-# Node (if any frontend assets)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Uploads (should be in volume)
-uploads/
-media/
-
-# Scripts
-scripts/
-*.sh
-
-# Backups
-*.bak
-*.backup
-
-# MacOS
-.AppleDouble
-.LSOverride
-Icon
-.DocumentRevisions-V100
-.fseventsd
-.TemporaryItems
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
