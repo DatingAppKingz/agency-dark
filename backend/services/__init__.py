@@ -1,5 +1,12 @@
 """Backend services package."""
 
 from .commission_service import CommissionService
+from .encryption_service import EncryptionService, encryption_service
+from .api_key_service import APIKeyService
 
-__all__ = ["CommissionService"]
+__all__ = [
+    "CommissionService",
+    "EncryptionService",
+    "encryption_service",
+    "APIKeyService"
+]

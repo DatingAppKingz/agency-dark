@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
     
+    # Encryption settings
+    ENCRYPTION_KEY: str = Field("", env="ENCRYPTION_KEY")
+    
     DATABASE_URL: str = Field(..., env="DATABASE_URL")
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
