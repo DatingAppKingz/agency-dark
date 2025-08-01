@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to AgencyDark{% endblock %}
+
+{% block header %}Welcome to AgencyDark!{% endblock %}
+
+{% block content %}
+<h2>Hello {{ user_name }}!</h2>
+
+<p>Welcome to AgencyDark - your comprehensive platform for managing OnlyFans marketing agencies.</p>
+
+<p>Your account has been successfully created. Here's what you can do next:</p>
+
+<ul>
+    <li><strong>Complete Your Profile</strong> - Add your contact information and preferences</li>
+    <li><strong>Set Up Your Agency</strong> - Configure your agency settings and branding</li>
+    <li><strong>Add Team Members</strong> - Invite your team to collaborate</li>
+    <li><strong>Connect Platforms</strong> - Link your OnlyFans and other platform accounts</li>
+</ul>
+
+<div style="text-align: center;">
+    <a href="{{ login_url }}" class="button">Get Started</a>
+</div>
+
+<div class="alert alert-info">
+    <strong>Need Help?</strong> Check out our <a href="{{ docs_url }}">documentation</a> or contact our support team.
+</div>
+
+<p>We're excited to have you on board!</p>
+
+<p>Best regards,<br>The AgencyDark Team</p>
+{% endblock %}

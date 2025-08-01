@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}[{{ severity|upper }}] {{ title }}{% endblock %}
+
+{% block header %}System Alert{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .severity-info { color: #1565c0; }
+    .severity-warning { color: #f57c00; }
+    .severity-error { color: #d32f2f; }
+    .severity-critical { color: #b71c1c; font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 class="severity-{{ severity }}">{{ title }}</h2>
+
+<div class="alert alert-{{ 'error' if severity in ['error', 'critical'] else severity }}">
+    <p><strong>Alert Type:</strong> {{ alert_type|title }}</p>
+    <p><strong>Severity:</strong> <span class="severity-{{ severity }}">{{ severity|upper }}</span></p>
+    <p><strong>Time:</strong> {{ current_time }}</p>
+</div>
+
+<h3>Details</h3>
+<p>{{ message }}</p>
+
+{% if data %}
+<h4>Additional Information</h4>
+<table style="width: 100%; border-collapse: collapse;">
+    {% for key, value in data.items() %}
+    <tr>
+        <td style="padding: 8px; border: 1px solid #ddd; background-color: #f8f9fa;">
+            <strong>{{ key|replace('_', ' ')|title }}</strong>
+        </td>
+        <td style="padding: 8px; border: 1px solid #ddd;">
+            {{ value }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<div style="margin: 30px 0;">
+    <h4>What should you do?</h4>
+    {% if severity == 'critical' %}
+    <p style="color: #d32f2f;"><strong>Immediate action required!</strong> This is a critical issue that requires your immediate attention.</p>
+    {% elif severity == 'error' %}
+    <p style="color: #f57c00;"><strong>Action required.</strong> Please investigate and resolve this issue as soon as possible.</p>
+    {% elif severity == 'warning' %}
+    <p>This is a warning that may require your attention. Monitor the situation and take action if necessary.</p>
+    {% else %}
+    <p>This is an informational alert. No immediate action is required.</p>
+    {% endif %}
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ dashboard_url }}" class="button">View Dashboard</a>
+</div>
+
+<p style="font-size: 12px; color: #666;">
+    You're receiving this alert based on your notification preferences. 
+    To update your alert settings, <a href="{{ preferences_url }}">click here</a>.
+</p>
+{% endblock %}

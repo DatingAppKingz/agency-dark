@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import auth, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search
+from .endpoints import auth, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search, notifications
 from .secure_api_keys import router as secure_api_keys_router
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
@@ -90,3 +90,6 @@ api_router.include_router(scim_router, tags=["scim"])
 
 # Search
 api_router.include_router(search.router, tags=["search"])
+
+# Notifications
+api_router.include_router(notifications.router, tags=["notifications"])

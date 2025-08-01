@@ -131,6 +131,18 @@ class Settings(BaseSettings):
     ELASTICSEARCH_PASSWORD: Optional[str] = Field(None, env="ELASTICSEARCH_PASSWORD")
     ELASTICSEARCH_VERIFY_CERTS: bool = Field(True, env="ELASTICSEARCH_VERIFY_CERTS")
     
+    # Email configuration
+    SMTP_HOST: str = Field("smtp.gmail.com", env="SMTP_HOST")
+    SMTP_PORT: int = Field(587, env="SMTP_PORT")
+    SMTP_TLS: bool = Field(True, env="SMTP_TLS")
+    SMTP_PASSWORD: Optional[str] = Field(None, env="SMTP_PASSWORD")
+    EMAIL_FROM: str = Field("noreply@agencydark.com", env="EMAIL_FROM")
+    
+    # SMS configuration (Twilio)
+    TWILIO_ACCOUNT_SID: Optional[str] = Field(None, env="TWILIO_ACCOUNT_SID")
+    TWILIO_AUTH_TOKEN: Optional[str] = Field(None, env="TWILIO_AUTH_TOKEN")
+    TWILIO_PHONE_NUMBER: Optional[str] = Field(None, env="TWILIO_PHONE_NUMBER")
+    
     # AWS S3 configuration for media storage
     AWS_ACCESS_KEY_ID: Optional[str] = Field(None, env="AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY: Optional[str] = Field(None, env="AWS_SECRET_ACCESS_KEY")

@@ -76,6 +76,10 @@ class Agency(BaseModel):
     # Search
     saved_searches = relationship("SavedSearch", back_populates="agency", cascade="all, delete-orphan")
     
+    # Notifications
+    notifications = relationship("Notification", back_populates="agency", cascade="all, delete-orphan")
+    notification_templates = relationship("NotificationTemplate", back_populates="agency", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<Agency {self.name}>"
     

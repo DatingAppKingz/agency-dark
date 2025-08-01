@@ -51,6 +51,7 @@ celery_app.conf.update(
         Queue("export", Exchange("export"), routing_key="export"),
         Queue("long_running", Exchange("long_running"), routing_key="long_running"),
         Queue("search", Exchange("search"), routing_key="search"),
+        Queue("notifications", Exchange("notifications"), routing_key="notifications"),
     ),
     
     # Route tasks to specific queues
@@ -63,6 +64,7 @@ celery_app.conf.update(
         "tasks.export_tasks.*": {"queue": "export"},
         "tasks.maintenance_tasks.*": {"queue": "long_running"},
         "tasks.search_tasks.*": {"queue": "search"},
+        "tasks.notification_tasks.*": {"queue": "notifications"},
     },
     
     # Beat schedule for periodic tasks
@@ -107,6 +109,27 @@ celery_app.conf.update(
             "task": "tasks.financial.check_subscription_expirations",
             "schedule": crontab(minute="*/30"),  # Every 30 minutes
             "options": {"queue": "financial"}
+        },
+        
+        # Process scheduled notifications
+        "process-scheduled-notifications": {
+            "task": "tasks.notification_tasks.process_scheduled_notifications",
+            "schedule": crontab(minute="*"),  # Every minute
+            "options": {"queue": "notifications"}
+        },
+        
+        # Send digest notifications
+        "send-digest-notifications": {
+            "task": "tasks.notification_tasks.send_digest_notifications",
+            "schedule": crontab(hour=9, minute=0),  # 9 AM UTC daily
+            "options": {"queue": "notifications"}
+        },
+        
+        # Cleanup old notifications
+        "cleanup-old-notifications": {
+            "task": "tasks.notification_tasks.cleanup_old_notifications",
+            "schedule": crontab(hour=3, minute=0),  # 3 AM UTC daily
+            "options": {"queue": "notifications"}
         }
     }
 )
