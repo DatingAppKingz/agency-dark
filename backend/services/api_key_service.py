@@ -9,6 +9,7 @@ from sqlalchemy import select, and_, update
 from sqlalchemy.orm import selectinload
 
 from services.encryption_service import encryption_service
+from services.api_audit_logger import APIAuditLogger, AuditAction
 from core.logger import get_logger
 from models.api_key import APIKey, APIKeyProvider, APIKeyStatus
 from models.user import User
@@ -89,6 +90,21 @@ class APIKeyService:
         )
         
         self.db.add(api_key)
+        await self.db.flush()
+        
+        # Log audit event
+        audit_logger = APIAuditLogger(self.db)
+        await audit_logger.log_action(
+            api_key_id=str(api_key.id),
+            action=AuditAction.CREATE,
+            user_id=str(user.id),
+            agency_id=str(user.agency_id),
+            metadata={
+                "provider": provider.value,
+                "name": name
+            }
+        )
+        
         await self.db.commit()
         await self.db.refresh(api_key)
         

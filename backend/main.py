@@ -16,6 +16,7 @@ from core.middleware.enhanced_security import EnhancedAPIKeyMiddleware, APIKeyRa
 from core.middleware.rate_limit import AdvancedRateLimitMiddleware
 from core.middleware.fraud_detection import FraudDetectionMiddleware
 from core.middleware.debugging import DebuggingMiddleware, RequestBodyMiddleware, DatabaseQueryLoggingMiddleware, PerformanceProfilingMiddleware
+from core.middleware.api_usage import APIUsageMiddleware
 from core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 from core.realtime.server import socket_app
 from core.cache import initialize_cache, shutdown_cache
@@ -124,6 +125,7 @@ if settings.DEBUG:
 app.add_middleware(DebuggingMiddleware)  # Request tracking and error handling
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(monitoring_middleware)
+app.add_middleware(APIUsageMiddleware)  # API usage tracking and limits
 app.add_middleware(AdvancedRateLimitMiddleware)  # New advanced rate limiting
 app.add_middleware(APIKeyRateLimitMiddleware)  # API key specific rate limiting
 app.add_middleware(FraudDetectionMiddleware)
