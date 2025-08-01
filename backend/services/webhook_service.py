@@ -104,6 +104,33 @@ class WebhookService:
         
         return hmac.compare_digest(expected, elements["v1"])
     
+    def generate_signature(
+        self,
+        payload: bytes,
+        secret: str,
+        algorithm: str = "sha256"
+    ) -> str:
+        """
+        Generate webhook signature.
+        
+        Args:
+            payload: Request body
+            secret: Webhook secret
+            algorithm: Hash algorithm
+            
+        Returns:
+            Hex-encoded signature
+        """
+        if algorithm not in self.SIGNATURE_ALGORITHMS:
+            raise AppValidationError(f"Unsupported algorithm: {algorithm}")
+        
+        hash_func = self.SIGNATURE_ALGORITHMS[algorithm]
+        return hmac.new(
+            secret.encode(),
+            payload,
+            hash_func
+        ).hexdigest()
+    
     async def receive_webhook(
         self,
         provider: str,

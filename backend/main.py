@@ -24,6 +24,7 @@ from core.middleware.monitoring import monitoring_middleware
 from core.openapi import custom_openapi, setup_api_docs
 from core.errors import error_handler
 from core.logger import get_logger
+from services.webhook_queue import get_webhook_processor, shutdown_processor
 
 # Use our enhanced logger instead of basic logging
 logger = get_logger(__name__)
@@ -52,9 +53,18 @@ async def lifespan(app: FastAPI):
     await realtime_engine.start()
     logger.info("Real-time analytics engine started")
     
+    # Initialize webhook processor
+    processor = await get_webhook_processor()
+    app.state.webhook_processor = processor
+    logger.info("Webhook processor initialized")
+    
     yield
     
     logger.info("Shutting down AgencyDark API...")
+    
+    # Stop webhook processor
+    await shutdown_processor()
+    logger.info("Webhook processor stopped")
     
     # Stop real-time analytics engine
     await realtime_engine.stop()
