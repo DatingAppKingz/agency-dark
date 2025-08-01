@@ -19,7 +19,9 @@ celery_app = Celery(
         "tasks.financial",
         "tasks.media_tasks",
         "tasks.export_tasks",
-        "tasks.maintenance_tasks"
+        "tasks.maintenance_tasks",
+        "tasks.import_tasks",
+        "tasks.cache_tasks"
     ]
 )
 
@@ -51,7 +53,7 @@ celery_app.conf.update(
         Queue("export", Exchange("export"), routing_key="export"),
         Queue("long_running", Exchange("long_running"), routing_key="long_running"),
         Queue("search", Exchange("search"), routing_key="search"),
-        Queue("notifications", Exchange("notifications"), routing_key="notifications"),
+        Queue("cache", Exchange("cache"), routing_key="cache"),
     ),
     
     # Route tasks to specific queues
@@ -65,6 +67,8 @@ celery_app.conf.update(
         "tasks.maintenance_tasks.*": {"queue": "long_running"},
         "tasks.search_tasks.*": {"queue": "search"},
         "tasks.notification_tasks.*": {"queue": "notifications"},
+        "tasks.import_tasks.*": {"queue": "export"},
+        "tasks.cache_tasks.*": {"queue": "cache"},
     },
     
     # Beat schedule for periodic tasks
@@ -130,6 +134,34 @@ celery_app.conf.update(
             "task": "tasks.notification_tasks.cleanup_old_notifications",
             "schedule": crontab(hour=3, minute=0),  # 3 AM UTC daily
             "options": {"queue": "notifications"}
+        },
+        
+        # Cache warmup
+        "cache-warmup": {
+            "task": "cache_warmup",
+            "schedule": crontab(minute="*/30"),  # Every 30 minutes
+            "options": {"queue": "cache"}
+        },
+        
+        # Cache cleanup
+        "cache-cleanup": {
+            "task": "cache_cleanup",
+            "schedule": crontab(hour=4, minute=0),  # 4 AM UTC daily
+            "options": {"queue": "cache"}
+        },
+        
+        # Precompute analytics for caching
+        "precompute-analytics": {
+            "task": "precompute_analytics",
+            "schedule": crontab(hour=1, minute=0),  # 1 AM UTC daily
+            "options": {"queue": "cache"}
+        },
+        
+        # Cache health check
+        "cache-health-check": {
+            "task": "cache_health_check",
+            "schedule": crontab(minute="*/15"),  # Every 15 minutes
+            "options": {"queue": "cache"}
         }
     }
 )

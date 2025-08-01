@@ -44,6 +44,11 @@ async def lifespan(app: FastAPI):
     # Initialize cache system
     await initialize_cache()
     
+    # Initialize advanced cache manager
+    from core.cache_manager import cache_manager
+    await cache_manager.initialize()
+    logger.info("Advanced cache manager initialized")
+    
     # Start background sync scheduler
     await start_sync_scheduler()
     
@@ -89,6 +94,10 @@ async def lifespan(app: FastAPI):
     
     # Shutdown cache system
     await shutdown_cache()
+    
+    # Shutdown advanced cache manager
+    await cache_manager.close()
+    logger.info("Advanced cache manager closed")
     
     await redis_client.close()
     await engine.dispose()

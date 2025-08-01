@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     REDIS_PORT: int = Field(6379, env="REDIS_PORT")
     REDIS_DB: int = Field(0, env="REDIS_DB")
     
+    # Cache configuration
+    CACHE_KEY_PREFIX: str = Field("agencydark", env="CACHE_KEY_PREFIX")
+    CACHE_MEMORY_MAX_SIZE: int = Field(1000, env="CACHE_MEMORY_MAX_SIZE")
+    CACHE_DEFAULT_TTL: int = Field(3600, env="CACHE_DEFAULT_TTL")
+    CACHE_ENABLED: bool = Field(True, env="CACHE_ENABLED")
+    
     INFLOW_API_KEY: Optional[str] = Field(None, env="INFLOW_API_KEY")
     INFLOW_API_URL: str = "https://api.inflow.com"
     INFLOW_RATE_LIMIT: int = 100  # requests per minute
