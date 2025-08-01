@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, JSON, Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import enum
 from models.base import Base, BaseModel
@@ -42,7 +43,7 @@ class Webhook(BaseModel):
     """Webhook configuration."""
     __tablename__ = "webhooks"
     
-    agency_id = Column(Integer, ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False)
+    agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False)
     
     # Webhook details
     name = Column(String(255), nullable=False)
@@ -114,8 +115,8 @@ class APIKey(BaseModel):
     """API key for authentication."""
     __tablename__ = "api_keys"
     
-    agency_id = Column(Integer, ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     
     # Key details
     name = Column(String(255), nullable=False)

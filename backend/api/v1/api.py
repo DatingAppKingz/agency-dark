@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import auth, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat
+from .endpoints import auth, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, webhook_receiver
 from .secure_api_keys import router as secure_api_keys_router
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
@@ -38,6 +38,7 @@ api_router.include_router(orchestration_router, tags=["orchestration"])
 api_router.include_router(orchestration_v2_router, tags=["orchestration-v2"])
 api_router.include_router(webhook_handler_router, tags=["webhook-handlers"])
 api_router.include_router(webhook_management_router, tags=["webhooks"])
+api_router.include_router(webhook_receiver.router, tags=["webhook-receiver"])
 api_router.include_router(payment_webhook_router, prefix="/payments", tags=["payment-webhooks"])
 api_router.include_router(analytics_router, tags=["analytics"])
 api_router.include_router(financial_router, tags=["financial"])
