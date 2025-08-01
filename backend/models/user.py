@@ -85,6 +85,9 @@ class User(BaseModel):
     language = Column(String(10), default="en", nullable=False)
     language_preference = relationship("LanguagePreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
+    # External API credentials
+    external_credentials = relationship("ExternalAPICredential", back_populates="user", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<User {self.email}>"
     

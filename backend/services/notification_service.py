@@ -255,16 +255,257 @@ class NotificationService:
     async def _send_push(self, notification: Notification) -> bool:
         """Send push notification."""
         try:
-            # TODO: Implement push notification logic
-            # This would integrate with services like Firebase Cloud Messaging
-            # or Apple Push Notification Service
+            # Get user's push tokens
+            db: AsyncSession = notification._sa_instance_state.session
             
-            logger.info(f"Push notification queued for {notification.user_id}")
-            return True
+            # Query push tokens for the user
+            from models.user import UserPushToken
+            tokens = await db.execute(
+                select(UserPushToken).where(
+                    UserPushToken.user_id == notification.user_id,
+                    UserPushToken.is_active == True
+                )
+            )
+            push_tokens = tokens.scalars().all()
+            
+            if not push_tokens:
+                logger.warning(f"No push tokens found for user {notification.user_id}")
+                return False
+            
+            success_count = 0
+            
+            for token in push_tokens:
+                if token.provider == 'fcm':
+                    # Firebase Cloud Messaging
+                    if await self._send_fcm_notification(notification, token):
+                        success_count += 1
+                elif token.provider == 'apns':
+                    # Apple Push Notification Service
+                    if await self._send_apns_notification(notification, token):
+                        success_count += 1
+                elif token.provider == 'web':
+                    # Web Push Notifications
+                    if await self._send_web_push_notification(notification, token):
+                        success_count += 1
+            
+            logger.info(f"Push notification sent to {success_count}/{len(push_tokens)} devices for user {notification.user_id}")
+            return success_count > 0
             
         except Exception as e:
             logger.error(f"Error sending push notification: {e}")
             notification.error_message = str(e)
+            return False
+    
+    async def _send_fcm_notification(self, notification: Notification, token: 'UserPushToken') -> bool:
+        """Send Firebase Cloud Messaging notification."""
+        try:
+            from firebase_admin import messaging
+            
+            # Create message
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=notification.subject or "New Notification",
+                    body=notification.content,
+                    image=notification.metadata.get('image_url') if notification.metadata else None
+                ),
+                data={
+                    'notification_id': str(notification.id),
+                    'type': notification.type,
+                    'priority': notification.priority,
+                    'click_action': notification.metadata.get('action_url', '/notifications') if notification.metadata else '/notifications'
+                },
+                token=token.token,
+                android=messaging.AndroidConfig(
+                    priority='high' if notification.priority == 'high' else 'normal',
+                    notification=messaging.AndroidNotification(
+                        icon='notification_icon',
+                        color='#FF6B6B',
+                        sound='default'
+                    )
+                ),
+                apns=messaging.APNSConfig(
+                    payload=messaging.APNSPayload(
+                        aps=messaging.Aps(
+                            alert=messaging.ApsAlert(
+                                title=notification.subject or "New Notification",
+                                body=notification.content
+                            ),
+                            badge=1,
+                            sound='default',
+                            category='notification'
+                        )
+                    )
+                ),
+                webpush=messaging.WebpushConfig(
+                    notification=messaging.WebpushNotification(
+                        title=notification.subject or "New Notification",
+                        body=notification.content,
+                        icon='/icons/icon-192x192.png',
+                        badge='/icons/badge-72x72.png'
+                    ),
+                    fcm_options=messaging.WebpushFCMOptions(
+                        link=notification.metadata.get('action_url', '/notifications') if notification.metadata else '/notifications'
+                    )
+                )
+            )
+            
+            # Send message
+            response = messaging.send(message)
+            
+            # Store external ID
+            if not notification.external_id:
+                notification.external_id = response
+            else:
+                notification.external_id += f",{response}"
+            
+            # Update last used timestamp for token
+            token.last_used_at = datetime.utcnow()
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"FCM notification failed: {e}")
+            
+            # Handle invalid token
+            if 'registration-token-not-registered' in str(e):
+                token.is_active = False
+                logger.info(f"Deactivated invalid FCM token: {token.id}")
+            
+            return False
+    
+    async def _send_apns_notification(self, notification: Notification, token: 'UserPushToken') -> bool:
+        """Send Apple Push Notification Service notification."""
+        try:
+            import aioapns
+            from aioapns import APNs, NotificationRequest, PushType
+            
+            # Initialize APNS client
+            key_file = settings.APNS_KEY_FILE
+            key_id = settings.APNS_KEY_ID
+            team_id = settings.APNS_TEAM_ID
+            topic = settings.APNS_TOPIC
+            
+            apns = APNs(
+                key=key_file,
+                key_id=key_id,
+                team_id=team_id,
+                topic=topic,
+                use_sandbox=settings.APNS_USE_SANDBOX
+            )
+            
+            # Create notification request
+            request = NotificationRequest(
+                device_token=token.token,
+                message={
+                    "aps": {
+                        "alert": {
+                            "title": notification.subject or "New Notification",
+                            "body": notification.content
+                        },
+                        "badge": 1,
+                        "sound": "default",
+                        "category": "notification",
+                        "thread-id": notification.type
+                    },
+                    "notification_id": str(notification.id),
+                    "type": notification.type,
+                    "priority": notification.priority
+                },
+                push_type=PushType.ALERT,
+                priority=10 if notification.priority == 'high' else 5,
+                expiration=int((datetime.utcnow() + timedelta(days=1)).timestamp())
+            )
+            
+            # Send notification
+            response = await apns.send_notification(request)
+            
+            if response.is_successful:
+                # Store external ID
+                if not notification.external_id:
+                    notification.external_id = response.notification_id
+                else:
+                    notification.external_id += f",{response.notification_id}"
+                
+                # Update last used timestamp
+                token.last_used_at = datetime.utcnow()
+                
+                return True
+            else:
+                logger.error(f"APNS notification failed: {response.description}")
+                
+                # Handle invalid token
+                if response.status == 410:  # Unregistered
+                    token.is_active = False
+                    logger.info(f"Deactivated invalid APNS token: {token.id}")
+                
+                return False
+                
+        except Exception as e:
+            logger.error(f"APNS notification failed: {e}")
+            return False
+    
+    async def _send_web_push_notification(self, notification: Notification, token: 'UserPushToken') -> bool:
+        """Send Web Push notification."""
+        try:
+            from pywebpush import webpush, WebPushException
+            import json
+            
+            # Prepare subscription info
+            subscription_info = {
+                "endpoint": token.endpoint,
+                "keys": {
+                    "p256dh": token.p256dh_key,
+                    "auth": token.auth_key
+                }
+            }
+            
+            # Prepare notification data
+            notification_data = {
+                "title": notification.subject or "New Notification",
+                "body": notification.content,
+                "icon": "/icons/icon-192x192.png",
+                "badge": "/icons/badge-72x72.png",
+                "tag": notification.type,
+                "data": {
+                    "notification_id": str(notification.id),
+                    "type": notification.type,
+                    "priority": notification.priority,
+                    "url": notification.metadata.get('action_url', '/notifications') if notification.metadata else '/notifications'
+                }
+            }
+            
+            # Send notification
+            response = webpush(
+                subscription_info=subscription_info,
+                data=json.dumps(notification_data),
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims={
+                    "sub": f"mailto:{settings.VAPID_EMAIL}"
+                }
+            )
+            
+            if response.ok:
+                # Update last used timestamp
+                token.last_used_at = datetime.utcnow()
+                return True
+            else:
+                logger.error(f"Web push notification failed: {response.text}")
+                
+                # Handle expired subscription
+                if response.status_code == 410:
+                    token.is_active = False
+                    logger.info(f"Deactivated expired web push token: {token.id}")
+                
+                return False
+                
+        except WebPushException as e:
+            logger.error(f"Web push notification failed: {e}")
+            
+            # Handle invalid subscription
+            if e.response and e.response.status_code == 410:
+                token.is_active = False
+                logger.info(f"Deactivated invalid web push token: {token.id}")
+            
             return False
     
     async def _send_in_app(self, notification: Notification) -> bool:

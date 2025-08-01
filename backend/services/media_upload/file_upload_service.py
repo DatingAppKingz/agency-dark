@@ -4,6 +4,7 @@ import os
 import hashlib
 import uuid
 import mimetypes
+import asyncio
 from typing import Optional, Dict, Any, List, Tuple
 from datetime import datetime
 import aiofiles
@@ -458,11 +459,164 @@ class FileUploadService:
             
             cap.release()
             
-            # TODO: Add video transcoding for different qualities/formats
+            # Transcode video to different qualities/formats
+            await self._transcode_video(file_path, media)
             
         except Exception as e:
             logger.error(f"Video processing failed: {e}")
             media.processing_error = str(e)
+    
+    async def _transcode_video(self, file_path: str, media: Media):
+        """Transcode video to different qualities and formats."""
+        try:
+            import ffmpeg
+            
+            # Define video quality presets
+            video_presets = {
+                '1080p': {'width': 1920, 'height': 1080, 'bitrate': '5000k'},
+                '720p': {'width': 1280, 'height': 720, 'bitrate': '2500k'},
+                '480p': {'width': 854, 'height': 480, 'bitrate': '1000k'},
+                '360p': {'width': 640, 'height': 360, 'bitrate': '500k'}
+            }
+            
+            # Get video info
+            probe = ffmpeg.probe(file_path)
+            video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+            
+            if not video_stream:
+                logger.error("No video stream found")
+                return
+            
+            # Get original dimensions
+            width = int(video_stream['width'])
+            height = int(video_stream['height'])
+            
+            transcoded_versions = {}
+            
+            for quality, settings in video_presets.items():
+                # Skip if original is smaller than target
+                if width < settings['width'] and height < settings['height']:
+                    continue
+                
+                # Calculate aspect ratio
+                aspect_ratio = width / height
+                if aspect_ratio > settings['width'] / settings['height']:
+                    # Width is limiting factor
+                    new_width = settings['width']
+                    new_height = int(new_width / aspect_ratio)
+                else:
+                    # Height is limiting factor
+                    new_height = settings['height']
+                    new_width = int(new_height * aspect_ratio)
+                
+                # Ensure dimensions are even (required for many codecs)
+                new_width = new_width if new_width % 2 == 0 else new_width - 1
+                new_height = new_height if new_height % 2 == 0 else new_height - 1
+                
+                # Output filename
+                output_filename = f"{quality}_{media.filename.rsplit('.', 1)[0]}.mp4"
+                output_path = f"/tmp/{output_filename}"
+                
+                # Transcode video
+                stream = ffmpeg.input(file_path)
+                stream = ffmpeg.output(
+                    stream,
+                    output_path,
+                    vcodec='libx264',
+                    acodec='aac',
+                    video_bitrate=settings['bitrate'],
+                    audio_bitrate='128k',
+                    s=f'{new_width}x{new_height}',
+                    preset='medium',
+                    movflags='faststart'  # Enable streaming
+                )
+                
+                # Run transcoding
+                await asyncio.create_subprocess_exec(
+                    'ffmpeg',
+                    '-i', file_path,
+                    '-c:v', 'libx264',
+                    '-c:a', 'aac',
+                    '-b:v', settings['bitrate'],
+                    '-b:a', '128k',
+                    '-s', f'{new_width}x{new_height}',
+                    '-preset', 'medium',
+                    '-movflags', 'faststart',
+                    '-y',  # Overwrite output
+                    output_path,
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=asyncio.subprocess.DEVNULL
+                )
+                
+                # Upload transcoded version
+                if self.s3_client:
+                    transcoded_s3_key = f"videos/{media.agency_id}/{quality}/{output_filename}"
+                    await self._upload_to_s3(output_path, transcoded_s3_key)
+                    transcoded_versions[quality] = f"https://{settings.AWS_S3_BUCKET}.s3.{settings.AWS_REGION}.amazonaws.com/{transcoded_s3_key}"
+                else:
+                    transcoded_local_path = f"videos/{media.agency_id}/{quality}/{output_filename}"
+                    await self._save_locally(output_path, transcoded_local_path)
+                    transcoded_versions[quality] = f"/media/{transcoded_local_path}"
+                
+                # Clean up
+                os.remove(output_path)
+            
+            # Also create HLS streaming version for adaptive bitrate
+            await self._create_hls_stream(file_path, media)
+            
+            media.transcoded_versions = transcoded_versions
+            
+        except Exception as e:
+            logger.error(f"Video transcoding failed: {e}")
+            # Continue without transcoding on failure
+    
+    async def _create_hls_stream(self, file_path: str, media: Media):
+        """Create HLS stream for adaptive bitrate streaming."""
+        try:
+            hls_dir = f"/tmp/hls_{media.filename.rsplit('.', 1)[0]}"
+            os.makedirs(hls_dir, exist_ok=True)
+            
+            # Create HLS playlist
+            await asyncio.create_subprocess_exec(
+                'ffmpeg',
+                '-i', file_path,
+                '-c:v', 'libx264',
+                '-c:a', 'aac',
+                '-preset', 'fast',
+                '-hls_time', '10',
+                '-hls_playlist_type', 'vod',
+                '-hls_segment_filename', f'{hls_dir}/segment_%03d.ts',
+                '-master_pl_name', 'master.m3u8',
+                f'{hls_dir}/playlist.m3u8',
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+            
+            # Upload HLS files
+            hls_base_path = f"hls/{media.agency_id}/{media.filename.rsplit('.', 1)[0]}"
+            
+            for filename in os.listdir(hls_dir):
+                file_path = os.path.join(hls_dir, filename)
+                if os.path.isfile(file_path):
+                    if self.s3_client:
+                        s3_key = f"{hls_base_path}/{filename}"
+                        await self._upload_to_s3(file_path, s3_key)
+                    else:
+                        local_path = f"{hls_base_path}/{filename}"
+                        await self._save_locally(file_path, local_path)
+            
+            # Store HLS URL
+            if self.s3_client:
+                media.hls_url = f"https://{settings.AWS_S3_BUCKET}.s3.{settings.AWS_REGION}.amazonaws.com/{hls_base_path}/master.m3u8"
+            else:
+                media.hls_url = f"/media/{hls_base_path}/master.m3u8"
+            
+            # Clean up
+            import shutil
+            shutil.rmtree(hls_dir)
+            
+        except Exception as e:
+            logger.error(f"HLS creation failed: {e}")
     
     async def delete_file(self, media: Media):
         """Delete file from storage."""
