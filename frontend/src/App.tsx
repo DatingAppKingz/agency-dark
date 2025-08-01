@@ -7,6 +7,8 @@ import { router } from './router';
 import theme from './theme';
 import { Toaster } from './components/common/Toaster';
 import { PushNotificationProvider } from './providers/PushNotificationProvider';
+import { LanguageProvider } from './i18n/LanguageProvider';
+import './i18n';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,10 +26,12 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <PushNotificationProvider>
-            <RouterProvider router={router} />
-            <Toaster />
-          </PushNotificationProvider>
+          <LanguageProvider>
+            <PushNotificationProvider>
+              <RouterProvider router={router} />
+              <Toaster />
+            </PushNotificationProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </HelmetProvider>

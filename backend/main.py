@@ -27,6 +27,7 @@ from core.errors import error_handler
 from core.logger import get_logger
 from services.webhook_queue import get_webhook_processor, shutdown_processor
 from services.sync_scheduler import get_sync_scheduler, shutdown_scheduler
+from middleware.i18n import I18nMiddleware
 
 # Use our enhanced logger instead of basic logging
 logger = get_logger(__name__)
@@ -123,6 +124,7 @@ if settings.DEBUG:
     app.add_middleware(DatabaseQueryLoggingMiddleware, slow_query_threshold=1.0)
 
 app.add_middleware(DebuggingMiddleware)  # Request tracking and error handling
+app.add_middleware(I18nMiddleware)  # Internationalization
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(monitoring_middleware)
 app.add_middleware(APIUsageMiddleware)  # API usage tracking and limits
