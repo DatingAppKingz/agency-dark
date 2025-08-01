@@ -78,11 +78,10 @@ class HealthChecker:
             # For async engines, we need to use the status() method
             # and parse it, as AsyncAdaptedQueuePool doesn't expose
             # individual methods like checked_out_connections
-            pool_status_str = engine.pool.status()
+            pool_status_str = str(engine.pool.status())
             
             # Parse the status string to extract values
             # Format: "Pool size: X Connections in pool: Y Current Overflow: Z Current Checked out connections: W"
-            import re
             status_match = re.search(
                 r"Pool size: (\d+) Connections in pool: (\d+) Current Overflow: (-?\d+) Current Checked out connections: (\d+)",
                 pool_status_str

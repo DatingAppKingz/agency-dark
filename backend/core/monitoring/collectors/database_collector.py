@@ -68,60 +68,74 @@ class DatabaseMetricsCollector:
         
         try:
             pool = engine.pool
-            if hasattr(pool, 'size'):
+            
+            # For AsyncAdaptedQueuePool, we need to parse the status string
+            pool_status_str = str(pool.status())
+            
+            # Parse the status string to extract values
+            # Format: "Pool size: X Connections in pool: Y Current Overflow: Z Current Checked out connections: W"
+            import re
+            status_match = re.search(
+                r"Pool size: (\d+) Connections in pool: (\d+) Current Overflow: (-?\d+) Current Checked out connections: (\d+)",
+                pool_status_str
+            )
+            
+            if status_match:
+                pool_size = int(status_match.group(1))
+                connections_in_pool = int(status_match.group(2))
+                overflow = int(status_match.group(3))
+                checked_out = int(status_match.group(4))
+                
                 # Pool size
                 metrics.append(Metric(
                     metric_type=MetricType.DATABASE_POOL_SIZE,
                     metric_name="db_pool_size",
-                    value=float(pool.size()),
+                    value=float(pool_size),
                     unit="connections",
                     hostname=settings.HOSTNAME,
                     service_name="database",
                     timestamp=timestamp
                 ))
-            
-            if hasattr(pool, 'checked_in_connections'):
+                
                 # Available connections
                 metrics.append(Metric(
                     metric_type=MetricType.DATABASE_CONNECTIONS,
                     metric_name="db_connections_available",
-                    value=float(pool.checked_in_connections()),
+                    value=float(connections_in_pool),
                     unit="connections",
                     hostname=settings.HOSTNAME,
                     service_name="database",
                     timestamp=timestamp
                 ))
-            
-            if hasattr(pool, 'checked_out_connections'):
+                
                 # Active connections
                 metrics.append(Metric(
                     metric_type=MetricType.DATABASE_CONNECTIONS,
                     metric_name="db_connections_active",
-                    value=float(pool.checked_out_connections()),
+                    value=float(checked_out),
                     unit="connections",
                     hostname=settings.HOSTNAME,
                     service_name="database",
                     timestamp=timestamp
                 ))
-            
-            if hasattr(pool, 'overflow'):
+                
                 # Overflow connections
                 metrics.append(Metric(
                     metric_type=MetricType.DATABASE_CONNECTIONS,
                     metric_name="db_connections_overflow",
-                    value=float(pool.overflow()),
+                    value=float(overflow),
                     unit="connections",
                     hostname=settings.HOSTNAME,
                     service_name="database",
                     timestamp=timestamp
                 ))
-            
-            if hasattr(pool, 'total'):
+                
                 # Total connections
+                total_connections = checked_out + connections_in_pool
                 metrics.append(Metric(
                     metric_type=MetricType.DATABASE_CONNECTIONS,
                     metric_name="db_connections_total",
-                    value=float(pool.total()),
+                    value=float(total_connections),
                     unit="connections",
                     hostname=settings.HOSTNAME,
                     service_name="database",
