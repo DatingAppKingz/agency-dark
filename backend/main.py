@@ -28,6 +28,11 @@ from core.logger import get_logger
 from services.webhook_queue import get_webhook_processor, shutdown_processor
 from services.sync_scheduler import get_sync_scheduler, shutdown_scheduler
 from middleware.i18n import I18nMiddleware
+from middleware.logging_context import LoggingContextMiddleware, UserContextMiddleware
+from logging_config import configure_structured_logging
+
+# Configure structured logging
+configure_structured_logging()
 
 # Use our enhanced logger instead of basic logging
 logger = get_logger(__name__)
@@ -134,7 +139,9 @@ if settings.DEBUG:
 
 app.add_middleware(DebuggingMiddleware)  # Request tracking and error handling
 app.add_middleware(I18nMiddleware)  # Internationalization
+app.add_middleware(LoggingContextMiddleware)  # Structured logging context
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(UserContextMiddleware)  # User context for logging
 app.add_middleware(monitoring_middleware)
 app.add_middleware(APIUsageMiddleware)  # API usage tracking and limits
 app.add_middleware(AdvancedRateLimitMiddleware)  # New advanced rate limiting

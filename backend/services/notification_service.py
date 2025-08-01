@@ -3,6 +3,7 @@
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timedelta
 import asyncio
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from email.mime.text import MIMEText
@@ -15,6 +16,7 @@ import httpx
 
 from core.config import settings
 from core.logger import get_logger
+from core.logging_context import get_structured_logger
 from models.notification import (
     Notification, NotificationTemplate, NotificationPreference,
     NotificationEvent, NotificationType, NotificationStatus,
@@ -32,7 +34,7 @@ from services.exceptions import (
     TemplateProcessingException
 )
 
-logger = get_logger(__name__)
+logger = get_structured_logger(__name__)
 
 
 class NotificationService:
@@ -225,11 +227,22 @@ class NotificationService:
                 if response:
                     notification.external_id = response
                 
-                logger.info(f"Email sent successfully to {notification.email}")
+                logger.log_event(
+                "email_sent",
+                {
+                    "notification_id": str(notification.id),
+                    "email_to": notification.email,
+                    "subject": notification.subject
+                }
+            )
                 return True
                 
         except aiosmtplib.SMTPException as e:
-            logger.error(f"SMTP error sending email: {e}", extra={"error_type": "SMTPException"})
+            logger.error(f"SMTP error sending email: {e}", extra={
+                "error_type": "SMTPException",
+                "email_to": notification.email,
+                "notification_id": str(notification.id)
+            })
             notification.error_message = f"SMTP error: {str(e)}"
             return False
         except Exception as e:
@@ -258,7 +271,14 @@ class NotificationService:
             # Store external ID
             notification.external_id = message.sid
             
-            logger.info(f"SMS sent successfully to {notification.phone}")
+            logger.log_event(
+                "sms_sent",
+                {
+                    "notification_id": str(notification.id),
+                    "phone_to": notification.phone,
+                    "message_sid": message.sid
+                }
+            )
             return True
             
         except Exception as e:
@@ -307,7 +327,15 @@ class NotificationService:
                     if await self._send_web_push_notification(notification, token):
                         success_count += 1
             
-            logger.info(f"Push notification sent to {success_count}/{len(push_tokens)} devices for user {notification.user_id}")
+            logger.log_event(
+                "push_notification_sent",
+                {
+                    "notification_id": str(notification.id),
+                    "user_id": str(notification.user_id),
+                    "success_count": success_count,
+                    "total_tokens": len(push_tokens)
+                }
+            )
             return success_count > 0
             
         except Exception as e:
@@ -392,10 +420,15 @@ class NotificationService:
             # Handle specific FCM errors
             if 'registration-token-not-registered' in error_str:
                 token.is_active = False
-                logger.warning(f"Deactivated invalid FCM token: {token.id}", extra={
-                    "error_type": "InvalidToken",
-                    "token_id": str(token.id)
-                })
+                logger.log_event(
+                    "fcm_token_invalidated",
+                    {
+                        "token_id": str(token.id),
+                        "user_id": str(notification.user_id),
+                        "error": error_str
+                    },
+                    level=logging.WARNING
+                )
             elif 'message-rate-exceeded' in error_str:
                 logger.error(f"FCM rate limit exceeded: {e}", extra={"error_type": "RateLimit"})
             else:
