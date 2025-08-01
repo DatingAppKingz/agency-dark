@@ -21,6 +21,7 @@ from models.chat import Conversation as Chat
 from api.v1.endpoints.auth_simple import get_current_user
 from core.errors import NotFoundError, AuthorizationError, ValidationError as AppValidationError
 from core.logger import get_logger
+from services.commission_service import CommissionService
 
 logger = get_logger(__name__)
 
@@ -240,14 +241,19 @@ async def create_transaction(
     # Verify model exists and get agency
     model = await verify_model_access(transaction_data.model_id, current_user, db)
     
-    # Calculate fees (simplified - would be more complex in production)
-    platform_fee_rate = Decimal("0.20")  # 20% platform fee
-    agency_fee_rate = Decimal("0.10")  # 10% agency fee
-    
+    # Calculate fees using commission service
+    commission_service = CommissionService(db)
     gross_amount = transaction_data.amount
-    platform_fee = gross_amount * platform_fee_rate
-    agency_fee = (gross_amount - platform_fee) * agency_fee_rate
-    model_earnings = gross_amount - platform_fee - agency_fee
+    
+    fees = await commission_service.calculate_transaction_fees(
+        model_id=transaction_data.model_id,
+        gross_amount=gross_amount,
+        transaction_date=datetime.utcnow()
+    )
+    
+    platform_fee = fees["platform_fee"]
+    agency_fee = fees["agency_fee"]
+    model_earnings = fees["model_earnings"]
     
     # Create transaction
     transaction = Transaction(
@@ -670,3 +676,119 @@ async def list_invoices(
         ))
     
     return response
+
+
+# Commission endpoints
+@router.get("/commission/tiers")
+async def get_commission_tiers(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get commission tier structure."""
+    # Check permissions
+    if current_user.role not in [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    return {
+        "tiers": [
+            {
+                "threshold": 0,
+                "rate": 0.20,
+                "label": "$0 - $10,000"
+            },
+            {
+                "threshold": 10000,
+                "rate": 0.25,
+                "label": "$10,000 - $25,000"
+            },
+            {
+                "threshold": 25000,
+                "rate": 0.30,
+                "label": "$25,000 - $50,000"
+            },
+            {
+                "threshold": 50000,
+                "rate": 0.35,
+                "label": "$50,000+"
+            }
+        ],
+        "platform_fee": 0.20
+    }
+
+
+@router.get("/commission/model/{model_id}")
+async def get_model_commission_info(
+    model_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get commission information for a specific model."""
+    # Verify access
+    model = await verify_model_access(model_id, current_user, db)
+    
+    # Get commission service
+    commission_service = CommissionService(db)
+    
+    # Get current month revenue
+    monthly_revenue = await commission_service.get_model_monthly_revenue(model_id)
+    
+    # Get tier information
+    tier_info = commission_service.get_tier_info(monthly_revenue)
+    
+    # Calculate sample commissions for different amounts
+    sample_amounts = [Decimal("10"), Decimal("50"), Decimal("100"), Decimal("500")]
+    sample_calculations = []
+    
+    for amount in sample_amounts:
+        fees = commission_service.calculate_tiered_commission(amount, monthly_revenue)
+        sample_calculations.append({
+            "amount": float(amount),
+            "platform_fee": float(fees["platform_fee"]),
+            "agency_fee": float(fees["agency_fee"]),
+            "model_earnings": float(fees["model_earnings"])
+        })
+    
+    return {
+        "model_id": model_id,
+        "model_name": model.stage_name,
+        "current_month_revenue": tier_info["monthly_revenue"],
+        "current_tier": tier_info["current_tier"],
+        "current_rate": tier_info["current_rate"],
+        "next_tier": tier_info["next_tier"],
+        "progress_to_next_tier": tier_info["progress_to_next"],
+        "sample_calculations": sample_calculations
+    }
+
+
+@router.post("/commission/calculate")
+async def calculate_commission(
+    model_id: int,
+    amount: Decimal = Field(..., gt=0),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Calculate commission for a given amount and model."""
+    # Verify access
+    model = await verify_model_access(model_id, current_user, db)
+    
+    # Get commission service
+    commission_service = CommissionService(db)
+    
+    # Calculate fees
+    fees = await commission_service.calculate_transaction_fees(
+        model_id=model_id,
+        gross_amount=amount
+    )
+    
+    # Get current tier info
+    monthly_revenue = await commission_service.get_model_monthly_revenue(model_id)
+    tier_info = commission_service.get_tier_info(monthly_revenue)
+    
+    return {
+        "gross_amount": float(amount),
+        "platform_fee": float(fees["platform_fee"]),
+        "agency_fee": float(fees["agency_fee"]),
+        "model_earnings": float(fees["model_earnings"]),
+        "effective_agency_rate": float(fees["agency_fee"] / (amount - fees["platform_fee"])),
+        "tier_info": tier_info
+    }
