@@ -1,7 +1,7 @@
 """Add sync conflict logs table
 
-Revision ID: 026_add_sync_conflict_logs
-Revises: 025_fix_chat_tables_structure
+Revision ID: 026
+Revises: 025
 Create Date: 2025-01-08
 
 """
@@ -10,19 +10,43 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '026_add_sync_conflict_logs'
-down_revision = '025_fix_chat_tables_structure'
+revision = '026'
+down_revision = '025'
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
+    
+    
+    # Check and create conflict_type enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'conflict_type'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE conflict_type AS ENUM ('concurrent_update', 'schema_mismatch', 'data_validation', 'business_rule', 'delete_modified', 'duplicate_key')"))
+
+    # Check and create resolution_action enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'resolution_action'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE resolution_action AS ENUM ('keep_local', 'keep_remote', 'merge', 'manual', 'skip', 'retry')"))
+# Check and create conflict_type enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'conflict_type'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE conflict_type AS ENUM ('concurrent_update', 'schema_mismatch', 'data_validation', 'business_rule', 'delete_modified', 'duplicate_key')"))
+
+    # Check and create resolution_action enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'resolution_action'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE resolution_action AS ENUM ('keep_local', 'keep_remote', 'merge', 'manual', 'skip', 'retry')"))
     # Create conflict type enum
     conflict_type = postgresql.ENUM(
         'concurrent_update', 'schema_mismatch', 'data_validation',
         'business_rule', 'delete_modified', 'duplicate_key',
         name='conflict_type'
-    )
+    , create_type=False)
     conflict_type.create(op.get_bind())
     
     # Create resolution action enum
@@ -30,23 +54,23 @@ def upgrade() -> None:
         'keep_local', 'keep_remote', 'merge',
         'manual', 'skip', 'retry',
         name='resolution_action'
-    )
+    , create_type=False)
     resolution_action.create(op.get_bind())
     
     # Create sync_conflict_logs table
     op.create_table('sync_conflict_logs',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('sync_job_id', sa.String(), nullable=True),
+        sa.Column('sync_job_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('api_key_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('conflict_type', sa.Enum('concurrent_update', 'schema_mismatch', 'data_validation', 'business_rule', 'delete_modified', 'duplicate_key', name='conflict_type'), nullable=False),
+        sa.Column('conflict_type', postgresql.ENUM('concurrent_update', 'schema_mismatch', 'data_validation', 'business_rule', 'delete_modified', 'duplicate_key', name='conflict_type', create_type=False), nullable=False),
         sa.Column('entity_type', sa.String(), nullable=False),
-        sa.Column('local_id', sa.String(), nullable=False),
-        sa.Column('remote_id', sa.String(), nullable=False),
+        sa.Column('local_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('remote_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('field_conflicts', sa.JSON(), nullable=True),
         sa.Column('local_data_snapshot', sa.JSON(), nullable=True),
         sa.Column('remote_data_snapshot', sa.JSON(), nullable=True),
-        sa.Column('resolution_action', sa.Enum('keep_local', 'keep_remote', 'merge', 'manual', 'skip', 'retry', name='resolution_action'), nullable=False),
+        sa.Column('resolution_action', postgresql.ENUM('keep_local', 'keep_remote', 'merge', 'manual', 'skip', 'retry', name='resolution_action', create_type=False), nullable=False),
         sa.Column('resolved_data', sa.JSON(), nullable=True),
         sa.Column('merge_conflicts', sa.JSON(), nullable=True),
         sa.Column('manual_review_required', sa.Boolean(), nullable=True),

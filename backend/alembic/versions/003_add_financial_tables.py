@@ -1,6 +1,6 @@
 """Add financial tables
 
-Revision ID: 003_add_financial_tables
+Revision ID: 003
 Revises: 0faccbbf85a4
 Create Date: 2025-07-23 20:00:55.173846
 
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '003_add_financial_tables'
-down_revision: Union[str, Sequence[str], None] = '002_add_analytics_tables'
+revision: str = '003'
+down_revision: Union[str, Sequence[str], None] = '002'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

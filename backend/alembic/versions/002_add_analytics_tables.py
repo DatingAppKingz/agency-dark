@@ -1,6 +1,6 @@
 """Add analytics tables
 
-Revision ID: 002_add_analytics_tables
+Revision ID: 002
 Revises: cd0086df175e
 Create Date: 2025-07-23 19:47:03.628926
 
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '002_add_analytics_tables'
-down_revision: Union[str, Sequence[str], None] = '001_initial_migration'
+revision: str = '002'
+down_revision: Union[str, Sequence[str], None] = '001'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

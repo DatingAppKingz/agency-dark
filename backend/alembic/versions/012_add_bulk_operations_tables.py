@@ -1,7 +1,7 @@
 """Add bulk operations tables
 
-Revision ID: 012_add_bulk_operations_tables
-Revises: 007_add_fraud_detection_tables
+Revision ID: 012
+Revises: 011
 Create Date: 2025-01-27
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '012_add_bulk_operations_tables'
-down_revision = '008_add_fraud_detection_tables'
+revision = '012'
+down_revision = '011'
 branch_labels = None
 depends_on = None
 
@@ -19,15 +19,24 @@ depends_on = None
 def upgrade() -> None:
     """Add bulk operations tables."""
     
-    # Create enums
-    op.execute("CREATE TYPE bulkoperationtype AS ENUM ('user_update', 'user_delete', 'user_activate', 'user_deactivate', 'model_update', 'model_assign', 'transaction_export', 'transaction_reconcile', 'payout_schedule', 'payout_cancel', 'message_send', 'message_delete', 'analytics_export', 'data_import', 'data_export')")
-    op.execute("CREATE TYPE bulkoperationstatus AS ENUM ('pending', 'validating', 'scheduled', 'processing', 'completed', 'failed', 'cancelled', 'rolled_back')")
+    
+    # Check and create bulkoperationstatus enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'bulkoperationstatus'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE bulkoperationstatus AS ENUM ('pending', 'validating', 'scheduled', 'processing', 'completed', 'failed', 'cancelled', 'rolled_back')"))
+
+    # Check and create bulkoperationtype enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'bulkoperationtype'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE bulkoperationtype AS ENUM ('user_update', 'user_delete', 'user_activate', 'user_deactivate', 'model_update', 'model_assign', 'transaction_export', 'transaction_reconcile', 'payout_schedule', 'payout_cancel', 'message_send', 'message_delete', 'analytics_export', 'data_import', 'data_export')"))
     
     # Create bulk_operations table
     op.create_table('bulk_operations',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('operation_type', sa.Enum('user_update', 'user_delete', 'user_activate', 'user_deactivate', 'model_update', 'model_assign', 'transaction_export', 'transaction_reconcile', 'payout_schedule', 'payout_cancel', 'message_send', 'message_delete', 'analytics_export', 'data_import', 'data_export', name='bulkoperationtype'), nullable=False),
-        sa.Column('status', sa.Enum('pending', 'validating', 'scheduled', 'processing', 'completed', 'failed', 'cancelled', 'rolled_back', name='bulkoperationstatus'), nullable=True),
+        sa.Column('operation_type', postgresql.ENUM('user_update', 'user_delete', 'user_activate', 'user_deactivate', 'model_update', 'model_assign', 'transaction_export', 'transaction_reconcile', 'payout_schedule', 'payout_cancel', 'message_send', 'message_delete', 'analytics_export', 'data_import', 'data_export', name='bulkoperationtype', create_type=False), nullable=False),
+        sa.Column('status', postgresql.ENUM('pending', 'validating', 'scheduled', 'processing', 'completed', 'failed', 'cancelled', 'rolled_back', name='bulkoperationstatus', create_type=False), nullable=True),
         sa.Column('entity_type', sa.String(length=50), nullable=False),
         sa.Column('entity_ids', sa.ARRAY(postgresql.UUID(as_uuid=True)), nullable=False),
         sa.Column('total_count', sa.Integer(), nullable=False),
@@ -114,7 +123,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(length=100), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
-        sa.Column('operation_type', sa.Enum('user_update', 'user_delete', 'user_activate', 'user_deactivate', 'model_update', 'model_assign', 'transaction_export', 'transaction_reconcile', 'payout_schedule', 'payout_cancel', 'message_send', 'message_delete', 'analytics_export', 'data_import', 'data_export', name='bulkoperationtype'), nullable=False),
+        sa.Column('operation_type', postgresql.ENUM('user_update', 'user_delete', 'user_activate', 'user_deactivate', 'model_update', 'model_assign', 'transaction_export', 'transaction_reconcile', 'payout_schedule', 'payout_cancel', 'message_send', 'message_delete', 'analytics_export', 'data_import', 'data_export', name='bulkoperationtype', create_type=False), nullable=False),
         sa.Column('default_params', sa.JSON(), nullable=False),
         sa.Column('validation_rules', sa.JSON(), nullable=True),
         sa.Column('selection_criteria', sa.JSON(), nullable=True),
@@ -172,7 +181,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('operation_type', sa.Enum('user_update', 'user_delete', 'user_activate', 'user_deactivate', 'model_update', 'model_assign', 'transaction_export', 'transaction_reconcile', 'payout_schedule', 'payout_cancel', 'message_send', 'message_delete', 'analytics_export', 'data_import', 'data_export', name='bulkoperationtype'), nullable=True),
+        sa.Column('operation_type', postgresql.ENUM('user_update', 'user_delete', 'user_activate', 'user_deactivate', 'model_update', 'model_assign', 'transaction_export', 'transaction_reconcile', 'payout_schedule', 'payout_cancel', 'message_send', 'message_delete', 'analytics_export', 'data_import', 'data_export', name='bulkoperationtype', create_type=False), nullable=True),
         sa.Column('max_entities_per_operation', sa.Integer(), nullable=True),
         sa.Column('max_operations_per_day', sa.Integer(), nullable=True),
         sa.Column('max_operations_per_hour', sa.Integer(), nullable=True),

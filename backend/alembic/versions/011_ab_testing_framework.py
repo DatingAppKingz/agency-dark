@@ -1,7 +1,7 @@
 """Add A/B testing framework tables
 
-Revision ID: 011_ab_testing_framework
-Revises: 007_performance_indexes
+Revision ID: 011
+Revises: 010
 Create Date: 2025-01-28 10:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '011_ab_testing_framework'
-down_revision = '009_performance_indexes'
+revision = '011'
+down_revision = '010'
 branch_labels = None
 depends_on = None
 
@@ -21,8 +21,8 @@ def upgrade() -> None:
     op.create_table(
         'ab_experiments',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('agency_id', sa.String(), nullable=False),
-        sa.Column('created_by', sa.String(), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('created_by', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('hypothesis', sa.Text(), nullable=True),
@@ -81,7 +81,7 @@ def upgrade() -> None:
         sa.Column('experiment_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('variant_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('participant_type', sa.String(), nullable=False),
-        sa.Column('participant_id', sa.String(), nullable=False),
+        sa.Column('participant_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('assignment_timestamp', sa.DateTime(), nullable=True),
         sa.Column('assignment_reason', sa.String(), nullable=True),
         sa.Column('has_converted', sa.Boolean(), nullable=True),
@@ -114,7 +114,7 @@ def upgrade() -> None:
     op.create_table(
         'ab_experiment_templates',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('agency_id', sa.String(), nullable=True),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('name', sa.String(), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('experiment_type', sa.String(), nullable=False),

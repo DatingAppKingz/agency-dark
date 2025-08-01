@@ -1,7 +1,7 @@
 """Add rate limiting tables
 
-Revision ID: 006_add_rate_limiting_tables
-Revises: 005_add_api_key_tables
+Revision ID: 006
+Revises: 005
 Create Date: 2025-01-27
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '006_add_rate_limiting_tables'
-down_revision = '005_add_api_key_tables'
+revision = '006'
+down_revision = '005'
 branch_labels = None
 depends_on = None
 
@@ -22,9 +22,9 @@ def upgrade() -> None:
     # Create rate_limit_configs table
     op.create_table('rate_limit_configs',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('tier', sa.Enum('free', 'basic', 'professional', 'enterprise', 'custom', name='ratelimittier'), nullable=False),
+        sa.Column('tier', postgresql.ENUM('free', 'basic', 'professional', 'enterprise', 'custom', name='ratelimittier'), nullable=False),
         sa.Column('endpoint_pattern', sa.String(length=255), nullable=False),
-        sa.Column('limit_type', sa.Enum('api_calls', 'data_export', 'file_upload', 'webhook_calls', 'websocket_messages', name='ratelimittype'), nullable=False),
+        sa.Column('limit_type', postgresql.ENUM('api_calls', 'data_export', 'file_upload', 'webhook_calls', 'websocket_messages', name='ratelimittype'), nullable=False),
         sa.Column('requests_per_minute', sa.Integer(), nullable=True),
         sa.Column('requests_per_hour', sa.Integer(), nullable=True),
         sa.Column('requests_per_day', sa.Integer(), nullable=True),
@@ -48,7 +48,7 @@ def upgrade() -> None:
     op.create_table('user_rate_limits',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('tier_override', sa.Enum('free', 'basic', 'professional', 'enterprise', 'custom', name='ratelimittier'), nullable=True),
+        sa.Column('tier_override', postgresql.ENUM('free', 'basic', 'professional', 'enterprise', 'custom', name='ratelimittier'), nullable=True),
         sa.Column('custom_limits', sa.JSON(), nullable=True),
         sa.Column('limit_multiplier', sa.Float(), nullable=True),
         sa.Column('valid_from', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),

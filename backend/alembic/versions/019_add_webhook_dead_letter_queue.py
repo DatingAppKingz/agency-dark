@@ -1,6 +1,6 @@
 """add webhook dead letter queue
 
-Revision ID: 019_add_webhook_dead_letter_queue
+Revision ID: 019
 Revises: 
 Create Date: 2025-01-28
 
@@ -15,8 +15,8 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # revision identifiers, used by Alembic.
-revision = '019_add_webhook_dead_letter_queue'
-down_revision = '017_add_monitoring_tables'
+revision = '019'
+down_revision = '018'
 branch_labels = None
 depends_on = None
 
@@ -24,11 +24,11 @@ depends_on = None
 def upgrade() -> None:
     # Create webhook_dead_letters table
     op.create_table('webhook_dead_letters',
-        sa.Column('id', sa.String(), nullable=False),
-        sa.Column('webhook_id', sa.String(), nullable=False),
-        sa.Column('delivery_id', sa.String(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('webhook_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('delivery_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('event_type', sa.String(), nullable=False),
-        sa.Column('event_id', sa.String(), nullable=False),
+        sa.Column('event_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('payload', sa.JSON(), nullable=False),
         sa.Column('final_status_code', sa.Integer(), nullable=True),
         sa.Column('total_attempts', sa.Integer(), nullable=False),

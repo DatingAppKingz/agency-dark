@@ -1,7 +1,7 @@
 """Add API key management tables
 
-Revision ID: 005_add_api_key_tables
-Revises: 004_database_optimization
+Revision ID: 005
+Revises: 004
 Create Date: 2025-01-27
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '005_add_api_key_tables'
-down_revision = '004_database_optimization'
+revision = '005'
+down_revision = '004'
 branch_labels = None
 depends_on = None
 

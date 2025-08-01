@@ -1,7 +1,7 @@
-"""Create chat system tables - simplified version
+"""Fix chat tables structure to match SQLAlchemy models
 
-Revision ID: 026_create_chat_system_simple
-Revises: 001_initial_migration
+Revision ID: 034
+Revises: 033
 Create Date: 2025-01-31
 
 """
@@ -10,29 +10,25 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '026_create_chat_system_simple'
-down_revision = '001_initial_migration'
+revision = '034'
+down_revision = '033'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    # First ensure we have UUID extension
-    op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+    # Drop existing chat tables to recreate them with correct structure
+    op.drop_table('chat_messages')
+    op.drop_table('chat_conversations')
     
-    # Create models table if it doesn't exist (rename from model_profiles)
-    op.execute("""
-        ALTER TABLE IF EXISTS model_profiles RENAME TO models;
-    """)
-    
-    # Create conversations table
+    # Create conversations table with correct structure
     op.create_table('conversations',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('model_id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('model_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('fan_id', sa.String(255), nullable=False),
         sa.Column('fan_username', sa.String(255), nullable=False),
         sa.Column('fan_display_name', sa.String(255), nullable=True),
-        sa.Column('assigned_chatter_id', sa.Integer(), nullable=True),
+        sa.Column('assigned_chatter_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('assigned_at', sa.String(30), nullable=True),
         sa.Column('status', sa.String(20), nullable=False, server_default='active'),
         sa.Column('priority', sa.Integer(), nullable=False, server_default='0'),
@@ -50,17 +46,28 @@ def upgrade():
         sa.Column('notes', sa.Text(), nullable=True),
         sa.Column('metadata', postgresql.JSON(), nullable=False, server_default='{}'),
         sa.Column('platform_data', postgresql.JSON(), nullable=False, server_default='{}'),
-        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['model_id'], ['models.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['assigned_chatter_id'], ['users.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['agency_id'], ['agencies.id'], ondelete='CASCADE'),
     )
     
-    # Create messages table
+    # Create indexes for conversations
+    op.create_index('idx_conversations_model_id', 'conversations', ['model_id'])
+    op.create_index('idx_conversations_fan_id', 'conversations', ['fan_id'])
+    op.create_index('idx_conversations_assigned_chatter_id', 'conversations', ['assigned_chatter_id'])
+    op.create_index('idx_conversations_status', 'conversations', ['status'])
+    op.create_index('idx_conversations_last_message_at', 'conversations', ['last_message_at'])
+    op.create_index('idx_conversations_agency_id', 'conversations', ['agency_id'])
+    
+    # Create messages table with correct structure
     op.create_table('messages',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('conversation_id', sa.Integer(), nullable=False),
-        sa.Column('sender_id', sa.Integer(), nullable=True),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('conversation_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('sender_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('sender_type', sa.String(20), nullable=False),
         sa.Column('type', sa.String(20), nullable=False, server_default='text'),
         sa.Column('content', sa.Text(), nullable=True),
@@ -77,16 +84,27 @@ def upgrade():
         sa.Column('is_flagged', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('flagged_reason', sa.String(255), nullable=True),
         sa.Column('is_deleted', sa.Boolean(), nullable=False, server_default='false'),
-        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['conversation_id'], ['conversations.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['sender_id'], ['users.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['agency_id'], ['agencies.id'], ondelete='CASCADE'),
     )
+    
+    # Create indexes for messages
+    op.create_index('idx_messages_conversation_id', 'messages', ['conversation_id'])
+    op.create_index('idx_messages_sender_id', 'messages', ['sender_id'])
+    op.create_index('idx_messages_created_at', 'messages', ['created_at'])
+    op.create_index('idx_messages_status', 'messages', ['status'])
+    op.create_index('idx_messages_platform_message_id', 'messages', ['platform_message_id'], unique=True)
+    op.create_index('idx_messages_agency_id', 'messages', ['agency_id'])
     
     # Create chat_templates table
     op.create_table('chat_templates',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(255), nullable=False),
         sa.Column('category', sa.String(100), nullable=True),
         sa.Column('content', sa.Text(), nullable=False),
@@ -97,13 +115,18 @@ def upgrade():
         sa.Column('languages', postgresql.JSON(), nullable=False, server_default='["en"]'),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['agency_id'], ['agencies.id'], ondelete='CASCADE'),
     )
+    
+    op.create_index('idx_chat_templates_agency_id', 'chat_templates', ['agency_id'])
+    op.create_index('idx_chat_templates_category', 'chat_templates', ['category'])
+    op.create_index('idx_chat_templates_is_active', 'chat_templates', ['is_active'])
     
     # Create conversation_analytics table
     op.create_table('conversation_analytics',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('conversation_id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('conversation_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('date', sa.String(10), nullable=False),
         sa.Column('messages_sent', sa.Integer(), nullable=False, server_default='0'),
         sa.Column('messages_received', sa.Integer(), nullable=False, server_default='0'),
@@ -118,27 +141,9 @@ def upgrade():
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
         sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['conversation_id'], ['conversations.id'], ondelete='CASCADE'),
         sa.UniqueConstraint('conversation_id', 'date', name='uq_conversation_analytics_date')
     )
-    
-    # Create indexes
-    op.create_index('idx_conversations_model_id', 'conversations', ['model_id'])
-    op.create_index('idx_conversations_fan_id', 'conversations', ['fan_id'])
-    op.create_index('idx_conversations_assigned_chatter_id', 'conversations', ['assigned_chatter_id'])
-    op.create_index('idx_conversations_status', 'conversations', ['status'])
-    op.create_index('idx_conversations_last_message_at', 'conversations', ['last_message_at'])
-    op.create_index('idx_conversations_agency_id', 'conversations', ['agency_id'])
-    
-    op.create_index('idx_messages_conversation_id', 'messages', ['conversation_id'])
-    op.create_index('idx_messages_sender_id', 'messages', ['sender_id'])
-    op.create_index('idx_messages_created_at', 'messages', ['created_at'])
-    op.create_index('idx_messages_status', 'messages', ['status'])
-    op.create_index('idx_messages_platform_message_id', 'messages', ['platform_message_id'], unique=True)
-    op.create_index('idx_messages_agency_id', 'messages', ['agency_id'])
-    
-    op.create_index('idx_chat_templates_agency_id', 'chat_templates', ['agency_id'])
-    op.create_index('idx_chat_templates_category', 'chat_templates', ['category'])
-    op.create_index('idx_chat_templates_is_active', 'chat_templates', ['is_active'])
     
     op.create_index('idx_conversation_analytics_conversation_id', 'conversation_analytics', ['conversation_id'])
     op.create_index('idx_conversation_analytics_date', 'conversation_analytics', ['date'])

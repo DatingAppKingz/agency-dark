@@ -1,7 +1,7 @@
 """Add ML Analytics tables
 
-Revision ID: 016_add_ml_analytics_tables
-Revises: 009_add_reporting_tables
+Revision ID: 016
+Revises: 015
 Create Date: 2025-01-27
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '016_add_ml_analytics_tables'
-down_revision = '014_add_reporting_tables'
+revision = '016'
+down_revision = '015'
 branch_labels = None
 depends_on = None
 
@@ -19,16 +19,38 @@ depends_on = None
 def upgrade() -> None:
     """Add ML analytics tables."""
     
+    
+    
+    # Check and create modelstatus enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'modelstatus'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE modelstatus AS ENUM ('pending', 'training', 'trained', 'evaluating', 'deployed', 'failed', 'archived')"))
+
+    # Check and create predictiontype enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'predictiontype'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE predictiontype AS ENUM ('revenue_forecast', 'churn_prediction', 'content_optimization', 'anomaly_detection', 'fan_ltv', 'engagement_score', 'conversion_rate')"))
+# Check and create modelstatus enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'modelstatus'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE modelstatus AS ENUM ('pending', 'training', 'trained', 'evaluating', 'deployed', 'failed', 'archived')"))
+
+    # Check and create predictiontype enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'predictiontype'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE predictiontype AS ENUM ('revenue_forecast', 'churn_prediction', 'content_optimization', 'anomaly_detection', 'fan_ltv', 'engagement_score', 'conversion_rate')"))
     # Create enums
-    op.execute("CREATE TYPE predictiontype AS ENUM ('revenue_forecast', 'churn_prediction', 'content_optimization', 'anomaly_detection', 'fan_ltv', 'engagement_score', 'conversion_rate')")
-    op.execute("CREATE TYPE modelstatus AS ENUM ('pending', 'training', 'trained', 'evaluating', 'deployed', 'failed', 'archived')")
     
     # Create ml_models table
     op.create_table('ml_models',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(length=200), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
-        sa.Column('prediction_type', sa.Enum('revenue_forecast', 'churn_prediction', 'content_optimization', 'anomaly_detection', 'fan_ltv', 'engagement_score', 'conversion_rate', name='predictiontype'), nullable=False),
+        sa.Column('prediction_type', postgresql.ENUM('revenue_forecast', 'churn_prediction', 'content_optimization', 'anomaly_detection', 'fan_ltv', 'engagement_score', 'conversion_rate', name='predictiontype', create_type=False), nullable=False),
         sa.Column('algorithm', sa.String(length=100), nullable=True),
         sa.Column('hyperparameters', sa.JSON(), nullable=True),
         sa.Column('features', sa.JSON(), nullable=True),
@@ -42,7 +64,7 @@ def upgrade() -> None:
         sa.Column('model_path', sa.String(length=500), nullable=True),
         sa.Column('model_version', sa.String(length=50), nullable=True),
         sa.Column('model_size_mb', sa.Float(), nullable=True),
-        sa.Column('status', sa.Enum('pending', 'training', 'trained', 'evaluating', 'deployed', 'failed', 'archived', name='modelstatus'), nullable=True),
+        sa.Column('status', postgresql.ENUM('pending', 'training', 'trained', 'evaluating', 'deployed', 'failed', 'archived', name='modelstatus', create_type=False), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=True),
         sa.Column('deployment_date', sa.DateTime(timezone=True), nullable=True),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
@@ -65,7 +87,7 @@ def upgrade() -> None:
     op.create_table('predictions',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('model_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('prediction_type', sa.Enum('revenue_forecast', 'churn_prediction', 'content_optimization', 'anomaly_detection', 'fan_ltv', 'engagement_score', 'conversion_rate', name='predictiontype'), nullable=False),
+        sa.Column('prediction_type', postgresql.ENUM('revenue_forecast', 'churn_prediction', 'content_optimization', 'anomaly_detection', 'fan_ltv', 'engagement_score', 'conversion_rate', name='predictiontype', create_type=False), nullable=False),
         sa.Column('target_date', sa.DateTime(timezone=True), nullable=True),
         sa.Column('prediction_horizon', sa.Integer(), nullable=True),
         sa.Column('predicted_value', sa.Float(), nullable=True),

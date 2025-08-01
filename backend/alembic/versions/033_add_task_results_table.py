@@ -1,7 +1,7 @@
 """Add task results table
 
-Revision ID: 024_add_task_results
-Revises: 023_add_media_management
+Revision ID: 033
+Revises: 032
 Create Date: 2025-01-20 12:00:00.000000
 
 """
@@ -10,22 +10,27 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '024_add_task_results'
-down_revision = '023_add_media_management'
+revision = '033'
+down_revision = '032'
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    # Create task status enum
-    op.execute("CREATE TYPE taskstatus AS ENUM ('PENDING', 'STARTED', 'SUCCESS', 'FAILURE', 'RETRY', 'REVOKED')")
+    
+    # Check and create taskstatus enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'taskstatus'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE taskstatus AS ENUM ('PENDING', 'STARTED', 'SUCCESS', 'FAILURE', 'RETRY', 'REVOKED')"))
+# Create task status enum
     
     # Create task_results table
     op.create_table(
         'task_results',
         sa.Column('task_id', sa.String(255), nullable=False),
         sa.Column('task_name', sa.String(255), nullable=False),
-        sa.Column('status', postgresql.ENUM('PENDING', 'STARTED', 'SUCCESS', 'FAILURE', 'RETRY', 'REVOKED', name='taskstatus'), nullable=False),
+        sa.Column('status', postgresql.ENUM('PENDING', 'STARTED', 'SUCCESS', 'FAILURE', 'RETRY', 'REVOKED', name='taskstatus', create_type=False), nullable=False),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('params', sa.JSON(), nullable=True),

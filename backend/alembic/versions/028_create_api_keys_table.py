@@ -1,7 +1,7 @@
 """Create API keys table for encrypted external service credentials
 
-Revision ID: 028_create_api_keys_table
-Revises: 027_add_commission_tracking
+Revision ID: 028
+Revises: 027
 Create Date: 2024-01-31 13:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '028_create_api_keys_table'
-down_revision = '027_add_commission_tracking'
+revision = '028'
+down_revision = '027'
 branch_labels = None
 depends_on = None
 
@@ -19,15 +19,30 @@ depends_on = None
 def upgrade() -> None:
     """Create API keys table and related structures."""
     
-    # Create API key provider enum
-    op.execute("CREATE TYPE apikeyprovider AS ENUM ('onlyfans', 'stripe', 'inflow', 'custom')")
+    
+    # Check and create apikeyprovider enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'apikeyprovider'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE apikeyprovider AS ENUM ('onlyfans', 'stripe', 'inflow', 'custom')"))
+
+    # Check and create apikeystatus enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'apikeystatus'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE apikeystatus AS ENUM ('active', 'inactive', 'expired', 'revoked')"))
+# Create API key provider enum
     
     # Create API key status enum
-    op.execute("CREATE TYPE apikeystatus AS ENUM ('active', 'inactive', 'expired', 'revoked')")
     
-    # Create api_keys table
-    op.create_table('api_keys',
-        sa.Column('id', sa.Integer(), nullable=False),
+    # Create api_keys table (if not exists)
+    conn = op.get_bind()
+    result = conn.execute(sa.text(
+        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'api_keys')"
+    ))
+    if not result.scalar():
+        op.create_table('api_keys',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('provider', postgresql.ENUM('onlyfans', 'stripe', 'inflow', 'custom', name='apikeyprovider', create_type=False), nullable=False),
@@ -54,15 +69,15 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id')
     )
     
-    # Create indexes
-    op.create_index('idx_api_keys_agency_provider', 'api_keys', ['agency_id', 'provider'])
-    op.create_index('idx_api_keys_status', 'api_keys', ['status'])
-    op.create_index('idx_api_keys_expires_at', 'api_keys', ['expires_at'], postgresql_where=sa.text("expires_at IS NOT NULL"))
+        # Create indexes
+        op.create_index('idx_api_keys_agency_provider', 'api_keys', ['agency_id', 'provider'])
+        op.create_index('idx_api_keys_status', 'api_keys', ['status'])
+        op.create_index('idx_api_keys_expires_at', 'api_keys', ['expires_at'], postgresql_where=sa.text("expires_at IS NOT NULL"))
     
     # Create api_key_usage table for tracking
     op.create_table('api_key_usage',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('api_key_id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('api_key_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('endpoint', sa.String(500), nullable=False),
         sa.Column('method', sa.String(10), nullable=False),
         sa.Column('success', sa.Boolean(), nullable=False),
@@ -81,10 +96,14 @@ def upgrade() -> None:
     op.create_index('idx_api_key_usage_key_created', 'api_key_usage', ['api_key_id', 'created_at'])
     op.create_index('idx_api_key_usage_endpoint', 'api_key_usage', ['endpoint'])
     
-    # Create api_key_audit_logs table
-    op.create_table('api_key_audit_logs',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('api_key_id', sa.Integer(), nullable=False),
+    # Create api_key_audit_logs table (if not exists)
+    result = conn.execute(sa.text(
+        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'api_key_audit_logs')"
+    ))
+    if not result.scalar():
+        op.create_table('api_key_audit_logs',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('api_key_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('action', sa.String(50), nullable=False),  # created, updated, rotated, validated, deactivated, accessed
         sa.Column('ip_address', sa.String(45), nullable=True),
@@ -96,9 +115,9 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id')
     )
     
-    # Create index for audit log queries
-    op.create_index('idx_api_key_audit_key_created', 'api_key_audit_logs', ['api_key_id', 'created_at'])
-    op.create_index('idx_api_key_audit_action', 'api_key_audit_logs', ['action'])
+        # Create index for audit log queries
+        op.create_index('idx_api_key_audit_key_created', 'api_key_audit_logs', ['api_key_id', 'created_at'])
+        op.create_index('idx_api_key_audit_action', 'api_key_audit_logs', ['action'])
 
 
 def downgrade() -> None:

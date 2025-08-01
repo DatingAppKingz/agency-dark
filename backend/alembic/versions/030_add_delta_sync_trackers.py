@@ -9,8 +9,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '030_add_delta_sync_trackers'
-down_revision = '029_create_webhook_tables'
+revision = '030'
+down_revision = '029'
 branch_labels = None
 depends_on = None
 
@@ -18,7 +18,7 @@ depends_on = None
 def upgrade() -> None:
     """Create delta_sync_trackers table for tracking sync state."""
     op.create_table('delta_sync_trackers',
-        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('service_name', sa.String(length=100), nullable=False),
         sa.Column('last_sync_at', sa.DateTime(), nullable=True),
         sa.Column('last_successful_sync_at', sa.DateTime(), nullable=True),

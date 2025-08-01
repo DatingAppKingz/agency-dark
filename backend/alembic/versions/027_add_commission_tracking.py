@@ -1,7 +1,7 @@
 """Add commission tracking fields
 
-Revision ID: 027_add_commission_tracking
-Revises: 026_create_chat_system_simple
+Revision ID: 027
+Revises: 026
 Create Date: 2024-01-31 12:00:00.000000
 
 """
@@ -11,8 +11,8 @@ from sqlalchemy.dialects import postgresql
 import uuid
 
 # revision identifiers, used by Alembic.
-revision = '027_add_commission_tracking'
-down_revision = '026_create_chat_system_simple'
+revision = '027'
+down_revision = '026'
 branch_labels = None
 depends_on = None
 
@@ -39,7 +39,7 @@ def upgrade() -> None:
     
     # Create commission_history table for tracking tier changes
     op.create_table('commission_history',
-        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('model_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('month', sa.Date(), nullable=False),
@@ -57,9 +57,14 @@ def upgrade() -> None:
     # Create unique index for model/month combination
     op.create_index('idx_commission_history_model_month', 'commission_history', ['model_id', 'month'], unique=True)
     
-    # Create commission_rules table for custom commission structures
-    op.create_table('commission_rules',
-        sa.Column('id', sa.Integer(), nullable=False),
+    # Create commission_rules table for custom commission structures (if not exists)
+    conn = op.get_bind()
+    result = conn.execute(sa.text(
+        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'commission_rules')"
+    ))
+    if not result.scalar():
+        op.create_table('commission_rules',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(255), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
@@ -73,17 +78,17 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id')
     )
     
-    # Create index for active rules lookup
-    op.create_index('idx_commission_rules_active', 'commission_rules', ['agency_id', 'is_active'])
+        # Create index for active rules lookup
+        op.create_index('idx_commission_rules_active', 'commission_rules', ['agency_id', 'is_active'])
     
     # Create commission_overrides table for model-specific overrides
     op.create_table('commission_overrides',
-        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('model_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('override_type', sa.String(50), nullable=False),  # 'rate', 'tier', 'rule'
         sa.Column('override_value', sa.Numeric(precision=12, scale=4), nullable=True),
-        sa.Column('rule_id', sa.Integer(), nullable=True),
+        sa.Column('rule_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('start_date', sa.Date(), nullable=False),
         sa.Column('end_date', sa.Date(), nullable=True),
         sa.Column('reason', sa.Text(), nullable=True),

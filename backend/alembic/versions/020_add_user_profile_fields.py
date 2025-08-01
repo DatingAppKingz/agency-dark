@@ -1,7 +1,7 @@
 """add user profile fields
 
-Revision ID: 020_add_user_profile_fields
-Revises: add_webhook_dead_letter_queue
+Revision ID: 020
+Revises: 019
 Create Date: 2025-01-28
 
 """
@@ -14,8 +14,8 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # revision identifiers, used by Alembic.
-revision = '020_add_user_profile_fields'
-down_revision = '019_add_webhook_dead_letter_queue'
+revision = '020'
+down_revision = '019'
 branch_labels = None
 depends_on = None
 

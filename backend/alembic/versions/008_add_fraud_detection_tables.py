@@ -1,17 +1,18 @@
 """Add fraud detection tables
 
-Revision ID: 008_add_fraud_detection_tables
-Revises: 006_add_rate_limiting_tables
+Revision ID: 008
+Revises: 007
 Create Date: 2025-01-27
 
 """
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import ENUM
 
 # revision identifiers, used by Alembic.
-revision = '008_add_fraud_detection_tables'
-down_revision = '006_add_rate_limiting_tables'
+revision = '008'
+down_revision = '007'
 branch_labels = None
 depends_on = None
 
@@ -19,10 +20,23 @@ depends_on = None
 def upgrade() -> None:
     """Add fraud detection tables."""
     
-    # Create enums
-    op.execute("CREATE TYPE risklevel AS ENUM ('low', 'medium', 'high', 'critical')")
-    op.execute("CREATE TYPE fraudtype AS ENUM ('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft')")
-    op.execute("CREATE TYPE actiontype AS ENUM ('monitor', 'flag', 'restrict', 'suspend', 'block', 'review')")
+    # Create enums manually with existence checks
+    connection = op.get_bind()
+    
+    # Check and create risklevel enum
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'risklevel'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE risklevel AS ENUM ('low', 'medium', 'high', 'critical')"))
+    
+    # Check and create fraudtype enum
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'fraudtype'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE fraudtype AS ENUM ('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft')"))
+    
+    # Check and create actiontype enum
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'actiontype'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE actiontype AS ENUM ('monitor', 'flag', 'restrict', 'suspend', 'block', 'review')"))
     
     # Create fraud_rules table
     op.create_table('fraud_rules',
@@ -30,12 +44,12 @@ def upgrade() -> None:
         sa.Column('name', sa.String(length=100), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('rule_type', sa.String(length=50), nullable=False),
-        sa.Column('fraud_type', sa.Enum('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft', name='fraudtype'), nullable=False),
+        sa.Column('fraud_type', postgresql.ENUM('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft', name='fraudtype', create_type=False), nullable=False),
         sa.Column('conditions', sa.JSON(), nullable=False),
         sa.Column('threshold_value', sa.Float(), nullable=True),
         sa.Column('time_window_seconds', sa.Integer(), nullable=True),
         sa.Column('risk_score', sa.Integer(), nullable=False),
-        sa.Column('auto_action', sa.Enum('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype'), nullable=True),
+        sa.Column('auto_action', postgresql.ENUM('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype', create_type=False), nullable=True),
         sa.Column('notification_enabled', sa.Boolean(), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=True),
         sa.Column('priority', sa.Integer(), nullable=True),
@@ -59,14 +73,14 @@ def upgrade() -> None:
         sa.Column('entity_id', sa.String(length=255), nullable=False),
         sa.Column('current_score', sa.Integer(), nullable=True),
         sa.Column('max_score', sa.Integer(), nullable=True),
-        sa.Column('risk_level', sa.Enum('low', 'medium', 'high', 'critical', name='risklevel'), nullable=True),
+        sa.Column('risk_level', postgresql.ENUM('low', 'medium', 'high', 'critical', name='risklevel', create_type=False), nullable=True),
         sa.Column('velocity_score', sa.Integer(), nullable=True),
         sa.Column('pattern_score', sa.Integer(), nullable=True),
         sa.Column('anomaly_score', sa.Integer(), nullable=True),
         sa.Column('history_score', sa.Integer(), nullable=True),
         sa.Column('is_blocked', sa.Boolean(), nullable=True),
         sa.Column('is_under_review', sa.Boolean(), nullable=True),
-        sa.Column('auto_action_taken', sa.Enum('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype'), nullable=True),
+        sa.Column('auto_action_taken', postgresql.ENUM('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype', create_type=False), nullable=True),
         sa.Column('last_activity', sa.DateTime(timezone=True), nullable=True),
         sa.Column('score_updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
@@ -85,9 +99,9 @@ def upgrade() -> None:
         sa.Column('event_type', sa.String(length=50), nullable=False),
         sa.Column('entity_type', sa.String(length=50), nullable=False),
         sa.Column('entity_id', sa.String(length=255), nullable=False),
-        sa.Column('fraud_type', sa.Enum('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft', name='fraudtype'), nullable=True),
+        sa.Column('fraud_type', postgresql.ENUM('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft', name='fraudtype', create_type=False), nullable=True),
         sa.Column('risk_score', sa.Integer(), nullable=False),
-        sa.Column('risk_level', sa.Enum('low', 'medium', 'high', 'critical', name='risklevel'), nullable=False),
+        sa.Column('risk_level', postgresql.ENUM('low', 'medium', 'high', 'critical', name='risklevel', create_type=False), nullable=False),
         sa.Column('triggered_rules', sa.ARRAY(postgresql.UUID(as_uuid=True)), nullable=True),
         sa.Column('anomaly_factors', sa.JSON(), nullable=True),
         sa.Column('velocity_metrics', sa.JSON(), nullable=True),
@@ -99,7 +113,7 @@ def upgrade() -> None:
         sa.Column('amount', sa.Float(), nullable=True),
         sa.Column('currency', sa.String(length=3), nullable=True),
         sa.Column('payment_method', sa.String(length=50), nullable=True),
-        sa.Column('action_taken', sa.Enum('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype'), nullable=True),
+        sa.Column('action_taken', postgresql.ENUM('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype', create_type=False), nullable=True),
         sa.Column('blocked', sa.Boolean(), nullable=True),
         sa.Column('reviewed', sa.Boolean(), nullable=True),
         sa.Column('false_positive', sa.Boolean(), nullable=True),
@@ -127,7 +141,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(length=100), nullable=False),
         sa.Column('pattern_type', sa.String(length=50), nullable=False),
-        sa.Column('fraud_type', sa.Enum('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft', name='fraudtype'), nullable=False),
+        sa.Column('fraud_type', postgresql.ENUM('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft', name='fraudtype', create_type=False), nullable=False),
         sa.Column('pattern_data', sa.JSON(), nullable=False),
         sa.Column('confidence_threshold', sa.Float(), nullable=True),
         sa.Column('risk_score', sa.Integer(), nullable=False),
@@ -156,7 +170,7 @@ def upgrade() -> None:
         sa.Column('max_amount', sa.Float(), nullable=True),
         sa.Column('unique_constraint', sa.String(length=50), nullable=True),
         sa.Column('risk_score', sa.Integer(), nullable=False),
-        sa.Column('auto_action', sa.Enum('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype'), nullable=True),
+        sa.Column('auto_action', postgresql.ENUM('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype', create_type=False), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
         sa.PrimaryKeyConstraint('id')
@@ -176,7 +190,7 @@ def upgrade() -> None:
         sa.Column('fraud_event_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('reason', sa.Text(), nullable=False),
         sa.Column('risk_score', sa.Integer(), nullable=True),
-        sa.Column('risk_level', sa.Enum('low', 'medium', 'high', 'critical', name='risklevel'), nullable=True),
+        sa.Column('risk_level', postgresql.ENUM('low', 'medium', 'high', 'critical', name='risklevel', create_type=False), nullable=True),
         sa.Column('evidence', sa.JSON(), nullable=True),
         sa.Column('assigned_to_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('assigned_at', sa.DateTime(timezone=True), nullable=True),
@@ -327,6 +341,10 @@ def downgrade() -> None:
     op.drop_table('fraud_rules')
     
     # Drop enums
-    op.execute('DROP TYPE IF EXISTS actiontype')
-    op.execute('DROP TYPE IF EXISTS fraudtype')
-    op.execute('DROP TYPE IF EXISTS risklevel')
+    actiontype_enum = ENUM('monitor', 'flag', 'restrict', 'suspend', 'block', 'review', name='actiontype')
+    fraudtype_enum = ENUM('payment_fraud', 'account_takeover', 'fake_engagement', 'chargebacks', 'velocity_abuse', 'suspicious_behavior', 'bot_activity', 'content_theft', name='fraudtype')
+    risklevel_enum = ENUM('low', 'medium', 'high', 'critical', name='risklevel')
+    
+    actiontype_enum.drop(op.get_bind(), checkfirst=True)
+    fraudtype_enum.drop(op.get_bind(), checkfirst=True)
+    risklevel_enum.drop(op.get_bind(), checkfirst=True)

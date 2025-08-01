@@ -1,7 +1,7 @@
 """Rename model_profiles table to models to match codebase
 
-Revision ID: 023_rename_model_profiles_to_models
-Revises: 022_add_comprehensive_multi_tenant_indexes
+Revision ID: 023
+Revises: 022
 Create Date: 2025-08-01
 
 """
@@ -9,8 +9,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '023_rename_model_profiles_to_models'
-down_revision = '022_add_comprehensive_multi_tenant_indexes'
+revision = '023'
+down_revision = '022'
 branch_labels = None
 depends_on = None
 
@@ -21,12 +21,27 @@ def upgrade() -> None:
     # Rename the table
     op.rename_table('model_profiles', 'models')
     
-    # Rename indexes
-    op.execute('ALTER INDEX ix_model_profiles_agency_id RENAME TO ix_models_agency_id')
-    op.execute('ALTER INDEX idx_model_profiles_agency_active RENAME TO idx_models_agency_active')
-    op.execute('ALTER INDEX idx_model_profiles_agency_covering RENAME TO idx_models_agency_covering')
-    op.execute('ALTER INDEX idx_model_profiles_agency_id RENAME TO idx_models_agency_id_2')
-    op.execute('ALTER INDEX idx_model_profiles_agency_platform RENAME TO idx_models_agency_platform')
+    # Rename indexes (with existence checks)
+    connection = op.get_bind()
+    
+    # Check and rename each index
+    indexes_to_rename = [
+        ('ix_model_profiles_agency_id', 'ix_models_agency_id'),
+        ('idx_model_profiles_agency_active', 'idx_models_agency_active'),
+        ('idx_model_profiles_agency_covering', 'idx_models_agency_covering'),
+        ('idx_model_profiles_agency_id', 'idx_models_agency_id_2'),
+        ('idx_model_profiles_agency_platform', 'idx_models_agency_platform')
+    ]
+    
+    for old_name, new_name in indexes_to_rename:
+        result = connection.execute(
+            sa.text("SELECT 1 FROM pg_indexes WHERE indexname = :name"),
+            {"name": old_name}
+        )
+        if result.fetchone():
+            op.execute(f'ALTER INDEX {old_name} RENAME TO {new_name}')
+        else:
+            print(f"Index {old_name} does not exist, skipping rename")
     
     # Rename constraints
     op.execute('ALTER TABLE models RENAME CONSTRAINT model_profiles_pkey TO models_pkey')

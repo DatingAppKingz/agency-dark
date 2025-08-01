@@ -1,8 +1,8 @@
 """
 Add webhook tables
 
-Revision ID: 013_webhook_tables
-Revises: 007_performance_indexes
+Revision ID: 013
+Revises: 012
 Create Date: 2025-01-27 12:00:00.000000
 
 """
@@ -12,8 +12,8 @@ from sqlalchemy.dialects import postgresql
 import uuid
 
 # revision identifiers, used by Alembic.
-revision = '013_webhook_tables'
-down_revision = '009_performance_indexes'
+revision = '013'
+down_revision = '012'
 branch_labels = None
 depends_on = None
 
@@ -22,11 +22,11 @@ def upgrade():
     # Create webhooks table
     op.create_table(
         'webhooks',
-        sa.Column('id', sa.String(), nullable=False, default=lambda: str(uuid.uuid4())),
-        sa.Column('agency_id', sa.String(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('url', sa.String(), nullable=False),
         sa.Column('secret', sa.String(), nullable=False),
-        sa.Column('events', sa.JSON(), nullable=False),
+        sa.Column('events', postgresql.JSONB(), nullable=False),
         sa.Column('description', sa.String(), nullable=True),
         
         # Configuration
@@ -34,7 +34,7 @@ def upgrade():
         sa.Column('retry_enabled', sa.Boolean(), nullable=False, default=True),
         sa.Column('max_retries', sa.Integer(), nullable=False, default=3),
         sa.Column('timeout_seconds', sa.Integer(), nullable=False, default=30),
-        sa.Column('custom_headers', sa.JSON(), nullable=False, default={}),
+        sa.Column('custom_headers', postgresql.JSONB(), nullable=False, default={}),
         
         # Statistics
         sa.Column('total_deliveries', sa.Integer(), nullable=False, default=0),
@@ -55,10 +55,10 @@ def upgrade():
     # Create webhook_deliveries table
     op.create_table(
         'webhook_deliveries',
-        sa.Column('id', sa.String(), nullable=False, default=lambda: str(uuid.uuid4())),
-        sa.Column('webhook_id', sa.String(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('webhook_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('event_type', sa.String(), nullable=False),
-        sa.Column('event_id', sa.String(), nullable=False),
+        sa.Column('event_id', postgresql.UUID(as_uuid=True), nullable=False),
         
         # Delivery details
         sa.Column('status', sa.String(), nullable=False, default='pending'),
@@ -66,10 +66,10 @@ def upgrade():
         sa.Column('next_retry_at', sa.DateTime(), nullable=True),
         
         # Request/Response
-        sa.Column('request_headers', sa.JSON(), nullable=True),
-        sa.Column('request_body', sa.JSON(), nullable=True),
+        sa.Column('request_headers', postgresql.JSONB(), nullable=True),
+        sa.Column('request_body', postgresql.JSONB(), nullable=True),
         sa.Column('response_status_code', sa.Integer(), nullable=True),
-        sa.Column('response_headers', sa.JSON(), nullable=True),
+        sa.Column('response_headers', postgresql.JSONB(), nullable=True),
         sa.Column('response_body', sa.Text(), nullable=True),
         sa.Column('response_time_ms', sa.Integer(), nullable=True),
         

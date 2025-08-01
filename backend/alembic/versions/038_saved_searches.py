@@ -1,6 +1,6 @@
 """Add saved searches table
 
-Revision ID: saved_searches_001
+Revision ID: 038
 Revises: 
 Create Date: 2025-01-08 10:00:00.000000
 
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'saved_searches_001'
-down_revision = None
+revision = '038'
+down_revision = '037'
 branch_labels = None
 depends_on = None
 

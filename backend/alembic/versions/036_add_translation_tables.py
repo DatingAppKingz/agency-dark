@@ -1,6 +1,6 @@
 """Add translation tables
 
-Revision ID: add_translation_tables
+Revision ID: 036
 Revises: 
 Create Date: 2024-01-01 00:00:00.000000
 
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'add_translation_tables'
-down_revision = None
+revision = '036'
+down_revision = '035'
 branch_labels = None
 depends_on = None
 
@@ -71,7 +71,7 @@ def upgrade() -> None:
         sa.Column('priority', sa.String(length=20), nullable=False, server_default='normal'),
         sa.Column('requested_by', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('translator_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('requested_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.Column('completed_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
@@ -90,7 +90,7 @@ def upgrade() -> None:
     # Create language_preferences table
     op.create_table('language_preferences',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('primary_language', sa.String(length=10), nullable=False, server_default='en'),
         sa.Column('fallback_languages', postgresql.ARRAY(sa.String(length=10)), nullable=True),
         sa.Column('auto_translate', sa.Boolean(), nullable=False, server_default='true'),

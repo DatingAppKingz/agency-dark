@@ -1,6 +1,6 @@
 """add whitelabel tables
 
-Revision ID: 007_add_whitelabel_tables
+Revision ID: 007
 Revises: 006
 Create Date: 2024-01-01 00:00:00.000000
 
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '007_add_whitelabel_tables'
-down_revision = '003_add_financial_tables'
+revision = '007'
+down_revision = '006'
 branch_labels = None
 depends_on = None
 

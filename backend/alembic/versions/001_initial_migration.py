@@ -1,6 +1,6 @@
 """Initial migration with auth and OnlyFans models
 
-Revision ID: 001_initial_migration
+Revision ID: 001
 Revises: 
 Create Date: 2025-07-23 16:55:13.313911
 
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision: str = '001_initial_migration'
+revision: str = '001'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

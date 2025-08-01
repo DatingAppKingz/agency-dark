@@ -1,8 +1,8 @@
 """
 Add analytics dashboard tables
 
-Revision ID: 015_analytics_dashboard
-Revises: 008_webhook_tables
+Revision ID: 015
+Revises: 014
 Create Date: 2025-01-27 14:00:00.000000
 
 """
@@ -12,8 +12,8 @@ from sqlalchemy.dialects import postgresql
 import uuid
 
 # revision identifiers, used by Alembic.
-revision = '015_analytics_dashboard'
-down_revision = '013_webhook_tables'
+revision = '015'
+down_revision = '014'
 branch_labels = None
 depends_on = None
 
@@ -22,8 +22,8 @@ def upgrade():
     # Create dashboard_widgets table
     op.create_table(
         'dashboard_widgets',
-        sa.Column('id', sa.String(), nullable=False),
-        sa.Column('agency_id', sa.String(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('widget_type', sa.String(), nullable=False),
         sa.Column('title', sa.String(), nullable=False),
         sa.Column('description', sa.String(), nullable=True),
@@ -36,7 +36,7 @@ def upgrade():
         # Visibility
         sa.Column('is_active', sa.Boolean(), nullable=False, default=True),
         sa.Column('visibility', sa.String(), nullable=False, default='private'),
-        sa.Column('created_by', sa.String(), nullable=True),
+        sa.Column('created_by', postgresql.UUID(as_uuid=True), nullable=True),
         
         # Timestamps
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
@@ -50,9 +50,9 @@ def upgrade():
     # Create dashboard_layouts table
     op.create_table(
         'dashboard_layouts',
-        sa.Column('id', sa.String(), nullable=False),
-        sa.Column('agency_id', sa.String(), nullable=False),
-        sa.Column('user_id', sa.String(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(), nullable=False),
         sa.Column('description', sa.String(), nullable=True),
         
@@ -77,8 +77,8 @@ def upgrade():
     # Create dashboard_layout_widgets association table
     op.create_table(
         'dashboard_layout_widgets',
-        sa.Column('layout_id', sa.String(), nullable=False),
-        sa.Column('widget_id', sa.String(), nullable=False),
+        sa.Column('layout_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('widget_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('position', sa.JSON(), nullable=False),
         sa.Column('size', sa.JSON(), nullable=False),
         sa.Column('order', sa.Integer(), nullable=False, default=0),
@@ -91,9 +91,9 @@ def upgrade():
     # Create dashboard_filters table
     op.create_table(
         'dashboard_filters',
-        sa.Column('id', sa.String(), nullable=False),
-        sa.Column('agency_id', sa.String(), nullable=False),
-        sa.Column('user_id', sa.String(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(), nullable=False),
         
         # Filter configuration
@@ -112,9 +112,9 @@ def upgrade():
     # Create dashboard_snapshots table
     op.create_table(
         'dashboard_snapshots',
-        sa.Column('id', sa.String(), nullable=False),
-        sa.Column('agency_id', sa.String(), nullable=False),
-        sa.Column('layout_id', sa.String(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('layout_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(), nullable=False),
         sa.Column('description', sa.String(), nullable=True),
         
@@ -123,7 +123,7 @@ def upgrade():
         sa.Column('snapshot_date', sa.DateTime(), nullable=False),
         
         # Metadata
-        sa.Column('created_by', sa.String(), nullable=True),
+        sa.Column('created_by', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         
         sa.PrimaryKeyConstraint('id'),
@@ -136,7 +136,7 @@ def upgrade():
     op.create_table(
         'analytics',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, default=uuid.uuid4),
-        sa.Column('agency_id', sa.String(), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('model_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('fan_id', postgresql.UUID(as_uuid=True), nullable=True),
         

@@ -1,7 +1,7 @@
 """add monitoring tables
 
-Revision ID: 017_add_monitoring_tables
-Revises: 010_add_ml_analytics_tables
+Revision ID: 017
+Revises: 016
 Create Date: 2024-01-27 10:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '017_add_monitoring_tables'
-down_revision = '016_add_ml_analytics_tables'
+revision = '017'
+down_revision = '016'
 branch_labels = None
 depends_on = None
 
@@ -27,7 +27,7 @@ def upgrade():
         sa.Column('unit', sa.String(), nullable=True),
         sa.Column('tags', sa.JSON(), nullable=True),
         sa.Column('entity_type', sa.String(), nullable=True),
-        sa.Column('entity_id', sa.String(), nullable=True),
+        sa.Column('entity_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('hostname', sa.String(), nullable=True),
         sa.Column('service_name', sa.String(), nullable=True),
         sa.Column('environment', sa.String(), nullable=True, server_default='production'),
@@ -131,7 +131,7 @@ def upgrade():
     op.create_table(
         'performance_profiles',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('request_id', sa.String(), nullable=True),
+        sa.Column('request_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('endpoint', sa.String(), nullable=False),
         sa.Column('method', sa.String(), nullable=False),
         sa.Column('total_duration_ms', sa.Float(), nullable=False),

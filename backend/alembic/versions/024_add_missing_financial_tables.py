@@ -1,7 +1,7 @@
 """Add missing financial tables - invoices and related tables
 
-Revision ID: 024_add_missing_financial_tables
-Revises: 023_rename_model_profiles_to_models
+Revision ID: 024
+Revises: 023
 Create Date: 2025-08-01
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '024_add_missing_financial_tables'
-down_revision = '023_rename_model_profiles_to_models'
+revision = '024'
+down_revision = '023'
 branch_labels = None
 depends_on = None
 
@@ -21,8 +21,8 @@ def upgrade() -> None:
     
     # Create invoices table
     op.create_table('invoices',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('invoice_number', sa.String(50), nullable=False),
         sa.Column('invoice_date', sa.String(30), nullable=False),
         sa.Column('due_date', sa.String(30), nullable=False),
@@ -57,8 +57,8 @@ def upgrade() -> None:
     
     # Create commission_rules table if it doesn't exist
     op.create_table('commission_rules',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(100), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('rule_type', sa.String(50), nullable=False, server_default='tiered'),  # 'tiered', 'flat', 'custom'
@@ -80,9 +80,9 @@ def upgrade() -> None:
     
     # Create earnings table (for model earnings tracking)
     op.create_table('earnings',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('model_id', sa.Integer(), nullable=False),
-        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('model_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('period_start', sa.String(30), nullable=False),
         sa.Column('period_end', sa.String(30), nullable=False),
         sa.Column('gross_revenue', sa.Numeric(12, 2), nullable=False, server_default='0'),
@@ -97,7 +97,7 @@ def upgrade() -> None:
         sa.Column('currency', sa.String(3), nullable=False, server_default='USD'),
         sa.Column('status', sa.String(20), nullable=False, server_default='pending'),  # 'pending', 'calculated', 'approved', 'paid'
         sa.Column('approved_at', sa.String(30), nullable=True),
-        sa.Column('approved_by', sa.Integer(), nullable=True),
+        sa.Column('approved_by', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('notes', sa.Text(), nullable=True),
         sa.Column('metadata', postgresql.JSONB(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True, server_default=sa.text('CURRENT_TIMESTAMP')),
@@ -117,9 +117,9 @@ def upgrade() -> None:
     
     # Create payment_methods table
     op.create_table('payment_methods',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('user_id', sa.Integer(), nullable=False),
-        sa.Column('agency_id', sa.Integer(), nullable=True),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('type', sa.String(50), nullable=False),  # 'bank_account', 'paypal', 'stripe', 'crypto'
         sa.Column('is_default', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),

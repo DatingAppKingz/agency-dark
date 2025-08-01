@@ -1,7 +1,7 @@
 """Add sync fields to api_keys table
 
-Revision ID: 031_add_sync_fields_to_api_keys
-Revises: 030_add_delta_sync_trackers
+Revision ID: 031
+Revises: 030
 Create Date: 2025-08-01
 """
 from alembic import op
@@ -9,8 +9,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '031_add_sync_fields_to_api_keys'
-down_revision = '030_add_delta_sync_trackers'
+revision = '031'
+down_revision = '030'
 branch_labels = None
 depends_on = None
 

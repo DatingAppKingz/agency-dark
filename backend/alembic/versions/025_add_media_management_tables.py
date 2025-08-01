@@ -1,7 +1,7 @@
 """Add media management tables
 
-Revision ID: 023_add_media_management
-Revises: 022_add_realtime_analytics
+Revision ID: 025
+Revises: 024
 Create Date: 2025-01-20 10:00:00.000000
 
 """
@@ -10,17 +10,32 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '023_add_media_management'
-down_revision = '022_add_realtime_analytics'
+revision = '025'
+down_revision = '024'
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    # Create enums
-    op.execute("CREATE TYPE mediatype AS ENUM ('image', 'video', 'audio', 'document', 'other')")
-    op.execute("CREATE TYPE mediastatus AS ENUM ('pending', 'processing', 'ready', 'failed', 'deleted')")
-    op.execute("CREATE TYPE mediavisibility AS ENUM ('private', 'agency', 'model', 'public')")
+    
+    # Check and create mediastatus enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'mediastatus'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE mediastatus AS ENUM ('pending', 'processing', 'ready', 'failed', 'deleted')"))
+
+    # Check and create mediatype enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'mediatype'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE mediatype AS ENUM ('image', 'video', 'audio', 'document', 'other')"))
+
+    # Check and create mediavisibility enum
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT 1 FROM pg_type WHERE typname = 'mediavisibility'"))
+    if not result.fetchone():
+        connection.execute(sa.text("CREATE TYPE mediavisibility AS ENUM ('private', 'agency', 'model', 'public')"))
+# Create enums
     
     # Create media_folders table
     op.create_table(
@@ -57,18 +72,18 @@ def upgrade() -> None:
         sa.Column('file_size', sa.Integer(), nullable=False),
         sa.Column('mime_type', sa.String(100), nullable=False),
         sa.Column('file_hash', sa.String(64), nullable=True),
-        sa.Column('media_type', postgresql.ENUM('image', 'video', 'audio', 'document', 'other', name='mediatype'), nullable=False),
+        sa.Column('media_type', postgresql.ENUM('image', 'video', 'audio', 'document', 'other', name='mediatype', create_type=False), nullable=False),
         sa.Column('width', sa.Integer(), nullable=True),
         sa.Column('height', sa.Integer(), nullable=True),
         sa.Column('duration', sa.Float(), nullable=True),
-        sa.Column('status', postgresql.ENUM('pending', 'processing', 'ready', 'failed', 'deleted', name='mediastatus'), nullable=False, server_default='pending'),
+        sa.Column('status', postgresql.ENUM('pending', 'processing', 'ready', 'failed', 'deleted', name='mediastatus', create_type=False), nullable=False, server_default='pending'),
         sa.Column('processing_error', sa.Text(), nullable=True),
         sa.Column('cdn_url', sa.String(500), nullable=True),
         sa.Column('thumbnail_url', sa.String(500), nullable=True),
         sa.Column('optimized_versions', sa.JSON(), nullable=True),
         sa.Column('folder_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('tags', postgresql.ARRAY(sa.String()), nullable=True, server_default='{}'),
-        sa.Column('visibility', postgresql.ENUM('private', 'agency', 'model', 'public', name='mediavisibility'), nullable=False, server_default='private'),
+        sa.Column('visibility', postgresql.ENUM('private', 'agency', 'model', 'public', name='mediavisibility', create_type=False), nullable=False, server_default='private'),
         sa.Column('password_protected', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('password_hash', sa.String(255), nullable=True),
         sa.Column('agency_id', postgresql.UUID(as_uuid=True), nullable=False),

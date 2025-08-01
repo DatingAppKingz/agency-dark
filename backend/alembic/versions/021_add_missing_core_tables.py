@@ -1,7 +1,7 @@
 """Add missing core tables - chat_messages, financial_transactions, fan_profiles, webhook_logs
 
-Revision ID: 021_add_missing_core_tables
-Revises: 020_add_user_profile_fields
+Revision ID: 021
+Revises: 020
 Create Date: 2025-08-01
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '021_add_missing_core_tables'
-down_revision = '020_add_user_profile_fields'
+revision = '021'
+down_revision = '020'
 branch_labels = None
 depends_on = None
 
