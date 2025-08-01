@@ -71,6 +71,7 @@ class APIKey(BaseModel):
     agency = relationship("Agency", back_populates="api_keys")
     user = relationship("User", foreign_keys=[user_id], back_populates="api_keys")
     sync_conflicts = relationship("SyncConflictLog", back_populates="api_key")
+    sync_errors = relationship("SyncErrorLog", back_populates="api_key")
     
     def __repr__(self):
         return f"<APIKey {self.provider.value}:{self.key_prefix}***>"
