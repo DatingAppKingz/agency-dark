@@ -6,6 +6,7 @@ import asyncio
 from typing import Generator, AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import NullPool
+from sqlalchemy.orm import declarative_base
 import os
 from pathlib import Path
 import sys
@@ -13,9 +14,8 @@ import sys
 # Add backend to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
-# Import settings and base
-from core.config import Settings
-from core.database import Base
+# Create a test-specific Base to avoid conflicts
+TestBase = declarative_base()
 
 # Override database URL for tests
 TEST_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/agencydark_test"
@@ -39,13 +39,13 @@ async def engine():
     
     # Create all tables
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(TestBase.metadata.create_all)
     
     yield engine
     
     # Drop all tables after tests
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(TestBase.metadata.drop_all)
     
     await engine.dispose()
 
@@ -65,10 +65,14 @@ async def db_session(engine) -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture(scope="session")
 def test_settings():
     """Get test settings."""
-    settings = Settings()
-    settings.TESTING = True
-    settings.DATABASE_URL = TEST_DATABASE_URL
-    return settings
+    class TestSettings:
+        TESTING = True
+        DATABASE_URL = TEST_DATABASE_URL
+        SECRET_KEY = "test-secret-key"
+        ALGORITHM = "HS256"
+        ACCESS_TOKEN_EXPIRE_MINUTES = 30
+    
+    return TestSettings()
 
 @pytest.fixture
 def mock_redis(monkeypatch):
