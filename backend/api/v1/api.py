@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import auth, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search, notifications, translations, data_export, data_import, cache, external_api
+from .endpoints import auth, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search, notifications, translations, data_export, data_import, cache, external_api, enhanced_reports
 from .secure_api_keys import router as secure_api_keys_router
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
@@ -78,6 +78,9 @@ api_router.include_router(partitions_router, tags=["partitions"])
 
 # External API Management
 api_router.include_router(external_api.router, tags=["external-api"])
+
+# Enhanced Reports with Charts
+api_router.include_router(enhanced_reports.router, tags=["enhanced-reports"])
 
 # Materialized Views
 from .materialized_views import router as materialized_views_router
