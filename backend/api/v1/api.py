@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import auth, api_keys, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced
+from .endpoints import auth, api_keys, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat
 from .secure_api_keys import router as secure_api_keys_router
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
@@ -25,6 +25,7 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(users.router, tags=["users"])
 api_router.include_router(sync_status.router, tags=["sync"])
+api_router.include_router(chat.router, prefix="/chat", tags=["chat"])
 api_router.include_router(api_keys.router, tags=["api-keys"])
 api_router.include_router(secure_api_keys_router, tags=["api-keys-secure"])
 api_router.include_router(rate_limits.router, tags=["rate-limits"])

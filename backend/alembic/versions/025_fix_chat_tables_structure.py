@@ -1,0 +1,157 @@
+"""Fix chat tables structure to match SQLAlchemy models
+
+Revision ID: 025_fix_chat_tables_structure
+Revises: 024_add_missing_financial_tables
+Create Date: 2025-01-31
+
+"""
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+
+# revision identifiers, used by Alembic.
+revision = '025_fix_chat_tables_structure'
+down_revision = '024_add_missing_financial_tables'
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    # Drop existing chat tables to recreate them with correct structure
+    op.drop_table('chat_messages')
+    op.drop_table('chat_conversations')
+    
+    # Create conversations table with correct structure
+    op.create_table('conversations',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('model_id', sa.Integer(), nullable=False),
+        sa.Column('fan_id', sa.String(255), nullable=False),
+        sa.Column('fan_username', sa.String(255), nullable=False),
+        sa.Column('fan_display_name', sa.String(255), nullable=True),
+        sa.Column('assigned_chatter_id', sa.Integer(), nullable=True),
+        sa.Column('assigned_at', sa.String(30), nullable=True),
+        sa.Column('status', sa.String(20), nullable=False, server_default='active'),
+        sa.Column('priority', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('fan_avatar_url', sa.String(500), nullable=True),
+        sa.Column('fan_location', sa.String(255), nullable=True),
+        sa.Column('fan_timezone', sa.String(50), nullable=True),
+        sa.Column('fan_language', sa.String(10), nullable=False, server_default='en'),
+        sa.Column('total_spent', sa.Numeric(12, 2), nullable=False, server_default='0.00'),
+        sa.Column('total_tips', sa.Numeric(12, 2), nullable=False, server_default='0.00'),
+        sa.Column('ppv_purchased', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('last_message_at', sa.String(30), nullable=True),
+        sa.Column('last_fan_message_at', sa.String(30), nullable=True),
+        sa.Column('unread_count', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('tags', postgresql.JSON(), nullable=False, server_default='[]'),
+        sa.Column('notes', sa.Text(), nullable=True),
+        sa.Column('metadata', postgresql.JSON(), nullable=False, server_default='{}'),
+        sa.Column('platform_data', postgresql.JSON(), nullable=False, server_default='{}'),
+        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['model_id'], ['models.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['assigned_chatter_id'], ['users.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['agency_id'], ['agencies.id'], ondelete='CASCADE'),
+    )
+    
+    # Create indexes for conversations
+    op.create_index('idx_conversations_model_id', 'conversations', ['model_id'])
+    op.create_index('idx_conversations_fan_id', 'conversations', ['fan_id'])
+    op.create_index('idx_conversations_assigned_chatter_id', 'conversations', ['assigned_chatter_id'])
+    op.create_index('idx_conversations_status', 'conversations', ['status'])
+    op.create_index('idx_conversations_last_message_at', 'conversations', ['last_message_at'])
+    op.create_index('idx_conversations_agency_id', 'conversations', ['agency_id'])
+    
+    # Create messages table with correct structure
+    op.create_table('messages',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('conversation_id', sa.Integer(), nullable=False),
+        sa.Column('sender_id', sa.Integer(), nullable=True),
+        sa.Column('sender_type', sa.String(20), nullable=False),
+        sa.Column('type', sa.String(20), nullable=False, server_default='text'),
+        sa.Column('content', sa.Text(), nullable=True),
+        sa.Column('media_url', sa.String(500), nullable=True),
+        sa.Column('thumbnail_url', sa.String(500), nullable=True),
+        sa.Column('status', sa.String(20), nullable=False, server_default='sent'),
+        sa.Column('delivered_at', sa.String(30), nullable=True),
+        sa.Column('read_at', sa.String(30), nullable=True),
+        sa.Column('amount', sa.Numeric(10, 2), nullable=True),
+        sa.Column('currency', sa.String(3), nullable=True, server_default='USD'),
+        sa.Column('is_paid', sa.Boolean(), nullable=False, server_default='false'),
+        sa.Column('platform_message_id', sa.String(255), nullable=True),
+        sa.Column('platform_data', postgresql.JSON(), nullable=False, server_default='{}'),
+        sa.Column('is_flagged', sa.Boolean(), nullable=False, server_default='false'),
+        sa.Column('flagged_reason', sa.String(255), nullable=True),
+        sa.Column('is_deleted', sa.Boolean(), nullable=False, server_default='false'),
+        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['conversation_id'], ['conversations.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['sender_id'], ['users.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['agency_id'], ['agencies.id'], ondelete='CASCADE'),
+    )
+    
+    # Create indexes for messages
+    op.create_index('idx_messages_conversation_id', 'messages', ['conversation_id'])
+    op.create_index('idx_messages_sender_id', 'messages', ['sender_id'])
+    op.create_index('idx_messages_created_at', 'messages', ['created_at'])
+    op.create_index('idx_messages_status', 'messages', ['status'])
+    op.create_index('idx_messages_platform_message_id', 'messages', ['platform_message_id'], unique=True)
+    op.create_index('idx_messages_agency_id', 'messages', ['agency_id'])
+    
+    # Create chat_templates table
+    op.create_table('chat_templates',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('agency_id', sa.Integer(), nullable=False),
+        sa.Column('name', sa.String(255), nullable=False),
+        sa.Column('category', sa.String(100), nullable=True),
+        sa.Column('content', sa.Text(), nullable=False),
+        sa.Column('variables', postgresql.JSON(), nullable=False, server_default='[]'),
+        sa.Column('usage_count', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
+        sa.Column('tags', postgresql.JSON(), nullable=False, server_default='[]'),
+        sa.Column('languages', postgresql.JSON(), nullable=False, server_default='["en"]'),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['agency_id'], ['agencies.id'], ondelete='CASCADE'),
+    )
+    
+    op.create_index('idx_chat_templates_agency_id', 'chat_templates', ['agency_id'])
+    op.create_index('idx_chat_templates_category', 'chat_templates', ['category'])
+    op.create_index('idx_chat_templates_is_active', 'chat_templates', ['is_active'])
+    
+    # Create conversation_analytics table
+    op.create_table('conversation_analytics',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('conversation_id', sa.Integer(), nullable=False),
+        sa.Column('date', sa.String(10), nullable=False),
+        sa.Column('messages_sent', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('messages_received', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('response_time_avg', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('response_time_min', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('response_time_max', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('revenue', sa.Numeric(10, 2), nullable=False, server_default='0.00'),
+        sa.Column('tips_count', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('tips_amount', sa.Numeric(10, 2), nullable=False, server_default='0.00'),
+        sa.Column('ppv_count', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('ppv_amount', sa.Numeric(10, 2), nullable=False, server_default='0.00'),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['conversation_id'], ['conversations.id'], ondelete='CASCADE'),
+        sa.UniqueConstraint('conversation_id', 'date', name='uq_conversation_analytics_date')
+    )
+    
+    op.create_index('idx_conversation_analytics_conversation_id', 'conversation_analytics', ['conversation_id'])
+    op.create_index('idx_conversation_analytics_date', 'conversation_analytics', ['date'])
+
+
+def downgrade():
+    # Drop all tables
+    op.drop_table('conversation_analytics')
+    op.drop_table('chat_templates')
+    op.drop_table('messages')
+    op.drop_table('conversations')

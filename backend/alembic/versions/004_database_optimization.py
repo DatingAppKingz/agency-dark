@@ -46,31 +46,33 @@ def upgrade() -> None:
     op.create_index('idx_fans_total_spent', 'fans', ['model_id', 'total_spent'])
     
     # Financial optimization
+    # NOTE: These indexes are created in migration 021 when the tables are created
+    # Commenting out to avoid dependency issues
     
-    # Financial transactions - composite indexes for common queries
-    op.create_index('idx_financial_transactions_model_type_date', 'financial_transactions', 
-                   ['model_id', 'type', 'transaction_date'])
-    op.create_index('idx_financial_transactions_balance', 'financial_transactions',
-                   ['user_id', 'balance_after', 'transaction_date'])
+    # # Financial transactions - composite indexes for common queries
+    # op.create_index('idx_financial_transactions_model_type_date', 'financial_transactions', 
+    #                ['model_id', 'type', 'transaction_date'])
+    # op.create_index('idx_financial_transactions_balance', 'financial_transactions',
+    #                ['user_id', 'balance_after', 'transaction_date'])
     
-    # Billing cycles - optimize for period queries
-    op.create_index('idx_billing_cycles_agency_closed', 'billing_cycles', 
-                   ['agency_id', 'is_closed', 'cycle_end'])
+    # # Billing cycles - optimize for period queries
+    # op.create_index('idx_billing_cycles_agency_closed', 'billing_cycles', 
+    #                ['agency_id', 'is_closed', 'cycle_end'])
     
-    # Payouts - optimize for processing queries
-    op.create_index('idx_payouts_scheduled', 'payouts', 
-                   ['status', 'scheduled_at'],
-                   postgresql_where="status IN ('pending', 'processing')")
+    # # Payouts - optimize for processing queries
+    # op.create_index('idx_payouts_scheduled', 'payouts', 
+    #                ['status', 'scheduled_at'],
+    #                postgresql_where="status IN ('pending', 'processing')")
     
-    # Payout schedules - optimize for next payout calculation
-    op.create_index('idx_payout_schedules_next_active', 'payout_schedules',
-                   ['next_payout_date', 'is_active'],
-                   postgresql_where='is_active = true')
+    # # Payout schedules - optimize for next payout calculation
+    # op.create_index('idx_payout_schedules_next_active', 'payout_schedules',
+    #                ['next_payout_date', 'is_active'],
+    #                postgresql_where='is_active = true')
     
-    # Invoices - optimize for outstanding invoices
-    op.create_index('idx_invoices_outstanding', 'invoices',
-                   ['agency_id', 'status', 'due_date'],
-                   postgresql_where="status IN ('sent', 'overdue')")
+    # # Invoices - optimize for outstanding invoices
+    # op.create_index('idx_invoices_outstanding', 'invoices',
+    #                ['agency_id', 'status', 'due_date'],
+    #                postgresql_where="status IN ('sent', 'overdue')")
     
     # Analytics optimization
     
