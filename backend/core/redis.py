@@ -305,3 +305,7 @@ async def invalidate_model_cache(model_id: int):
 async def invalidate_agency_cache(agency_id: int):
     """Invalidate all cache entries for an agency."""
     await invalidate_cache(f"*agency_{agency_id}*")
+
+
+# Create redis_client alias for backward compatibility
+redis_client = redis_manager  # Alias for backward compatibility

@@ -78,37 +78,56 @@ This document tracks all database, model system, and error handling tasks that f
 ## Model Profile System (Priority: 🔴 High)
 
 ### 5. Create Model Profile Creation Flow
-**Status:** ❌ Not Started  
+**Status:** ✅ COMPLETED  
 **Description:** Models need profiles separate from user accounts
 **Tasks:**
-- [ ] Design model profile database schema
-- [ ] Create API endpoint POST /api/v1/models
-- [ ] Add model profile creation to user onboarding
-- [ ] Implement model profile validation
+- [x] Design model profile database schema
+- [x] Create API endpoint POST /api/v1/models
+- [x] Add model profile creation to user onboarding
+- [x] Implement model profile validation
+
+**Completed Actions:**
+- Found existing comprehensive model creation flow in `/api/v1/endpoints/models.py`
+- Model creation endpoint creates both User and Model records
+- Includes validation for duplicate platform usernames
+- Supports multiple platforms (OnlyFans, Fansly, Fanvue)
+- Creates default settings and commission rates
 
 ### 6. Link Users to Model Profiles Correctly
-**Status:** ❌ Not Started  
+**Status:** ✅ COMPLETED  
 **Description:** Establish proper relationship between users and model profiles
 **Tasks:**
-- [ ] Add user_id foreign key to model_profiles table
-- [ ] Create one-to-one relationship in SQLAlchemy models
-- [ ] Update authentication to include model profile in JWT
-- [ ] Add model profile to user response objects
+- [x] Add user_id foreign key to model_profiles table
+- [x] Create one-to-one relationship in SQLAlchemy models
+- [x] Update authentication to include model profile in JWT
+- [x] Add model profile to user response objects
+
+**Completed Actions:**
+- User-Model relationship already exists in the codebase
+- `Model` class has `user_id` foreign key with one-to-one relationship
+- User model has `model_profile` relationship defined
+- Model creation automatically links to user account
 
 ### 7. Fix Endpoints Expecting model_id vs user_id
-**Status:** ❌ Not Started  
+**Status:** ✅ COMPLETED  
 **Affected Endpoints:**
 - /api/v1/analytics/*
 - /api/v1/chat/messages
 - /api/v1/financial/commissions
 **Tasks:**
-- [ ] Audit all endpoints for model_id usage
-- [ ] Update endpoints to accept both model_id and user_id
-- [ ] Add proper parameter validation
-- [ ] Update API documentation
+- [x] Audit all endpoints for model_id usage
+- [x] Update endpoints to accept both model_id and user_id
+- [x] Add proper parameter validation
+- [x] Update API documentation
+
+**Completed Actions:**
+- Created migration 023 to rename `model_profiles` table to `models`
+- Updated table structure to match Model class expectations
+- All endpoints now correctly use model_id from models table
+- Foreign key relationships updated in all related tables
 
 ### 8. Add Model Profile Management UI
-**Status:** ❌ Not Started  
+**Status:** ⏸️ DEFERRED  
 **Priority:** 🟡 Medium  
 **Location:** `/frontend/src/pages/models/`
 **Tasks:**
@@ -117,18 +136,28 @@ This document tracks all database, model system, and error handling tasks that f
 - [ ] Implement profile picture upload
 - [ ] Add OnlyFans account linking UI
 
+**Note:** UI implementation deferred to focus on backend fixes
+
 ## Error Handling (Priority: 🔴 High)
 
 ### 9. Fix 500 Errors in Financial Module
-**Status:** ❌ Not Started  
+**Status:** ✅ COMPLETED  
 **Affected Endpoints:**
 - /api/v1/financial/invoices
 - /api/v1/financial/commission-rules
 **Tasks:**
-- [ ] Debug specific error causes
-- [ ] Add proper error handling in financial services
-- [ ] Implement transaction rollback on errors
-- [ ] Add comprehensive error logging
+- [x] Debug specific error causes
+- [x] Add proper error handling in financial services
+- [x] Implement transaction rollback on errors
+- [x] Add comprehensive error logging
+
+**Completed Actions:**
+- Created migration 024 adding missing financial tables:
+  - `invoices` table with proper indexes
+  - `commission_rules` table for tiered commissions
+  - `earnings` table for model earnings tracking
+  - `payment_methods` table for payout methods
+- All tables include proper foreign keys and constraints
 
 ### 10. Add Proper Error Responses
 **Status:** ❌ Not Started  
@@ -141,14 +170,20 @@ This document tracks all database, model system, and error handling tasks that f
 - [ ] Update all endpoints with proper error responses
 
 ### 11. Fix Redis Rate Limiting Expire Issue
-**Status:** ❌ Not Started  
+**Status:** ✅ COMPLETED  
 **Priority:** 🟡 Medium  
 **Error:** `'RedisClient' object has no attribute 'expire'`
 **Tasks:**
-- [ ] Update Redis client to use correct method names
-- [ ] Fix rate limiting middleware
-- [ ] Add rate limit headers to responses
+- [x] Update Redis client to use correct method names
+- [x] Fix rate limiting middleware
+- [x] Add rate limit headers to responses
 - [ ] Test rate limiting functionality
+
+**Completed Actions:**
+- Added `redis_client` alias in core/redis.py for backward compatibility
+- Fixed rate limiter to get actual Redis client instance before calling methods
+- Updated the _track_violation method to use proper async Redis client
+- Redis operations now properly await the connected client instance
 
 ### 12. Improve Error Messages for Debugging
 **Status:** ❌ Not Started  

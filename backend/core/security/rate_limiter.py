@@ -290,12 +290,15 @@ class AdvancedRateLimiter:
         """Track rate limit violations for auto-blocking"""
         violation_key = f"rate_limit:violations:{strategy}:{identifier}"
         
+        # Get the actual Redis client
+        client = await redis_client.connect()
+        
         # Increment violation count
-        violations = await redis_client.incr(violation_key)
+        violations = await client.incr(violation_key)
         
         # Set expiry on first violation
         if violations == 1:
-            await redis_client.expire(violation_key, self.violation_window)
+            await client.expire(violation_key, self.violation_window)
         
         # Check if we should block
         if violations >= self.violation_threshold:
