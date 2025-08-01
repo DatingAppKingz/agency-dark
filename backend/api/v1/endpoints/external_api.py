@@ -4,7 +4,9 @@ from typing import Dict, Any, List
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
+from schemas.pagination import PaginatedResponse
+from utils.pagination import paginate_params, PaginationParams
 
 from core.database import get_db
 from core.auth import get_current_user
@@ -113,20 +115,41 @@ async def create_credentials(
     return ExternalAPICredentialResponse.from_orm(credential)
 
 
-@router.get("/credentials", response_model=List[ExternalAPICredentialResponse])
+@router.get("/credentials", response_model=PaginatedResponse[ExternalAPICredentialResponse])
 async def list_credentials(
+    pagination: PaginationParams = Depends(paginate_params),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
-) -> List[ExternalAPICredentialResponse]:
-    """List all external API credentials for the current user."""
+) -> PaginatedResponse[ExternalAPICredentialResponse]:
+    """List all external API credentials for the current user with pagination."""
+    # Build base query
     stmt = select(ExternalAPICredential).where(
         ExternalAPICredential.user_id == current_user.id,
         ExternalAPICredential.is_active == True
+    ).order_by(ExternalAPICredential.created_at.desc())
+    
+    # Get total count
+    count_stmt = select(func.count()).select_from(ExternalAPICredential).where(
+        ExternalAPICredential.user_id == current_user.id,
+        ExternalAPICredential.is_active == True
     )
+    total_result = await db.execute(count_stmt)
+    total = total_result.scalar() or 0
+    
+    # Apply pagination
+    stmt = stmt.offset(pagination.offset).limit(pagination.limit)
     result = await db.execute(stmt)
     credentials = result.scalars().all()
     
-    return [ExternalAPICredentialResponse.from_orm(cred) for cred in credentials]
+    # Convert to response models
+    items = [ExternalAPICredentialResponse.from_orm(cred) for cred in credentials]
+    
+    return PaginatedResponse.create(
+        items=items,
+        total=total,
+        page=pagination.page,
+        limit=pagination.limit
+    )
 
 
 @router.get("/credentials/{provider}", response_model=ExternalAPICredentialResponse)
