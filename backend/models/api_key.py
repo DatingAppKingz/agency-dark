@@ -28,6 +28,8 @@ class APIKeyStatus(str, enum.Enum):
 
 class APIKey(BaseModel):
     """Encrypted API key storage."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "api_keys"
     
     # Relationships

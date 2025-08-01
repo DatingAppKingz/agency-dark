@@ -1,0 +1,164 @@
+# Default values for agency-dark
+replicaCount: 3
+
+image:
+  repository: agency-dark/backend
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  capabilities:
+    drop:
+    - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+  hosts:
+    - host: api.agencydark.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: agency-dark-tls
+      hosts:
+        - api.agencydark.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+persistence:
+  enabled: true
+  storageClass: "standard"
+  accessMode: ReadWriteMany
+  size: 50Gi
+
+# Application configuration
+config:
+  environment: production
+  logLevel: INFO
+  corsOrigins: "https://app.agencydark.com,https://agencydark.com"
+  featureFlags:
+    webhooksEnabled: true
+    bulkOperationsEnabled: true
+    mlInsightsEnabled: true
+    advancedAnalyticsEnabled: true
+  rateLimiting:
+    perMinute: 60
+    perHour: 1000
+    perDay: 10000
+
+# Secrets (should be overridden in production)
+secrets:
+  secretKey: "CHANGE_ME"
+  jwtSecret: "CHANGE_ME"
+  databaseUrl: "postgresql+asyncpg://postgres:CHANGE_ME@postgres-service:5432/agencydark"
+  redisUrl: "redis://:CHANGE_ME@redis-service:6379/0"
+  sentryDsn: ""
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "CHANGE_ME"
+    database: agencydark
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+# Redis configuration
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: "CHANGE_ME"
+  master:
+    persistence:
+      enabled: true
+      size: 8Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# Celery workers
+celery:
+  enabled: true
+  worker:
+    replicaCount: 2
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+  beat:
+    enabled: true
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+# Monitoring
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+  grafana:
+    enabled: false

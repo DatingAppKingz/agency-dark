@@ -9,6 +9,8 @@ from models.base import BaseModel
 
 class ModelSettings(BaseModel):
     """Settings for a model profile."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "model_settings"
     
     # Foreign key
@@ -63,6 +65,8 @@ class ModelSettings(BaseModel):
 
 class ModelSchedule(BaseModel):
     """Working schedule for a model."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "model_schedules"
     
     # Foreign key

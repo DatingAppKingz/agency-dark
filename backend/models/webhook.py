@@ -41,6 +41,8 @@ class WebhookStatus(str, enum.Enum):
 
 class Webhook(BaseModel):
     """Webhook configuration."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "webhooks"
     
     agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False)
@@ -83,6 +85,8 @@ class Webhook(BaseModel):
 
 class WebhookDelivery(BaseModel):
     """Webhook delivery log."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "webhook_deliveries"
     
     webhook_id = Column(Integer, ForeignKey("webhooks.id", ondelete="CASCADE"), nullable=False)
@@ -113,6 +117,8 @@ class WebhookDelivery(BaseModel):
 
 class APIKey(BaseModel):
     """API key for authentication."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "api_keys"
     
     agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False)

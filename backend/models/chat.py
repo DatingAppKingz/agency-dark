@@ -34,6 +34,8 @@ class MessageStatus(str, enum.Enum):
 
 class Conversation(BaseModel):
     """Conversation between a model and a fan."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "conversations"
     
     # Participants
@@ -96,6 +98,8 @@ class Conversation(BaseModel):
 
 class Message(BaseModel):
     """Individual message in a conversation."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "messages"
     
     conversation_id = Column(Integer, ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -154,6 +158,8 @@ class Message(BaseModel):
 
 class ChatTemplate(BaseModel):
     """Pre-written message templates for quick responses."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "chat_templates"
     
     agency_id = Column(Integer, ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False)

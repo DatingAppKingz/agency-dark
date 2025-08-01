@@ -5,6 +5,8 @@ from models.base import Base, BaseModel
 
 class Agency(BaseModel):
     """Agency model for multi-tenant support."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "agencies"
     
     # Basic information

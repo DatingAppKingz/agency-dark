@@ -19,6 +19,8 @@ class UserRole(str, enum.Enum):
 
 class User(BaseModel):
     """User model for authentication and profile."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "users"
     
     # Authentication fields
@@ -116,6 +118,8 @@ class User(BaseModel):
 
 class Session(BaseModel):
     """User session model for managing active sessions."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "sessions"
     
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

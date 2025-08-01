@@ -1,0 +1,192 @@
+# Docker-specific Makefile for Agency Dark Backend
+
+.PHONY: help docker-build docker-up docker-down docker-logs docker-shell docker-clean
+.PHONY: dev-build dev-up dev-down dev-logs dev-shell dev-clean
+.PHONY: prod-build prod-up prod-down prod-logs prod-deploy
+
+# Colors
+GREEN := \033[0;32m
+YELLOW := \033[0;33m
+RED := \033[0;31m
+NC := \033[0m
+
+# Variables
+DOCKER_COMPOSE := docker-compose
+DOCKER_COMPOSE_DEV := docker-compose -f docker-compose.dev.yml
+DOCKER_COMPOSE_PROD := docker-compose -f docker-compose.yml
+
+help: ## Show this help message
+	@echo 'Docker commands for Agency Dark Backend'
+	@echo ''
+	@echo 'Usage: make -f Makefile.docker [target]'
+	@echo ''
+	@echo 'Development targets:'
+	@awk 'BEGIN {FS = ":.*?## "} /^dev-[a-zA-Z_-]+:.*?## / {printf "  ${GREEN}%-20s${NC} %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ''
+	@echo 'Production targets:'
+	@awk 'BEGIN {FS = ":.*?## "} /^prod-[a-zA-Z_-]+:.*?## / {printf "  ${GREEN}%-20s${NC} %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ''
+	@echo 'Utility targets:'
+	@awk 'BEGIN {FS = ":.*?## "} /^docker-[a-zA-Z_-]+:.*?## / {printf "  ${GREEN}%-20s${NC} %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+# Development Environment
+dev-build: ## Build development containers
+	@echo "${YELLOW}Building development containers...${NC}"
+	$(DOCKER_COMPOSE_DEV) build
+	@echo "${GREEN}✓ Development containers built${NC}"
+
+dev-up: ## Start development environment
+	@echo "${YELLOW}Starting development environment...${NC}"
+	$(DOCKER_COMPOSE_DEV) up -d
+	@echo "${GREEN}✓ Development environment started${NC}"
+	@echo "Services available:"
+	@echo "  - Backend API: http://localhost:8000"
+	@echo "  - PostgreSQL: localhost:5432"
+	@echo "  - Redis: localhost:6379"
+	@echo "  - PgAdmin: http://localhost:5050"
+	@echo "  - Redis Commander: http://localhost:8081"
+	@echo "  - Mailhog: http://localhost:8025"
+
+dev-down: ## Stop development environment
+	@echo "${YELLOW}Stopping development environment...${NC}"
+	$(DOCKER_COMPOSE_DEV) down
+	@echo "${GREEN}✓ Development environment stopped${NC}"
+
+dev-logs: ## View development logs
+	$(DOCKER_COMPOSE_DEV) logs -f
+
+dev-shell: ## Open shell in development backend container
+	$(DOCKER_COMPOSE_DEV) exec backend bash
+
+dev-clean: ## Clean development environment
+	@echo "${YELLOW}Cleaning development environment...${NC}"
+	$(DOCKER_COMPOSE_DEV) down -v
+	@echo "${GREEN}✓ Development environment cleaned${NC}"
+
+# Production Environment
+prod-build: ## Build production containers
+	@echo "${YELLOW}Building production containers...${NC}"
+	$(DOCKER_COMPOSE_PROD) build --no-cache
+	@echo "${GREEN}✓ Production containers built${NC}"
+
+prod-up: ## Start production environment
+	@echo "${YELLOW}Starting production environment...${NC}"
+	$(DOCKER_COMPOSE_PROD) up -d
+	@echo "${GREEN}✓ Production environment started${NC}"
+
+prod-down: ## Stop production environment
+	@echo "${YELLOW}Stopping production environment...${NC}"
+	$(DOCKER_COMPOSE_PROD) down
+	@echo "${GREEN}✓ Production environment stopped${NC}"
+
+prod-logs: ## View production logs
+	$(DOCKER_COMPOSE_PROD) logs -f
+
+prod-deploy: ## Deploy to production (build, migrate, start)
+	@echo "${YELLOW}Deploying to production...${NC}"
+	$(MAKE) prod-build
+	$(DOCKER_COMPOSE_PROD) up -d postgres redis rabbitmq
+	@echo "Waiting for database..."
+	@sleep 10
+	$(DOCKER_COMPOSE_PROD) run --rm backend alembic upgrade head
+	$(DOCKER_COMPOSE_PROD) up -d
+	@echo "${GREEN}✓ Production deployment complete${NC}"
+
+# Database Operations
+docker-db-migrate: ## Run database migrations
+	@echo "${YELLOW}Running migrations...${NC}"
+	$(DOCKER_COMPOSE) exec backend alembic upgrade head
+	@echo "${GREEN}✓ Migrations complete${NC}"
+
+docker-db-makemigration: ## Create new migration
+	@echo "${YELLOW}Creating migration...${NC}"
+	$(DOCKER_COMPOSE) exec backend alembic revision --autogenerate -m "$(MSG)"
+	@echo "${GREEN}✓ Migration created${NC}"
+
+docker-db-downgrade: ## Downgrade database by one revision
+	@echo "${YELLOW}Downgrading database...${NC}"
+	$(DOCKER_COMPOSE) exec backend alembic downgrade -1
+	@echo "${GREEN}✓ Downgrade complete${NC}"
+
+docker-db-shell: ## Open PostgreSQL shell
+	$(DOCKER_COMPOSE) exec postgres psql -U postgres -d agencydark
+
+docker-db-backup: ## Backup database
+	@echo "${YELLOW}Backing up database...${NC}"
+	$(DOCKER_COMPOSE) exec postgres pg_dump -U postgres agencydark > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
+	@echo "${GREEN}✓ Backup complete${NC}"
+
+docker-db-restore: ## Restore database from backup
+	@echo "${YELLOW}Restoring database from $(FILE)...${NC}"
+	$(DOCKER_COMPOSE) exec -T postgres psql -U postgres -d agencydark < $(FILE)
+	@echo "${GREEN}✓ Restore complete${NC}"
+
+# Monitoring
+docker-monitor-backend: ## Monitor backend logs
+	$(DOCKER_COMPOSE) logs -f backend
+
+docker-monitor-celery: ## Monitor Celery worker logs
+	$(DOCKER_COMPOSE) logs -f celery-worker celery-beat
+
+docker-monitor-nginx: ## Monitor Nginx logs
+	$(DOCKER_COMPOSE) logs -f nginx
+
+docker-stats: ## Show container statistics
+	docker stats $(shell docker-compose ps -q)
+
+# Utilities
+docker-clean-all: ## Clean all Docker resources
+	@echo "${YELLOW}Cleaning all Docker resources...${NC}"
+	docker-compose down -v
+	docker system prune -af
+	@echo "${GREEN}✓ Docker cleanup complete${NC}"
+
+docker-rebuild: ## Rebuild and restart containers
+	@echo "${YELLOW}Rebuilding containers...${NC}"
+	$(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) build --no-cache
+	$(DOCKER_COMPOSE) up -d
+	@echo "${GREEN}✓ Rebuild complete${NC}"
+
+docker-restart: ## Restart all containers
+	@echo "${YELLOW}Restarting containers...${NC}"
+	$(DOCKER_COMPOSE) restart
+	@echo "${GREEN}✓ Restart complete${NC}"
+
+docker-health: ## Check health of all services
+	@echo "${YELLOW}Checking service health...${NC}"
+	@docker-compose ps
+	@echo ""
+	@echo "Health checks:"
+	@curl -f http://localhost:8000/health && echo "  ${GREEN}✓ Backend API${NC}" || echo "  ${RED}✗ Backend API${NC}"
+	@docker-compose exec -T postgres pg_isready && echo "  ${GREEN}✓ PostgreSQL${NC}" || echo "  ${RED}✗ PostgreSQL${NC}"
+	@docker-compose exec -T redis redis-cli ping > /dev/null && echo "  ${GREEN}✓ Redis${NC}" || echo "  ${RED}✗ Redis${NC}"
+
+# Security
+docker-security-scan: ## Scan containers for vulnerabilities
+	@echo "${YELLOW}Scanning containers for vulnerabilities...${NC}"
+	@for image in $(shell docker-compose config --images); do \
+		echo "Scanning $$image..."; \
+		docker scan $$image || true; \
+	done
+	@echo "${GREEN}✓ Security scan complete${NC}"
+
+# Development Helpers
+dev-reset: ## Reset development environment
+	@echo "${YELLOW}Resetting development environment...${NC}"
+	$(MAKE) dev-clean
+	$(MAKE) dev-build
+	$(MAKE) dev-up
+	@sleep 10
+	$(DOCKER_COMPOSE_DEV) exec backend alembic upgrade head
+	$(DOCKER_COMPOSE_DEV) exec backend python scripts/create_test_data.py
+	@echo "${GREEN}✓ Development environment reset${NC}"
+
+dev-test: ## Run tests in development container
+	$(DOCKER_COMPOSE_DEV) exec backend pytest -v
+
+dev-shell-redis: ## Open Redis CLI
+	$(DOCKER_COMPOSE_DEV) exec redis redis-cli
+
+dev-shell-postgres: ## Open PostgreSQL shell
+	$(DOCKER_COMPOSE_DEV) exec postgres psql -U postgres -d agencydark_dev

@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: agency-dark
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+      - name: celery-worker
+        image: agency-dark/backend:latest
+        command: ["celery", "-A", "celery_worker", "worker", "--loglevel=INFO", "--concurrency=2"]
+        envFrom:
+        - configMapRef:
+            name: agency-dark-config
+        - secretRef:
+            name: agency-dark-secret
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - celery_worker
+            - inspect
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+      - name: logs
+        emptyDir: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  namespace: agency-dark
+spec:
+  replicas: 1  # Only one beat scheduler should run
+  selector:
+    matchLabels:
+      app: celery-beat
+  template:
+    metadata:
+      labels:
+        app: celery-beat
+    spec:
+      containers:
+      - name: celery-beat
+        image: agency-dark/backend:latest
+        command: ["celery", "-A", "celery_beat", "beat", "--loglevel=INFO"]
+        envFrom:
+        - configMapRef:
+            name: agency-dark-config
+        - secretRef:
+            name: agency-dark-secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}

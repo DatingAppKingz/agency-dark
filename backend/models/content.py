@@ -24,6 +24,8 @@ class ContentStatus(str, enum.Enum):
 
 class Content(BaseModel):
     """Content created by models."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "content"
     
     model_id = Column(Integer, ForeignKey("models.id", ondelete="CASCADE"), nullable=False)
@@ -94,6 +96,8 @@ class Content(BaseModel):
 
 class ContentTemplate(BaseModel):
     """Templates for content creation."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "content_templates"
     
     agency_id = Column(Integer, ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False)
@@ -128,6 +132,8 @@ class ContentTemplate(BaseModel):
 
 class ContentAnalytics(BaseModel):
     """Analytics for individual content pieces."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "content_analytics"
     
     content_id = Column(Integer, ForeignKey("content.id", ondelete="CASCADE"), nullable=False)
@@ -158,6 +164,8 @@ class ContentAnalytics(BaseModel):
 
 class Vault(BaseModel):
     """Content vault for PPV and exclusive content."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "vaults"
     
     model_id = Column(Integer, ForeignKey("models.id", ondelete="CASCADE"), unique=True, nullable=False)
@@ -186,6 +194,8 @@ class Vault(BaseModel):
 
 class VaultItem(BaseModel):
     """Individual items in content vault."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "vault_items"
     
     vault_id = Column(Integer, ForeignKey("vaults.id", ondelete="CASCADE"), nullable=False)

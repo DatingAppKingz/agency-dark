@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agency-dark-config
+  namespace: agency-dark
+data:
+  # Application settings
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  API_V1_STR: "/api/v1"
+  PROJECT_NAME: "Agency Dark"
+  
+  # CORS settings
+  CORS_ORIGINS: "https://app.agencydark.com,https://agencydark.com"
+  
+  # Feature flags
+  FEATURE_WEBHOOKS_ENABLED: "true"
+  FEATURE_BULK_OPERATIONS_ENABLED: "true"
+  FEATURE_ML_INSIGHTS_ENABLED: "true"
+  FEATURE_ADVANCED_ANALYTICS_ENABLED: "true"
+  
+  # Rate limiting
+  RATE_LIMIT_PER_MINUTE: "60"
+  RATE_LIMIT_PER_HOUR: "1000"
+  RATE_LIMIT_PER_DAY: "10000"
+  
+  # Storage
+  UPLOAD_MAX_SIZE_MB: "100"
+  UPLOAD_ALLOWED_EXTENSIONS: "jpg,jpeg,png,gif,mp4,mov,pdf"
+  STORAGE_BACKEND: "s3"
+  
+  # External APIs
+  ONLYFANS_API_URL: "https://onlyfans.com/api2/v2"
+  FANSLY_API_URL: "https://apiv3.fansly.com/api/v1"
+  ENABLE_SYNC: "true"
+  
+  # Monitoring
+  PROMETHEUS_ENABLED: "true"
+  OPENTELEMETRY_ENABLED: "true"

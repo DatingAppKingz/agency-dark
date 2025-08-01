@@ -24,6 +24,8 @@ class Platform(str, enum.Enum):
 
 class Model(BaseModel):
     """Model representation for content creators."""
+    __table_args__ = {"extend_existing": True}
+
     __tablename__ = "models"
     
     # User relationship (one-to-one)

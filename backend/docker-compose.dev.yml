@@ -1,0 +1,147 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agencydark_dev
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - agency_dev_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_dev_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - agency_dev_network
+
+  # Backend API (Development)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/agencydark_dev
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: dev-secret-key
+      ENVIRONMENT: development
+      LOG_LEVEL: DEBUG
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRATION_DELTA_SECONDS: 86400
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - .:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+      - /app/.mypy_cache
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Python debugger port
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - agency_dev_network
+    stdin_open: true
+    tty: true
+
+  # Celery Worker (Development)
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: watchmedo auto-restart --recursive --pattern="*.py" -- celery -A celery_worker worker --loglevel=DEBUG
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/agencydark_dev
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: dev-secret-key
+      ENVIRONMENT: development
+      LOG_LEVEL: DEBUG
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - agency_dev_network
+
+  # Celery Beat (Development)
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: celery -A celery_beat beat --loglevel=DEBUG
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/agencydark_dev
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: dev-secret-key
+      ENVIRONMENT: development
+      LOG_LEVEL: DEBUG
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - agency_dev_network
+
+  # PgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@agencydark.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - agency_dev_network
+    depends_on:
+      - postgres
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - agency_dev_network
+    depends_on:
+      - redis
+
+  # Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI
+    networks:
+      - agency_dev_network
+
+networks:
+  agency_dev_network:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+  pgadmin_data:

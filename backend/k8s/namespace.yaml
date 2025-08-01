@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agency-dark
+  labels:
+    name: agency-dark
+    environment: production
