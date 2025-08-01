@@ -166,8 +166,10 @@ async def catch_all(event, sid, *args):
 from modules.chat.realtime.namespace import ChatNamespace
 from modules.notifications.realtime.namespace import NotificationNamespace, DashboardNamespace
 from modules.financial.realtime.namespace import FinancialNamespace
+from api.v1.realtime.chat_namespace import ChatNamespaceV2
 
 sio.register_namespace(ChatNamespace('/chat'))
+sio.register_namespace(ChatNamespaceV2('/chat/v2'))  # New chat system
 sio.register_namespace(NotificationNamespace('/notifications'))
 sio.register_namespace(DashboardNamespace('/dashboard'))
 sio.register_namespace(FinancialNamespace('/financial'))

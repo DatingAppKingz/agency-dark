@@ -423,7 +423,39 @@ async def send_message(
         }
     )
     
-    # TODO: Emit socket.io event for real-time delivery
+    # Emit Socket.IO event for real-time delivery
+    from core.realtime.server import sio
+    
+    # Prepare message data for Socket.IO
+    message_data = {
+        'id': message.id,
+        'conversation_id': conversation_id,
+        'sender_id': current_user.id,
+        'sender_type': sender_type,
+        'sender_name': current_user.full_name or current_user.email,
+        'type': message.type.value,
+        'content': message.content,
+        'media_url': message.media_url,
+        'amount': float(message.amount) if message.amount else None,
+        'status': message.status.value,
+        'created_at': message.created_at.isoformat()
+    }
+    
+    # Emit to conversation room
+    room_name = f"conversation:{conversation_id}"
+    await sio.emit('new_message', message_data, room=room_name, namespace='/chat/v2')
+    
+    # Also emit to specific users
+    # Model user
+    model = await db.get(Model, conversation.model_id)
+    if model and model.user_id:
+        user_room = f"user:{model.user_id}"
+        await sio.emit('new_message', message_data, room=user_room, namespace='/chat/v2')
+    
+    # Assigned chatter
+    if conversation.assigned_chatter_id:
+        chatter_room = f"user:{conversation.assigned_chatter_id}"
+        await sio.emit('new_message', message_data, room=chatter_room, namespace='/chat/v2')
     
     return MessageResponse.from_orm(message)
 
