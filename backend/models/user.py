@@ -88,6 +88,9 @@ class User(BaseModel):
     # External API credentials
     external_credentials = relationship("ExternalAPICredential", back_populates="user", cascade="all, delete-orphan")
     
+    # Scheduled tasks
+    created_scheduled_tasks = relationship("ScheduledTask", back_populates="created_by", foreign_keys="ScheduledTask.created_by_id")
+    
     def __repr__(self):
         return f"<User {self.email}>"
     

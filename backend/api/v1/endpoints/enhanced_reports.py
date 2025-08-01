@@ -1,9 +1,11 @@
 """Enhanced reports API endpoints with chart generation."""
 
 from typing import List, Optional
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+import os
 
 from core.database import get_db
 from core.auth import get_current_user
@@ -207,6 +209,12 @@ async def export_report(
     - EXCEL: Data tables with separate chart sheets
     - CSV: Raw data only
     """
+    from services.pdf_generator import get_pdf_generator
+    from services.excel_generator import get_excel_generator
+    import csv
+    import tempfile
+    import uuid
+    
     # Validate report type
     valid_report_types = ['revenue', 'performance-dashboard', 'model-performance', 'financial-summary']
     if report_type not in valid_report_types:
@@ -229,14 +237,116 @@ async def export_report(
                 detail="Only agency owners can export financial reports"
             )
     
-    # This would integrate with the PDF/Excel generation services
-    # For now, return a placeholder response
-    return {
-        "message": f"Report export initiated",
-        "report_type": report_type,
-        "format": format,
-        "download_url": f"/api/v1/reports/download/{report_type}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.{format.value.lower()}"
-    }
+    # Get report service
+    report_service = get_enhanced_report_service()
+    
+    # Generate report data based on type
+    try:
+        if report_type == 'revenue':
+            if not start_date or not end_date:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Start date and end date are required for revenue reports"
+                )
+            report_data = await report_service.generate_comprehensive_revenue_report(
+                db, current_user.agency_id, start_date, end_date
+            )
+        elif report_type == 'performance-dashboard':
+            report_data = await report_service.generate_performance_dashboard(
+                db, current_user.agency_id, period_days or 30
+            )
+        elif report_type == 'model-performance':
+            if not model_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Model ID is required for model performance reports"
+                )
+            report_data = await report_service.generate_model_performance_report(
+                db, model_id, period_days or 30
+            )
+        elif report_type == 'financial-summary':
+            if not year:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Year is required for financial summary reports"
+                )
+            report_data = await report_service.generate_financial_summary_report(
+                db, current_user.agency_id, year, month
+            )
+        
+        # Generate export based on format
+        file_id = uuid.uuid4().hex
+        if format == ReportExportFormat.PDF:
+            pdf_generator = get_pdf_generator()
+            
+            # Get agency name
+            from sqlalchemy import select
+            from models.agency import Agency
+            agency_result = await db.execute(
+                select(Agency).where(Agency.id == current_user.agency_id)
+            )
+            agency = agency_result.scalar_one_or_none()
+            agency_name = agency.name if agency else "Agency Dark"
+            
+            # Generate PDF
+            pdf_bytes = await pdf_generator.generate_report_pdf(
+                report_data,
+                report_type.replace('-', '_'),
+                agency_name
+            )
+            
+            # Save to temporary file
+            temp_path = f"/tmp/report_{file_id}.pdf"
+            with open(temp_path, 'wb') as f:
+                f.write(pdf_bytes)
+            
+            file_extension = 'pdf'
+            
+        elif format == ReportExportFormat.EXCEL:
+            # Excel export would be implemented here
+            # For now, return not implemented
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="Excel export coming soon"
+            )
+            
+        elif format == ReportExportFormat.CSV:
+            # CSV export for raw data
+            temp_path = f"/tmp/report_{file_id}.csv"
+            
+            # Extract tabular data from report
+            if report_type == 'revenue' and report_data.get('data', {}).get('data'):
+                with open(temp_path, 'w', newline='') as csvfile:
+                    fieldnames = ['period', 'transaction_count', 'gross_revenue', 
+                                'platform_fees', 'net_revenue', 'avg_transaction']
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    writer.writeheader()
+                    for row in report_data['data']['data']:
+                        writer.writerow({k: row.get(k, '') for k in fieldnames})
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="CSV export is only available for revenue reports"
+                )
+            
+            file_extension = 'csv'
+        
+        # Return download info
+        return {
+            "message": "Report export completed",
+            "report_type": report_type,
+            "format": format,
+            "file_id": file_id,
+            "download_url": f"/api/v1/enhanced-reports/download/{file_id}.{file_extension}",
+            "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error exporting report: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to export report: {str(e)}"
+        )
 
 
 @router.get("/templates")
@@ -317,3 +427,57 @@ async def schedule_report(
         "format": format,
         "parameters": parameters
     }
+
+
+@router.get("/download/{file_id}")
+async def download_report(
+    file_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Download exported report file."""
+    # Validate file_id format (should be hex)
+    if not all(c in '0123456789abcdef' for c in file_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file ID"
+        )
+    
+    # Check for file with different extensions
+    possible_files = [
+        f"/tmp/report_{file_id}.pdf",
+        f"/tmp/report_{file_id}.xlsx",
+        f"/tmp/report_{file_id}.csv"
+    ]
+    
+    file_path = None
+    for path in possible_files:
+        if os.path.exists(path):
+            file_path = path
+            break
+    
+    if not file_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Report file not found or expired"
+        )
+    
+    # Get file extension
+    file_extension = os.path.splitext(file_path)[1][1:]  # Remove the dot
+    
+    # Determine content type
+    content_types = {
+        'pdf': 'application/pdf',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'csv': 'text/csv'
+    }
+    
+    content_type = content_types.get(file_extension, 'application/octet-stream')
+    
+    # Generate filename
+    filename = f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{file_extension}"
+    
+    return FileResponse(
+        path=file_path,
+        media_type=content_type,
+        filename=filename
+    )

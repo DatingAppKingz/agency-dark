@@ -86,6 +86,9 @@ class Agency(BaseModel):
     external_credentials = relationship("ExternalAPICredential", back_populates="agency", cascade="all, delete-orphan")
     webhook_endpoints = relationship("WebhookEndpoint", back_populates="agency", cascade="all, delete-orphan")
     
+    # Scheduled tasks
+    scheduled_tasks = relationship("ScheduledTask", back_populates="agency", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<Agency {self.name}>"
     
