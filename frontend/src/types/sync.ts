@@ -92,3 +92,56 @@ export interface SyncScheduleResponse {
   scheduled_for: string;
   platform: SyncPlatform;
 }
+
+export interface SyncOverviewResponse {
+  total_api_keys: number;
+  sync_enabled_keys: number;
+  active_syncs: number;
+  scheduled_syncs: number;
+  failed_syncs_24h: number;
+  successful_syncs_24h: number;
+  average_sync_duration: number;
+  last_sync_time?: string;
+}
+
+export interface ApiKeySyncStatusResponse {
+  api_key_id: string;
+  api_key_name: string;
+  provider: string;
+  sync_enabled: boolean;
+  sync_interval_minutes: number;
+  last_sync_at?: string;
+  last_sync_status?: string;
+  last_sync_error?: string;
+  sync_failure_count: number;
+  next_sync_at?: string;
+  is_syncing: boolean;
+}
+
+export interface SyncHealthResponse {
+  status: 'healthy' | 'warning' | 'critical';
+  scheduler_running: boolean;
+  active_workers: number;
+  queue_size: number;
+  failed_syncs_1h: number;
+  failed_syncs_24h: number;
+  avg_sync_duration_minutes: number;
+  problematic_keys: Array<{
+    api_key_id: string;
+    name: string;
+    provider: string;
+    failure_count: number;
+    last_error?: string;
+  }>;
+}
+
+export interface DeltaSyncStateResponse {
+  service_name: string;
+  last_sync_at?: string;
+  last_successful_sync_at?: string;
+  last_full_sync_at?: string;
+  is_initial_sync: boolean;
+  total_synced: number;
+  consecutive_failures: number;
+  checksum_cache_size: number;
+}
