@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   X,
   Key,
-  Shield,
   Eye,
   EyeOff,
   Copy,
@@ -11,8 +10,6 @@ import {
   Check,
   RefreshCw,
   RotateCw,
-  Activity,
-  Clock,
   FileText
 } from 'lucide-react';
 import { format } from 'date-fns';

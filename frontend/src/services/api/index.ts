@@ -13,4 +13,4 @@ export * from './webhooks';
 export * from './whitelabel';
 
 // Re-export commonly used items for convenience
-export { apiClient } from './client';
+export { default as apiClient } from './client';

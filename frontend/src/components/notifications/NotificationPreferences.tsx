@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { notificationApi } from '@/api/notifications';
-import { Bell, Mail, MessageSquare, Smartphone, Globe, Clock } from 'lucide-react';
+import { Bell, Mail, MessageSquare, Smartphone } from 'lucide-react';
 
 interface NotificationPreferences {
   email_enabled: boolean;

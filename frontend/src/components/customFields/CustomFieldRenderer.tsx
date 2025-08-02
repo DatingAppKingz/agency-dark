@@ -201,7 +201,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
           <DatePicker
             key={field.id}
             label={field.label}
-            value={value && typeof value !== 'boolean' ? new Date(value) : null}
+            value={value && typeof value === 'string' ? new Date(value) : null}
             onChange={(date) => handleFieldChange(field.id, date?.toISOString(), field)}
             disabled={readOnly}
             slotProps={{
@@ -218,7 +218,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
           <DateTimePicker
             key={field.id}
             label={field.label}
-            value={value && typeof value !== 'boolean' ? new Date(value) : null}
+            value={value && typeof value === 'string' ? new Date(value) : null}
             onChange={(date) => handleFieldChange(field.id, date?.toISOString(), field)}
             disabled={readOnly}
             slotProps={{

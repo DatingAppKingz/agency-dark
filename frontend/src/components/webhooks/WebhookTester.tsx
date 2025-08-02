@@ -36,7 +36,12 @@ const WebhookTester: React.FC<WebhookTesterProps> = ({ webhooks }) => {
   const testWebhook = useMutation({
     mutationFn: ({ webhookId, event, payload }: { webhookId: string; event?: WebhookEvent; payload?: any }) => {
       if (event && payload) {
-        return webhookService.sendTestWebhook(webhookId, { event, payload });
+        return webhookService.sendTestWebhook(webhookId, { 
+          event, 
+          event_id: `test_${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          data: payload || {}
+        });
       }
       return webhookService.testWebhook(webhookId);
     },

@@ -5,7 +5,7 @@ import { SearchResults } from './SearchResults';
 import { SearchFilters } from './SearchFilters';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { searchApi } from '@/api/search';
 import { Loader2, Save, History, TrendingUp } from 'lucide-react';
@@ -109,7 +109,7 @@ export function SearchPage() {
     if (!currentQuery) return;
 
     try {
-      const response = await searchApi.saveSearch({
+      await searchApi.saveSearch({
         name: currentQuery,
         query: currentQuery,
         filters,

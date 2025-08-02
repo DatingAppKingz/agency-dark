@@ -82,10 +82,10 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                 <Grid item xs={6}>
                   <DatePicker
                     label="From"
-                    value={filter.value?.[0] ? new Date(filter.value[0]) : null}
+                    value={Array.isArray(filter.value) && filter.value[0] ? new Date(filter.value[0]) : null}
                     onChange={(date) =>
                       updateFilter(filter.id, {
-                        value: [date?.toISOString(), filter.value?.[1] || ''] })
+                        value: [date?.toISOString() || '', (Array.isArray(filter.value) ? filter.value[1] : '') || ''] })
                     }
                     slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   />
@@ -93,10 +93,10 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                 <Grid item xs={6}>
                   <DatePicker
                     label="To"
-                    value={filter.value?.[1] ? new Date(filter.value[1]) : null}
+                    value={Array.isArray(filter.value) && filter.value[1] ? new Date(filter.value[1]) : null}
                     onChange={(date) =>
                       updateFilter(filter.id, {
-                        value: [filter.value?.[0] || '', date?.toISOString()] })
+                        value: [(Array.isArray(filter.value) ? filter.value[0] : '') || '', date?.toISOString() || ''] })
                     }
                     slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   />
@@ -128,10 +128,10 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                   label="Min"
                   size="small"
                   fullWidth
-                  value={filter.value?.[0] || ''}
+                  value={Array.isArray(filter.value) ? filter.value[0] || '' : ''}
                   onChange={(e) =>
                     updateFilter(filter.id, {
-                      value: [e.target.value, filter.value?.[1] || ''] })
+                      value: [e.target.value, (Array.isArray(filter.value) ? filter.value[1] : '') || ''] })
                   }
                 />
               </Grid>
@@ -141,10 +141,10 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
                   label="Max"
                   size="small"
                   fullWidth
-                  value={filter.value?.[1] || ''}
+                  value={Array.isArray(filter.value) ? filter.value[1] || '' : ''}
                   onChange={(e) =>
                     updateFilter(filter.id, {
-                      value: [filter.value?.[0] || '', e.target.value] })
+                      value: [(Array.isArray(filter.value) ? filter.value[0] : '') || '', e.target.value] })
                   }
                 />
               </Grid>

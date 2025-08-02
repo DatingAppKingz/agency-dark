@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, X, Check, AlertCircle, Mail, MessageSquare, Webhook } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Mail, MessageSquare, Webhook } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -119,7 +119,7 @@ export function NotificationCenter() {
       case 'urgent':
         return 'destructive';
       case 'high':
-        return 'warning';
+        return 'default';
       case 'low':
         return 'secondary';
       default:

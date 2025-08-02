@@ -8,23 +8,15 @@ import {
   Typography,
   Box
 } from '@mui/material';
-
-interface MediaItem {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  size: number;
-  created_at: string;
-  tags?: string[];
-}
+import { Media } from '../../types/media';
 
 interface MediaDetailDialogProps {
   open: boolean;
   onClose: () => void;
-  media: MediaItem | null;
-  onEdit?: (media: MediaItem) => void;
+  media: Media | null;
+  onEdit?: (media: Media) => void;
   onDelete?: (mediaId: string) => void;
+  onUpdate?: () => void;
 }
 
 export const MediaDetailDialog: React.FC<MediaDetailDialogProps> = ({
@@ -32,24 +24,25 @@ export const MediaDetailDialog: React.FC<MediaDetailDialogProps> = ({
   onClose,
   media,
   onEdit,
-  onDelete
+  onDelete,
+  onUpdate: _onUpdate
 }) => {
   if (!media) return null;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{media.name}</DialogTitle>
+      <DialogTitle>{media.title || media.original_filename}</DialogTitle>
       <DialogContent>
         <Box sx={{ mb: 2 }}>
-          {media.type.startsWith('image/') ? (
+          {media.mime_type.startsWith('image/') ? (
             <img 
-              src={media.url} 
-              alt={media.name}
+              src={media.cdn_url || media.file_path} 
+              alt={media.title || media.original_filename}
               style={{ maxWidth: '100%', height: 'auto' }}
             />
-          ) : media.type.startsWith('video/') ? (
+          ) : media.mime_type.startsWith('video/') ? (
             <video 
-              src={media.url} 
+              src={media.cdn_url || media.file_path} 
               controls
               style={{ maxWidth: '100%', height: 'auto' }}
             />
@@ -58,13 +51,13 @@ export const MediaDetailDialog: React.FC<MediaDetailDialogProps> = ({
           )}
         </Box>
         <Typography variant="body2" color="text.secondary">
-          Type: {media.type}
+          Type: {media.mime_type}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Size: {(media.size / 1024 / 1024).toFixed(2)} MB
+          Size: {(media.file_size / 1024 / 1024).toFixed(2)} MB
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Created: {new Date(media.created_at).toLocaleString()}
+          Created: {new Date(media.created_at || '').toLocaleString()}
         </Typography>
         {media.tags && media.tags.length > 0 && (
           <Typography variant="body2" color="text.secondary">
@@ -83,7 +76,9 @@ export const MediaDetailDialog: React.FC<MediaDetailDialogProps> = ({
             Edit
           </Button>
         )}
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -191,7 +191,7 @@ export function SearchResults({ results, query, onResultClick }: SearchResultsPr
             <Badge
               variant={
                 transaction.status === 'completed'
-                  ? 'success'
+                  ? 'default'
                   : transaction.status === 'failed'
                   ? 'destructive'
                   : 'secondary'

@@ -27,7 +27,7 @@ export const LanguageSwitcher: React.FC<{ className?: string }> = ({ className }
     }
   };
 
-  const currentLangInfo = languages[currentLanguage];
+  const currentLangInfo = languages[currentLanguage as keyof typeof languages];
 
   return (
     <div className={cn("relative", className)}>

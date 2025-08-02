@@ -4,11 +4,9 @@ import {
   Media, 
   MediaFolder, 
   MediaShare,
-  MediaType,
   MediaVisibility,
   MediaSearchParams,
-  MediaBulkOperation,
-  MediaUploadResponse
+  MediaBulkOperation
 } from '../types/media';
 
 const API_BASE = '/api/v1/media';

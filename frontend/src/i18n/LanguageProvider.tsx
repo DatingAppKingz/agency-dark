@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { apiClient } from '../services/api';
+// import { apiClient } from '../services/api';
 import { SUPPORTED_LANGUAGES } from './index';
 
 interface LanguagePreferences {
@@ -47,12 +47,13 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   useEffect(() => {
     const fetchPreferences = async () => {
       try {
-        const response = await api.get('/translations/preferences');
-        setPreferences(response.data);
+        const response = await fetch('/api/v1/translations/preferences');
+        const data = await response.json();
+        setPreferences(data);
         
         // Set the language if different from current
-        if (response.data.primaryLanguage !== i18n.language) {
-          await i18n.changeLanguage(response.data.primaryLanguage);
+        if (data.primaryLanguage !== i18n.language) {
+          await i18n.changeLanguage(data.primaryLanguage);
         }
       } catch (error) {
         console.error('Failed to fetch language preferences:', error);
@@ -73,7 +74,8 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       await updatePreferences({ primaryLanguage: language });
       
       // Update HTML dir attribute for RTL languages
-      document.documentElement.dir = SUPPORTED_LANGUAGES[language]?.rtl ? 'rtl' : 'ltr';
+      const langInfo = SUPPORTED_LANGUAGES[language as keyof typeof SUPPORTED_LANGUAGES];
+      document.documentElement.dir = (langInfo && 'rtl' in langInfo && langInfo.rtl) ? 'rtl' : 'ltr';
       
       // Store in localStorage
       localStorage.setItem('agencydark_language', language);
@@ -85,9 +87,14 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
   const updatePreferences = async (newPreferences: Partial<LanguagePreferences>) => {
     try {
-      const response = await api.patch('/translations/preferences', newPreferences);
-      setPreferences(response.data);
-      return response.data;
+      const response = await fetch('/api/v1/translations/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPreferences)
+      });
+      const data = await response.json();
+      setPreferences(data);
+      return data;
     } catch (error) {
       console.error('Failed to update language preferences:', error);
       throw error;
@@ -100,7 +107,10 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     preferences,
     changeLanguage,
     updatePreferences,
-    isRTL: SUPPORTED_LANGUAGES[i18n.language]?.rtl || false,
+    isRTL: (() => {
+      const langInfo = SUPPORTED_LANGUAGES[i18n.language as keyof typeof SUPPORTED_LANGUAGES];
+      return langInfo && 'rtl' in langInfo && langInfo.rtl || false;
+    })(),
   };
 
   if (loading) {

@@ -14,20 +14,14 @@ import {
   FormControl,
   InputLabel,
   Chip,
-  DialogActions,
   CircularProgress,
-  Alert,
-  Tabs,
-  Tab,
   Breadcrumbs,
   Link,
   Menu,
   Checkbox,
-  Tooltip,
   LinearProgress,
   Paper,
   InputAdornment,
-  Fab
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -35,16 +29,13 @@ import {
   Download as DownloadIcon,
   Share as ShareIcon,
   Edit as EditIcon,
-  MoreVert as MoreIcon,
   Folder as FolderIcon,
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
   AudioFile as AudioIcon,
   Description as DocumentIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon,
   CreateNewFolder as CreateFolderIcon,
-  ArrowBack as BackIcon,
   Visibility as ViewIcon,
   CheckBox as SelectAllIcon,
   CheckBoxOutlineBlank as DeselectIcon
@@ -73,8 +64,8 @@ interface MediaLibraryProps {
 }
 
 export const MediaLibrary: React.FC<MediaLibraryProps> = ({
-  agencyId,
-  modelId,
+  agencyId: _agencyId,
+  modelId: _modelId,
   onMediaSelect,
   selectionMode = false,
   maxSelection = 1
@@ -88,7 +79,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadProgress] = useState<number | null>(null);
   
   // Dialogs
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -101,7 +92,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaType | ''>('');
   const [visibilityFilter, setVisibilityFilter] = useState<MediaVisibility | ''>('');
-  const [activeTab, setActiveTab] = useState(0);
+  // const [activeTab, setActiveTab] = useState(0);
   
   // Context menu
   const [contextMenu, setContextMenu] = useState<{
@@ -163,7 +154,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
   }, [currentFolder, mediaTypeFilter, visibilityFilter, searchQuery]);
   
   // File drop handler
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (_acceptedFiles: File[]) => {
     setUploadDialogOpen(true);
     // Upload dialog will handle the actual upload
   }, []);
@@ -643,7 +634,6 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
           loadMedia(true);
           setUploadDialogOpen(false);
         }}
-        onProgress={setUploadProgress}
       />
       
       {selectedMedia && (

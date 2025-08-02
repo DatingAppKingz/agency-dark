@@ -35,7 +35,7 @@ import { useChatStore } from '@/store/chatStore';
 import { useSocket } from '@/providers/SocketProvider';
 import { chatApi } from '@/services/api/chat';
 import { useToast } from '@/components/common/Toaster';
-import { Conversation, Message, NewMessage } from '@/types/chat';
+import { Conversation, Message, SendMessageData } from '@/types/chat';
 import { usePushNotifications } from '@/providers/PushNotificationProvider';
 import { useAuthStore } from '@/store/authStore';
 

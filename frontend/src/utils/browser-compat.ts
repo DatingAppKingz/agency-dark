@@ -129,7 +129,7 @@ export const browserCompat = {
     if (!('scrollBehavior' in document.documentElement.style)) {
       // Simple smooth scroll polyfill
       const originalScrollTo = window.scrollTo;
-      window.scrollTo = function(options: ScrollToOptions | number, y?: number) {
+      (window as any).scrollTo = function(options: ScrollToOptions | number, y?: number) {
         if (typeof options === 'object' && options.behavior === 'smooth') {
           const start = window.pageYOffset;
           const distance = (options.top || 0) - start;

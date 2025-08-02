@@ -223,13 +223,13 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
               >
                 {formattedValue}
               </Typography>
-              {data[0]?.comparison && (
+              {data[0] && 'comparison' in data[0] && typeof data[0].comparison === 'number' && (
                 <Typography
                   variant="body2"
-                  color={data[0].comparison > 0 ? 'success.main' : 'error.main'}
+                  color={(data[0].comparison as number) > 0 ? 'success.main' : 'error.main'}
                   sx={{ mt: 1 }}
                 >
-                  {data[0].comparison > 0 ? '+' : ''}{formatPercentage(Number(data[0].comparison))} vs previous period
+                  {(data[0].comparison as number) > 0 ? '+' : ''}{formatPercentage(Number(data[0].comparison))} vs previous period
                 </Typography>
               )}
             </Box>

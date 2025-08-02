@@ -9,7 +9,6 @@ import {
   X, 
   Upload, 
   Download,
-  Globe,
   AlertCircle,
   Search,
   Filter

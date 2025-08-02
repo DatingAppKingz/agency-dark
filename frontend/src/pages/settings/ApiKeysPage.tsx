@@ -7,7 +7,6 @@ import {
   Shield,
   Activity,
   Eye,
-  EyeOff,
   Copy,
   Trash2,
   RotateCw,
@@ -31,7 +30,7 @@ export const ApiKeysPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedKey, setSelectedKey] = useState<ApiKey | null>(null);
   const [showManager, setShowManager] = useState(false);
-  const [showSecret, setShowSecret] = useState<{ [key: string]: boolean }>({});
+  // const [showSecret, setShowSecret] = useState<{ [key: string]: boolean }>({});
 
   // Check if user has permission to manage API keys
   const canManageApiKeys = ['super_admin', 'agency_owner', 'agency_admin'].includes(user?.role || '');

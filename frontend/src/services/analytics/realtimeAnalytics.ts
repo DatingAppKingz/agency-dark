@@ -85,8 +85,8 @@ class RealtimeAnalyticsService extends EventEmitter {
 
   async connect(agencyId: string, modelId?: string, token?: string) {
     this.agencyId = agencyId;
-    this.modelId = modelId;
-    this.token = token || localStorage.getItem('auth_token');
+    this.modelId = modelId || null;
+    this.token = token || localStorage.getItem('auth_token') || null;
 
     if (!this.token) {
       throw new Error('Authentication token not found');
@@ -179,7 +179,7 @@ class RealtimeAnalyticsService extends EventEmitter {
   }
 
   private startPingInterval() {
-    this.pingInterval = setInterval(() => {
+    this.pingInterval = window.setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ type: 'ping' }));
       }
@@ -202,7 +202,7 @@ class RealtimeAnalyticsService extends EventEmitter {
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
     this.reconnectAttempts++;
 
-    this.reconnectTimeout = setTimeout(() => {
+    this.reconnectTimeout = window.setTimeout(() => {
       console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
       this.establishConnection();
     }, delay);

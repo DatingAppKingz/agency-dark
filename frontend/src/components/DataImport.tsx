@@ -529,7 +529,7 @@ export const DataImport: React.FC = () => {
                     {job.totalRecords !== undefined && (
                       <p className="text-xs text-gray-500">
                         {job.successfulRecords}/{job.totalRecords} imported
-                        {job.failedRecords > 0 && (
+                        {job.failedRecords && job.failedRecords > 0 && (
                           <span className="text-red-400">
                             {' '}• {job.failedRecords} failed
                           </span>
@@ -538,7 +538,7 @@ export const DataImport: React.FC = () => {
                     )}
                   </div>
                 </div>
-                {job.status === 'completed' && job.failedRecords > 0 && (
+                {job.status === 'completed' && job.failedRecords && job.failedRecords > 0 && (
                   <button
                     onClick={() => handleDownloadErrors(job.importId)}
                     className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"

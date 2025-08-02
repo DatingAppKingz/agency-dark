@@ -2,8 +2,8 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
-import { format as formatDate, formatDistance, formatRelative } from 'date-fns';
-import { enUS, es, fr, de, it, pt, ar, hi, zh, ja } from 'date-fns/locale';
+import { format as formatDate, formatDistance } from 'date-fns';
+import { enUS, es, fr, de, it, pt, ar, hi, zhCN, ja } from 'date-fns/locale';
 
 // Supported languages
 export const SUPPORTED_LANGUAGES = {
@@ -15,21 +15,21 @@ export const SUPPORTED_LANGUAGES = {
   pt: { name: 'Portuguese', nativeName: 'Português', locale: pt },
   ar: { name: 'Arabic', nativeName: 'العربية', locale: ar, rtl: true },
   hi: { name: 'Hindi', nativeName: 'हिन्दी', locale: hi },
-  zh: { name: 'Chinese', nativeName: '中文', locale: zh },
+  zh: { name: 'Chinese', nativeName: '中文', locale: zhCN },
   ja: { name: 'Japanese', nativeName: '日本語', locale: ja },
 };
 
 // Date formatting helper
 export const formatDateLocalized = (date: Date | string, format: string, language: string) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const locale = SUPPORTED_LANGUAGES[language]?.locale || enUS;
+  const locale = SUPPORTED_LANGUAGES[language as keyof typeof SUPPORTED_LANGUAGES]?.locale || enUS;
   return formatDate(dateObj, format, { locale });
 };
 
 // Relative time formatting
 export const formatDistanceLocalized = (date: Date | string, baseDate: Date, language: string) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const locale = SUPPORTED_LANGUAGES[language]?.locale || enUS;
+  const locale = SUPPORTED_LANGUAGES[language as keyof typeof SUPPORTED_LANGUAGES]?.locale || enUS;
   return formatDistance(dateObj, baseDate, { locale, addSuffix: true });
 };
 

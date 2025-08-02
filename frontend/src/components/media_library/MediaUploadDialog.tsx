@@ -1,6 +1,6 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@mui/material';
-import { MediaUploader } from '../media/MediaUploader';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import MediaUploader from '../media/MediaUploader';
 
 interface MediaUploadDialogProps {
   open: boolean;
@@ -13,7 +13,7 @@ export const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
   open,
   onClose,
   onUploadComplete,
-  folderId
+  folderId: _folderId
 }) => {
   const handleUploadComplete = (files: File[]) => {
     onUploadComplete?.(files);
@@ -25,8 +25,7 @@ export const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
       <DialogTitle>Upload Media</DialogTitle>
       <DialogContent>
         <MediaUploader 
-          onUploadComplete={handleUploadComplete}
-          folderId={folderId}
+          onUpload={handleUploadComplete}
         />
       </DialogContent>
     </Dialog>
