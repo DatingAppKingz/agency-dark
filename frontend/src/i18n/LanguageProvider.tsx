@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../services/api';
+import { apiClient } from '../services/api';
 import { SUPPORTED_LANGUAGES } from './index';
 
 interface LanguagePreferences {

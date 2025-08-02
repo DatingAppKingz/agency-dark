@@ -39,6 +39,12 @@ export enum DateRangeType {
   CUSTOM = 'custom',
 }
 
+export interface DateRange {
+  startDate: Date | string;
+  endDate: Date | string;
+  type?: DateRangeType;
+}
+
 export interface ReportMetric {
   id: string;
   name: string;

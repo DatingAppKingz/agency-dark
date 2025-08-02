@@ -320,3 +320,5 @@ export const ApiKeysPage: React.FC = () => {
     </div>
   );
 };
+
+export default ApiKeysPage;

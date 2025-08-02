@@ -12,7 +12,7 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { api } from '../services/api';
+import { apiClient } from '../services/api';
 import { cn } from '../lib/utils';
 
 interface CacheStats {
@@ -55,8 +55,8 @@ export const CacheMonitor: React.FC = () => {
   const fetchCacheData = async () => {
     try {
       const [statsResponse, healthResponse] = await Promise.all([
-        api.get('/cache/stats'),
-        api.get('/cache/health')
+        apiClient.get('/cache/stats'),
+        apiClient.get('/cache/health')
       ]);
       
       setStats(statsResponse.data);
@@ -76,7 +76,7 @@ export const CacheMonitor: React.FC = () => {
 
   const handleWarmup = async () => {
     try {
-      await api.post('/cache/warmup');
+      await apiClient.post('/cache/warmup');
       // Show success notification
     } catch (error) {
       console.error('Failed to trigger cache warmup:', error);
@@ -87,7 +87,7 @@ export const CacheMonitor: React.FC = () => {
     if (!confirm('Are you sure you want to clean up the cache?')) return;
     
     try {
-      await api.post('/cache/cleanup');
+      await apiClient.post('/cache/cleanup');
       await fetchCacheData();
     } catch (error) {
       console.error('Failed to trigger cache cleanup:', error);
@@ -98,7 +98,7 @@ export const CacheMonitor: React.FC = () => {
     if (!confirm(`Invalidate all cache entries tagged with "${tag}"?`)) return;
     
     try {
-      await api.delete(`/cache/invalidate/tag/${tag}`);
+      await apiClient.delete(`/cache/invalidate/tag/${tag}`);
       await fetchCacheData();
     } catch (error) {
       console.error('Failed to invalidate cache tag:', error);

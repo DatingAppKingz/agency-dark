@@ -14,7 +14,7 @@ import {
   Archive
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { api } from '../services/api';
+import { apiClient } from '../services/api';
 import { cn } from '../lib/utils';
 
 interface ExportTemplate {
@@ -71,7 +71,7 @@ export const DataExport: React.FC = () => {
 
   const fetchTemplates = async () => {
     try {
-      const response = await api.get('/exports/templates');
+      const response = await apiClient.get('/exports/templates');
       setTemplates(response.data);
     } catch (error) {
       console.error('Failed to fetch templates:', error);
@@ -80,7 +80,7 @@ export const DataExport: React.FC = () => {
 
   const fetchActiveExports = async () => {
     try {
-      const response = await api.get('/exports/history?limit=5');
+      const response = await apiClient.get('/exports/history?limit=5');
       setActiveExports(response.data);
     } catch (error) {
       console.error('Failed to fetch active exports:', error);
@@ -90,7 +90,7 @@ export const DataExport: React.FC = () => {
   const handleExport = async () => {
     setLoading(true);
     try {
-      const response = await api.post('/exports', {
+      const response = await apiClient.post('/exports', {
         entity_type: selectedEntity,
         format: selectedFormat,
         fields: selectedFields.length > 0 ? selectedFields : undefined,
@@ -114,7 +114,7 @@ export const DataExport: React.FC = () => {
   const pollExportStatus = async (exportId: string) => {
     const checkStatus = async () => {
       try {
-        const response = await api.get(`/exports/${exportId}/status`);
+        const response = await apiClient.get(`/exports/${exportId}/status`);
         const status = response.data;
 
         // Update active exports
@@ -152,7 +152,7 @@ export const DataExport: React.FC = () => {
 
   const handleDownload = async (exportId: string) => {
     try {
-      const response = await api.get(`/exports/${exportId}/download`, {
+      const response = await apiClient.get(`/exports/${exportId}/download`, {
         responseType: 'blob'
       });
       

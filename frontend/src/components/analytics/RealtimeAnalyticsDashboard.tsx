@@ -110,7 +110,7 @@ const RealtimeAnalyticsDashboard: React.FC<RealtimeAnalyticsDashboardProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
   const reconnectAttemptsRef = useRef(0);
 
   // Format currency
@@ -145,7 +145,7 @@ const RealtimeAnalyticsDashboard: React.FC<RealtimeAnalyticsDashboardProps> = ({
       return;
     }
 
-    const wsUrl = `${process.env.REACT_APP_WS_URL || 'ws://localhost:8000'}/api/v1/analytics/realtime/ws/${agencyId}${modelId ? `?model_id=${modelId}` : ''}`;
+    const wsUrl = `${import.meta.env.VITE_WS_URL || 'ws://localhost:8000'}/api/v1/analytics/realtime/ws/${agencyId}${modelId ? `?model_id=${modelId}` : ''}`;
     
     try {
       const ws = new WebSocket(wsUrl);

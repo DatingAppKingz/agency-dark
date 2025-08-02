@@ -14,7 +14,7 @@ import {
   Search,
   Filter
 } from 'lucide-react';
-import { api } from '../services/api';
+import { apiClient } from '../services/api';
 import { useLanguage } from '../i18n/LanguageProvider';
 import { cn } from '../lib/utils';
 
@@ -67,7 +67,7 @@ export const TranslationManager: React.FC = () => {
         ...(showUnverifiedOnly && { verified: 'false' }),
       });
       
-      const response = await api.get(`/translations?${params}`);
+      const response = await apiClient.get(`/translations?${params}`);
       setTranslations(response.data);
     } catch (error) {
       console.error('Failed to fetch translations:', error);
@@ -79,7 +79,7 @@ export const TranslationManager: React.FC = () => {
   // Fetch translation stats
   const fetchStats = async () => {
     try {
-      const response = await api.get('/translations/stats');
+      const response = await apiClient.get('/translations/stats');
       setStats(response.data.stats);
     } catch (error) {
       console.error('Failed to fetch translation stats:', error);
@@ -94,7 +94,7 @@ export const TranslationManager: React.FC = () => {
   // Create translation
   const handleCreate = async () => {
     try {
-      await api.post('/translations', {
+      await apiClient.post('/translations', {
         ...newTranslation,
         language: selectedLanguage,
         isVerified: true,
@@ -112,7 +112,7 @@ export const TranslationManager: React.FC = () => {
   // Update translation
   const handleUpdate = async (id: string) => {
     try {
-      await api.patch(`/translations/${id}`, {
+      await apiClient.patch(`/translations/${id}`, {
         value: editValue,
         isVerified: true,
       });
@@ -131,7 +131,7 @@ export const TranslationManager: React.FC = () => {
     if (!confirm(t('translations.confirm_delete'))) return;
     
     try {
-      await api.delete(`/translations/${id}`);
+      await apiClient.delete(`/translations/${id}`);
       fetchTranslations();
       fetchStats();
     } catch (error) {
@@ -142,7 +142,7 @@ export const TranslationManager: React.FC = () => {
   // Export translations
   const handleExport = async () => {
     try {
-      const response = await api.get(`/translations/export/${selectedLanguage}?format=json`);
+      const response = await apiClient.get(`/translations/export/${selectedLanguage}?format=json`);
       const blob = new Blob([JSON.stringify(response.data.translations, null, 2)], {
         type: 'application/json',
       });
@@ -166,7 +166,7 @@ export const TranslationManager: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
       
-      await api.post(`/translations/import/file?language=${selectedLanguage}`, formData);
+      await apiClient.post(`/translations/import/file?language=${selectedLanguage}`, formData);
       fetchTranslations();
       fetchStats();
     } catch (error) {

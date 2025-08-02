@@ -54,7 +54,7 @@ import {
   CheckBoxOutlineBlank as DeselectIcon
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
-import { useSnackbar } from 'notistack';
+import toast from 'react-hot-toast';
 import { useMediaService } from '../../hooks/useMediaService';
 import { MediaUploadDialog } from './MediaUploadDialog';
 import { MediaDetailDialog } from './MediaDetailDialog';
@@ -83,7 +83,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
   selectionMode = false,
   maxSelection = 1
 }) => {
-  const { enqueueSnackbar } = useSnackbar();
+  // Removed useSnackbar - using toast instead
   const mediaService = useMediaService();
   
   // State
@@ -144,7 +144,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
       
       setHasMore(response.has_more);
     } catch (error) {
-      enqueueSnackbar('Failed to load media', { variant: 'error' });
+      toast.error('Failed to load media');
     } finally {
       setLoading(false);
     }
@@ -156,7 +156,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
       const folderList = await mediaService.listFolders(currentFolder);
       setFolders(folderList);
     } catch (error) {
-      enqueueSnackbar('Failed to load folders', { variant: 'error' });
+      toast.error('Failed to load folders');
     }
   }, [currentFolder]);
   
@@ -186,9 +186,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
         newSelected.delete(media.id);
       } else {
         if (maxSelection && newSelected.size >= maxSelection) {
-          enqueueSnackbar(`Maximum ${maxSelection} items can be selected`, { 
-            variant: 'warning' 
-          });
+          toast.error(`Maximum ${maxSelection} items can be selected`);
           return;
         }
         newSelected.add(media.id);
@@ -233,11 +231,11 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
         data: { permanent: false }
       });
       
-      enqueueSnackbar('Items deleted successfully', { variant: 'success' });
+      toast.success('Items deleted successfully');
       setSelectedItems(new Set());
       loadMedia(true);
     } catch (error) {
-      enqueueSnackbar('Failed to delete items', { variant: 'error' });
+      toast.error('Failed to delete items');
     }
   };
   
@@ -627,10 +625,10 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
             if (window.confirm('Delete this file?')) {
               try {
                 await mediaService.deleteMedia(contextMenu.media.id);
-                enqueueSnackbar('File deleted', { variant: 'success' });
+                toast.success('File deleted');
                 loadMedia(true);
               } catch (error) {
-                enqueueSnackbar('Failed to delete file', { variant: 'error' });
+                toast.error('Failed to delete file');
               }
             }
           }

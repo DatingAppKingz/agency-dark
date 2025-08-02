@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { format } from 'date-fns';
-import { api } from '../services/api';
+import { apiClient } from '../services/api';
 import { cn } from '../lib/utils';
 
 interface ImportTemplate {
@@ -78,7 +78,7 @@ export const DataImport: React.FC = () => {
 
   const fetchTemplates = async () => {
     try {
-      const response = await api.get('/imports/templates');
+      const response = await apiClient.get('/imports/templates');
       setTemplates(response.data);
     } catch (error) {
       console.error('Failed to fetch templates:', error);
@@ -87,7 +87,7 @@ export const DataImport: React.FC = () => {
 
   const fetchActiveImports = async () => {
     try {
-      const response = await api.get('/imports/history?limit=5');
+      const response = await apiClient.get('/imports/history?limit=5');
       setActiveImports(response.data);
     } catch (error) {
       console.error('Failed to fetch active imports:', error);
@@ -126,7 +126,7 @@ export const DataImport: React.FC = () => {
         formData.append('field_mapping', JSON.stringify(fieldMapping));
       }
 
-      const response = await api.post('/imports/validate', formData);
+      const response = await apiClient.post('/imports/validate', formData);
       setValidationResult(response.data);
     } catch (error) {
       console.error('Validation failed:', error);
@@ -153,7 +153,7 @@ export const DataImport: React.FC = () => {
         formData.append('field_mapping', JSON.stringify(fieldMapping));
       }
 
-      const response = await api.post('/imports', formData);
+      const response = await apiClient.post('/imports', formData);
 
       // Start polling for status
       pollImportStatus(response.data.import_id);
@@ -174,7 +174,7 @@ export const DataImport: React.FC = () => {
   const pollImportStatus = async (importId: string) => {
     const checkStatus = async () => {
       try {
-        const response = await api.get(`/imports/${importId}/status`);
+        const response = await apiClient.get(`/imports/${importId}/status`);
         const status = response.data;
 
         // Update active imports
@@ -212,7 +212,7 @@ export const DataImport: React.FC = () => {
 
   const handleDownloadTemplate = async (templateId: string) => {
     try {
-      const response = await api.get(`/imports/templates/${templateId}/sample`, {
+      const response = await apiClient.get(`/imports/templates/${templateId}/sample`, {
         responseType: 'blob'
       });
       
@@ -231,7 +231,7 @@ export const DataImport: React.FC = () => {
 
   const handleDownloadErrors = async (importId: string) => {
     try {
-      const response = await api.get(`/imports/${importId}/errors`, {
+      const response = await apiClient.get(`/imports/${importId}/errors`, {
         responseType: 'blob'
       });
       

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@/utils/EventEmitter';
 import apiClient from '../api/client';
 
 export enum MetricType {
@@ -72,8 +72,8 @@ class RealtimeAnalyticsService extends EventEmitter {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
-  private reconnectTimeout: NodeJS.Timeout | null = null;
-  private pingInterval: NodeJS.Timeout | null = null;
+  private reconnectTimeout: number | null = null;
+  private pingInterval: number | null = null;
   private agencyId: string | null = null;
   private modelId: string | null = null;
   private token: string | null = null;
@@ -113,7 +113,7 @@ class RealtimeAnalyticsService extends EventEmitter {
 
   private buildWebSocketUrl(): string {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = process.env.REACT_APP_WS_HOST || window.location.host;
+    const host = import.meta.env.VITE_WS_URL?.replace(/^wss?:\/\//, '') || window.location.host;
     let url = `${protocol}//${host}/api/v1/analytics/realtime/ws/${this.agencyId}`;
     
     if (this.modelId) {
