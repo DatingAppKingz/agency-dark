@@ -4,11 +4,7 @@ module.exports = {
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: {
-        esModuleInterop: true,
-      },
-    }],
+    '^.+\\.tsx?$': 'ts-jest',
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -20,8 +16,13 @@ module.exports = {
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^@/services/pushNotifications$': '<rootDir>/src/services/__mocks__/pushNotifications.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/src/test-utils/setup.ts'],
+  moduleDirectories: ['node_modules', 'src'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(msw|@mswjs)/)',
+  ],
   testMatch: [
     '**/__tests__/**/*.+(ts|tsx|js)',
     '**/?(*.)+(spec|test).+(ts|tsx|js)',
@@ -46,6 +47,10 @@ module.exports = {
       tsconfig: {
         esModuleInterop: true,
       },
+      isolatedModules: true,
     },
+  },
+  testEnvironmentOptions: {
+    customExportConditions: [''],
   },
 };

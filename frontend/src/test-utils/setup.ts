@@ -1,12 +1,33 @@
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 
+// Set environment variables
+process.env.VITE_API_URL = 'http://localhost:8000';
+process.env.VITE_WS_URL = 'http://localhost:8000';
+process.env.VITE_PUBLIC_VAPID_KEY = 'test-vapid-key';
+process.env.NODE_ENV = 'test';
+
+// Mock pushNotifications service before any imports
+jest.mock('@/services/pushNotifications', () => ({
+  pushNotifications: {
+    isSupported: jest.fn().mockReturnValue(true),
+    requestPermission: jest.fn().mockResolvedValue(true),
+    subscribeUser: jest.fn().mockResolvedValue({
+      endpoint: 'https://push.example.com/123',
+      keys: { p256dh: 'test-key', auth: 'test-auth' }
+    }),
+    unsubscribeUser: jest.fn().mockResolvedValue(undefined),
+    sendNotification: jest.fn().mockResolvedValue(undefined),
+    isSubscribed: jest.fn().mockResolvedValue(false),
+    getSubscription: jest.fn().mockResolvedValue(null),
+  }
+}));
+
 // Add TextEncoder/TextDecoder polyfills for Node.js environment
 if (typeof globalThis.TextEncoder === 'undefined') {
-  const util = await import('util');
-  const { TextEncoder, TextDecoder } = util;
-  globalThis.TextEncoder = TextEncoder;
-  globalThis.TextDecoder = TextDecoder as any;
+  const util = require('util');
+  globalThis.TextEncoder = util.TextEncoder;
+  globalThis.TextDecoder = util.TextDecoder as any;
 }
 
 // Mock import.meta for Vite environment variables
@@ -15,6 +36,7 @@ if (typeof globalThis.TextEncoder === 'undefined') {
     env: {
       VITE_API_URL: 'http://localhost:8000',
       VITE_WS_URL: 'http://localhost:8000',
+      VITE_PUBLIC_VAPID_KEY: 'test-vapid-key',
       MODE: 'test',
       DEV: false,
       PROD: false,
@@ -22,6 +44,13 @@ if (typeof globalThis.TextEncoder === 'undefined') {
     },
   },
 };
+
+// Mock Response if not available
+if (typeof globalThis.Response === 'undefined') {
+  (globalThis as any).Response = class Response {
+    constructor(public body: any, public init: any = {}) {}
+  };
+}
 
 // Cleanup after each test
 afterEach(() => {
