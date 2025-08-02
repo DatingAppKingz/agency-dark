@@ -130,8 +130,8 @@ def precompute_analytics_task(date: str = None):
         
         with get_db_sync() as db:
             from sqlalchemy import select, func, and_
-            from models.transaction import Transaction
-            from models.message import Message
+            from models.financial import Transaction
+            from models.chat import Message
             from models.model import Model
             
             import asyncio

@@ -193,7 +193,7 @@ async def list_active_chats(
     model_id: Optional[int] = None,
     assigned_to_me: bool = False,
     search: Optional[str] = None,
-    sort_by: str = Query("last_message", regex="^(last_message|created_at|total_spent)$"),
+    sort_by: str = Query("last_message", pattern="^(last_message|created_at|total_spent)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):

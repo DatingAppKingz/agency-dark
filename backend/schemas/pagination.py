@@ -57,7 +57,7 @@ class SortParams(BaseModel):
     """Query parameters for sorting."""
     
     sort_by: Optional[str] = Field(None, description="Field to sort by")
-    sort_order: str = Field("desc", regex="^(asc|desc)$", description="Sort order")
+    sort_order: str = Field("desc", pattern="^(asc|desc)$", description="Sort order")
     
     @property
     def is_ascending(self) -> bool:

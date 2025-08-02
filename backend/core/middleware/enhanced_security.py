@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse
 from starlette.requests import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database import get_db_context
+from core.tasks.db_context import get_db_context
 from core.security.api_key_manager import secure_api_key_manager
 from core.redis import redis_client
 from core.logging import get_logger

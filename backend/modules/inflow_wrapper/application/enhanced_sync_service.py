@@ -18,7 +18,7 @@ from sqlalchemy import select, and_, update, func
 from sqlalchemy.dialects.postgresql import insert
 
 from core.database import get_db
-from core.redis import get_redis
+from core.redis import redis_manager
 from core.domain.models import ModelProfile, Fan, Subscription, Content
 from modules.financial.domain.models import (
     FinancialTransaction,
@@ -101,8 +101,7 @@ class EnhancedInflowSyncService(InflowSyncService):
     
     async def initialize(self):
         """Initialize sync service with Redis connection."""
-        redis = await get_redis()
-        self.sync_state = SyncState(redis)
+        self.sync_state = SyncState(redis_manager)
     
     async def sync_all_data_incremental(
         self,

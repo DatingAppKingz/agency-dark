@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from core.config import get_settings
-from core.database.partitioning import partition_manager
+from core.database_utils.partitioning import partition_manager
 from core.logging import get_logger
 
 settings = get_settings()

@@ -11,7 +11,7 @@ from sqlalchemy.orm import selectinload
 import json
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from services.media_upload.file_upload_service import FileUploadService
 from models.media import Media, MediaFolder, MediaShare, MediaType, MediaStatus, MediaVisibility
@@ -23,7 +23,7 @@ from schemas.media import (
     MediaSearchParams, MediaBulkOperation
 )
 from core.logger import get_logger
-from core.cache import cache_result, invalidate_cache
+from core.simple_cache import cache_result, invalidate_cache
 
 logger = get_logger(__name__)
 
@@ -182,7 +182,7 @@ async def batch_upload(
 
 
 @router.get("/", response_model=Dict[str, Any])
-@cache_result(ttl=300)
+@cache_result(key_prefix="media:list", ttl=300)
 async def list_media(
     media_type: Optional[MediaType] = None,
     folder_id: Optional[UUID] = None,
@@ -190,8 +190,8 @@ async def list_media(
     status: Optional[MediaStatus] = None,
     tags: Optional[List[str]] = Query(None),
     search: Optional[str] = None,
-    sort_by: str = Query("created_at", regex="^(created_at|updated_at|file_size|title)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("created_at", pattern="^(created_at|updated_at|file_size|title)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user: User = Depends(get_current_active_user),
@@ -279,7 +279,7 @@ async def list_media(
 
 
 @router.get("/{media_id}", response_model=MediaDetailResponse)
-@cache_result(ttl=3600)
+@cache_result(key_prefix="media:get", ttl=3600)
 async def get_media(
     media_id: UUID,
     current_user: User = Depends(get_current_active_user),
@@ -535,7 +535,7 @@ async def create_folder(
 
 
 @router.get("/folders", response_model=List[MediaFolderResponse])
-@cache_result(ttl=600)
+@cache_result(key_prefix="media:stats", ttl=600)
 async def list_folders(
     parent_id: Optional[UUID] = None,
     current_user: User = Depends(get_current_active_user),

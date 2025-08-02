@@ -15,7 +15,7 @@ import redis.asyncio as redis
 
 from core.logger import get_logger
 from models.model import Model
-from models.transaction import Transaction
+from models.financial import Transaction
 from models.subscriber import Subscriber
 from models.content import Content
 

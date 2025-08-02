@@ -14,8 +14,10 @@ from sqlalchemy import select, and_, func
 
 from core.database import get_db
 from models.user import User
-from models.financial import Transaction, Revenue
-from models.analytics import UserActivity
+from models.financial import Transaction, Earning
+from models.analytics import ModelAnalytics
+# UserActivity doesn't exist yet - would need to be created
+# from models.user import UserActivity
 
 from .models.revenue_forecast import RevenueForecastModel
 from .models.churn_prediction import ChurnPredictionModel
@@ -66,9 +68,9 @@ class MLService:
         """
         try:
             # Fetch revenue data
-            query = select(Revenue).order_by(Revenue.date)
+            query = select(Earning).order_by(Earning.date)
             if agency_id:
-                query = query.where(Revenue.agency_id == agency_id)
+                query = query.where(Earning.agency_id == agency_id)
             
             result = await db.execute(query)
             revenues = result.scalars().all()
@@ -104,8 +106,9 @@ class MLService:
         Train churn prediction model
         """
         try:
-            # Fetch user activity data
-            query = select(UserActivity).join(User)
+            # TODO: UserActivity model doesn't exist yet
+            # For now, use User model directly
+            query = select(User)
             if agency_id:
                 query = query.where(User.agency_id == agency_id)
             
@@ -159,9 +162,9 @@ class MLService:
                 return {'error': 'Revenue forecast model not trained'}
             
             # Fetch historical data
-            query = select(Revenue).order_by(Revenue.date.desc()).limit(90)
+            query = select(Earning).order_by(Earning.date.desc()).limit(90)
             if agency_id:
-                query = query.where(Revenue.agency_id == agency_id)
+                query = query.where(Earning.agency_id == agency_id)
             
             result = await db.execute(query)
             revenues = result.scalars().all()
@@ -206,9 +209,10 @@ class MLService:
             if not self.models['churn_prediction'].is_trained:
                 return {'error': 'Churn prediction model not trained'}
             
-            # Fetch current user data
-            query = select(UserActivity).join(User).order_by(
-                UserActivity.last_activity.desc()
+            # TODO: UserActivity model doesn't exist yet
+            # For now, use User model directly
+            query = select(User).order_by(
+                User.updated_at.desc()
             ).limit(limit)
             
             if agency_id:

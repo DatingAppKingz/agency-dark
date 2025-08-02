@@ -11,8 +11,8 @@ from celery.utils.log import get_task_logger
 from sqlalchemy import select, delete, and_, or_
 
 from core.config import settings
-from core.database import get_db_context
-from core.models import Agency, SyncLog, Transaction
+from .db_context import get_db_context
+from models import Agency, SyncLog, Transaction
 from modules.external_apis.onlyfans_client import OnlyFansClient
 from modules.external_apis.inflow_client import InflowClient
 from modules.external_apis.stripe_client import StripeClient

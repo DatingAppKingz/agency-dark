@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, Union
 import asyncio
 from functools import wraps
 
-from core.config.logging_config import get_logger
+from core.logging import get_logger
 
 
 class APILogger:

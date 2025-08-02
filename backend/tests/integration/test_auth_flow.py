@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import settings
 from core.security import create_access_token, get_password_hash
 from modules.agencies.domain.models import Agency
-from modules.users.domain.models import User
+from models.user import User
 from core.auth.models import UserSession, RefreshToken
 
 

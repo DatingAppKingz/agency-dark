@@ -19,8 +19,8 @@ import uuid
 from core.database import get_db
 from core.security import get_current_user
 from core.logging import get_logger
-from models.message import Message
-from models.conversation import Conversation
+from models.chat import Message
+from models.chat import Conversation
 from models.user import User
 
 logger = get_logger(__name__)

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
 from core.database import get_db
-from core.security import get_current_user
+from core.auth import get_current_user
 from models.user import User, UserRole
 from ml.service import ml_service
 from schemas.ml_insights import (
@@ -114,7 +114,7 @@ async def get_revenue_forecast(
 @router.get("/churn-predictions", response_model=ChurnPredictionResponse)
 async def get_churn_predictions(
     limit: int = Query(100, ge=1, le=1000),
-    risk_level: Optional[str] = Query(None, regex="^(low|medium|high|critical)$"),
+    risk_level: Optional[str] = Query(None, pattern="^(low|medium|high|critical)$"),
     agency_id: Optional[UUID] = Query(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)

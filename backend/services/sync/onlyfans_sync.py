@@ -9,11 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.sync.delta_sync import DeltaSyncService, DeltaSyncState, DeltaSyncStateManager
 from services.sync.base_sync_service import SyncResult, SyncConfig, ConflictResolution
-from models.profile import FanProfile, ModelProfile
-from models.transaction import Transaction, TransactionType, TransactionStatus
-from models.message import Message
+from core.domain.models import ModelProfile, Fan as FanProfile
+from models.financial import Transaction, TransactionType, TransactionStatus
+from models.chat import Message
 from core.logger import get_logger
-from core.errors import ExternalAPIError
+from core.errors import ExternalServiceError
 
 logger = get_logger(__name__)
 
@@ -124,7 +124,7 @@ class OnlyFansSyncService(DeltaSyncService):
                     timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds)
                 ) as response:
                     if response.status != 200:
-                        raise ExternalAPIError(
+                        raise ExternalServiceError(
                             f"OnlyFans API error: {response.status}",
                             code="OF_API_ERROR"
                         )
@@ -139,7 +139,7 @@ class OnlyFansSyncService(DeltaSyncService):
                     return items, next_offset if has_more else None, has_more
         
         except aiohttp.ClientError as e:
-            raise ExternalAPIError(f"OnlyFans connection error: {e}", code="OF_CONNECTION_ERROR")
+            raise ExternalServiceError(f"OnlyFans connection error: {e}", code="OF_CONNECTION_ERROR")
     
     async def transform_data(self, raw_data: List[Dict[str, Any]]) -> List[Any]:
         """Transform OnlyFans data to internal models."""

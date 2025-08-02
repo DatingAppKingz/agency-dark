@@ -60,7 +60,7 @@ class NotificationCreate(NotificationBase):
     """Create notification request."""
     user_id: Optional[str] = Field(None, description="Target user ID")
     email: Optional[EmailStr] = Field(None, description="Email for non-user recipients")
-    phone: Optional[str] = Field(None, regex=r'^\+?[1-9]\d{1,14}$', description="Phone number for SMS")
+    phone: Optional[str] = Field(None, pattern=r'^\+?[1-9]\d{1,14}$', description="Phone number for SMS")
     template_id: Optional[str] = Field(None, description="Template ID to use")
     template_data: Optional[Dict[str, Any]] = Field(None, description="Template variables")
     callback_url: Optional[str] = Field(None, description="Webhook URL for notifications")
@@ -189,13 +189,13 @@ class NotificationPreferenceUpdate(BaseModel):
     in_app_enabled: Optional[bool] = None
     categories: Optional[Dict[str, bool]] = None
     digest_enabled: Optional[bool] = None
-    digest_frequency: Optional[str] = Field(None, regex='^(daily|weekly|monthly)$')
+    digest_frequency: Optional[str] = Field(None, pattern='^(daily|weekly|monthly)$')
     quiet_hours_enabled: Optional[bool] = None
-    quiet_hours_start: Optional[str] = Field(None, regex='^([01]?[0-9]|2[0-3]):[0-5][0-9]$')
-    quiet_hours_end: Optional[str] = Field(None, regex='^([01]?[0-9]|2[0-3]):[0-5][0-9]$')
+    quiet_hours_start: Optional[str] = Field(None, pattern='^([01]?[0-9]|2[0-3]):[0-5][0-9]$')
+    quiet_hours_end: Optional[str] = Field(None, pattern='^([01]?[0-9]|2[0-3]):[0-5][0-9]$')
     timezone: Optional[str] = None
     preferred_email: Optional[EmailStr] = None
-    preferred_phone: Optional[str] = Field(None, regex=r'^\+?[1-9]\d{1,14}$')
+    preferred_phone: Optional[str] = Field(None, pattern=r'^\+?[1-9]\d{1,14}$')
 
 
 class NotificationPreferenceResponse(BaseModel):

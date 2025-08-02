@@ -84,7 +84,7 @@ class ChatNamespace(AsyncNamespace):
             
             if user.role == UserRole.SUPER_ADMIN:
                 pass  # Super admin can access any model
-            elif user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER, UserRole.CHATTER]:
+            elif user.role in [UserRole.AGENCY_OWNER, UserRole.MEMBER, UserRole.CHATTER]:
                 if str(model.agency_id) != session['agency_id']:
                     await self.emit('error', {
                         'message': 'Model not in your agency'

@@ -8,7 +8,7 @@ from sqlalchemy import select, and_, func, desc
 from pydantic import BaseModel
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from models.user import User
 from models.api_key import APIKey
@@ -447,7 +447,7 @@ async def get_delta_sync_state(
 @router.post("/trigger-sync/{api_key_id}")
 async def trigger_manual_sync(
     api_key_id: str,
-    priority: str = Query("normal", regex="^(high|normal|low)$"),
+    priority: str = Query("normal", pattern="^(high|normal|low)$"),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):

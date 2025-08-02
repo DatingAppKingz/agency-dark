@@ -11,8 +11,8 @@ from core.cache_manager import cache_manager, CacheTag
 from core.logger import get_logger
 from models.user import User
 from models.model import Model
-from models.transaction import Transaction, TransactionType
-from models.message import Message
+from models.financial import Transaction, TransactionType
+from models.chat import Message
 from models.agency import Agency
 
 logger = get_logger(__name__)

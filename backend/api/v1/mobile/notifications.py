@@ -10,9 +10,9 @@ from datetime import datetime
 import json
 
 from core.database import get_db
-from core.auth.dependencies import get_current_user
+from core.auth import get_current_user
 from core.logging import get_logger
-from modules.users.domain.models import User
+from models.user import User
 
 router = APIRouter(prefix="/mobile/notifications", tags=["mobile-notifications"])
 logger = get_logger(__name__)

@@ -75,16 +75,16 @@ async def get_conversation_for_user(
 # Conversation endpoints
 @router.get("/conversations", response_model=PaginatedConversations)
 async def list_conversations(
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db),
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
     model_id: Optional[int] = None,
     status: Optional[ConversationStatus] = None,
     assigned_to_me: bool = False,
     search: Optional[str] = None,
-    sort_by: str = Query("last_message_at", regex="^(last_message_at|created_at|priority|total_spent)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
-    current_user: CurrentUser = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    sort_by: str = Query("last_message_at", pattern="^(last_message_at|created_at|priority|total_spent)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$")
 ):
     """List conversations with filtering and pagination."""
     stmt = select(Conversation)
@@ -157,7 +157,7 @@ async def list_conversations(
 @router.get("/conversations/{conversation_id}", response_model=ConversationResponse)
 async def get_conversation(
     conversation_id: int,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific conversation."""
@@ -168,7 +168,7 @@ async def get_conversation(
 @router.post("/conversations", response_model=ConversationResponse)
 async def create_conversation(
     data: ConversationCreate,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new conversation."""
@@ -226,7 +226,7 @@ async def create_conversation(
 async def update_conversation(
     conversation_id: int,
     data: ConversationUpdate,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Update conversation details."""
@@ -260,7 +260,7 @@ async def update_conversation(
 @router.get("/conversations/{conversation_id}/stats", response_model=ConversationStats)
 async def get_conversation_stats(
     conversation_id: int,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get conversation statistics."""
@@ -300,13 +300,13 @@ async def get_conversation_stats(
 @router.get("/conversations/{conversation_id}/messages", response_model=PaginatedMessages)
 async def list_messages(
     conversation_id: int,
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db),
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
     before_id: Optional[int] = None,
     after_id: Optional[int] = None,
-    message_type: Optional[MessageType] = None,
-    current_user: CurrentUser = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    message_type: Optional[MessageType] = None
 ):
     """List messages in a conversation with pagination."""
     conversation = await get_conversation_for_user(conversation_id, current_user, db)
@@ -378,7 +378,7 @@ async def list_messages(
 async def send_message(
     conversation_id: int,
     data: MessageCreate,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Send a message in a conversation."""
@@ -464,7 +464,7 @@ async def send_message(
 async def update_message(
     message_id: int,
     data: MessageUpdate,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Update a message (mark as read, flag, etc)."""
@@ -496,7 +496,7 @@ async def update_message(
 @router.delete("/messages/{message_id}")
 async def delete_message(
     message_id: int,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Soft delete a message."""
@@ -524,11 +524,11 @@ async def delete_message(
 # Chat templates endpoints
 @router.get("/templates", response_model=List[ChatTemplateResponse])
 async def list_templates(
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db),
     category: Optional[str] = None,
     is_active: bool = True,
-    search: Optional[str] = None,
-    current_user: CurrentUser = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    search: Optional[str] = None
 ):
     """List chat templates for the agency."""
     stmt = select(ChatTemplate).where(
@@ -560,7 +560,7 @@ async def list_templates(
 @router.post("/templates", response_model=ChatTemplateResponse)
 async def create_template(
     data: ChatTemplateCreate,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new chat template."""
@@ -583,7 +583,7 @@ async def create_template(
 async def update_template(
     template_id: int,
     data: ChatTemplateUpdate,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Update a chat template."""
@@ -607,7 +607,7 @@ async def update_template(
 @router.delete("/templates/{template_id}")
 async def delete_template(
     template_id: int,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a chat template."""

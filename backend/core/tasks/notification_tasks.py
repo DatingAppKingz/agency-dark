@@ -9,8 +9,8 @@ from celery import shared_task, group
 from celery.utils.log import get_task_logger
 from sqlalchemy import select, and_, or_
 
-from core.database import get_db_context
-from core.models import User, Notification, Device, ModelProfile
+from .db_context import get_db_context
+from models import User, Notification, Device, ModelProfile
 from core.push_notifications import PushNotificationService
 from .email_tasks import send_notification_email
 

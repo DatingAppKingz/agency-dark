@@ -10,7 +10,7 @@ from sqlalchemy import select, func, and_
 from celery import current_app
 from celery.result import AsyncResult
 
-from core.database import get_db_context
+from core.tasks.db_context import get_db_context
 from core.redis import redis_client
 from core.logging import logger
 from core.models import TaskExecution, Alert

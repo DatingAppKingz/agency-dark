@@ -8,8 +8,18 @@ from datetime import datetime
 import uuid
 from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
+from enum import Enum
 
 from core.database import Base
+
+
+class AggregationPeriod(str, Enum):
+    """Time periods for data aggregation."""
+    HOURLY = "hourly"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
 
 
 class MetricSnapshot(Base):

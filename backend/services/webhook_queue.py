@@ -194,18 +194,18 @@ class WebhookProcessor:
             timeout_seconds=webhook.timeout_seconds
         )
         
-            # Create delivery record
-            delivery = WebhookDelivery(
-                webhook_id=webhook_id,
-                event=event,
-                payload=payload,
-                attempt_count=0
-            )
-            db.add(delivery)
-            await db.commit()
+        # Create delivery record
+        delivery = WebhookDelivery(
+            webhook_id=webhook_id,
+            event=event,
+            payload=payload,
+            attempt_count=0
+        )
+        db.add(delivery)
+        await db.commit()
         
-            # Store delivery ID in task
-            task.id = str(delivery.id)
+        # Store delivery ID in task
+        task.id = str(delivery.id)
         
         # Enqueue task
         await self.queue.put(task)

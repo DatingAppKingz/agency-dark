@@ -392,7 +392,7 @@ async def get_experiment_results(
 @router.post("/experiments/{experiment_id}/assign")
 async def assign_to_experiment(
     experiment_id: UUID,
-    participant_type: str = Query(..., regex="^(fan|model|user)$"),
+    participant_type: str = Query(..., pattern="^(fan|model|user)$"),
     participant_id: str = Query(...),
     context: Optional[Dict[str, Any]] = Body(None),
     current_user: dict = Depends(get_current_user),

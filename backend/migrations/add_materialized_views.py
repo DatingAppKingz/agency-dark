@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from core.config import get_settings
-from core.database.materialized_views import materialized_view_manager
+from core.database_utils.materialized_views import materialized_view_manager
 from core.logging import get_logger
 
 settings = get_settings()

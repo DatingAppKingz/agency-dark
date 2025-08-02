@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from models.user import User
 from services.sync_scheduler import get_sync_scheduler, SyncJob

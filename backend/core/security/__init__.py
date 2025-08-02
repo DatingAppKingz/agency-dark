@@ -37,6 +37,9 @@ from ..auth_security import (
     decrypt_sensitive_data as decrypt_data
 )
 
+# Import get_current_user from auth module
+from ..auth import get_current_user
+
 __all__ = [
     "SecurityHeadersMiddleware",
     "security_headers_config",
@@ -59,4 +62,5 @@ __all__ = [
     "hash_token",
     "encrypt_data",
     "decrypt_data",
+    "get_current_user",
 ]

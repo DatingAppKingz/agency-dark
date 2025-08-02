@@ -40,7 +40,7 @@ class ExternalAPICredential(Base):
     validation_error = Column(Text)
     
     # Metadata from provider
-    metadata = Column(JSON)
+    extra_metadata = Column(JSON)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -98,7 +98,7 @@ class WebhookEndpoint(Base):
     failure_count = Column(Integer, default=0)
     
     # Metadata
-    metadata = Column(JSON)
+    extra_metadata = Column(JSON)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

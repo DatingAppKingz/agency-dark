@@ -101,7 +101,7 @@ def dashboard_cache_key(period: str, current_user: User, db: AsyncSession) -> st
 @router.get("/dashboard", response_model=DashboardStats)
 @cached(expire=300, prefix="analytics", key_func=dashboard_cache_key)  # Cache for 5 minutes
 async def get_dashboard_stats(
-    period: str = Query("week", regex="^(day|week|month|year)$"),
+    period: str = Query("week", pattern="^(day|week|month|year)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -328,7 +328,7 @@ async def get_dashboard_stats(
 
 @router.get("/revenue", response_model=RevenueAnalytics)
 async def get_revenue_analytics(
-    period: str = Query("month", regex="^(week|month|quarter|year)$"),
+    period: str = Query("month", pattern="^(week|month|quarter|year)$"),
     model_id: Optional[int] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -478,7 +478,7 @@ async def get_revenue_analytics(
 @router.get("/models/{model_id}/stats", response_model=ModelStats)
 async def get_model_stats(
     model_id: int,
-    period: str = Query("month", regex="^(week|month|year)$"),
+    period: str = Query("month", pattern="^(week|month|year)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -574,7 +574,7 @@ async def get_model_stats(
 
 @router.get("/chatters/performance", response_model=List[ChatterPerformance])
 async def get_chatter_performance(
-    period: str = Query("month", regex="^(week|month|year)$"),
+    period: str = Query("month", pattern="^(week|month|year)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):

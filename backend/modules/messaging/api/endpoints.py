@@ -153,7 +153,7 @@ async def validate_template(
 @router.post("/bulk-messages", response_model=BulkMessageResponse)
 async def create_bulk_message(
     data: BulkMessageCreate,
-    current_user: CurrentUser = Depends(require_role([UserRole.MODEL, UserRole.AGENCY_ADMIN, UserRole.AGENCY_OWNER])),
+    current_user: CurrentUser),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a bulk message campaign."""
@@ -245,7 +245,7 @@ async def get_bulk_message_recipients(
 @router.post("/scheduled-messages", response_model=MessageScheduleResponse)
 async def create_scheduled_message(
     data: MessageScheduleCreate,
-    current_user: CurrentUser = Depends(require_role([UserRole.MODEL, UserRole.CHATTER])),
+    current_user: CurrentUser),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a scheduled message."""
@@ -403,7 +403,7 @@ async def delete_canned_response(
 @router.get("/analytics", response_model=MessageAnalytics)
 async def get_message_analytics(
     days: int = 30,
-    current_user: CurrentUser = Depends(require_role([UserRole.AGENCY_ADMIN, UserRole.AGENCY_OWNER])),
+    current_user: CurrentUser),
     db: AsyncSession = Depends(get_db)
 ):
     """Get messaging analytics."""
@@ -434,7 +434,7 @@ async def get_message_analytics(
 @router.get("/templates/analytics")
 async def get_template_analytics(
     days: int = 30,
-    current_user: CurrentUser = Depends(require_role([UserRole.AGENCY_ADMIN, UserRole.AGENCY_OWNER])),
+    current_user: CurrentUser),
     db: AsyncSession = Depends(get_db)
 ):
     """Get template usage analytics."""

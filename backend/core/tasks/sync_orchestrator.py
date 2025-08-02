@@ -16,7 +16,7 @@ from sqlalchemy import select, and_, or_
 from celery import Task
 
 from core.database import get_db
-from core.redis import get_redis
+from core.redis import redis_manager
 from core.domain.models import ModelProfile
 from modules.inflow_wrapper.application.enhanced_sync_service import EnhancedInflowSyncService
 from modules.onlyfans_wrapper.application.enhanced_sync_service import EnhancedOnlyFansSyncService
@@ -55,7 +55,7 @@ class SyncOrchestrator:
     
     async def initialize(self):
         """Initialize orchestrator with Redis."""
-        self.redis = await get_redis()
+        self.redis = await redis_manager.connect()
         await self.inflow_sync.initialize()
         await self.onlyfans_sync.initialize()
     

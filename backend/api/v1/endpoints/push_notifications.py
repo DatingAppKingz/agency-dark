@@ -21,7 +21,7 @@ router = APIRouter(prefix="/push", tags=["push-notifications"])
 class PushSubscriptionRequest(BaseModel):
     """Push subscription request"""
     token: str = Field(..., description="FCM/APNS token")
-    platform: str = Field(..., regex="^(ios|android|web)$")
+    platform: str = Field(..., pattern="^(ios|android|web)$")
     device_info: Optional[Dict[str, Any]] = None
 
 
@@ -32,7 +32,7 @@ class PushNotificationRequest(BaseModel):
     data: Optional[Dict[str, Any]] = None
     image_url: Optional[str] = None
     action_url: Optional[str] = None
-    priority: str = Field("normal", regex="^(normal|high)$")
+    priority: str = Field("normal", pattern="^(normal|high)$")
 
 
 class BulkPushRequest(BaseModel):

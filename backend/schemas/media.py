@@ -105,7 +105,7 @@ class MediaFolderBase(BaseModel):
     description: Optional[str] = None
     parent_id: Optional[UUID] = None
     is_public: bool = False
-    color: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
+    color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
     icon: Optional[str] = Field(None, max_length=50)
 
 
@@ -120,7 +120,7 @@ class MediaFolderUpdate(BaseModel):
     description: Optional[str] = None
     parent_id: Optional[UUID] = None
     is_public: Optional[bool] = None
-    color: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
+    color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
     icon: Optional[str] = Field(None, max_length=50)
 
 
@@ -223,7 +223,7 @@ class MediaSearchParams(BaseModel):
 class MediaBulkOperation(BaseModel):
     """Schema for bulk operations."""
     media_ids: List[UUID] = Field(..., min_items=1, max_items=100)
-    action: str = Field(..., regex="^(delete|move|update_visibility|add_tags|remove_tags)$")
+    action: str = Field(..., pattern="^(delete|move|update_visibility|add_tags|remove_tags)$")
     data: Dict[str, Any] = Field(default_factory=dict)
     
     @validator('data')

@@ -22,6 +22,14 @@ class ContentStatus(str, enum.Enum):
     DELETED = "deleted"
 
 
+class ContentCategory(str, enum.Enum):
+    """Content category."""
+    GENERAL = "general"
+    ADULT = "adult"
+    PREMIUM = "premium"
+    EXCLUSIVE = "exclusive"
+
+
 class Content(BaseModel):
     """Content created by models."""
     __table_args__ = {"extend_existing": True}

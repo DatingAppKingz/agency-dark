@@ -65,9 +65,9 @@ class APIKeyValidationResponse(BaseModel):
 # Endpoints
 @router.get("/api-keys", response_model=List[APIKeyResponse])
 async def list_api_keys(
+    current_user: CurrentUser,
     provider: Optional[APIKeyProvider] = None,
     status: Optional[APIKeyStatus] = None,
-    current_user: CurrentUser = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """List API keys for the agency."""
@@ -79,8 +79,8 @@ async def list_api_keys(
 @router.get("/api-keys/{key_id}", response_model=APIKeyDetailResponse)
 async def get_api_key(
     key_id: int,
+    current_user: CurrentUser,
     decrypt: bool = Query(False, description="Decrypt the key value (requires admin permissions)"),
-    current_user: CurrentUser = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get API key details."""
@@ -92,7 +92,7 @@ async def get_api_key(
 @router.post("/api-keys", response_model=APIKeyResponse)
 async def create_api_key(
     data: APIKeyCreate,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new encrypted API key."""
@@ -115,7 +115,7 @@ async def create_api_key(
 async def update_api_key(
     key_id: int,
     data: APIKeyUpdate,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Update an API key."""
@@ -133,8 +133,8 @@ async def update_api_key(
 @router.post("/api-keys/{key_id}/rotate", response_model=APIKeyResponse)
 async def rotate_api_key(
     key_id: int,
+    current_user: CurrentUser,
     new_key_value: str = Body(..., embed=True),
-    current_user: CurrentUser = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Rotate an API key with a new value."""
@@ -146,8 +146,8 @@ async def rotate_api_key(
 @router.post("/api-keys/{key_id}/validate", response_model=APIKeyValidationResponse)
 async def validate_api_key(
     key_id: int,
+    current_user: CurrentUser,
     test_endpoint: Optional[str] = Body(None, embed=True),
-    current_user: CurrentUser = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Validate an API key against its provider."""
@@ -166,8 +166,8 @@ async def validate_api_key(
 @router.delete("/api-keys/{key_id}")
 async def deactivate_api_key(
     key_id: int,
+    current_user: CurrentUser,
     reason: Optional[str] = Body(None, embed=True),
-    current_user: CurrentUser = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Deactivate an API key."""
@@ -179,9 +179,9 @@ async def deactivate_api_key(
 @router.get("/api-keys/{key_id}/usage")
 async def get_api_key_usage(
     key_id: int,
+    current_user: CurrentUser,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
-    current_user: CurrentUser = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get usage statistics for an API key."""
@@ -202,9 +202,9 @@ async def get_api_key_usage(
 @router.get("/api-keys/{key_id}/audit-logs")
 async def get_api_key_audit_logs(
     key_id: int,
+    current_user: CurrentUser,
     action: Optional[str] = None,
     limit: int = Query(50, le=100),
-    current_user: CurrentUser = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get audit logs for an API key."""

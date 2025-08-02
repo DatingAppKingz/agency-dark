@@ -318,7 +318,7 @@ class NotificationNamespace(AsyncNamespace):
             return model.agency_id == user.agency_id
         elif user.role == UserRole.MODEL:
             return model.user_id == user.id
-        elif user.role in [UserRole.AGENCY_MEMBER, UserRole.CHATTER, UserRole.AGENCY_MEMBER]:
+        elif user.role in [UserRole.MEMBER, UserRole.CHATTER, UserRole.MEMBER]:
             return model.agency_id == user.agency_id
         return False
 

@@ -248,7 +248,7 @@ class DeltaSyncTracker(Base):
     last_cursor = Column(String(500), nullable=True)
     checksum_cache = Column(JSON, default=dict, nullable=False)
     deleted_ids = Column(JSON, default=list, nullable=False)
-    metadata = Column(JSON, default=dict, nullable=False)
+    extra_metadata = Column(JSON, default=dict, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

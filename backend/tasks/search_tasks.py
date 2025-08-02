@@ -10,7 +10,7 @@ from core.database_sync import get_db_sync
 from core.elasticsearch_client import es_client
 from core.logger import get_logger
 from models.model import Model
-from models.message import Message
+from models.chat import Message
 from models.media import Media
 from models.transaction import Transaction
 from models.user import User

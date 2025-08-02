@@ -57,7 +57,7 @@ class APIKeyAuditLog(BaseModel):
     user_agent = Column(Text, nullable=True)
     
     # Event data
-    metadata = Column(JSON, default=dict, nullable=False)
+    extra_metadata = Column(JSON, default=dict, nullable=False)
     changes = Column(JSON, nullable=True)  # For update actions
     error_message = Column(Text, nullable=True)  # For failed actions
     

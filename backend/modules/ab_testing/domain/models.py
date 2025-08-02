@@ -170,7 +170,7 @@ class ExperimentParticipant(Base):
     last_interaction = Column(DateTime)
     
     # Metadata
-    metadata = Column(JSON)  # Additional participant info
+    extra_metadata = Column(JSON)  # Additional participant info
     
     # Relationships
     experiment = relationship("Experiment", back_populates="participants")

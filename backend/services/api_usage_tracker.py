@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import insert
 import redis.asyncio as redis
 
 from core.logger import get_logger
-from core.redis import get_redis_client
+from core.redis import redis_manager
 from core.database import get_db
 from models.api_key import APIKey
 
@@ -60,7 +60,7 @@ class APIUsageTracker:
     """Tracks and limits API usage."""
     
     def __init__(self, redis_client: Optional[redis.Redis] = None):
-        self.redis = redis_client or get_redis_client()
+        self.redis = redis_client or redis_manager
         self._default_limits = RateLimitConfig()
     
     async def track_usage(
@@ -146,7 +146,8 @@ class APIUsageTracker:
     
     async def _increment_and_get(self, key: str, value: int, ttl: int) -> int:
         """Increment counter and get current value."""
-        pipe = self.redis.pipeline()
+        client = await self.redis.connect()
+        pipe = client.pipeline()
         pipe.incrby(key, value)
         pipe.expire(key, ttl)
         results = await pipe.execute()
@@ -177,10 +178,10 @@ class APIUsageTracker:
                     limits = self._default_limits
                 
                 # Cache for 5 minutes
-                await self.redis.setex(
+                await self.redis.set(
                     limits_key,
-                    300,
-                    json.dumps(limits.__dict__)
+                    limits.__dict__,
+                    expire=300
                 )
                 
                 return limits
@@ -209,19 +210,21 @@ class APIUsageTracker:
         
         # Add to sorted set with timestamp as score
         import json
-        await self.redis.zadd(
+        client = await self.redis.connect()
+        await client.zadd(
             detail_key,
             {json.dumps(data): datetime.utcnow().timestamp()}
         )
         
         # Expire after 30 days
-        await self.redis.expire(detail_key, 30 * 86400)
+        await client.expire(detail_key, 30 * 86400)
     
     async def _update_last_used(self, api_key_id: str) -> None:
         """Update API key last used timestamp."""
         # Debounce updates to avoid too many DB writes
         debounce_key = f"last_used:{api_key_id}"
-        if await self.redis.set(debounce_key, "1", ex=60, nx=True):
+        client = await self.redis.connect()
+        if await client.set(debounce_key, "1", ex=60, nx=True):
             # First update in the last minute
             async for db in get_db():
                 try:
@@ -313,7 +316,8 @@ class APIUsageTracker:
             day_key = f"usage:detail:{api_key_id}:{metric}:{current.strftime('%Y%m%d')}"
             
             # Get all entries for this day
-            entries = await self.redis.zrangebyscore(
+            client = await self.redis.connect()
+            entries = await client.zrangebyscore(
                 day_key,
                 current.timestamp(),
                 min(end.timestamp(), (current + timedelta(days=1)).timestamp())
@@ -356,19 +360,22 @@ class APIUsageTracker:
         if metric == UsageMetric.REQUESTS:
             # Check minute limit
             minute_key = f"usage:{api_key_id}:{metric}:minute:{now.strftime('%Y%m%d%H%M')}"
-            current = int(await self.redis.get(minute_key) or 0)
+            current_val = await self.redis.get(minute_key)
+            current = int(current_val) if current_val else 0
             if current + value > limits.requests_per_minute:
                 return False
             
             # Check hour limit
             hour_key = f"usage:{api_key_id}:{metric}:hour:{now.strftime('%Y%m%d%H')}"
-            current = int(await self.redis.get(hour_key) or 0)
+            current_val = await self.redis.get(hour_key)
+            current = int(current_val) if current_val else 0
             if current + value > limits.requests_per_hour:
                 return False
             
             # Check day limit
             day_key = f"usage:{api_key_id}:{metric}:day:{now.strftime('%Y%m%d')}"
-            current = int(await self.redis.get(day_key) or 0)
+            current_val = await self.redis.get(day_key)
+            current = int(current_val) if current_val else 0
             if current + value > limits.requests_per_day:
                 return False
         
@@ -383,9 +390,10 @@ class APIUsageTracker:
         # Find and delete all matching keys
         cursor = 0
         while True:
-            cursor, keys = await self.redis.scan(cursor, match=pattern, count=100)
+            client = await self.redis.connect()
+            cursor, keys = await client.scan(cursor, match=pattern, count=100)
             if keys:
-                await self.redis.delete(*keys)
+                await client.delete(*keys)
             if cursor == 0:
                 break
         

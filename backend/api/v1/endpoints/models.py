@@ -170,8 +170,8 @@ async def list_models(
     status: Optional[ModelStatus] = None,
     platform: Optional[Platform] = None,
     search: Optional[str] = None,
-    sort_by: str = Query("created_at", regex="^(created_at|stage_name|followers_count|total_earnings)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("created_at", pattern="^(created_at|stage_name|followers_count|total_earnings)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -598,7 +598,7 @@ async def add_model_schedule(
 @router.post("/{model_id}/upload-photo")
 async def upload_model_photo(
     model_id: int,
-    photo_type: str = Query(..., regex="^(profile|cover)$"),
+    photo_type: str = Query(..., pattern="^(profile|cover)$"),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)

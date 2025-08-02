@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from models.user import User
 from services.api_usage_tracker import get_usage_tracker, UsageMetric, RateLimitConfig
@@ -50,7 +50,7 @@ class CurrentUsageResponse(BaseModel):
 @router.get("/stats", response_model=List[UsageStatsResponse])
 async def get_usage_stats(
     api_key_id: str,
-    period: str = Query("day", regex="^(hour|day|week|month)$"),
+    period: str = Query("day", pattern="^(hour|day|week|month)$"),
     lookback_days: int = Query(7, ge=1, le=90),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)

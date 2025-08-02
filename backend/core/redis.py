@@ -309,3 +309,13 @@ async def invalidate_agency_cache(agency_id: int):
 
 # Create redis_client alias for backward compatibility
 redis_client = redis_manager  # Alias for backward compatibility
+
+# Create a sync redis client for Celery tasks
+import redis as sync_redis
+redis_client_sync = sync_redis.Redis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=settings.REDIS_DB,
+    password=settings.REDIS_PASSWORD if hasattr(settings, 'REDIS_PASSWORD') and settings.REDIS_PASSWORD else None,
+    decode_responses=True
+)

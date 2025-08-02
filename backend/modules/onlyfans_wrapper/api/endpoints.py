@@ -58,7 +58,7 @@ async def get_model_profile_with_of_key(
     elif user.role == UserRole.MODEL:
         if model_profile.user_id != user.id:
             raise HTTPException(status_code=403, detail="Not your model profile")
-    elif user.role in [UserRole.AGENCY_MEMBER, UserRole.CHATTER, UserRole.AGENCY_MEMBER]:
+    elif user.role in [UserRole.MEMBER, UserRole.CHATTER, UserRole.MEMBER]:
         if model_profile.agency_id != user.agency_id:
             raise HTTPException(status_code=403, detail="Model not in your agency")
     else:
@@ -83,9 +83,9 @@ async def get_profile(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
+            UserRole.MEMBER,
             UserRole.CHATTER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -109,7 +109,7 @@ async def sync_profile(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -137,7 +137,7 @@ async def get_fans(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
+            UserRole.MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -167,7 +167,7 @@ async def sync_fans(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -193,7 +193,7 @@ async def get_fan_details(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
+            UserRole.MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -223,7 +223,7 @@ async def get_messages(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
+            UserRole.MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -253,7 +253,7 @@ async def send_message(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
+            UserRole.MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -288,8 +288,8 @@ async def get_posts(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -317,7 +317,7 @@ async def create_post(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -350,8 +350,8 @@ async def get_statistics(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -396,7 +396,7 @@ async def sync_all_data(
     
     Only models, agency owners, and admins can trigger sync.
     """
-    if current_user.role not in [UserRole.MODEL, UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER]:
+    if current_user.role not in [UserRole.MODEL, UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MEMBER]:
         raise HTTPException(
             status_code=403,
             detail="Not authorized to sync data"

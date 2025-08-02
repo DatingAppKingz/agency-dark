@@ -8,8 +8,7 @@ from typing import Any, Optional, Union, List, Dict, Callable, TypeVar, Set
 from datetime import datetime, timedelta
 from functools import wraps, lru_cache
 from contextlib import asynccontextmanager
-import aioredis
-from redis.asyncio import Redis
+from redis.asyncio import Redis, from_url
 from redis.asyncio.lock import Lock as RedisLock
 
 from core.config import settings
@@ -68,7 +67,7 @@ class CacheManager:
         
         try:
             # Initialize Redis connection
-            self._redis = await aioredis.from_url(
+            self._redis = await from_url(
                 settings.REDIS_URL,
                 encoding="utf-8",
                 decode_responses=False,

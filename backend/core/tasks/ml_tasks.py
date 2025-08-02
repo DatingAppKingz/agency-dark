@@ -11,8 +11,8 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from sqlalchemy import select, func, and_
 
-from core.database import get_db_context
-from core.models import ModelProfile, Transaction, MLModel
+from .db_context import get_db_context
+from models import ModelProfile, Transaction, MLModel
 from modules.ml.revenue_forecasting import RevenueForecastModel
 from modules.ml.churn_prediction import ChurnPredictionModel
 from modules.ml.content_recommendation import ContentRecommendationEngine

@@ -8,7 +8,7 @@ from sqlalchemy import select, and_, or_, func
 from celery.result import AsyncResult
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from core.celery_app import celery_app, get_task_info, cancel_task
 from models.user import User
@@ -253,7 +253,7 @@ async def create_model_export(
 
 @router.post("/export/financial-report", response_model=TaskResponse)
 async def create_financial_report(
-    report_type: str = Query(..., regex="^(revenue_summary|commission_report|payout_report|tax_report)$"),
+    report_type: str = Query(..., pattern="^(revenue_summary|commission_report|payout_report|tax_report)$"),
     date_from: datetime = Query(...),
     date_to: datetime = Query(...),
     current_user: User = Depends(get_current_active_user),
@@ -355,7 +355,7 @@ async def reprocess_media(
 
 @router.get("/stats/summary", response_model=TaskStatsResponse)
 async def get_task_stats(
-    time_range: str = Query("24h", regex="^(1h|24h|7d|30d)$"),
+    time_range: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):

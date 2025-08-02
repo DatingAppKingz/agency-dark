@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Any, Optional
 from elasticsearch import AsyncElasticsearch, helpers
-from elasticsearch.exceptions import NotFoundError, ElasticsearchException
+from elasticsearch.exceptions import NotFoundError, ApiError as ElasticsearchException
 import logging
 
 from core.config import settings

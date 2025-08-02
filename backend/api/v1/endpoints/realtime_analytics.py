@@ -8,10 +8,10 @@ import json
 import asyncio
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.websocket_auth import get_current_user_from_websocket
 from core.rbac import check_permission
-from core.redis import get_redis_client
+from core.redis import redis_manager
 from services.analytics.realtime_analytics_service import (
     RealtimeAnalyticsService,
     MetricType,
@@ -30,13 +30,13 @@ analytics_service: Optional[RealtimeAnalyticsService] = None
 
 
 async def get_analytics_service(
-    db: AsyncSession = Depends(get_db),
-    redis=Depends(get_redis_client)
+    db: AsyncSession = Depends(get_db)
 ) -> RealtimeAnalyticsService:
     """Get or create analytics service instance."""
     global analytics_service
     
     if analytics_service is None:
+        redis = await redis_manager.connect()
         analytics_service = RealtimeAnalyticsService(redis, db)
         await analytics_service.start()
     
@@ -336,7 +336,7 @@ async def get_performance_metrics(
 async def startup_analytics():
     """Initialize analytics service on startup."""
     db = await anext(get_db())
-    redis = await get_redis_client()
+    redis = await redis_manager.connect()
     
     global analytics_service
     analytics_service = RealtimeAnalyticsService(redis, db)

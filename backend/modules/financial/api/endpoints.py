@@ -171,7 +171,7 @@ async def get_commission_rules(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -195,7 +195,7 @@ async def get_commission_rules(
                 agency_id = str(model_profile.agency_id)
             else:
                 return []
-        elif current_user.role == UserRole.AGENCY_MEMBER:
+        elif current_user.role == UserRole.MEMBER:
             agency_id = str(current_user.agency_id)
     
     service = CommissionService(db)
@@ -219,8 +219,8 @@ async def calculate_commission(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -249,7 +249,7 @@ async def calculate_tiered_commission(
         RoleChecker([
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -276,7 +276,7 @@ async def bulk_calculate_commission(
         RoleChecker([
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -321,7 +321,7 @@ async def generate_commission_report(
         RoleChecker([
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -379,7 +379,7 @@ async def close_billing_cycle(
     cycle_id: str,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -395,7 +395,7 @@ async def close_billing_cycle(
             raise HTTPException(status_code=404, detail="Billing cycle not found")
         
         # Check permissions
-        if current_user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER]:
+        if current_user.role in [UserRole.AGENCY_OWNER, UserRole.MEMBER]:
             if str(current_user.agency_id) != cycle.agency_id:
                 raise HTTPException(status_code=403, detail="Not authorized")
         
@@ -418,8 +418,8 @@ async def get_billing_cycles(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -447,7 +447,7 @@ async def create_payout(
     payout_data: PayoutRequest,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -493,7 +493,7 @@ async def get_payouts(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -502,7 +502,7 @@ async def get_payouts(
     # Apply permission filters
     if current_user.role == UserRole.MODEL:
         recipient_id = str(current_user.id)
-    elif current_user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER]:
+    elif current_user.role in [UserRole.AGENCY_OWNER, UserRole.MEMBER]:
         # TODO: Filter by agency
         pass
     
@@ -523,7 +523,7 @@ async def create_payout_schedule(
     schedule_data: PayoutScheduleCreate,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -606,7 +606,7 @@ async def get_payout_schedules(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -723,7 +723,7 @@ async def create_invoice(
     invoice_data: InvoiceCreate,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -743,7 +743,7 @@ async def update_invoice(
     update_data: InvoiceUpdate,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -762,7 +762,7 @@ async def send_invoice(
     invoice_id: str,
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):
@@ -791,8 +791,8 @@ async def get_invoices(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -900,7 +900,7 @@ async def create_crypto_payment(
     provider: str = Query(..., description="Payment provider (coinbase_commerce, bitpay)"),
     current_user: User = Depends(get_current_user),
     role_checker: RoleChecker = Depends(
-        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_MEMBER])
+        RoleChecker([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.MEMBER])
     ),
     db: AsyncSession = Depends(get_db)
 ):

@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from core.database import get_db
 from core.auth import get_current_user
 from core.permissions import check_permission
-from core.database.partitioning import partition_manager, get_partition_statistics
+from core.database_utils.partitioning import partition_manager, get_partition_statistics
 from core.tasks.partition_maintenance import (
     PartitionMaintenanceTask,
     get_partition_report,

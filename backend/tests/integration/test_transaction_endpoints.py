@@ -54,7 +54,7 @@ async def test_create_transaction_insufficient_permissions(
     user = await create_test_user(
         db_session, 
         email="member@test.com",
-        role=UserRole.AGENCY_MEMBER
+        role=UserRole.MEMBER
     )
     
     # Get auth token

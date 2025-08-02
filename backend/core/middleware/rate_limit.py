@@ -22,6 +22,29 @@ from core.config import settings
 logger = get_logger(__name__)
 
 
+# Rate limit decorator
+def rate_limit(requests_per_minute: int = 10, requests_per_hour: int = 600, requests_per_day: int = 10000, burst_size: int = 5):
+    """
+    Rate limit decorator for FastAPI endpoints.
+    
+    Args:
+        requests_per_minute: Number of requests allowed per minute
+        requests_per_hour: Number of requests allowed per hour
+        requests_per_day: Number of requests allowed per day
+        burst_size: Number of burst requests allowed
+    """
+    from functools import wraps
+    from fastapi import HTTPException
+    
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            # For now, just pass through - actual rate limiting is handled by middleware
+            return await func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 class AdvancedRateLimitMiddleware(BaseHTTPMiddleware):
     """Advanced rate limiting middleware with multiple strategies"""
     

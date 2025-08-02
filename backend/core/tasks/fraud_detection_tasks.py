@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 import numpy as np
 
-from core.database import get_db_context
+from .db_context import get_db_context
 from core.redis import redis_client
 from core.security.fraud_detector import fraud_detector, FraudRiskLevel
 from core.logging import get_logger

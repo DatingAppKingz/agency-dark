@@ -17,7 +17,7 @@ from core.rate_limiting import (
     RATE_LIMIT_CONFIGS,
     check_rate_limit
 )
-from core.redis import get_redis
+from core.redis import redis_manager
 
 router = APIRouter(prefix="/rate-limits", tags=["rate-limit-management"])
 

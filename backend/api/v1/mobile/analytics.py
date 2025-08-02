@@ -9,10 +9,10 @@ from pydantic import BaseModel
 from datetime import datetime, date, timedelta
 
 from core.database import get_db
-from core.auth.dependencies import get_current_user
+from core.auth import get_current_user
 from core.performance import cached
-from modules.users.domain.models import User
-from modules.analytics.application.analytics_service import AnalyticsService
+from models.user import User
+from modules.analytics.application.service import AnalyticsService
 
 router = APIRouter(prefix="/mobile/analytics", tags=["mobile-analytics"])
 
@@ -47,7 +47,7 @@ class MobileDashboardResponse(BaseModel):
 @cached(ttl=300, namespace="mobile_dashboard")
 async def get_mobile_dashboard(
     model_id: UUID,
-    period: str = Query("week", regex="^(day|week|month)$"),
+    period: str = Query("week", pattern="^(day|week|month)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -205,7 +205,7 @@ async def get_quick_stats(
 @router.get("/trends/{model_id}")
 async def get_trends(
     model_id: UUID,
-    metric: str = Query(..., regex="^(revenue|fans|messages|engagement)$"),
+    metric: str = Query(..., pattern="^(revenue|fans|messages|engagement)$"),
     days: int = Query(7, ge=1, le=90),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)

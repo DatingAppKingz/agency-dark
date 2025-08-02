@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError, jwt
 
 from core.config import settings
-from core.security import ALGORITHM
+# ALGORITHM is now accessed via settings
 from models.user import User
 from core.logger import get_logger
 
@@ -41,7 +41,7 @@ async def get_current_user_from_websocket(
     
     try:
         # Decode token
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         
         if user_id is None:

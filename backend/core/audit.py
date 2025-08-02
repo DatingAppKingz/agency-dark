@@ -82,7 +82,7 @@ class AuditLog(Base):
     target_name = Column(String(200))
     
     # Additional context
-    metadata = Column(JSON)
+    extra_metadata = Column(JSON)
     
     # Tracking
     agency_id = Column(UUID(as_uuid=True), index=True)

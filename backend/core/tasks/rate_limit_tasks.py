@@ -14,7 +14,7 @@ from celery import shared_task
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 
-from core.database import get_db_context
+from .db_context import get_db_context
 from core.redis import redis_client
 from core.security.rate_limiter import rate_limiter, RateLimitStrategy
 from core.logging import get_logger

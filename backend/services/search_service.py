@@ -8,10 +8,10 @@ from sqlalchemy import select
 from core.elasticsearch_client import get_elasticsearch_client
 from core.logger import get_logger
 from models.model import Model
-from models.message import Message
+from models.chat import Message
 from models.user import User
 from models.media import Media
-from models.transaction import Transaction
+from models.financial import Transaction
 
 logger = get_logger(__name__)
 

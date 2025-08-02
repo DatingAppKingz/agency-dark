@@ -38,6 +38,8 @@ __all__ = [
     'cached',
     'cache_aside',
     'cache_invalidate',
+    'cache_result',
+    'invalidate_cache',
     
     # Monitor
     'monitor',
@@ -53,6 +55,8 @@ __all__ = [
     'get_cached_model_profile',
     'get_cached_user_profile'
 ]
+
+# Aliases for backward compatibility will be added at the end of file
 
 
 async def initialize_cache():
@@ -73,3 +77,17 @@ async def shutdown_cache():
     
     # Clear stats
     await cache.clear_stats()
+
+
+# Import decorators from core.simple_cache to export them here
+try:
+    from core.simple_cache import cache_result as _cache_result, invalidate_cache as _invalidate_cache
+    cache_result = _cache_result
+    invalidate_cache = _invalidate_cache
+    # Add them to __all__
+    if 'cache_result' not in __all__:
+        __all__.extend(['cache_result', 'invalidate_cache'])
+except ImportError:
+    # If import fails, create stubs that will be replaced at runtime
+    cache_result = None
+    invalidate_cache = None

@@ -44,6 +44,35 @@ class OnlyFansConfig(BaseModel):
     x_bc: Optional[str] = None  # OnlyFans auth header
 
 
+class OnlyFansUser(BaseModel):
+    """OnlyFans user/fan."""
+    id: str
+    username: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+    avatar: Optional[str] = None
+    header: Optional[str] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
+    amazon_wishlist: Optional[str] = None
+    is_verified: bool = False
+    is_free: bool = True
+    subscription_price: Optional[Decimal] = None
+    bundle_discount: Optional[int] = None
+    campaign_discount: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    
+    # Fan-specific fields
+    is_subscriber: Optional[bool] = False
+    subscription_date: Optional[datetime] = None
+    expiry_date: Optional[datetime] = None
+    auto_renew: Optional[bool] = False
+    lifetime_amount: Optional[Decimal] = Field(default=Decimal(0))
+    last_seen: Optional[datetime] = None
+
+
 class OnlyFansProfile(BaseModel):
     """OnlyFans creator profile."""
     id: str
@@ -72,6 +101,32 @@ class OnlyFansProfile(BaseModel):
     has_stream: bool = False
     
     created_at: Optional[datetime] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class OnlyFansSubscription(BaseModel):
+    """OnlyFans subscription details."""
+    id: str
+    user_id: str
+    subscriber_id: str
+    subscription_price: Decimal
+    regular_price: Optional[Decimal] = None
+    discount: Optional[int] = None
+    
+    # Dates
+    started_at: datetime
+    expired_at: Optional[datetime] = None
+    renewed_at: Optional[datetime] = None
+    
+    # Status
+    is_active: bool = True
+    auto_renew: bool = True
+    show_posts: bool = True
+    
+    # Payments
+    payment_method: Optional[str] = None
+    transaction_id: Optional[str] = None
+    
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
@@ -275,6 +330,33 @@ class OnlyFansNotification(BaseModel):
     user: Optional[Dict[str, Any]] = None
     
     is_read: bool = False
+    created_at: datetime
+    
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+# Create an alias for backward compatibility
+OnlyFansStats = OnlyFansStatistics
+
+
+class OnlyFansContent(BaseModel):
+    """OnlyFans content item."""
+    id: str
+    type: OnlyFansContentType
+    text: Optional[str] = None
+    price: Optional[Decimal] = None
+    is_ppv: bool = False
+    is_locked: bool = False
+    
+    # Media
+    media: List[OnlyFansMedia] = Field(default_factory=list)
+    media_count: int = 0
+    
+    # Engagement
+    likes_count: int = 0
+    comments_count: int = 0
+    
+    # Dates
     created_at: datetime
     
     metadata: Dict[str, Any] = Field(default_factory=dict)

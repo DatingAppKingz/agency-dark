@@ -41,7 +41,7 @@ class TestFinancialNamespace:
         return {
             'user_id': str(uuid4()),
             'username': 'test_user',
-            'role': UserRole.AGENCY_MEMBER,
+            'role': UserRole.MEMBER,
             'agency_id': str(uuid4())
         }
     

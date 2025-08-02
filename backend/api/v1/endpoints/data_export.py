@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import io
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from core.redis import redis_client
 from models.user import User

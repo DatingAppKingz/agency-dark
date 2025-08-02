@@ -9,10 +9,22 @@ from models.agency import Agency
 from models.model import Model, ModelStatus, Platform
 from models.chat import Conversation, Message, MessageType, MessageStatus
 from models.financial import Transaction, TransactionType, TransactionStatus, Payout, PayoutStatus
-from models.content import Content, ContentType, ContentStatus
+from models.content import Content, ContentType, ContentStatus, ContentCategory
 from models.subscriber import Subscriber, SubscriptionStatus
 from models.model_settings import ModelSettings, ModelSchedule
-# APIKey is imported from webhook module
+from models.audit import AuditLog
+from models.api_key import APIKey
+from models.notification import Notification, NotificationType, NotificationStatus, NotificationPriority
+from models.fan_claim import FanClaim
+
+# ModelProfile is actually Model
+ModelProfile = Model
+
+# Fan is actually Subscriber
+Fan = Subscriber
+
+# Subscription is part of Subscriber
+Subscription = Subscriber
 
 # Export all models
 __all__ = [
@@ -21,17 +33,21 @@ __all__ = [
     # Agency models
     "Agency",
     # Model models
-    "Model", "ModelStatus", "Platform",
+    "Model", "ModelStatus", "Platform", "ModelProfile",
     # Chat models
     "Conversation", "Message", "MessageType", "MessageStatus",
     # Financial models
     "Transaction", "TransactionType", "TransactionStatus", "Payout", "PayoutStatus",
     # Content models
-    "Content", "ContentType", "ContentStatus",
+    "Content", "ContentType", "ContentStatus", "ContentCategory",
     # Subscriber models
-    "Subscriber", "SubscriptionStatus",
+    "Subscriber", "SubscriptionStatus", "Fan", "FanClaim", "Subscription",
     # Settings models
     "ModelSettings", "ModelSchedule",
+    # Audit models
+    "AuditLog",
     # API Key models
-    "APIKey"
+    "APIKey",
+    # Notification models
+    "Notification", "NotificationType", "NotificationStatus", "NotificationPriority"
 ]

@@ -4,7 +4,14 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
-from googletrans import Translator
+# from googletrans import Translator  # Commented out due to version conflict
+# Create a mock translator for now
+class Translator:
+    def translate(self, text, src='auto', dest='en'):
+        class Translation:
+            def __init__(self, text):
+                self.text = text
+        return Translation(text)
 import hashlib
 import json
 

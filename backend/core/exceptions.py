@@ -39,3 +39,8 @@ class RateLimitError(BaseError):
 class ExternalServiceError(BaseError):
     """External service error."""
     pass
+
+
+class BusinessLogicError(BaseError):
+    """Business logic error."""
+    pass

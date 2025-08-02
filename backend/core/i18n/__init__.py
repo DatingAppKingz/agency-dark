@@ -6,7 +6,10 @@ from .translations import (
     translation_manager,
     _,
     _t,
-    _n
+    _n,
+    i18n,
+    SUPPORTED_LANGUAGES,
+    get_language_from_request
 )
 from .middleware import I18nMiddleware
 from .locale_detector import LocaleDetector
@@ -17,6 +20,9 @@ __all__ = [
     "_",
     "_t",
     "_n",
+    "i18n",
+    "SUPPORTED_LANGUAGES",
+    "get_language_from_request",
     "I18nMiddleware",
     "LocaleDetector"
 ]

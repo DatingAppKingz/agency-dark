@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from core.database import get_db
 from core.auth import get_current_user
 from core.permissions import check_permission
-from core.database.materialized_views import materialized_view_manager
+from core.database_utils.materialized_views import materialized_view_manager
 from core.tasks.materialized_view_refresh import (
     refresh_scheduler,
     force_refresh_all_views,

@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import AsyncSessionLocal
-from core.database.query_analyzer import QueryAnalyzer, QueryOptimizer
+from core.database_utils.query_analyzer import QueryAnalyzer, QueryOptimizer
 
 
 async def analyze_database(

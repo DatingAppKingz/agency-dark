@@ -276,3 +276,28 @@ class TokenEncryption:
 encryption_service = EncryptionService()
 api_key_encryption = APIKeyEncryption()
 field_encryption = FieldEncryption()
+
+
+def data_masking(data: str, mask_type: str = "partial") -> str:
+    """
+    Mask sensitive data for display.
+    
+    Args:
+        data: Data to mask
+        mask_type: Type of masking (partial, full)
+        
+    Returns:
+        Masked data
+    """
+    if not data:
+        return ""
+    
+    if mask_type == "full":
+        return "*" * len(data)
+    elif mask_type == "partial":
+        # Show first 4 and last 4 characters
+        if len(data) <= 8:
+            return "*" * len(data)
+        return f"{data[:4]}{'*' * (len(data) - 8)}{data[-4:]}"
+    else:
+        return data

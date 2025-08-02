@@ -477,7 +477,7 @@ async def cached_response_fallback(cache_key: str):
 async def database_health_check() -> bool:
     """Check database health"""
     try:
-        from core.database import get_db_context
+        from core.tasks.db_context import get_db_context
         async with get_db_context() as db:
             await db.execute("SELECT 1")
         return True

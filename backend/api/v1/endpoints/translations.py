@@ -7,7 +7,7 @@ from sqlalchemy import select, and_
 import json
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from core.i18n import i18n, SUPPORTED_LANGUAGES, get_language_from_request, _
 from services.translation_service import TranslationService
@@ -565,7 +565,7 @@ async def get_translation_stats(
 @router.get("/export/{language}", response_model=TranslationExport)
 async def export_translations(
     language: str,
-    format: str = Query("json", regex="^(json|po)$"),
+    format: str = Query("json", pattern="^(json|po)$"),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):

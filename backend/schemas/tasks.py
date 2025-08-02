@@ -19,7 +19,7 @@ class ExportRequest(BaseModel):
     include_media: bool = False
     date_from: Optional[datetime] = None
     date_to: Optional[datetime] = None
-    format: str = Field("json", regex="^(json|csv|excel)$")
+    format: str = Field("json", pattern="^(json|csv|excel)$")
 
 
 class TaskResponse(BaseModel):

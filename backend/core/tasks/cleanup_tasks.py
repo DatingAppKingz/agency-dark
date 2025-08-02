@@ -10,11 +10,14 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from sqlalchemy import select, delete, and_, or_
 
-from core.database import get_db_context
-from core.models import (
-    UserSession, AuditLog, EmailLog, SyncLog,
-    TempFile, PasswordHistory, Task
-)
+from .db_context import get_db_context
+from models.user import Session
+from models.audit import AuditLog
+# from models.notification import EmailLog
+from models.sync_log import SyncLog
+from models.temp_file import TempFile
+# from models.user import PasswordHistory
+from models.task import Task
 from core.config import settings
 
 logger = get_task_logger(__name__)
@@ -30,15 +33,15 @@ def cleanup_expired_sessions() -> Dict[str, Any]:
             async with get_db_context() as db:
                 # Delete expired active sessions
                 result = await db.execute(
-                    delete(UserSession).where(
+                    delete(Session).where(
                         or_(
                             and_(
-                                UserSession.is_active == True,
-                                UserSession.refresh_expires_at < datetime.utcnow()
+                                Session.is_active == True,
+                                Session.refresh_expires_at < datetime.utcnow()
                             ),
                             and_(
-                                UserSession.is_active == False,
-                                UserSession.revoked_at < datetime.utcnow() - timedelta(days=30)
+                                Session.is_active == False,
+                                Session.revoked_at < datetime.utcnow() - timedelta(days=30)
                             )
                         )
                     )
@@ -217,42 +220,6 @@ def cleanup_temp_files() -> Dict[str, Any]:
 def cleanup_old_tasks(days_to_keep: int = 30) -> Dict[str, Any]:
     """
     Clean up old completed/failed tasks
-    """
-    try:
-        async def _cleanup():
-            async with get_db_context() as db:
-                cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
-                
-                # Delete old completed/failed tasks
-                result = await db.execute(
-                    delete(Task).where(
-                        and_(
-                            Task.created_at < cutoff_date,
-                            Task.status.in_(['completed', 'failed', 'cancelled'])
-                        )
-                    )
-                )
-                
-                await db.commit()
-                
-                count = result.rowcount
-                logger.info(f"Cleaned up {count} old tasks")
-                
-                return {
-                    'tasks_deleted': count,
-                    'status': 'success'
-                }
-        
-        # Run async function
-        import asyncio
-        return asyncio.run(_cleanup())
-        
-    except Exception as exc:
-        logger.error(f"Task cleanup failed: {exc}")
-        return {
-            'status': 'error',
-            'error': str(exc)
-        }
 
 
 @shared_task

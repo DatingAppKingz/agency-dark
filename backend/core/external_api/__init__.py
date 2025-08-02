@@ -11,8 +11,8 @@ from .base import (
     APIValidationError
 )
 from .retry import RetryPolicy, ExponentialBackoff
-from .logging import APILogger
-from .config import APIConfig, APICredentials
+from .logging import APILogger, log_api_call
+from .config import APIConfig, APICredentials, APIConfigManager
 
 __all__ = [
     'BaseAPIClient',
@@ -25,6 +25,8 @@ __all__ = [
     'RetryPolicy',
     'ExponentialBackoff',
     'APILogger',
+    'log_api_call',
     'APIConfig',
-    'APICredentials'
+    'APICredentials',
+    'APIConfigManager'
 ]

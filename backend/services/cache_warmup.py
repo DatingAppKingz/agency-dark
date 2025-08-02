@@ -12,8 +12,8 @@ from core.logger import get_logger
 from models.user import User
 from models.model import Model
 from models.agency import Agency
-from models.transaction import Transaction
-from models.message import Message
+from models.financial import Transaction
+from models.chat import Message
 
 logger = get_logger(__name__)
 

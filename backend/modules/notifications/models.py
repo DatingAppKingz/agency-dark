@@ -99,7 +99,7 @@ class NotificationLog(Base):
     
     # Metadata
     message_id = Column(String)  # External message ID (FCM, etc)
-    metadata = Column(JSON, default={})
+    extra_metadata = Column(JSON, default={})
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)

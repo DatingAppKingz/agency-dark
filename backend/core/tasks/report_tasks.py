@@ -14,8 +14,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from core.database import get_db_context
-from core.models import Agency, ModelProfile, Transaction, Report
+from .db_context import get_db_context
+from models import Agency, ModelProfile, Transaction, Report
 from core.storage import upload_file
 from .email_tasks import send_email
 

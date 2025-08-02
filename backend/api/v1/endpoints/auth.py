@@ -81,7 +81,7 @@ async def register(
         email=user_data.email,
         hashed_password=get_password_hash(user_data.password),
         full_name=user_data.full_name,
-        role=user_data.role or UserRole.AGENCY_MEMBER,
+        role=user_data.role or UserRole.MEMBER,
         agency_id=user_data.agency_id,
         is_active=True,  # For MVP, activate immediately
         is_verified=False

@@ -552,7 +552,7 @@ metrics_collector = MetricsCollector()
 # Example custom collectors
 async def collect_business_metrics():
     """Collect business-specific metrics"""
-    from core.database import get_db_context
+    from core.tasks.db_context import get_db_context
     
     async with get_db_context() as db:
         # Active users in last hour

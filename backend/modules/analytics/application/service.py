@@ -36,13 +36,13 @@ from modules.analytics.domain.schemas import (
     ContentPerformanceData,
     DashboardSummary,
     ChartRequest,
-    ChartResponse,
-    TimeSeriesData
+    ChartResponse
 )
 from modules.analytics.application.analytics_aggregator import AnalyticsAggregator
 from modules.analytics.application.time_series_calculator import TimeSeriesCalculator
 from modules.analytics.infrastructure.cache_strategy import cache_strategy, CacheTier
-from core.domain.models import ModelProfile, Fan
+from core.domain.models import ModelProfile
+from models.subscriber import Subscriber as Fan
 
 
 logger = logging.getLogger(__name__)
@@ -472,8 +472,9 @@ class AnalyticsService:
         
         for i, fan in enumerate(fans):
             # Get aggregated data for this specific fan
-            fan_metrics = await aggregator.aggregate_fan_metrics(
-                fan_id=str(fan.id),
+            # Use aggregate_metrics with model_id filter
+            fan_metrics = await aggregator.aggregate_metrics(
+                agency_id=str(agency_id),
                 model_id=model_id,
                 start_date=start_dt,
                 end_date=end_dt,

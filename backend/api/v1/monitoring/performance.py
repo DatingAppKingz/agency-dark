@@ -7,7 +7,7 @@ from typing import Dict, Any
 
 from core.dependencies import get_db, get_current_user
 from core.domain.models import User, UserRole
-from core.database.query_analyzer import QueryAnalyzer
+from core.database_utils.query_analyzer import QueryAnalyzer
 from core.cache import cache
 
 router = APIRouter(tags=["monitoring"])
@@ -118,7 +118,7 @@ async def analyze_query(
         plan = await QueryAnalyzer.get_query_execution_plan(db, query)
         
         # Get optimization suggestions
-        from core.database.query_analyzer import QueryOptimizer
+        from core.database_utils.query_analyzer import QueryOptimizer
         suggestions = QueryOptimizer.optimize_query(query)
         
         return {
@@ -194,7 +194,7 @@ async def get_query_statistics(
         return cached_stats
     
     # Calculate stats
-    from core.database.query_builders import OptimizedQueries
+    from core.database_utils.query_builders import OptimizedQueries
     from sqlalchemy import text
     
     if model_id:

@@ -8,7 +8,7 @@ from sqlalchemy import select, and_, func, desc
 from pydantic import BaseModel
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from models.user import User
 from models.sync_error_log import SyncErrorLog
@@ -287,7 +287,7 @@ async def list_errors(
 @router.get("/trends", response_model=List[ErrorTrendResponse])
 async def get_error_trends(
     service_id: Optional[str] = None,
-    interval: str = Query("hour", regex="^(hour|day|week)$"),
+    interval: str = Query("hour", pattern="^(hour|day|week)$"),
     periods: int = Query(24, ge=1, le=168),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)

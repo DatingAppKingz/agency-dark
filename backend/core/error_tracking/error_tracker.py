@@ -13,7 +13,7 @@ import asyncio
 from sqlalchemy import select, and_, func, desc
 from fastapi import Request
 
-from core.database import get_db_context
+from core.tasks.db_context import get_db_context
 from core.redis import redis_client
 from core.logging import logger
 from core.config import settings

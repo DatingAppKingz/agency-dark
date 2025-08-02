@@ -34,7 +34,7 @@ class TestBulkProcessor:
                 username=f"bulk_test_{i}",
                 first_name=f"Test{i}",
                 last_name="User",
-                role=UserRole.AGENCY_MEMBER,
+                role=UserRole.MEMBER,
                 agency_id=test_user.agency_id,
                 hashed_password="dummy"
             )
@@ -77,7 +77,7 @@ class TestBulkProcessor:
                 username=f"process_test_{i}",
                 first_name=f"Process{i}",
                 last_name="Test",
-                role=UserRole.AGENCY_MEMBER,
+                role=UserRole.MEMBER,
                 agency_id=test_user.agency_id,
                 is_active=True,
                 hashed_password="dummy"
@@ -328,7 +328,7 @@ class TestBulkOperationAPI:
                 username=f"api_bulk_{i}",
                 first_name=f"API{i}",
                 last_name="Test",
-                role=UserRole.AGENCY_MEMBER,
+                role=UserRole.MEMBER,
                 agency_id=test_user.agency_id,
                 hashed_password="dummy"
             )

@@ -62,7 +62,7 @@ async def get_model_profile_for_analytics(
     elif user.role == UserRole.MODEL:
         if model_profile.user_id != user.id:
             raise HTTPException(status_code=403, detail="Not your model profile")
-    elif user.role in [UserRole.AGENCY_MEMBER, UserRole.AGENCY_MEMBER]:
+    elif user.role in [UserRole.MEMBER, UserRole.MEMBER]:
         if model_profile.agency_id != user.agency_id:
             raise HTTPException(status_code=403, detail="Model not in your agency")
     elif user.role == UserRole.CHATTER:
@@ -85,8 +85,8 @@ async def get_dashboard_summary(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER,
+            UserRole.MEMBER,
+            UserRole.MEMBER,
             UserRole.CHATTER
         ])
     ),
@@ -118,8 +118,8 @@ async def get_subscriber_growth_chart(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -157,8 +157,8 @@ async def get_revenue_timeline_chart(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -195,8 +195,8 @@ async def get_fan_revenue_chart(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -235,8 +235,8 @@ async def get_category_popularity(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -270,8 +270,8 @@ async def get_content_performance(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -303,8 +303,8 @@ async def export_analytics_data(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -379,8 +379,8 @@ async def get_generic_chart(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER,
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -437,7 +437,7 @@ async def sync_analytics_data(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)
@@ -492,7 +492,7 @@ async def sync_revenue_data(
             UserRole.SUPER_ADMIN,
             UserRole.AGENCY_OWNER,
             UserRole.MODEL,
-            UserRole.AGENCY_MEMBER
+            UserRole.MEMBER
         ])
     ),
     db: AsyncSession = Depends(get_db)

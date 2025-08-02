@@ -10,11 +10,25 @@ import yaml
 from babel import Locale
 from babel.support import Translations as BabelTranslations
 
-from core.config import get_settings
-from core.logging import get_logger
+from core.config import settings
+from core.logger import get_logger
 
-settings = get_settings()
+# settings already imported
 logger = get_logger(__name__)
+
+# Supported languages
+SUPPORTED_LANGUAGES = [
+    "en",  # English
+    "es",  # Spanish
+    "fr",  # French
+    "de",  # German
+    "it",  # Italian
+    "pt",  # Portuguese
+    "ru",  # Russian
+    "zh",  # Chinese
+    "ja",  # Japanese
+    "ko",  # Korean
+]
 
 
 class TranslationManager:
@@ -383,3 +397,34 @@ translation_manager = TranslationManager()
 _ = TranslationShortcuts(translation_manager)._
 _t = TranslationShortcuts(translation_manager)._t
 _n = TranslationShortcuts(translation_manager)._n
+
+# Create i18n alias for backward compatibility
+i18n = translation_manager
+
+# Helper function to get language from request
+def get_language_from_request(request) -> str:
+    """
+    Get language from request headers or query params.
+    
+    Checks in order:
+    1. Accept-Language header
+    2. lang query parameter
+    3. Default language
+    """
+    # Check query parameter first
+    if hasattr(request, 'query_params') and 'lang' in request.query_params:
+        lang = request.query_params['lang']
+        if lang in SUPPORTED_LANGUAGES:
+            return lang
+    
+    # Check Accept-Language header
+    if hasattr(request, 'headers'):
+        accept_language = request.headers.get('accept-language', '')
+        # Parse the header and get the best match
+        for lang in accept_language.split(','):
+            lang_code = lang.split(';')[0].strip().split('-')[0]
+            if lang_code in SUPPORTED_LANGUAGES:
+                return lang_code
+    
+    # Return default
+    return translation_manager.default_locale

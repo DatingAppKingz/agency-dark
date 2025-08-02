@@ -6,7 +6,7 @@ from typing import Optional, List
 from datetime import datetime, timedelta
 
 from .error_tracker import error_tracker, ErrorSeverity, ErrorCategory
-from core.auth.dependencies import get_current_user, require_admin
+from core.auth import get_current_user, require_admin
 from core.models import User
 
 router = APIRouter(prefix="/api/v1/errors", tags=["error-tracking"])

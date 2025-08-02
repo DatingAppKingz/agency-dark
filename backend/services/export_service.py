@@ -22,9 +22,9 @@ from core.logger import get_logger
 from models.user import User
 from models.agency import Agency
 from models.model import Model
-from models.transaction import Transaction
-from models.message import Message, Conversation
-from models.media import MediaFile
+from models.financial import Transaction
+from models.chat import Message, Conversation
+from models.media import Media
 from schemas.export import ExportConfig, ExportFormat, ExportResult
 
 logger = get_logger(__name__)
@@ -237,17 +237,17 @@ class ExportService:
         user: User
     ) -> List[Dict[str, Any]]:
         """Fetch media file metadata."""
-        query = select(MediaFile)
+        query = select(Media)
         
         # Apply ownership filter
         if not user.is_superuser:
-            query = query.where(MediaFile.uploaded_by == user.id)
+            query = query.where(Media.uploaded_by == user.id)
         
         # Apply date range
         if config.date_from:
-            query = query.where(MediaFile.created_at >= config.date_from)
+            query = query.where(Media.created_at >= config.date_from)
         if config.date_to:
-            query = query.where(MediaFile.created_at <= config.date_to)
+            query = query.where(Media.created_at <= config.date_to)
         
         result = await self.db.execute(query)
         media_files = result.scalars().all()
@@ -366,7 +366,7 @@ class ExportService:
     
     def _serialize_media(
         self,
-        media: MediaFile,
+        media: Media,
         fields: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """Serialize media file to dict."""

@@ -92,7 +92,7 @@ async def get_my_usage(
         tier = "enterprise"
     elif current_user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
         tier = "professional"
-    elif current_user.role in [UserRole.AGENCY_MEMBER, UserRole.MODEL]:
+    elif current_user.role in [UserRole.MEMBER, UserRole.MODEL]:
         tier = "basic"
     else:
         tier = "free"

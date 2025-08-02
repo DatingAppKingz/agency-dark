@@ -172,7 +172,7 @@ class Payout(Base):
     retry_count = Column(Integer, default=0)
     
     # Additional metadata (approvals, etc)
-    metadata = Column(JSON)
+    extra_metadata = Column(JSON)
     
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -295,7 +295,7 @@ class FinancialTransaction(Base):
     commission_amount = Column(Numeric(12, 2))
     
     # Additional metadata
-    metadata = Column(JSON)
+    extra_metadata = Column(JSON)
     created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     
     # Timestamps
@@ -423,7 +423,7 @@ class CryptoPayment(Base):
     confirmations = Column(Integer, default=0)
     
     # Metadata
-    metadata = Column(JSON)  # Additional data (payout_id, etc.)
+    extra_metadata = Column(JSON)  # Additional data (payout_id, etc.)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import uuid
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from models.user import User
 from models.sync_conflict_log import SyncConflictLog

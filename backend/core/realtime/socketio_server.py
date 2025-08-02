@@ -106,7 +106,7 @@ async def validate_token(token: str) -> Optional[Dict[str, Any]]:
         'user_id': 'test_user_id',
         'username': 'test_user',
         'agency_id': 'test_agency_id',
-        'role': UserRole.AGENCY_MEMBER
+        'role': UserRole.MEMBER
     }
 
 

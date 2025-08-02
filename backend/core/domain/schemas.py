@@ -42,7 +42,7 @@ class Agency(AgencyBase):
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = Field(None, max_length=255)
-    role: UserRole = UserRole.AGENCY_MEMBER
+    role: UserRole = UserRole.MEMBER
 
 
 class UserCreate(UserBase):
@@ -80,6 +80,20 @@ class UserResponse(UserBase):
     is_active: bool
     is_verified: bool
     last_login: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class ModelProfileResponse(BaseModel):
+    id: UUID
+    agency_id: UUID
+    username: str
+    display_name: Optional[str]
+    email: Optional[EmailStr]
+    is_active: bool
     created_at: datetime
     updated_at: datetime
     

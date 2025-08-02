@@ -9,8 +9,8 @@ from datetime import date, datetime, timedelta
 import json
 
 from core.database import get_db
-from core.auth.dependencies import get_current_user
-from modules.users.domain.models import User
+from core.auth import get_current_user
+from models.user import User
 from modules.analytics.dashboard.dashboard_service import dashboard_service
 from modules.analytics.dashboard.models import (
     DashboardWidget, DashboardLayout, WidgetType
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/analytics/dashboard", tags=["analytics-dashboard"])
 @router.get("")
 async def get_dashboard(
     model_id: Optional[UUID] = None,
-    period: str = Query("week", regex="^(day|week|month|quarter|year|custom)$"),
+    period: str = Query("week", pattern="^(day|week|month|quarter|year|custom)$"),
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     current_user: User = Depends(get_current_user),
@@ -170,7 +170,7 @@ async def delete_widget(
 @router.get("/widgets/{widget_id}/data")
 async def get_widget_data(
     widget_id: str,
-    period: str = Query("week", regex="^(day|week|month|quarter|year)$"),
+    period: str = Query("week", pattern="^(day|week|month|quarter|year)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -300,9 +300,9 @@ async def delete_layout(
 
 @router.post("/export")
 async def export_dashboard(
-    format: str = Query(..., regex="^(pdf|excel|json)$"),
+    format: str = Query(..., pattern="^(pdf|excel|json)$"),
     model_id: Optional[UUID] = None,
-    period: str = Query("month", regex="^(week|month|quarter|year)$"),
+    period: str = Query("month", pattern="^(week|month|quarter|year)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -369,7 +369,7 @@ async def realtime_updates(
             return
             
         # Get user
-        from modules.users.domain.models import User
+        from models.user import User
         user = await db.get(User, UUID(user_id))
         
         if not user or not user.agency_id:
@@ -463,7 +463,7 @@ async def realtime_updates(
 @router.get("/insights")
 async def get_ai_insights(
     model_id: Optional[UUID] = None,
-    period: str = Query("month", regex="^(week|month|quarter)$"),
+    period: str = Query("month", pattern="^(week|month|quarter)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):

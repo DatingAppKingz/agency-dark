@@ -9,8 +9,11 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from sqlalchemy import select, func, and_
 
-from core.database import get_db_context
-from core.models import Agency, ModelProfile, Transaction, MetricSnapshot
+from .db_context import get_db_context
+from models.agency import Agency
+from models.model import Model as ModelProfile
+from models.financial import Transaction
+from models.analytics import MetricSnapshot
 from core.redis import redis_client
 
 logger = get_task_logger(__name__)

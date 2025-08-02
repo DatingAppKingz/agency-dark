@@ -62,7 +62,7 @@ class Notification(Base):
     template_data = Column(JSON, nullable=True)   # Variables for template
     
     # Metadata
-    metadata = Column(JSON, nullable=True)         # Additional data
+    extra_metadata = Column(JSON, nullable=True)         # Additional data
     tags = Column(JSON, nullable=True)            # For filtering/grouping
     
     # Scheduling

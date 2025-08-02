@@ -100,7 +100,7 @@ class AuditLog(Base):
     resource_name = Column(String)
     
     # Additional data
-    metadata = Column(JSON, default={})
+    extra_metadata = Column(JSON, default={})
     old_values = Column(JSON)  # For update events
     new_values = Column(JSON)  # For update events
     

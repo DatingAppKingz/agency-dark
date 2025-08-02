@@ -17,7 +17,7 @@ from sqlalchemy import select, and_, update, func
 from sqlalchemy.dialects.postgresql import insert
 
 from core.database import get_db
-from core.redis import get_redis
+from core.redis import redis_manager
 from core.domain.models import ModelProfile, Fan, Subscription, Content, Message
 from modules.financial.domain.models import (
     FinancialTransaction,
@@ -35,7 +35,7 @@ from ..domain.schemas import (
     OnlyFansMessage,
     OnlyFansStats
 )
-from ..infrastructure.client_v2 import OnlyFansClientV2
+from ..infrastructure.client_v2 import OnlyFansClient
 
 
 logger = logging.getLogger(__name__)
@@ -107,12 +107,12 @@ class EnhancedOnlyFansSyncService:
         redis = await get_redis()
         self.sync_state = OnlyFansSyncState(redis)
     
-    async def get_client(self, model_profile: ModelProfile) -> OnlyFansClientV2:
+    async def get_client(self, model_profile: ModelProfile) -> OnlyFansClient:
         """Get authenticated OnlyFans client."""
         if not model_profile.onlyfans_api_key:
             raise ValueError(f"Model {model_profile.id} has no OnlyFans API key")
         
-        return OnlyFansClientV2(
+        return OnlyFansClient(
             auth_token=model_profile.onlyfans_api_key,
             user_id=model_profile.onlyfans_user_id
         )
@@ -200,7 +200,7 @@ class EnhancedOnlyFansSyncService:
     async def sync_fans_incremental(
         self,
         model_profile: ModelProfile,
-        client: OnlyFansClientV2
+        client: OnlyFansClient
     ) -> Dict[str, int]:
         """Sync fans with incremental updates."""
         logger.info(f"Syncing OnlyFans fans for model {model_profile.id}")
@@ -294,7 +294,7 @@ class EnhancedOnlyFansSyncService:
     async def sync_subscriptions_incremental(
         self,
         model_profile: ModelProfile,
-        client: OnlyFansClientV2
+        client: OnlyFansClient
     ) -> Dict[str, int]:
         """Sync active subscriptions."""
         logger.info(f"Syncing OnlyFans subscriptions for model {model_profile.id}")
@@ -422,7 +422,7 @@ class EnhancedOnlyFansSyncService:
     async def sync_content_incremental(
         self,
         model_profile: ModelProfile,
-        client: OnlyFansClientV2
+        client: OnlyFansClient
     ) -> Dict[str, int]:
         """Sync content posts and media."""
         logger.info(f"Syncing OnlyFans content for model {model_profile.id}")
@@ -540,7 +540,7 @@ class EnhancedOnlyFansSyncService:
     async def sync_messages_incremental(
         self,
         model_profile: ModelProfile,
-        client: OnlyFansClientV2
+        client: OnlyFansClient
     ) -> Dict[str, int]:
         """Sync messages and track PPV."""
         logger.info(f"Syncing OnlyFans messages for model {model_profile.id}")
@@ -625,7 +625,7 @@ class EnhancedOnlyFansSyncService:
     async def sync_transactions_incremental(
         self,
         model_profile: ModelProfile,
-        client: OnlyFansClientV2
+        client: OnlyFansClient
     ) -> Dict[str, Any]:
         """Sync financial transactions."""
         logger.info(f"Syncing OnlyFans transactions for model {model_profile.id}")
@@ -741,7 +741,7 @@ class EnhancedOnlyFansSyncService:
         
         return results
     
-    async def update_statistics(self, model_profile: ModelProfile, client: OnlyFansClientV2):
+    async def update_statistics(self, model_profile: ModelProfile, client: OnlyFansClient):
         """Update model statistics from OnlyFans."""
         try:
             stats = await client.get_account_stats()

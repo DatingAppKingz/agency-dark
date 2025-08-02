@@ -9,8 +9,8 @@ from sqlalchemy import select
 import aiohttp
 
 from core.database import get_db
-from core.auth.dependencies import get_current_user
-from modules.users.domain.models import User
+from core.auth import get_current_user
+from models.user import User
 from core.webhooks.webhook_models import (
     Webhook, WebhookCreate, WebhookUpdate, WebhookResponse,
     WebhookDeliveryResponse, WebhookEvent, WebhookDeadLetter

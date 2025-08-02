@@ -38,7 +38,7 @@ class MediaUpload(Base):
     thumbnail_url = Column(String)
     
     # Metadata
-    metadata = Column(JSON, default={})
+    extra_metadata = Column(JSON, default={})
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Status

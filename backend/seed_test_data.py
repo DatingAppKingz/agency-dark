@@ -127,7 +127,7 @@ async def create_users(session: AsyncSession, main_agency, secondary_agency):
         email="member@testagency.com",
         hashed_password=get_password_hash("AgencyMember123!"),
         full_name="Mike Member",
-        role=UserRole.AGENCY_MEMBER,
+        role=UserRole.MEMBER,
         is_active=True,
         is_verified=True,
         verified_at=datetime.utcnow()

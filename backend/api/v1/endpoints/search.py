@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Background
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from core.security import get_current_active_user
+from core.dependencies import get_current_active_user
 from core.rbac import check_permission
 from services.search_service import SearchService
 from models.user import User
@@ -258,7 +258,7 @@ async def search_transactions(
 @router.get("/suggestions", response_model=SearchSuggestionResponse)
 async def get_search_suggestions(
     query: str = Query(..., min_length=2),
-    context: Optional[str] = Query(None, regex="^(models|messages|media|transactions)$"),
+    context: Optional[str] = Query(None, pattern="^(models|messages|media|transactions)$"),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):

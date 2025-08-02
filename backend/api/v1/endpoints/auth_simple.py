@@ -141,6 +141,20 @@ async def get_current_user(
     return user
 
 
+async def get_optional_current_user(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db)
+) -> Optional[User]:
+    """Get current authenticated user if token is provided, otherwise return None."""
+    if not token:
+        return None
+    
+    try:
+        return await get_current_user(token, db)
+    except HTTPException:
+        return None
+
+
 # Endpoints
 @router.post("/register", response_model=TokenResponse)
 async def register(

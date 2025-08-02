@@ -11,9 +11,9 @@ from celery import Task, current_app
 from celery.utils.log import get_task_logger
 from sqlalchemy import select, and_, desc
 
-from core.database import get_db_context
+from .db_context import get_db_context
 from core.redis import redis_client
-from core.models import Task as TaskModel
+from models import Task as TaskModel
 
 logger = get_task_logger(__name__)
 

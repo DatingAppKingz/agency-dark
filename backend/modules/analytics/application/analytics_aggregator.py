@@ -16,23 +16,56 @@ from sqlalchemy import select, func, and_, or_, case, extract
 from sqlalchemy.sql import text
 
 from core.domain.models import User, Agency, ModelProfile
-from modules.fans.domain.models import Fan, Message, Media
-from modules.financial.domain.models import FinancialTransaction, TransactionType
+from models.subscriber import Subscriber as Fan
+from models.chat import Message
+from models.media import Media
+from models.financial import Transaction as FinancialTransaction, TransactionType
 from modules.analytics.domain.models import (
-    AnalyticsMetric,
-    MetricType,
     AggregationPeriod,
-    ModelAnalytics,
-    FanAnalytics
+    Analytics,
+    MetricSnapshot
 )
 from modules.analytics.domain.schemas import (
-    MetricValue,
-    TimeSeriesData,
-    GrowthMetrics,
-    EngagementMetrics,
-    RevenueMetrics
+    TimeSeriesDataPoint as TimeSeriesData,
+    MetricType
 )
-from core.cache import cache_manager
+from core.simple_cache import cache_manager
+from pydantic import BaseModel
+from typing import List
+
+
+# Define missing metric classes
+class RevenueMetrics(BaseModel):
+    """Revenue metrics aggregation result."""
+    total_revenue: float
+    transaction_count: int
+    average_transaction: float
+    growth_rate: float
+    revenue_by_type: Dict[str, float]
+    time_series: List[Dict[str, Any]]
+
+
+class EngagementMetrics(BaseModel):
+    """Engagement metrics aggregation result."""
+    total_messages: int
+    active_conversations: int
+    average_response_time: float
+    message_read_rate: float
+    content_views: int
+    engagement_rate: float
+    time_series: List[Dict[str, Any]]
+
+
+class AnalyticsMetric(BaseModel):
+    """Analytics metric record."""
+    agency_id: str
+    model_id: Optional[str]
+    metric_type: MetricType
+    metric_name: str
+    metric_value: float
+    period: AggregationPeriod
+    timestamp: datetime
+    metadata: Optional[Dict[str, Any]] = None
 
 
 logger = logging.getLogger(__name__)

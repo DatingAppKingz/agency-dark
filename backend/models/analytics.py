@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, Numeric, JSON, Index, UniqueConstraint, Boolean
+from sqlalchemy import Column, String, Integer, ForeignKey, Numeric, JSON, Index, UniqueConstraint, Boolean, Date, Float
 from sqlalchemy.orm import relationship
 from models.base import Base, BaseModel
 
@@ -200,3 +200,27 @@ class AgencyMetrics(BaseModel):
     
     def __repr__(self):
         return f"<AgencyMetrics Agency:{self.agency_id} Date:{self.date}>"
+
+
+class MetricSnapshot(BaseModel):
+    """Daily metric snapshots for agencies."""
+    
+    __tablename__ = "metric_snapshots"
+    
+    # Agency relationship
+    agency_id = Column(Integer, ForeignKey("agencies.id"), nullable=False)
+    agency = relationship("Agency", back_populates="metric_snapshots")
+    
+    # Date of the snapshot
+    date = Column(Date, nullable=False)
+    
+    # Metrics
+    revenue = Column(Float, default=0.0)
+    transaction_count = Column(Integer, default=0)
+    active_models = Column(Integer, default=0)
+    
+    # Additional metrics as JSON
+    metrics = Column(JSON, default=dict)
+    
+    def __repr__(self):
+        return f"<MetricSnapshot {self.agency_id} - {self.date}>"

@@ -25,7 +25,7 @@ from sqlalchemy import text, select, and_, or_
 from core.redis import redis_client
 from core.logging import get_logger
 from core.config import settings
-from core.database import get_db_context
+from core.tasks.db_context import get_db_context
 from models.user import User
 from models.api_key import APIKey
 

@@ -393,7 +393,7 @@ async def check_rate_limit(
         ):
             ...
     """
-    from core.redis import get_redis
+    from core.redis import redis_manager
     redis = await get_redis()
     rate_limiter = RateLimiter(redis)
     

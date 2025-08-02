@@ -10,7 +10,9 @@ import asyncio
 from redis import asyncio as aioredis
 
 from core.config import settings
-from core.logging import logger
+from core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class CacheStrategy:
@@ -305,8 +307,8 @@ def cache_result(ttl: int = 300, key_prefix: str = None):
                 cache_key += ":" + ":".join(f"{k}={v}" for k, v in sorted(kwargs.items()))
             
             # Get redis client from somewhere (you'll need to set this up)
-            from core.redis import get_redis
-            redis = await get_redis()
+            from core.redis import redis_manager
+            redis = await redis_manager.connect()
             cache = SimpleCache(redis)
             
             # Try cache
@@ -334,8 +336,8 @@ def invalidate_cache(patterns: Union[str, List[str]]):
             result = await func(*args, **kwargs)
             
             # Invalidate cache
-            from core.redis import get_redis
-            redis = await get_redis()
+            from core.redis import redis_manager
+            redis = await redis_manager.connect()
             cache = SimpleCache(redis)
             
             pattern_list = patterns if isinstance(patterns, list) else [patterns]

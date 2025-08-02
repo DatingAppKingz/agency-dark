@@ -7,8 +7,8 @@ from decimal import Decimal
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.query_analyzer import QueryAnalyzer, QueryOptimizer
-from core.database.query_builders import OptimizedQueries, BatchOperations
+from core.database_utils.query_analyzer import QueryAnalyzer, QueryOptimizer
+from core.database_utils.query_builders import OptimizedQueries, BatchOperations
 from core.domain.models import ModelProfile, Agency, Fan
 from modules.financial.domain.models import FinancialTransaction, TransactionType
 

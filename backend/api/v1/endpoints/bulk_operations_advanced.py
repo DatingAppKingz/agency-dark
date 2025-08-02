@@ -116,7 +116,7 @@ async def create_bulk_operation(
     
     allowed_roles = required_roles.get(
         operation.operation_type,
-        [UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN, UserRole.AGENCY_MEMBER]
+        [UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN, UserRole.MEMBER]
     )
     
     if current_user.role not in allowed_roles:
