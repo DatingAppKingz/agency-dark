@@ -72,12 +72,8 @@ class CacheManager:
                 encoding="utf-8",
                 decode_responses=False,
                 max_connections=50,
-                socket_keepalive=True,
-                socket_keepalive_options={
-                    1: 1,  # TCP_KEEPIDLE
-                    2: 2,  # TCP_KEEPINTVL
-                    3: 3,  # TCP_KEEPCNT
-                }
+                socket_keepalive=False,  # Disable socket keepalive to avoid macOS issues
+                socket_keepalive_options={}
             )
             
             # Test connection

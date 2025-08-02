@@ -1,7 +1,7 @@
 """Redis connection and caching utilities."""
 
 import json
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, List
 from datetime import timedelta
 import redis.asyncio as redis
 from redis.asyncio import Redis
@@ -27,7 +27,9 @@ class RedisManager:
                 self.client = redis.from_url(
                     settings.REDIS_URL,
                     decode_responses=False,
-                    max_connections=50
+                    max_connections=50,
+                    socket_keepalive=False,  # Disable socket keepalive to avoid macOS issues
+                    socket_keepalive_options={}
                 )
             else:
                 # Fall back to individual settings
@@ -37,6 +39,8 @@ class RedisManager:
                     "db": settings.REDIS_DB,
                     "decode_responses": False,  # We'll handle encoding/decoding ourselves
                     "max_connections": 50,
+                    "socket_keepalive": False,  # Disable socket keepalive to avoid macOS issues
+                    "socket_keepalive_options": {}
                 }
                 
                 if hasattr(settings, 'REDIS_PASSWORD') and settings.REDIS_PASSWORD:
@@ -141,6 +145,31 @@ class RedisManager:
                 await self.client.delete(*keys)
             if cursor == 0:
                 break
+    
+    async def info(self, section: Optional[str] = None) -> dict:
+        """Get Redis server information."""
+        if not self.client:
+            await self.connect()
+        return await self.client.info(section=section) if section else await self.client.info()
+    
+    def pipeline(self, transaction: bool = True):
+        """Create a Redis pipeline."""
+        if not self.client:
+            raise RuntimeError("Redis client not connected. Call connect() first.")
+        return self.client.pipeline(transaction=transaction)
+    
+    async def dbsize(self) -> int:
+        """Get the number of keys in the database."""
+        if not self.client:
+            await self.connect()
+        return await self.client.dbsize()
+    
+    async def keys(self, pattern: str = "*") -> List[str]:
+        """Get all keys matching the pattern."""
+        if not self.client:
+            await self.connect()
+        keys = await self.client.keys(pattern)
+        return [key.decode('utf-8') if isinstance(key, bytes) else key for key in keys]
 
 
 # Global Redis manager instance

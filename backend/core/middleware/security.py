@@ -86,16 +86,27 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
             response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
             
-            # CSP header
-            response.headers["Content-Security-Policy"] = (
-                "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                "style-src 'self' 'unsafe-inline'; "
-                "img-src 'self' data: https:; "
-                "font-src 'self' data:; "
-                "connect-src 'self' https://api.inflow.com https://onlyfansapi.com; "
-                "frame-ancestors 'none';"
-            )
+            # CSP header - allow CDN for Swagger/ReDoc on docs pages
+            if request.url.path in ["/docs", "/redoc", "/openapi.json"]:
+                response.headers["Content-Security-Policy"] = (
+                    "default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; "
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+                    "img-src 'self' data: https:; "
+                    "font-src 'self' data: https://fonts.gstatic.com; "
+                    "connect-src 'self' https://api.inflow.com https://onlyfansapi.com; "
+                    "frame-ancestors 'none';"
+                )
+            else:
+                response.headers["Content-Security-Policy"] = (
+                    "default-src 'self'; "
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                    "style-src 'self' 'unsafe-inline'; "
+                    "img-src 'self' data: https:; "
+                    "font-src 'self' data:; "
+                    "connect-src 'self' https://api.inflow.com https://onlyfansapi.com; "
+                    "frame-ancestors 'none';"
+                )
             
             # Log response time
             process_time = time.time() - start_time

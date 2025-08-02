@@ -17,7 +17,7 @@ from core.database import get_db
 from .widget_manager import WidgetManager
 from .models import DashboardWidget, DashboardLayout
 from ..realtime.engine import realtime_engine
-from ..application.analytics_service import AnalyticsService
+from ..application.service import AnalyticsService
 
 logger = get_logger(__name__)
 
@@ -27,7 +27,6 @@ class DashboardService:
     
     def __init__(self):
         self.widget_manager = WidgetManager()
-        self.analytics_service = AnalyticsService()
         
     async def get_dashboard_data(
         self,
@@ -384,12 +383,13 @@ class DashboardService:
     ) -> Dict[str, Any]:
         """Get summary metrics for dashboard header"""
         # Get key metrics
+        analytics_service = AnalyticsService(db)
         if model_id:
-            analytics = await self.analytics_service.get_model_analytics(
+            analytics = await analytics_service.get_model_analytics(
                 model_id, time_range["start_date"], time_range["end_date"], db
             )
         else:
-            analytics = await self.analytics_service.get_agency_analytics(
+            analytics = await analytics_service.get_agency_analytics(
                 agency_id, time_range["start_date"], time_range["end_date"], db
             )
             
@@ -400,11 +400,11 @@ class DashboardService:
         }
         
         if model_id:
-            previous_analytics = await self.analytics_service.get_model_analytics(
+            previous_analytics = await analytics_service.get_model_analytics(
                 model_id, previous_period["start_date"], previous_period["end_date"], db
             )
         else:
-            previous_analytics = await self.analytics_service.get_agency_analytics(
+            previous_analytics = await analytics_service.get_agency_analytics(
                 agency_id, previous_period["start_date"], previous_period["end_date"], db
             )
             

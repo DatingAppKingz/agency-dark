@@ -46,6 +46,8 @@ from modules.financial.domain.schemas import (
     CryptoWalletResponse,
     CryptoWalletVerification,
     CryptoNetwork,
+    CryptoPaymentRequest,
+    CryptoPaymentResponse,
     # Invoices
     InvoiceCreate,
     InvoiceUpdate,
@@ -54,7 +56,10 @@ from modules.financial.domain.schemas import (
     # Transactions
     TransactionFilter,
     TransactionResponse,
-    FinancialSummary
+    FinancialSummary,
+    # Payment Gateway
+    PaymentGatewayConfigCreate,
+    PaymentGatewayConfigResponse
 )
 
 

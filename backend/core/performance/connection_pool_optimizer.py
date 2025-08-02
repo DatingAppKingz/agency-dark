@@ -26,7 +26,7 @@ from sqlalchemy import event, exc, pool
 import sqlalchemy
 
 from core.logger import get_logger
-from core.monitoring import monitor_performance
+# from core.monitoring import monitor_performance  # Not implemented yet
 
 logger = get_logger(__name__)
 
@@ -196,9 +196,9 @@ class ConnectionPoolOptimizer:
         
         for attempt in range(max_retries):
             try:
-                with monitor_performance("db_query_with_retry"):
-                    result = await session.execute(query)
-                    return result
+                # with monitor_performance("db_query_with_retry"):
+                result = await session.execute(query)
+                return result
                     
             except (exc.DBAPIError, exc.OperationalError) as e:
                 last_error = e

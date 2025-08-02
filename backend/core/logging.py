@@ -20,4 +20,7 @@ def get_logger(name: str):
     
     return logger
 
-__all__ = ['get_logger']
+# Create a default logger instance for backward compatibility
+logger = get_logger(__name__)
+
+__all__ = ['get_logger', 'logger']

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from core.database_utils.partitioning import partition_manager
 from core.logging import get_logger
-from core.celery import celery_app
+from core.celery_app import celery_app
 
 logger = get_logger(__name__)
 

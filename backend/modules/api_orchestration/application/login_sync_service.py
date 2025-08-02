@@ -4,7 +4,7 @@ Login synchronization service.
 Automatically syncs data from external APIs when users log in.
 """
 import logging
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 import asyncio
 

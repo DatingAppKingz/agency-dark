@@ -265,8 +265,8 @@ class WidgetManager:
         self,
         agency_id: UUID,
         user_id: UUID,
-        layout_name: Optional[str] = None,
-        db: AsyncSession
+        db: AsyncSession,
+        layout_name: Optional[str] = None
     ) -> Optional[DashboardLayout]:
         """Load dashboard layout"""
         query = select(DashboardLayout).where(

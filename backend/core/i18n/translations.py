@@ -428,3 +428,20 @@ def get_language_from_request(request) -> str:
     
     # Return default
     return translation_manager.default_locale
+
+
+# Thread-local storage for current language
+import threading
+_thread_local = threading.local()
+
+
+def set_current_language(language: str):
+    """
+    Set the current language for the current thread/request.
+    
+    Args:
+        language: Language code to set
+    """
+    if language not in SUPPORTED_LANGUAGES:
+        language = translation_manager.default_locale
+    _thread_local.language = language

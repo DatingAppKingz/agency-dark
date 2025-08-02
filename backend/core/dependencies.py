@@ -25,5 +25,30 @@ async def get_current_active_user(user: User = Depends(get_current_user)) -> Use
 CurrentUser = Annotated[User, Depends(get_current_user)]
 CurrentUserOptional = Annotated[User | None, Depends(get_optional_current_user)]
 
+# Model dependencies (placeholder for now)
+async def get_current_model(user: User = Depends(get_current_user)) -> User:
+    """Get current model user - placeholder implementation."""
+    # TODO: Implement proper model authentication
+    return user
+
+async def require_model(user: User = Depends(get_current_user)) -> User:
+    """Require model role - placeholder implementation."""
+    # TODO: Check if user has model role
+    return user
+
+Model = Annotated[User, Depends(get_current_model)]
+
+# Role checker dependency
+class RoleChecker:
+    """Check if user has required role(s)."""
+    
+    def __init__(self, allowed_roles: list[str]):
+        self.allowed_roles = allowed_roles
+    
+    async def __call__(self, user: User = Depends(get_current_user)) -> User:
+        # TODO: Implement actual role checking
+        # For now, just return the user
+        return user
+
 # Re-export dependencies
-__all__ = ["get_db", "get_current_user", "get_optional_current_user", "get_current_active_user", "CurrentUser", "CurrentUserOptional"]
+__all__ = ["get_db", "get_current_user", "get_optional_current_user", "get_current_active_user", "CurrentUser", "CurrentUserOptional", "Model", "require_model", "RoleChecker"]

@@ -15,7 +15,7 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import pandas as pd
 
 from modules.analytics.domain.schemas import (
-    TimeSeriesData,
+    TimeSeriesDataPoint as TimeSeriesData,
     TrendAnalysis,
     Forecast,
     SeasonalPattern,

@@ -9,7 +9,8 @@ from .translations import (
     _n,
     i18n,
     SUPPORTED_LANGUAGES,
-    get_language_from_request
+    get_language_from_request,
+    set_current_language
 )
 from .middleware import I18nMiddleware
 from .locale_detector import LocaleDetector
@@ -23,6 +24,7 @@ __all__ = [
     "i18n",
     "SUPPORTED_LANGUAGES",
     "get_language_from_request",
+    "set_current_language",
     "I18nMiddleware",
     "LocaleDetector"
 ]

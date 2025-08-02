@@ -338,9 +338,9 @@ class WebhookManager:
     async def get_webhook_deliveries(
         self,
         webhook_id: str,
+        db: AsyncSession,
         limit: int = 100,
-        offset: int = 0,
-        db: AsyncSession
+        offset: int = 0
     ) -> List[WebhookDelivery]:
         """Get delivery history for a webhook"""
         query = (

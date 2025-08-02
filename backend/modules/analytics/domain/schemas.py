@@ -2,7 +2,7 @@
 Analytics schemas for API responses.
 """
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, Tuple
 from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
@@ -229,3 +229,42 @@ class ChartResponse(BaseModel):
     period_end: datetime
     generated_at: datetime
     cache_expires_at: Optional[datetime] = None
+
+
+class TrendAnalysis(BaseModel):
+    """Trend analysis results."""
+    trend_direction: str  # 'up', 'down', 'stable'
+    trend_strength: float
+    slope: float
+    intercept: float
+    r_squared: float
+    confidence_interval: Tuple[float, float]
+    trend_line: List[float]
+    
+    
+class GrowthMetrics(BaseModel):
+    """Growth metrics analysis."""
+    growth_rate: float
+    compound_growth_rate: float
+    month_over_month: float
+    year_over_year: float
+    volatility: float
+    periods: List[Dict[str, Any]]
+    
+    
+class Forecast(BaseModel):
+    """Forecast results."""
+    forecast_values: List[float]
+    confidence_intervals: List[Tuple[float, float]]
+    dates: List[datetime]
+    method: str
+    accuracy_metrics: Dict[str, float]
+    
+    
+class SeasonalPattern(BaseModel):
+    """Seasonal pattern analysis."""
+    has_seasonality: bool
+    seasonal_period: Optional[int] = None
+    seasonal_strength: Optional[float] = None
+    seasonal_components: Optional[List[float]] = None
+    pattern_type: Optional[str] = None  # 'weekly', 'monthly', 'yearly', etc.

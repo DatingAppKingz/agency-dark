@@ -13,7 +13,9 @@ from celery.result import AsyncResult
 from core.tasks.db_context import get_db_context
 from core.redis import redis_client
 from core.logging import logger
-from core.models import TaskExecution, Alert
+from core.monitoring.models import Alert
+# TaskExecution is not used in this file, commenting out for now
+# from core.domain.models import TaskExecution
 
 
 class JobMonitor:

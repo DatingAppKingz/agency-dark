@@ -354,15 +354,17 @@ simple_cache: Optional[SimpleCache] = None
 query_cache: Optional[QueryCache] = None
 user_cache: Optional[UserCache] = None
 list_cache: Optional[ListCache] = None
+cache_manager: Optional[SimpleCache] = None  # Legacy alias for simple_cache
 
 
 async def init_cache_strategies(redis_client: aioredis.Redis):
     """Initialize global cache instances"""
-    global simple_cache, query_cache, user_cache, list_cache
+    global simple_cache, query_cache, user_cache, list_cache, cache_manager
     
     simple_cache = SimpleCache(redis_client)
     query_cache = QueryCache(redis_client)
     user_cache = UserCache(redis_client)
     list_cache = ListCache(redis_client)
+    cache_manager = simple_cache  # Legacy alias
     
     logger.info("Cache strategies initialized")

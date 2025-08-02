@@ -141,6 +141,9 @@ geoip2 = "^5.1.0"
 xgboost = "^3.0.3"
 elasticsearch = "^9.1.0"
 xlsxwriter = "^3.2.5"
+statsmodels = "^0.14.5"
+python3-saml = "^1.16.0"
+markdown = "^3.8.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest-env = "^1.1.3"

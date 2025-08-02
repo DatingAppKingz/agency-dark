@@ -3,7 +3,7 @@ Background tasks for materialized view maintenance
 """
 import asyncio
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import json
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +12,7 @@ from sqlalchemy import text
 from core.database import get_db
 from core.database_utils.materialized_views import materialized_view_manager
 from core.logging import get_logger
-from core.celery import celery_app
+from core.celery_app import celery_app
 from core.redis import redis_client
 
 logger = get_logger(__name__)

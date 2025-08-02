@@ -21,6 +21,11 @@ class PermissionError(BaseError):
     pass
 
 
+class ForbiddenException(BaseError):
+    """Forbidden access error."""
+    pass
+
+
 class AuthenticationError(BaseError):
     """Authentication failed error."""
     pass
@@ -43,4 +48,14 @@ class ExternalServiceError(BaseError):
 
 class BusinessLogicError(BaseError):
     """Business logic error."""
+    pass
+
+
+class NotFoundException(BaseError):
+    """Resource not found exception."""
+    pass
+
+
+class BadRequestException(BaseError):
+    """Bad request exception."""
     pass
