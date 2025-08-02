@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from contextlib import asynccontextmanager
 import logging
 import uvicorn
@@ -123,7 +123,7 @@ app = FastAPI(
     description="White-label SaaS portal for OnlyFans marketing agencies",
     version="1.0.0",
     # docs_url=None,  # We'll use custom docs
-    # redoc_url=None,  # We'll use custom redoc
+    redoc_url=None,  # Disable default redoc to use our custom one
     # openapi_url="/api/v1/openapi.json",  # Temporarily use default URL
     lifespan=lifespan
 )
@@ -253,6 +253,70 @@ async def test_openapi():
             "type": type(e).__name__,
             "traceback": traceback.format_exc()
         }
+
+
+@app.get("/redoc", include_in_schema=False, response_class=HTMLResponse)
+async def custom_redoc_html():
+    """Custom ReDoc with debugging"""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>AgencyDark API - ReDoc</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+    <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #loading {
+        text-align: center;
+        padding: 50px;
+        font-family: Arial, sans-serif;
+      }
+    </style>
+    </head>
+    <body>
+    <div id="loading">Loading API documentation...</div>
+    <redoc spec-url="/openapi.json" 
+           suppress-warnings="true"
+           native-scrollbars="true"
+           path-in-middle-panel="true"
+           theme='{
+             "colors": {
+               "primary": {
+                 "main": "#6B5B95"
+               }
+             },
+             "typography": {
+               "fontSize": "14px",
+               "fontFamily": "Roboto, sans-serif"
+             }
+           }'>
+    </redoc>
+    <script src="https://cdn.jsdelivr.net/npm/redoc@2.1.3/bundles/redoc.standalone.js"></script>
+    <script>
+      // Add error handling
+      window.addEventListener('error', function(e) {
+        console.error('ReDoc Error:', e);
+        document.getElementById('loading').innerHTML = 
+          '<div style="color: red;">Error loading documentation: ' + e.message + '</div>';
+      });
+      
+      // Check if ReDoc loaded
+      setTimeout(function() {
+        if (!window.Redoc) {
+          document.getElementById('loading').innerHTML = 
+            '<div style="color: red;">Failed to load ReDoc library</div>';
+        }
+      }, 5000);
+    </script>
+    </body>
+    </html>
+    """
 
 
 @app.get("/health/live")

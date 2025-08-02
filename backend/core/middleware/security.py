@@ -90,11 +90,12 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             if request.url.path in ["/docs", "/redoc", "/openapi.json"]:
                 response.headers["Content-Security-Policy"] = (
                     "default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; "
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net blob:; "
                     "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
                     "img-src 'self' data: https:; "
                     "font-src 'self' data: https://fonts.gstatic.com; "
                     "connect-src 'self' https://api.inflow.com https://onlyfansapi.com; "
+                    "worker-src 'self' blob:; "
                     "frame-ancestors 'none';"
                 )
             else:
