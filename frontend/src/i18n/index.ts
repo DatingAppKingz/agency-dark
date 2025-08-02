@@ -63,7 +63,7 @@ i18n
         }
         if (format?.startsWith('date:')) {
           const dateFormat = format.substring(5);
-          return formatDateLocalized(value, dateFormat, lng);
+          return formatDateLocalized(value, dateFormat, lng || 'en');
         }
         return value;
       },

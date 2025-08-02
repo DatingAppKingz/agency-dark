@@ -25,7 +25,6 @@ import {
   People,
   Visibility,
   Message,
-  Timeline,
   Speed
 } from '@mui/icons-material';
 import {
@@ -41,11 +40,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  PieChart,
-  Pie,
-  Cell
 } from 'recharts';
-import { format, parseISO, subHours, subDays } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 interface MetricData {
   value: number;
@@ -94,7 +90,7 @@ interface RealtimeAnalyticsDashboardProps {
   modelId?: string;
 }
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1', '#d084d0'];
+// const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1', '#d084d0'];
 
 const RealtimeAnalyticsDashboard: React.FC<RealtimeAnalyticsDashboardProps> = ({
   agencyId,
@@ -134,10 +130,10 @@ const RealtimeAnalyticsDashboard: React.FC<RealtimeAnalyticsDashboardProps> = ({
   };
 
   // Calculate percentage change
-  const calculateChange = (current: number, previous: number) => {
-    if (previous === 0) return 0;
-    return ((current - previous) / previous) * 100;
-  };
+  // const calculateChange = (current: number, previous: number) => {
+  //   if (previous === 0) return 0;
+  //   return ((current - previous) / previous) * 100;
+  // };
 
   // WebSocket connection
   const connectWebSocket = useCallback(() => {
@@ -195,7 +191,7 @@ const RealtimeAnalyticsDashboard: React.FC<RealtimeAnalyticsDashboardProps> = ({
         const attempts = reconnectAttemptsRef.current;
         if (attempts < 5) {
           const delay = Math.min(1000 * Math.pow(2, attempts), 30000);
-          reconnectTimeoutRef.current = setTimeout(() => {
+          reconnectTimeoutRef.current = window.setTimeout(() => {
             reconnectAttemptsRef.current += 1;
             connectWebSocket();
           }, delay);
@@ -413,7 +409,7 @@ const RealtimeAnalyticsDashboard: React.FC<RealtimeAnalyticsDashboardProps> = ({
             <ToggleButtonGroup
               value={timeWindow}
               exclusive
-              onChange={(e, value) => value && setTimeWindow(value)}
+              onChange={(_, value) => value && setTimeWindow(value)}
               size="small"
               fullWidth
             >

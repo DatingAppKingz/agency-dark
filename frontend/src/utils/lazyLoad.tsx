@@ -15,12 +15,12 @@ const PageLoader = () => (
 );
 
 // Wrapper function for lazy loading with Suspense
-export function lazyLoad<T extends ComponentType<P>, P = Record<string, unknown>>(
+export function lazyLoad<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>
 ) {
   const LazyComponent = lazy(importFunc);
 
-  return (props: P) => (
+  return (props: any) => (
     <Suspense fallback={<PageLoader />}>
       <LazyComponent {...props} />
     </Suspense>
@@ -28,8 +28,8 @@ export function lazyLoad<T extends ComponentType<P>, P = Record<string, unknown>
 }
 
 // Named exports helper
-export function lazyLoadNamed<P = Record<string, unknown>>(
-  importFunc: () => Promise<Record<string, ComponentType<P>>>,
+export function lazyLoadNamed(
+  importFunc: () => Promise<Record<string, ComponentType<any>>>,
   componentName: string
 ) {
   const LazyComponent = lazy(async () => {
@@ -37,7 +37,7 @@ export function lazyLoadNamed<P = Record<string, unknown>>(
     return { default: module[componentName] };
   });
 
-  return (props: P) => (
+  return (props: any) => (
     <Suspense fallback={<PageLoader />}>
       <LazyComponent {...props} />
     </Suspense>

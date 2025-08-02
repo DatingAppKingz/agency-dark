@@ -150,9 +150,9 @@ export const browserCompat = {
           
           requestAnimationFrame(animation);
         } else if (typeof options === 'number') {
-          originalScrollTo.call(window, options, y);
+          originalScrollTo.call(window, options, y!);
         } else {
-          originalScrollTo.call(window, options);
+          originalScrollTo.call(window, 0, 0);
         }
       };
     }

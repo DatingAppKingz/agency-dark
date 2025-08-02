@@ -238,12 +238,14 @@ const ChatPage = () => {
     try {
       setIsSendingMessage(true);
 
-      const newMessage: NewMessage = {
+      const messageData: SendMessageData = {
         conversation_id: activeConversationId,
         content,
-        attachments: attachments ? await uploadAttachments(attachments) : undefined };
+        text: content,
+        attachments,
+        media_urls: attachments ? await uploadAttachments(attachments) : undefined };
 
-      await chatApi.sendMessage(newMessage);
+      await chatApi.sendMessage(messageData);
       
       // Message will be added via socket event
       success('Message sent');
@@ -267,13 +269,14 @@ const ChatPage = () => {
 
       const attachments = await uploadAttachments([audioFile]);
 
-      const newMessage: NewMessage = {
+      const messageData: SendMessageData = {
         conversation_id: activeConversationId,
         content: `🎤 Voice (${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')})`,
-        attachments,
-        message_type: 'voice' };
+        text: `🎤 Voice (${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')})`,
+        attachments: [audioFile],
+        media_urls: attachments };
 
-      await chatApi.sendMessage(newMessage);
+      await chatApi.sendMessage(messageData);
       
       // Message will be added via socket event
       success('Voice sent');

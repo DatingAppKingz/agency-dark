@@ -229,7 +229,7 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({ widget, fullscreen }) => {
                   color={data[0].comparison > 0 ? 'success.main' : 'error.main'}
                   sx={{ mt: 1 }}
                 >
-                  {data[0].comparison > 0 ? '+' : ''}{formatPercentage(data[0].comparison)} vs previous period
+                  {data[0].comparison > 0 ? '+' : ''}{formatPercentage(Number(data[0].comparison))} vs previous period
                 </Typography>
               )}
             </Box>

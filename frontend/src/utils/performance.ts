@@ -72,7 +72,7 @@ class PerformanceMonitor {
         for (const entry of list.getEntries()) {
           const layoutShift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
           if (!layoutShift.hadRecentInput) {
-            clsValue += layoutShift.value;
+            clsValue += layoutShift.value || 0;
             clsEntries.push(entry);
           }
         }

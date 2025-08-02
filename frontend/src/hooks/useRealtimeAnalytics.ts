@@ -55,7 +55,8 @@ export const useRealtimeAnalytics = ({
 
   // Handle connection
   const connect = useCallback(async () => {
-    if (connectionRef.current || !user?.token) {
+    const token = localStorage.getItem('auth_token');
+    if (connectionRef.current || !user || !token) {
       return;
     }
 
@@ -63,7 +64,7 @@ export const useRealtimeAnalytics = ({
       setIsLoading(true);
       setError(null);
       
-      await realtimeAnalyticsService.connect(agencyId, modelId, user.token);
+      await realtimeAnalyticsService.connect(agencyId, modelId, token);
       connectionRef.current = true;
 
       // Subscribe to initial metrics
@@ -80,7 +81,7 @@ export const useRealtimeAnalytics = ({
         toast.error(`Failed to connect: ${error.message}`);
       }
     }
-  }, [agencyId, modelId, user?.token, metrics, onError]);
+  }, [agencyId, modelId, user, metrics, onError]);
 
   // Handle disconnection
   const disconnect = useCallback(() => {
@@ -169,7 +170,7 @@ export const useRealtimeAnalytics = ({
     const handleDisconnected = () => {
       setIsConnected(false);
       if (connectionRef.current) {
-        toast.warning('Disconnected from real-time analytics');
+        toast('Disconnected from real-time analytics', { icon: '⚠️' });
       }
     };
 
@@ -220,7 +221,7 @@ export const useRealtimeAnalytics = ({
 
   // Auto-connect on mount
   useEffect(() => {
-    if (autoConnect && user?.token) {
+    if (autoConnect && user && localStorage.getItem('auth_token')) {
       connect();
     }
 
@@ -229,7 +230,7 @@ export const useRealtimeAnalytics = ({
         disconnect();
       }
     };
-  }, [autoConnect, user?.token, connect, disconnect]);
+  }, [autoConnect, user, connect, disconnect]);
 
   return {
     isConnected,

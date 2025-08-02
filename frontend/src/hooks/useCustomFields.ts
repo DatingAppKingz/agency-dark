@@ -262,15 +262,15 @@ export const useCustomFields = (entityType?: EntityType, entityId?: string) => {
       case 'email':
       case 'phone':
       case 'url':
-        if (validation.minLength && value.length < validation.minLength) {
+        if (validation.minLength && typeof value === 'string' && value.length < validation.minLength) {
           return `${field.label} must be at least ${validation.minLength} characters`;
         }
-        if (validation.maxLength && value.length > validation.maxLength) {
+        if (validation.maxLength && typeof value === 'string' && value.length > validation.maxLength) {
           return `${field.label} must be no more than ${validation.maxLength} characters`;
         }
         if (validation.pattern) {
           const regex = new RegExp(validation.pattern);
-          if (!regex.test(value)) {
+          if (typeof value === 'string' && !regex.test(value)) {
             return validation.patternMessage || `${field.label} is invalid`;
           }
         }

@@ -172,7 +172,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
               getOptionLabel={(option) => option.label}
               value={
                 options.filter((opt) =>
-                  Array.isArray(filter.value) ? filter.value.includes(opt.value) : false
+                  Array.isArray(filter.value) ? (filter.value as any[]).includes(opt.value) : false
                 ) || []
               }
               onChange={(_, newValue) =>

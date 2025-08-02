@@ -413,7 +413,7 @@ export const DataImport: React.FC = () => {
           </button>
           <button
             onClick={handleImport}
-            disabled={!selectedFile || loading || (validationResult && validationResult.invalidRecords > 0)}
+            disabled={!selectedFile || loading || (validationResult && validationResult.invalidRecords > 0) || false}
             className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Upload className="w-5 h-5" />

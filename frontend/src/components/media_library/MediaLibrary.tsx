@@ -642,7 +642,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
       <MediaUploadDialog
         open={uploadDialogOpen}
         onClose={() => setUploadDialogOpen(false)}
-        folderId={currentFolder}
+        folderId={currentFolder || undefined}
         onUploadComplete={() => {
           loadMedia(true);
           setUploadDialogOpen(false);
@@ -662,7 +662,8 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
           <MediaShareDialog
             open={shareDialogOpen}
             onClose={() => setShareDialogOpen(false)}
-            media={selectedMedia}
+            mediaUrl={selectedMedia.url}
+            mediaName={selectedMedia.name}
           />
         </>
       )}
@@ -670,8 +671,10 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
       <FolderCreateDialog
         open={folderDialogOpen}
         onClose={() => setFolderDialogOpen(false)}
-        parentId={currentFolder}
-        onFolderCreated={() => {
+        parentFolderId={currentFolder || undefined}
+        onCreateFolder={(folderName) => {
+          // TODO: Implement folder creation
+          console.log('Creating folder:', folderName);
           loadFolders();
           setFolderDialogOpen(false);
         }}

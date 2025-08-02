@@ -123,7 +123,7 @@ export const LogoUploader = ({ onChange }: LogoUploaderProps) => {
     onChange();
   };
 
-  const handleBrandingChange = (field: string, value: string) => {
+  const handleBrandingChange = (field: string, value: string | boolean) => {
     setBrandingSettings(prev => ({ ...prev, [field]: value }));
     onChange();
   };
