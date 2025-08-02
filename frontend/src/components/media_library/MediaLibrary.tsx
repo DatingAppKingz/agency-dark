@@ -5,7 +5,6 @@ import {
   Card,
   CardMedia,
   CardContent,
-  CardActions,
   Typography,
   IconButton,
   Button,
@@ -15,9 +14,6 @@ import {
   FormControl,
   InputLabel,
   Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
   CircularProgress,
   Alert,
@@ -662,8 +658,8 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
           <MediaShareDialog
             open={shareDialogOpen}
             onClose={() => setShareDialogOpen(false)}
-            mediaUrl={selectedMedia.url}
-            mediaName={selectedMedia.name}
+            mediaUrl={selectedMedia.cdn_url || selectedMedia.file_path}
+            mediaName={selectedMedia.original_filename}
           />
         </>
       )}

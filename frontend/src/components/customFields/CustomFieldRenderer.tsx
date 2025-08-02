@@ -14,6 +14,8 @@ import {
   Chip,
   OutlinedInput } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { CustomField, EntityType } from '@/types/customFields';
 import { useCustomFields } from '@/hooks/useCustomFields';
 
@@ -305,7 +307,8 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
   const { sections, grouped } = fieldsBySection;
 
   return (
-    <Box>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Box>
       {/* Fields without section */}
       {grouped.get('') && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
@@ -342,6 +345,7 @@ export const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({
           </button>
         </Box>
       )}
-    </Box>
+      </Box>
+    </LocalizationProvider>
   );
 };

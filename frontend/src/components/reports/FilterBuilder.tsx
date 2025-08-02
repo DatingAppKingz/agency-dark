@@ -109,7 +109,7 @@ const FilterBuilder: React.FC<FilterBuilderProps> = ({
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label="Value"
-              value={filter.value ? new Date(filter.value) : null}
+              value={filter.value && typeof filter.value === 'string' ? new Date(filter.value) : null}
               onChange={(date) =>
                 updateFilter(filter.id, { value: date?.toISOString() })
               }

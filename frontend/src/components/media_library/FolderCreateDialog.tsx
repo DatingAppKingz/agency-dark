@@ -19,8 +19,8 @@ interface FolderCreateDialogProps {
 export const FolderCreateDialog: React.FC<FolderCreateDialogProps> = ({
   open,
   onClose,
-  onCreateFolder,
-  parentFolderId
+  onCreateFolder
+  // parentFolderId - unused for now
 }) => {
   const [folderName, setFolderName] = useState('');
   const [error, setError] = useState('');

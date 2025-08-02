@@ -9,7 +9,6 @@ import {
   XCircle,
   AlertCircle,
   Download,
-  ArrowRight,
   RefreshCw
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
@@ -61,7 +60,7 @@ const ENTITY_TYPES = [
 export const DataImport: React.FC = () => {
   const [selectedEntity, setSelectedEntity] = useState('models');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
+  const [fieldMapping/*, setFieldMapping*/] = useState<Record<string, string>>({});
   const [updateExisting, setUpdateExisting] = useState(false);
   const [continueOnError, setContinueOnError] = useState(true);
   const [templates, setTemplates] = useState<ImportTemplate[]>([]);
