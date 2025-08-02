@@ -6,15 +6,15 @@ echo ""
 
 # Run specific test files that should work
 echo "1. Testing useDebounce hook..."
-npm test -- src/__tests__/hooks/useDebounce.test.ts --watchAll=false --silent
+npm test -- tests/unit/hooks/useDebounce.test.ts --watchAll=false --silent
 
 echo ""
 echo "2. Testing useNotification hook..."
-npm test -- src/__tests__/hooks/useNotification.test.ts --watchAll=false --silent
+npm test -- tests/unit/hooks/useNotification.test.ts --watchAll=false --silent
 
 echo ""
 echo "3. Testing simple authentication integration..."
-npm test -- src/__tests__/integration/simple-auth.test.tsx --watchAll=false --silent
+npm test -- tests/integration/simple-auth.test.tsx --watchAll=false --silent
 
 echo ""
 echo "==========================================="

@@ -2,7 +2,7 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/src', '<rootDir>/tests'],
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
@@ -15,16 +15,17 @@ module.exports = {
     '^@store/(.*)$': '<rootDir>/src/store/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
+    '^@/tests/(.*)$': '<rootDir>/tests/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^@/services/pushNotifications$': '<rootDir>/src/services/__mocks__/pushNotifications.ts',
   },
-  setupFilesAfterEnv: ['<rootDir>/src/test-utils/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tests/utils/setup.ts'],
   moduleDirectories: ['node_modules', 'src'],
   transformIgnorePatterns: [
     'node_modules/(?!(msw|@mswjs)/)',
   ],
   testMatch: [
-    '**/__tests__/**/*.+(ts|tsx|js)',
+    '<rootDir>/tests/**/*.+(ts|tsx|js)',
     '**/?(*.)+(spec|test).+(ts|tsx|js)',
   ],
   collectCoverageFrom: [
