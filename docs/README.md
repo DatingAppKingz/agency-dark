@@ -1,53 +1,82 @@
 # AgencyDark Documentation
 
-This directory contains the complete documentation, development history, and guides for the AgencyDark project.
+Welcome to the AgencyDark documentation. This directory contains all technical documentation, setup guides, and development resources for the AgencyDark platform.
 
-## Structure
+## 📚 Documentation Structure
 
-### Core Documents
+### Getting Started
+- [**SETUP.md**](SETUP.md) - Complete setup guide for development and production
+- [**API_REFERENCE.md**](API_REFERENCE.md) - Comprehensive API documentation
+- [**WEBHOOKS.md**](WEBHOOKS.md) - Webhook integration guide
+- [**TODO.md**](TODO.md) - Active development tasks and roadmap
 
-- **[CONSOLIDATED_HISTORY.md](./CONSOLIDATED_HISTORY.md)** - Complete development timeline and key decisions
-- **[MASTER_PLANNING_DOCUMENT.md](./MASTER_PLANNING_DOCUMENT.md)** - All planning documents consolidated
-- **[MASTER_TESTING_DOCUMENT.md](./MASTER_TESTING_DOCUMENT.md)** - Complete testing documentation
-- **[IMPLEMENTATION_NOTES.md](./IMPLEMENTATION_NOTES.md)** - Implementation details and progress notes
+### Technical Guides
+Located in [`guides/`](guides/):
+- [Database Setup Guide](guides/DATABASE_SETUP_GUIDE.md)
+- [Deployment Guide](guides/DEPLOYMENT.md)
+- [Elasticsearch Setup](guides/ELASTICSEARCH_SETUP.md)
+- [Error Handling Guide](guides/ERROR_HANDLING_GUIDE.md)
+- [Celery Setup](guides/CELERY_SETUP.md)
+- [Notification System](guides/NOTIFICATION_SYSTEM.md)
+- [Socket.IO Client Examples](guides/SOCKET_IO_CLIENT_EXAMPLE.md)
 
-### Documentation
+### Planning & Architecture
+Located in [`planning/`](planning/):
+- [Master Planning Document](planning/MASTER_PLANNING_DOCUMENT.md)
+- [Implementation Notes](planning/IMPLEMENTATION_NOTES.md)
+- [Next Phases Roadmap](planning/NEXT_PHASES_ROADMAP.md)
+- [Full Setup Plan](planning/FULL_SETUP_PLAN.md)
+- [Master Testing Document](planning/MASTER_TESTING_DOCUMENT.md)
 
-- **[documentation/BEST_PRACTICES_AND_RULES.md](./documentation/BEST_PRACTICES_AND_RULES.md)** - Coding standards and best practices
-- **[documentation/agencydark-claude-code-prompt.md](./documentation/agencydark-claude-code-prompt.md)** - AI assistant guidelines
+### Production Documentation
+Located in [`production/`](production/):
+- Production setup and configuration
+- SLA documentation
+- Runbooks for incident response
 
-### Final Status
+### Platform-Specific Documentation
+- [**Backend Documentation**](../backend/docs/) - Backend-specific technical docs
+- [**Frontend Documentation**](../frontend/docs/) - Frontend-specific docs
 
-- **[summaries/backend-polish-complete.md](./summaries/backend-polish-complete.md)** - Final project status and completion summary
+### Archives
+Located in [`archives/`](archives/) - Historical documentation:
+- Development logs and session summaries
+- Completed TODO items
+- Historical planning documents
 
-## Project Overview
+## 🚀 Quick Start
 
-AgencyDark is a white-label SaaS platform for OnlyFans marketing agencies, built with:
-- Backend: FastAPI + PostgreSQL + Redis
-- Frontend: React + TypeScript + Material-UI  
-- Infrastructure: Docker + Kubernetes + Helm
+1. **New Developer?** Start with [SETUP.md](SETUP.md)
+2. **API Integration?** Check [API_REFERENCE.md](API_REFERENCE.md)
+3. **Contributing?** Review [documentation/BEST_PRACTICES_AND_RULES.md](documentation/BEST_PRACTICES_AND_RULES.md)
 
-## Development Timeline
+## 📋 Project Overview
 
-1. **Initial Planning** (January 2025) - Architecture design and technology selection
-2. **Core Implementation** (Phases 1-4) - Built API, frontend, and integrations
-3. **Polish & Enhancement** (Phases 5-8) - Added resilience, monitoring, and testing
-4. **Production Readiness** (Phases 9-12) - Performance optimization and security hardening
+AgencyDark is a white-label SaaS platform for OnlyFans marketing agencies, featuring:
 
-## Key Achievements
+- **Backend**: FastAPI + PostgreSQL + Redis + Celery
+- **Frontend**: React + TypeScript + Material-UI
+- **Infrastructure**: Docker + Kubernetes ready
+- **Key Features**:
+  - Multi-tenant architecture with RBAC
+  - Real-time features with Socket.IO
+  - Machine learning analytics
+  - Comprehensive API with 434+ endpoints
+  - Webhook support for external integrations
 
-- 50+ API endpoints with full documentation
-- Multi-tenant architecture with RBAC
-- Real-time features with Socket.IO
-- Machine learning analytics
-- 80%+ test coverage
-- Production-ready infrastructure
+## 🔗 Important Links
 
-For the complete project overview, see [PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md).
+- **API Documentation**: http://localhost:8000/docs (when running locally)
+- **ReDoc**: http://localhost:8000/redoc
+- **Frontend**: http://localhost:5173 (development)
 
-## Quick Navigation
+## 📝 Contributing
 
-- **[FILE_ORGANIZATION.md](./FILE_ORGANIZATION.md)** - Detailed documentation structure
-- **[setup-guides/](./setup-guides/)** - All setup and debugging guides
-- **[development-logs/](./development-logs/)** - Development progress and logs
-- **[production/](./production/)** - Production deployment documentation
+Before contributing, please review:
+1. [Best Practices and Rules](documentation/BEST_PRACTICES_AND_RULES.md)
+2. Active tasks in [TODO.md](TODO.md)
+3. Setup instructions in [SETUP.md](SETUP.md)
+
+---
+
+*Last Updated: August 2, 2025*
