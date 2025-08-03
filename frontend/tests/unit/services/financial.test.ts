@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { financialService } from '@/services/api/financial';
+import { financialApi } from '@/services/api/financial';
 import apiClient from '@/services/api/client';
 
 // Mock dependencies
@@ -15,19 +15,17 @@ describe('Financial Service', () => {
     describe('calculateCommission', () => {
       it('should calculate standard commission correctly', async () => {
         const mockResponse = {
-          data: {
-            gross_amount: 1000,
-            commission_rate: 0.2,
-            commission_amount: 200,
-            net_amount: 800
-          }
+          gross_amount: 1000,
+          commission_rate: 0.2,
+          commission_amount: 200,
+          net_amount: 800
         };
-        mockedApiClient.post.mockResolvedValueOnce(mockResponse);
+        mockedApiClient.post.mockResolvedValueOnce({ data: mockResponse });
 
-        const result = await financialService.calculateCommission({
-          amount: 1000,
-          commissionRate: 0.2,
-          type: 'subscription'
+        const result = await financialApi.calculateCommission({
+          gross_amount: 1000,
+          model_id: 'model123',
+          calculation_date: '2025-01-31'
         });
 
         expect(result.commission_amount).toBe(200);
@@ -47,7 +45,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce(mockResponse);
 
-        const result = await financialService.calculateCommission({
+        const result = await financialApi.calculateCommission({
           amount: 1000,
           platformFeeRate: 0.1,
           commissionRate: 0.2,
@@ -70,7 +68,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce(mockResponse);
 
-        const result = await financialService.calculateCommission({
+        const result = await financialApi.calculateCommission({
           amount: 50,
           commissionRate: 0.15,
           type: 'tip'
@@ -92,7 +90,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce(mockResponse);
 
-        const result = await financialService.calculateCommission({
+        const result = await financialApi.calculateCommission({
           amount: 100,
           currency: 'EUR',
           commissionRate: 0.2,
@@ -105,7 +103,7 @@ describe('Financial Service', () => {
 
       it('should validate commission rate boundaries', async () => {
         await expect(
-          financialService.calculateCommission({
+          financialApi.calculateCommission({
             amount: 1000,
             commissionRate: 1.5, // Invalid: > 100%
             type: 'subscription'
@@ -113,7 +111,7 @@ describe('Financial Service', () => {
         ).rejects.toThrow('Invalid commission rate');
 
         await expect(
-          financialService.calculateCommission({
+          financialApi.calculateCommission({
             amount: 1000,
             commissionRate: -0.1, // Invalid: negative
             type: 'subscription'
@@ -139,7 +137,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce({ data: mockPayout });
 
-        const result = await financialService.createPayout({
+        const result = await financialApi.createPayout({
           modelId: 'model-123',
           periodStart: '2024-01-01',
           periodEnd: '2024-01-31'
@@ -170,7 +168,7 @@ describe('Financial Service', () => {
         });
 
         await expect(
-          financialService.createPayout({
+          financialApi.createPayout({
             modelId: 'model-123',
             periodStart: '2024-01-01',
             periodEnd: '2024-01-31'
@@ -189,7 +187,7 @@ describe('Financial Service', () => {
         });
 
         await expect(
-          financialService.createPayout({
+          financialApi.createPayout({
             modelId: 'model-123',
             periodStart: '2024-01-01',
             periodEnd: '2024-01-31'
@@ -208,7 +206,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce({ data: mockProcessedPayout });
 
-        const result = await financialService.processPayout('payout-123', {
+        const result = await financialApi.processPayout('payout-123', {
           method: 'bank_transfer',
           accountDetails: { accountNumber: '****1234' }
         });
@@ -228,7 +226,7 @@ describe('Financial Service', () => {
         });
 
         await expect(
-          financialService.processPayout('payout-123', {
+          financialApi.processPayout('payout-123', {
             method: 'bank_transfer'
           })
         ).rejects.toThrow('Insufficient funds');
@@ -256,7 +254,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.get.mockResolvedValueOnce({ data: mockSummary });
 
-        const result = await financialService.getEarningsSummary({
+        const result = await financialApi.getEarningsSummary({
           modelId: 'model-123',
           startDate: '2024-01-01',
           endDate: '2024-01-31'
@@ -280,7 +278,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.get.mockResolvedValueOnce({ data: mockEmptySummary });
 
-        const result = await financialService.getEarningsSummary({
+        const result = await financialApi.getEarningsSummary({
           modelId: 'model-123',
           startDate: '2024-01-01',
           endDate: '2024-01-31'
@@ -303,7 +301,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce({ data: mockEarning });
 
-        const result = await financialService.trackEarning({
+        const result = await financialApi.trackEarning({
           modelId: 'model-123',
           type: 'tip',
           amount: 50,
@@ -321,7 +319,7 @@ describe('Financial Service', () => {
 
       it('should validate earning amount', async () => {
         await expect(
-          financialService.trackEarning({
+          financialApi.trackEarning({
             modelId: 'model-123',
             type: 'tip',
             amount: -10, // Invalid: negative
@@ -330,7 +328,7 @@ describe('Financial Service', () => {
         ).rejects.toThrow('Invalid earning amount');
 
         await expect(
-          financialService.trackEarning({
+          financialApi.trackEarning({
             modelId: 'model-123',
             type: 'tip',
             amount: 0, // Invalid: zero
@@ -371,7 +369,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce({ data: mockReport });
 
-        const result = await financialService.generateFinancialReport({
+        const result = await financialApi.generateFinancialReport({
           agencyId: 'agency-123',
           startDate: '2024-01-01',
           endDate: '2024-01-31',
@@ -390,7 +388,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce({ data: mockExport });
 
-        const result = await financialService.exportFinancialReport({
+        const result = await financialApi.exportFinancialReport({
           reportId: 'report-123',
           format: 'xlsx'
         });
@@ -413,7 +411,7 @@ describe('Financial Service', () => {
         };
         mockedApiClient.post.mockResolvedValueOnce({ data: mockConversion });
 
-        const result = await financialService.convertCurrency({
+        const result = await financialApi.convertCurrency({
           amount: 100,
           from: 'EUR',
           to: 'USD'
@@ -432,14 +430,14 @@ describe('Financial Service', () => {
         mockedApiClient.post.mockResolvedValueOnce({ data: mockConversion });
 
         // First call
-        await financialService.convertCurrency({
+        await financialApi.convertCurrency({
           amount: 100,
           from: 'EUR',
           to: 'USD'
         });
 
         // Second call should use cache
-        const result = await financialService.convertCurrency({
+        const result = await financialApi.convertCurrency({
           amount: 200,
           from: 'EUR',
           to: 'USD'
@@ -456,7 +454,7 @@ describe('Financial Service', () => {
       mockedApiClient.get.mockRejectedValueOnce(new Error('Network error'));
 
       await expect(
-        financialService.getEarningsSummary({
+        financialApi.getEarningsSummary({
           modelId: 'model-123',
           startDate: '2024-01-01',
           endDate: '2024-01-31'
@@ -481,7 +479,7 @@ describe('Financial Service', () => {
       });
 
       await expect(
-        financialService.createPayout({
+        financialApi.createPayout({
           modelId: 'model-123',
           periodStart: '2024-01-01',
           periodEnd: '2024-01-31'

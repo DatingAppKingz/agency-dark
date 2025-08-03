@@ -5,9 +5,9 @@ import userEvent from '@testing-library/user-event';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { render, createMockUser, mockApiResponses } from '@/tests/utils/test-utils';
-import { LoginPage, RegisterPage } from '../../__mocks__/pages';
+import { LoginPage, RegisterPage } from '@/pages';
 import { AuthGuard } from '../../__mocks__/components';
-import { useAuthStore } from '../../__mocks__/services';
+import { useAuthStore } from '@/tests/utils/mock-factories';
 
 // Setup MSW server
 const server = setupServer(

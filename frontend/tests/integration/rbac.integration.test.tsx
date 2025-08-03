@@ -4,9 +4,9 @@ import { screen, waitFor } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { render, createMockUser, mockApiResponses } from '@/tests/utils/test-utils';
-import { useAuthStore } from '../../__mocks__/services';
+import { useAuthStore } from '@/tests/utils/mock-factories';
 import { PermissionGate, RoleGuard } from '../../__mocks__/components';
-import { UsersPage, ModelsPage, AdminDashboard, SettingsPage } from '../../__mocks__/pages';
+import { UsersPage, ModelsPage, AdminDashboard, SettingsPage } from '@/pages';
 
 // Setup MSW server
 const server = setupServer(

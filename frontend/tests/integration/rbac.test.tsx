@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { render } from '@/__tests__/utils/test-utils';
+import { render } from '@/tests/utils/test-utils';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import UsersPage from '@/pages/users/UsersPage';
 import ModelsPage from '@/pages/models/ModelsPage';

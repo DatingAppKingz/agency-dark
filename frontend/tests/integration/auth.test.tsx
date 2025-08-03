@@ -1,10 +1,10 @@
 import { screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render } from '@/__tests__/utils/test-utils';
+import { render } from '@/tests/utils/test-utils';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
-import { server } from '@/__tests__/mocks/api-mocks';
+import { server } from '@/tests/utils/test-server';
 import { rest } from 'msw';
 
 // Enable API mocking

@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 import { vi } from 'vitest';
-import { SocketManager } from '../../__mocks__/services';
+import { SocketManager } from '@/tests/utils/mock-factories';
 // import { createMockUser } from '@/tests/utils/test-utils';
 
 // Mock socket.io-client
