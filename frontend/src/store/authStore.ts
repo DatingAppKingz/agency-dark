@@ -1,7 +1,5 @@
 import { create } from 'zustand';
-// Temporarily use minimal auth service to bypass backend issues
-// import { authService } from '@/services/auth/authService';
-import { authServiceMinimal as authService } from '@/services/auth/authServiceMinimal';
+import { authService } from '@/services/auth/authService';
 import { User, LoginCredentials, RegisterData } from '@/types/auth';
 
 interface AuthState {

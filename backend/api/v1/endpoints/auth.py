@@ -19,7 +19,8 @@ from core.security import (
 )
 from core.auth.token_blacklist import token_blacklist_service
 from core.config import settings
-from core.domain.models import User, Session, Agency, UserRole
+from models.user import User, Session, UserRole
+from models.agency import Agency
 from core.domain.schemas import (
     LoginRequest,
     Token,

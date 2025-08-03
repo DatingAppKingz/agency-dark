@@ -8,14 +8,24 @@ import asyncio
 from typing import Optional, Dict, Any, List, Tuple
 from datetime import datetime
 import aiofiles
-import magic
+try:
+    import magic
+except ImportError:
+    magic = None
+    print("Warning: python-magic not installed. File type detection will be limited.")
 from PIL import Image
-import cv2
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 import numpy as np
 from fastapi import UploadFile, HTTPException, status
 import boto3
 from botocore.exceptions import ClientError
-import clamd
+try:
+    import clamd
+except ImportError:
+    clamd = None
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
