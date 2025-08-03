@@ -1,322 +1,532 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
 import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  Alert,
+  Tooltip,
+  Divider,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  FormControlLabel,
+  Checkbox,
+  Grid,
+  Collapse,
+  Snackbar,
+} from '@mui/material';
+import {
+  Add,
+  ContentCopy,
+  Delete,
+  Edit,
   Key,
-  Plus,
-  RefreshCw,
-  Shield,
-  Activity,
-  Eye,
-  Copy,
-  Trash2,
-  RotateCw,
-  Clock,
-  AlertCircle
-} from 'lucide-react';
+  Visibility,
+  VisibilityOff,
+  RotateLeft,
+  Warning,
+  CheckCircle,
+  Cancel,
+  AccessTime,
+  Security,
+} from '@mui/icons-material';
 import { format } from 'date-fns';
-import { ApiKeyManager } from '@/components/settings/ApiKeyManager';
-import { apiKeysService } from '@/services/api/apiKeys';
-import { ApiKey, ApiKeyProvider } from '@/types/apiKeys';
-import { cn } from '@/lib/utils';
-import { useNotification } from '@/hooks/useNotification';
 import { useAuth } from '@/hooks/useAuth';
 
+interface ApiKey {
+  id: string;
+  name: string;
+  key: string;
+  provider: 'inflow' | 'onlyfans' | 'stripe' | 'paypal' | 'custom';
+  created: Date;
+  lastUsed: Date | null;
+  expiresAt: Date | null;
+  status: 'active' | 'expired' | 'revoked';
+  scopes: string[];
+  usage: number;
+}
 
-export const ApiKeysPage: React.FC = () => {
-  const { t } = useTranslation();
-  const { showNotification } = useNotification();
+const ApiKeysPage = () => {
   const { user } = useAuth();
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedKey, setSelectedKey] = useState<ApiKey | null>(null);
-  const [showManager, setShowManager] = useState(false);
-  // const [showSecret, setShowSecret] = useState<{ [key: string]: boolean }>({});
+  const [keys, setKeys] = useState<ApiKey[]>([
+    {
+      id: '1',
+      name: 'Production API Key',
+      key: 'sk_live_4eC39HqLyjWDarjtT1zdp7dc',
+      provider: 'stripe',
+      created: new Date('2024-01-15'),
+      lastUsed: new Date('2024-03-20'),
+      expiresAt: new Date('2025-01-15'),
+      status: 'active',
+      scopes: ['read', 'write'],
+      usage: 15234,
+    },
+    {
+      id: '2',
+      name: 'OnlyFans Integration',
+      key: 'of_prod_8xK2mNpLqRsTuVwXyZ',
+      provider: 'onlyfans',
+      created: new Date('2024-02-01'),
+      lastUsed: new Date('2024-03-19'),
+      expiresAt: null,
+      status: 'active',
+      scopes: ['subscribers.read', 'messages.read', 'messages.write', 'analytics.read'],
+      usage: 8756,
+    },
+    {
+      id: '3',
+      name: 'Test Environment Key',
+      key: 'sk_test_9bC4dEfGhIjKlMnOpQ',
+      provider: 'stripe',
+      created: new Date('2023-12-01'),
+      lastUsed: null,
+      expiresAt: new Date('2024-01-01'),
+      status: 'expired',
+      scopes: ['read'],
+      usage: 0,
+    },
+  ]);
 
-  // Check if user has permission to manage API keys
-  const canManageApiKeys = ['super_admin', 'agency_owner', 'agency_admin'].includes(user?.role || '');
+  const [showKey, setShowKey] = useState<{ [key: string]: boolean }>({});
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editingKey, setEditingKey] = useState<ApiKey | null>(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as any });
 
-  useEffect(() => {
-    if (canManageApiKeys) {
-      fetchApiKeys();
-    }
-  }, [canManageApiKeys]);
-
-  const fetchApiKeys = async () => {
-    try {
-      setLoading(true);
-      const response = await apiKeysService.list();
-      setApiKeys(response.keys);
-    } catch (error) {
-      console.error('Failed to fetch API keys:', error);
-      showNotification({
-        title: t('apiKeys.fetchError'),
-        message: t('apiKeys.fetchErrorMessage'),
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    provider: 'custom' as any,
+    expiresIn: 'never',
+    scopes: {
+      read: true,
+      write: false,
+      delete: false,
+      analytics: false,
+      messages: false,
+      subscribers: false,
+    },
+  });
 
   const handleCreateKey = () => {
-    setSelectedKey(null);
-    setShowManager(true);
-  };
+    // Mock creating a new key
+    const newKey: ApiKey = {
+      id: Date.now().toString(),
+      name: formData.name,
+      key: `${formData.provider}_${Math.random().toString(36).substring(2, 15)}`,
+      provider: formData.provider,
+      created: new Date(),
+      lastUsed: null,
+      expiresAt: formData.expiresIn === 'never' ? null : new Date(Date.now() + parseInt(formData.expiresIn) * 24 * 60 * 60 * 1000),
+      status: 'active',
+      scopes: Object.entries(formData.scopes).filter(([_, v]) => v).map(([k]) => k),
+      usage: 0,
+    };
 
-  const handleEditKey = (key: ApiKey) => {
-    setSelectedKey(key);
-    setShowManager(true);
-  };
-
-  const handleDeleteKey = async (key: ApiKey) => {
-    if (!confirm(t('apiKeys.deleteConfirm', { name: key.name }))) return;
-
-    try {
-      await apiKeysService.delete(key.id);
-      showNotification({
-        title: t('apiKeys.deleted'),
-        message: t('apiKeys.deletedMessage', { name: key.name }),
-        type: 'success'
-      });
-      fetchApiKeys();
-    } catch (error) {
-      console.error('Failed to delete API key:', error);
-      showNotification({
-        title: t('apiKeys.deleteError'),
-        message: t('apiKeys.deleteErrorMessage'),
-        type: 'error'
-      });
-    }
-  };
-
-  const handleRotateKey = async (key: ApiKey) => {
-    setSelectedKey(key);
-    setShowManager(true);
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    showNotification({
-      title: t('common.copied'),
-      message: t('apiKeys.keyCopied'),
-      type: 'success'
+    setKeys([...keys, newKey]);
+    setCreateDialogOpen(false);
+    setFormData({
+      name: '',
+      provider: 'custom',
+      expiresIn: 'never',
+      scopes: {
+        read: true,
+        write: false,
+        delete: false,
+        analytics: false,
+        messages: false,
+        subscribers: false,
+      },
     });
+    setSnackbar({ open: true, message: 'API key created successfully', severity: 'success' });
   };
 
-  const getProviderColor = (provider: ApiKeyProvider) => {
-    switch (provider) {
-      case ApiKeyProvider.INFLOW:
-        return 'bg-blue-500';
-      case ApiKeyProvider.ONLYFANS:
-        return 'bg-purple-500';
-      case ApiKeyProvider.STRIPE:
-        return 'bg-indigo-500';
-      case ApiKeyProvider.PAYPAL:
-        return 'bg-yellow-500';
-      default:
-        return 'bg-gray-500';
+  const handleDeleteKey = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this API key? This action cannot be undone.')) {
+      setKeys(keys.filter(k => k.id !== id));
+      setSnackbar({ open: true, message: 'API key deleted successfully', severity: 'success' });
     }
   };
 
-  const getStatusColor = (key: ApiKey) => {
-    if (!key.is_active) return 'text-red-500';
-    if (key.expires_at && new Date(key.expires_at) < new Date()) return 'text-red-500';
-    return 'text-green-500';
+  const handleCopyKey = (key: string) => {
+    navigator.clipboard.writeText(key);
+    setSnackbar({ open: true, message: 'API key copied to clipboard', severity: 'success' });
   };
 
-  const getStatusText = (key: ApiKey) => {
-    if (!key.is_active) return t('common.inactive');
-    if (key.expires_at && new Date(key.expires_at) < new Date()) return t('common.expired');
-    return t('common.active');
+  const toggleKeyVisibility = (id: string) => {
+    setShowKey(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  if (!canManageApiKeys) {
-    return (
-      <div className="p-8">
-        <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
-          <div className="text-sm text-gray-300">
-            <p className="font-semibold text-red-500">{t('common.accessDenied')}</p>
-            <p>{t('apiKeys.noPermission')}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const maskKey = (key: string) => {
+    return key.substring(0, 10) + '...' + key.substring(key.length - 4);
+  };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-8 h-8 text-gray-400 animate-spin" />
-      </div>
-    );
-  }
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'expired':
+        return 'error';
+      case 'revoked':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
+
+  const getProviderColor = (provider: string) => {
+    switch (provider) {
+      case 'stripe':
+        return '#635BFF';
+      case 'onlyfans':
+        return '#00AFF0';
+      case 'inflow':
+        return '#4F46E5';
+      case 'paypal':
+        return '#0070BA';
+      default:
+        return '#6B7280';
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Key className="w-8 h-8 text-primary-400" />
-            {t('apiKeys.title')}
-          </h1>
-          <p className="text-gray-400 mt-2">{t('apiKeys.description')}</p>
-        </div>
-        
-        <button
-          onClick={handleCreateKey}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+    <Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box>
+          <Typography variant="h4" gutterBottom>
+            API Keys
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage your API keys for external integrations
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setCreateDialogOpen(true)}
         >
-          <Plus className="w-4 h-4" />
-          {t('apiKeys.addKey')}
-        </button>
-      </div>
+          Create API Key
+        </Button>
+      </Box>
 
       {/* Security Notice */}
-      <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-4 flex items-start gap-3">
-        <Shield className="w-5 h-5 text-yellow-500 mt-0.5" />
-        <div className="text-sm text-gray-300">
-          <p className="font-semibold text-yellow-500 mb-1">{t('apiKeys.securityNotice')}</p>
-          <p>{t('apiKeys.securityMessage')}</p>
-        </div>
-      </div>
+      <Alert 
+        severity="warning" 
+        icon={<Security />}
+        sx={{ mb: 3 }}
+      >
+        <Typography variant="body2">
+          <strong>Security Notice:</strong> Keep your API keys secure and never share them publicly. 
+          Rotate keys regularly and delete any that are no longer needed.
+        </Typography>
+      </Alert>
 
-      {/* API Keys List */}
-      <div className="bg-gray-800 rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-700">
-          <h2 className="text-lg font-semibold text-white">{t('apiKeys.yourKeys')}</h2>
-        </div>
-
-        {apiKeys.length === 0 ? (
-          <div className="p-12 text-center">
-            <Key className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 mb-4">{t('apiKeys.noKeys')}</p>
-            <button
-              onClick={handleCreateKey}
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-            >
-              {t('apiKeys.createFirst')}
-            </button>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-700">
-            {apiKeys.map((key) => (
-              <div key={key.id} className="p-6 hover:bg-gray-750 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-medium text-white">{key.name}</h3>
-                      <span className={cn(
-                        "px-2 py-1 text-xs rounded-full text-white",
-                        getProviderColor(key.provider)
-                      )}>
-                        {key.provider}
-                      </span>
-                      <span className={cn("text-sm font-medium", getStatusColor(key))}>
-                        {getStatusText(key)}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-4 text-sm text-gray-400 mb-3">
-                      <div className="flex items-center gap-1">
-                        <span className="font-mono bg-gray-900 px-2 py-1 rounded">
-                          {key.key_prefix}...
-                        </span>
-                        <button
-                          onClick={() => copyToClipboard(key.key_prefix)}
-                          className="p-1 hover:text-white transition-colors"
-                        >
-                          <Copy className="w-3 h-3" />
-                        </button>
-                      </div>
-                      
-                      {key.scopes.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Shield className="w-3 h-3" />
-                          {key.scopes.length} {t('apiKeys.scopes')}
-                        </div>
-                      )}
-
-                      {key.last_used && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {t('apiKeys.lastUsed')}: {format(new Date(key.last_used), 'PPp')}
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-1">
-                        <Activity className="w-3 h-3" />
-                        {key.usage_count.toLocaleString()} {t('apiKeys.requests')}
-                      </div>
-                    </div>
-
-                    {key.expires_at && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <AlertCircle className={cn(
-                          "w-4 h-4",
-                          new Date(key.expires_at) < new Date() ? 'text-red-500' : 'text-yellow-500'
-                        )} />
-                        <span className={cn(
-                          new Date(key.expires_at) < new Date() ? 'text-red-500' : 'text-yellow-500'
-                        )}>
-                          {new Date(key.expires_at) < new Date() 
-                            ? t('apiKeys.expired') 
-                            : t('apiKeys.expiresOn', { date: format(new Date(key.expires_at), 'PP') })
-                          }
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleEditKey(key)}
-                      className="p-2 text-gray-400 hover:text-white transition-colors"
-                      title={t('common.edit')}
+      {/* API Keys Table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>API Key</TableCell>
+              <TableCell>Provider</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Created</TableCell>
+              <TableCell>Last Used</TableCell>
+              <TableCell>Usage</TableCell>
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {keys.map((apiKey) => (
+              <TableRow key={apiKey.id} hover>
+                <TableCell>
+                  <Box>
+                    <Typography variant="subtitle2">{apiKey.name}</Typography>
+                    <Box display="flex" gap={0.5} mt={0.5}>
+                      {apiKey.scopes.map((scope) => (
+                        <Chip 
+                          key={scope}
+                          label={scope}
+                          size="small"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ fontFamily: 'monospace' }}
                     >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    
-                    <button
-                      onClick={() => handleRotateKey(key)}
-                      className="p-2 text-gray-400 hover:text-white transition-colors"
-                      title={t('apiKeys.rotate')}
+                      {showKey[apiKey.id] ? apiKey.key : maskKey(apiKey.key)}
+                    </Typography>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => toggleKeyVisibility(apiKey.id)}
                     >
-                      <RotateCw className="w-4 h-4" />
-                    </button>
-                    
-                    <button
-                      onClick={() => handleDeleteKey(key)}
-                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                      title={t('common.delete')}
+                      {showKey[apiKey.id] ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleCopyKey(apiKey.key)}
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+                      <ContentCopy />
+                    </IconButton>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={apiKey.provider.toUpperCase()}
+                    size="small"
+                    sx={{
+                      backgroundColor: getProviderColor(apiKey.provider),
+                      color: 'white',
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={apiKey.status}
+                    color={getStatusColor(apiKey.status)}
+                    size="small"
+                    icon={
+                      apiKey.status === 'active' ? <CheckCircle /> :
+                      apiKey.status === 'expired' ? <Cancel /> :
+                      <Warning />
+                    }
+                  />
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {format(apiKey.created, 'MMM d, yyyy')}
+                  </Typography>
+                  {apiKey.expiresAt && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Expires: {format(apiKey.expiresAt, 'MMM d, yyyy')}
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {apiKey.lastUsed ? (
+                    <Box display="flex" alignItems="center" gap={0.5}>
+                      <AccessTime fontSize="small" color="action" />
+                      <Typography variant="body2">
+                        {format(apiKey.lastUsed, 'MMM d, yyyy')}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Never
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {apiKey.usage.toLocaleString()} requests
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <Tooltip title="Rotate Key">
+                    <IconButton size="small">
+                      <RotateLeft />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Edit">
+                    <IconButton size="small">
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDeleteKey(apiKey.id)}
+                      color="error"
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
             ))}
-          </div>
-        )}
-      </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      {/* API Key Manager Modal */}
-      {showManager && (
-        <ApiKeyManager
-          apiKey={selectedKey}
-          onClose={() => {
-            setShowManager(false);
-            setSelectedKey(null);
-          }}
-          onSaved={() => {
-            setShowManager(false);
-            setSelectedKey(null);
-            fetchApiKeys();
-          }}
-        />
-      )}
-    </div>
+      {/* Create API Key Dialog */}
+      <Dialog 
+        open={createDialogOpen} 
+        onClose={() => setCreateDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Create New API Key</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Key Name"
+                placeholder="e.g., Production API Key"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel>Provider</InputLabel>
+                <Select
+                  value={formData.provider}
+                  label="Provider"
+                  onChange={(e) => setFormData({ ...formData, provider: e.target.value as any })}
+                >
+                  <MenuItem value="custom">Custom</MenuItem>
+                  <MenuItem value="inflow">Inflow</MenuItem>
+                  <MenuItem value="onlyfans">OnlyFans</MenuItem>
+                  <MenuItem value="stripe">Stripe</MenuItem>
+                  <MenuItem value="paypal">PayPal</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel>Expires In</InputLabel>
+                <Select
+                  value={formData.expiresIn}
+                  label="Expires In"
+                  onChange={(e) => setFormData({ ...formData, expiresIn: e.target.value })}
+                >
+                  <MenuItem value="never">Never</MenuItem>
+                  <MenuItem value="30">30 days</MenuItem>
+                  <MenuItem value="90">90 days</MenuItem>
+                  <MenuItem value="180">180 days</MenuItem>
+                  <MenuItem value="365">1 year</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" gutterBottom>
+                Permissions
+              </Typography>
+              <Box>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.scopes.read}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        scopes: { ...formData.scopes, read: e.target.checked }
+                      })}
+                    />
+                  }
+                  label="Read"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.scopes.write}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        scopes: { ...formData.scopes, write: e.target.checked }
+                      })}
+                    />
+                  }
+                  label="Write"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.scopes.delete}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        scopes: { ...formData.scopes, delete: e.target.checked }
+                      })}
+                    />
+                  }
+                  label="Delete"
+                />
+                {(formData.provider === 'onlyfans' || formData.provider === 'inflow') && (
+                  <>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.scopes.analytics}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            scopes: { ...formData.scopes, analytics: e.target.checked }
+                          })}
+                        />
+                      }
+                      label="Analytics"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.scopes.messages}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            scopes: { ...formData.scopes, messages: e.target.checked }
+                          })}
+                        />
+                      }
+                      label="Messages"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.scopes.subscribers}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            scopes: { ...formData.scopes, subscribers: e.target.checked }
+                          })}
+                        />
+                      }
+                      label="Subscribers"
+                    />
+                  </>
+                )}
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={handleCreateKey} 
+            variant="contained"
+            disabled={!formData.name}
+          >
+            Create Key
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        message={snackbar.message}
+      />
+    </Box>
   );
 };
 
