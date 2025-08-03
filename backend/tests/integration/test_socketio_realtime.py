@@ -12,11 +12,8 @@ import socketio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.realtime.server import sio as server_sio
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionStatus,
-    TransactionType
-)
+from models.financial import TransactionStatus, TransactionType
+from modules.financial.domain.models import FinancialTransaction
 from modules.notifications.realtime.namespace import send_notification
 from core.domain.models import UserRole, ModelProfile
 

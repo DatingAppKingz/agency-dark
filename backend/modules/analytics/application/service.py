@@ -11,15 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, text
 
 from core.redis import redis_client
-from modules.analytics.domain.models import (
-    MetricSnapshot,
-    RevenueTransaction,
-    ContentPerformance,
-    FanSpendingHistory,
-    CategoryPerformance,
-    AnalyticsCache,
-    AggregationPeriod
-)
+from models.analytics import MetricSnapshot
+from modules.analytics.domain.models import (\n    RevenueTransaction,\n    ContentPerformance,\n    FanSpendingHistory,\n    CategoryPerformance,\n    AnalyticsCache,\n    AggregationPeriod\n)
 from modules.analytics.domain.schemas import (
     TimeGranularity,
     ChartType,

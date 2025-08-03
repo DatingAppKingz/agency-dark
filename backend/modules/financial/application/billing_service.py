@@ -10,11 +10,8 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 
-from modules.financial.domain.models import (
-    BillingCycle,
-    FinancialTransaction,
-    TransactionType
-)
+from models.financial import TransactionType
+from modules.financial.domain.models import BillingCycle, FinancialTransaction
 from modules.financial.domain.schemas import (
     BillingCycleSummary,
     BillingCycleDetails
@@ -157,7 +154,8 @@ class BillingService:
             })
         
         # Count pending payouts
-        from modules.financial.domain.models import Payout, PayoutStatus
+        from models.financial import Payout
+from modules.financial.domain.models import PayoutStatus
         payout_result = await self.db.execute(
             select(
                 func.count(Payout.id).filter(Payout.status == PayoutStatus.PENDING),

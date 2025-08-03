@@ -11,18 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, delete
 from sqlalchemy.dialects.postgresql import insert
 
-from modules.analytics.domain.models import (
-    MetricSnapshot,
-    RevenueTransaction,
-    ContentPerformance,
-    FanSpendingHistory,
-    CategoryPerformance
-)
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionType,
-    BillingCycle
-)
+from models.analytics import MetricSnapshot
+from modules.analytics.domain.models import RevenueTransaction, ContentPerformance, FanSpendingHistory, CategoryPerformance
+from models.financial import TransactionType
+from modules.financial.domain.models import FinancialTransaction, BillingCycle
 from core.domain.models import (
     ModelProfile,
     Fan,

@@ -12,11 +12,8 @@ from uuid import uuid4
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionStatus,
-    TransactionType
-)
+from models.financial import TransactionStatus, TransactionType
+from modules.financial.domain.models import FinancialTransaction
 from modules.financial.application.payment_gateway_service import (
     PaymentGatewayService,
     CoinbaseCommerceProvider

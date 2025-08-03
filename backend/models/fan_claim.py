@@ -3,7 +3,8 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from models.base import Base, BaseModel
+from core.database import Base
+from models.base import BaseModel
 
 
 class FanClaim(BaseModel):

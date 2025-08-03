@@ -21,13 +21,8 @@ from modules.financial.infrastructure.payment_gateway_base import (
 )
 from modules.financial.infrastructure.stripe_gateway import StripeGateway
 from modules.financial.infrastructure.coinbase_gateway import CoinbaseCommerceGateway
-from modules.financial.domain.models import (
-    PaymentGatewayConfig,
-    CryptoPayment,
-    CryptoPaymentStatus,
-    FinancialTransaction,
-    TransactionType
-)
+from models.financial import TransactionType
+from modules.financial.domain.models import PaymentGatewayConfig, CryptoPayment, CryptoPaymentStatus, FinancialTransaction
 from modules.financial.domain.schemas import (
     PaymentGatewayConfigCreate,
     PaymentGatewayConfigResponse,

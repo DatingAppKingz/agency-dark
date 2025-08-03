@@ -8,13 +8,8 @@ from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from modules.financial.application.commission_service import CommissionService
-from modules.financial.domain.models import (
-    CommissionRule,
-    CommissionTier,
-    FinancialTransaction,
-    TransactionType,
-    BillingCycle
-)
+from models.financial import TransactionType
+from modules.financial.domain.models import CommissionRule, CommissionTier, FinancialTransaction, BillingCycle
 from modules.financial.domain.schemas import (
     CommissionRuleCreate,
     CommissionAdjustmentCreate,

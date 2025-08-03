@@ -43,7 +43,8 @@ def fix_varchar_to_uuid(content):
     if 'postgresql.UUID' in content and 'from sqlalchemy.dialects import postgresql' not in content:
         # Add import after other imports
         import_pattern = r"(from alembic import op\nimport sqlalchemy as sa)"
-        replacement = r"\1\nfrom sqlalchemy.dialects import postgresql"
+        replacement = r"\1
+from sqlalchemy.dialects import postgresql"
         content = re.sub(import_pattern, replacement, content)
     
     return content

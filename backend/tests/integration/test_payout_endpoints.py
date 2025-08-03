@@ -11,14 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from core.domain.models import User, UserRole, Agency, ModelProfile
-from modules.financial.domain.models import (
-    Payout,
-    PayoutStatus,
-    PayoutSchedule,
-    BillingCycle,
-    CryptoWallet,
-    CryptoNetwork
-)
+from models.financial import Payout, PayoutStatus
+from modules.financial.domain.models import PayoutSchedule, BillingCycle, CryptoWallet, CryptoNetwork
 from tests.conftest import create_test_user, create_test_agency
 
 

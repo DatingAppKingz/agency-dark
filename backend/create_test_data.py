@@ -14,11 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import AsyncSessionLocal
 from core.security import get_password_hash
 from core.domain.models import Agency, User, UserRole
-from modules.financial.domain.models import (
-    CommissionRule, CommissionTier, BillingCycle,
-    FinancialTransaction, TransactionType,
-    Payout, PayoutStatus, Invoice, InvoiceStatus
-)
+from models.financial import TransactionType, Payout, PayoutStatus, Invoice
+from modules.financial.domain.models import (\n    CommissionRule,\n    CommissionTier,\n    BillingCycle,\n    FinancialTransaction,\n    InvoiceStatus\n)
 from modules.analytics.domain.models import MetricSnapshot, MetricType
 
 fake = Faker()

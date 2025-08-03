@@ -1,9 +1,8 @@
-from sqlalchemy.ext.declarative import declarative_base
+"""Base model class for common functionality."""
 from sqlalchemy import Column, DateTime, Integer
 from sqlalchemy.sql import func
-from datetime import datetime
+from core.database import Base
 
-Base = declarative_base()
 
 class BaseModel(Base):
     """Base model class that includes common columns for all models."""

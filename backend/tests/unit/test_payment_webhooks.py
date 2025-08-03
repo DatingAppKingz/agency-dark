@@ -21,11 +21,8 @@ from modules.financial.api.webhook_endpoints import (
     handle_payment_delayed,
     handle_payment_expired
 )
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionStatus,
-    TransactionType
-)
+from models.financial import TransactionStatus, TransactionType
+from modules.financial.domain.models import FinancialTransaction
 from modules.financial.application.payment_gateway_service import PaymentGatewayService
 from core.domain.models import ModelProfile
 

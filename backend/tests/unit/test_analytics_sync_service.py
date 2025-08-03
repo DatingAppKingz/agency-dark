@@ -11,18 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from modules.analytics.application.data_sync_service import AnalyticsDataSyncService
-from modules.analytics.domain.models import (
-    MetricSnapshot,
-    RevenueTransaction,
-    ContentPerformance,
-    FanSpendingHistory,
-    CategoryPerformance
-)
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionType,
-    TransactionStatus
-)
+from models.analytics import MetricSnapshot
+from modules.analytics.domain.models import RevenueTransaction, ContentPerformance, FanSpendingHistory, CategoryPerformance
+from models.financial import TransactionType, TransactionStatus
+from modules.financial.domain.models import FinancialTransaction
 from core.domain.models import ModelProfile, Fan, Subscription, Content, ContentCategory
 
 

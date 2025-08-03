@@ -8,12 +8,8 @@ from decimal import Decimal
 from uuid import UUID
 
 from core.cache.cache_service import cache, CacheKey, cached, cache_invalidate
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionStatus,
-    Payout,
-    PayoutStatus
-)
+from models.financial import TransactionStatus, Payout, PayoutStatus
+from modules.financial.domain.models import FinancialTransaction
 from modules.financial.domain.schemas import (
     TransactionSummary,
     PayoutSummary,

@@ -23,10 +23,7 @@ from sqlalchemy import select, func, and_, or_
 
 from core.exceptions import BadRequestError
 from core.redis import redis_client
-from modules.analytics.domain.models import (
-    ModelAnalytics, FanAnalytics, RevenueAnalytics,
-    EngagementAnalytics, ContentAnalytics
-)
+from modules.analytics.domain.models import (\n    ModelAnalytics,\n    FanAnalytics,\n    RevenueAnalytics,\n    EngagementAnalytics,\n    ContentAnalytics\n)
 from modules.messaging.domain.models import BulkMessage, MessageSchedule
 from modules.financial.domain.models import Transaction, Commission
 

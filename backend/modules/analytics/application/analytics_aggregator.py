@@ -20,11 +20,8 @@ from models.subscriber import Subscriber as Fan
 from models.chat import Message
 from models.media import Media
 from models.financial import Transaction as FinancialTransaction, TransactionType
-from modules.analytics.domain.models import (
-    AggregationPeriod,
-    Analytics,
-    MetricSnapshot
-)
+from models.analytics import MetricSnapshot
+from modules.analytics.domain.models import AggregationPeriod, Analytics
 from modules.analytics.domain.schemas import (
     TimeSeriesDataPoint as TimeSeriesData,
     MetricType

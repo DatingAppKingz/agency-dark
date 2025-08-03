@@ -9,10 +9,7 @@ from decimal import Decimal
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from modules.analytics.domain.models import (
-    ModelAnalytics, FanAnalytics, RevenueAnalytics,
-    EngagementAnalytics, ContentAnalytics
-)
+from modules.analytics.domain.models import (\n    ModelAnalytics,\n    FanAnalytics,\n    RevenueAnalytics,\n    EngagementAnalytics,\n    ContentAnalytics\n)
 from modules.analytics.infrastructure.cache import AnalyticsCacheService
 from modules.models.domain.models import Model
 from modules.analytics.domain.models import Fan

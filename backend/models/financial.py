@@ -2,7 +2,8 @@ from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Numeric, JS
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
-from models.base import Base, BaseModel
+from core.database import Base
+from models.base import BaseModel
 
 
 class TransactionType(str, enum.Enum):

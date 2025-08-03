@@ -13,12 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
 from core.config import settings
-from modules.analytics.domain.models import (
-    MetricSnapshot,
-    RevenueTransaction,
-    ContentPerformance,
-    FanSpendingHistory
-)
+from models.analytics import MetricSnapshot
+from modules.analytics.domain.models import RevenueTransaction, ContentPerformance, FanSpendingHistory
 from modules.analytics.domain.schemas import (
     ExportFormat,
     ExportRequest,

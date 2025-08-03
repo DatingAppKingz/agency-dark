@@ -15,13 +15,7 @@ from sqlalchemy import select
 from unittest.mock import MagicMock
 
 from core.domain.models import User, UserRole
-from modules.financial.domain.models import (
-    PaymentGatewayConfig,
-    CryptoWallet,
-    CryptoNetwork,
-    CryptoPayment,
-    CryptoPaymentStatus
-)
+from modules.financial.domain.models import (\n    PaymentGatewayConfig,\n    CryptoWallet,\n    CryptoNetwork,\n    CryptoPayment,\n    CryptoPaymentStatus\n)
 from tests.conftest import create_test_user, create_test_agency
 
 

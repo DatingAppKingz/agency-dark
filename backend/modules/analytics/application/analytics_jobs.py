@@ -20,13 +20,7 @@ from core.config import settings
 from core.database import get_async_session_maker
 from modules.analytics.application.analytics_aggregator import AnalyticsAggregator
 from modules.analytics.application.time_series_calculator import TimeSeriesCalculator
-from modules.analytics.domain.models import (
-    AnalyticsMetric,
-    MetricType,
-    AggregationPeriod,
-    ModelAnalytics,
-    FanAnalytics
-)
+from modules.analytics.domain.models import AnalyticsMetric, MetricType, AggregationPeriod, ModelAnalytics, FanAnalytics
 from modules.analytics.domain.schemas import TimeSeriesData
 from core.domain.models import Agency, ModelProfile
 from core.cache import cache_manager

@@ -13,10 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import AsyncSessionLocal
 from core.security import get_password_hash
 from core.domain.models import Agency, User, UserRole
-from modules.financial.domain.models import (
-    FinancialTransaction, TransactionType,
-    Payout, PayoutStatus
-)
+from models.financial import TransactionType, Payout, PayoutStatus
+from modules.financial.domain.models import FinancialTransaction
 from modules.analytics.domain.models import MetricSnapshot
 
 fake = Faker()

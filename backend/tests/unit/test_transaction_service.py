@@ -8,11 +8,8 @@ from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from modules.financial.application.transaction_service import TransactionService
-from modules.financial.domain.models import (
-    FinancialTransaction, 
-    TransactionType,
-    BillingCycle
-)
+from models.financial import TransactionType
+from modules.financial.domain.models import FinancialTransaction, BillingCycle
 from modules.financial.domain.schemas import (
     TransactionCreate,
     TransactionFilter

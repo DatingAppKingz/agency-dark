@@ -11,12 +11,8 @@ from sqlalchemy import select, and_, func
 
 from core.database import AsyncSessionLocal
 from core.domain.models import User, UserRole, ModelProfile
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionStatus,
-    Payout,
-    PayoutStatus
-)
+from models.financial import TransactionStatus, Payout, PayoutStatus
+from modules.financial.domain.models import FinancialTransaction
 
 logger = logging.getLogger(__name__)
 

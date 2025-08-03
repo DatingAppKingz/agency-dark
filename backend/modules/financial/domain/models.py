@@ -1,6 +1,7 @@
 """
 Financial domain models for commission, payments, and invoicing.
 """
+from models.financial import Transaction, Earning, Payout, Invoice, TransactionType, TransactionStatus, PayoutStatus, PaymentMethod
 from sqlalchemy import Column, String, DateTime, Numeric, Integer, ForeignKey, Index, JSON, Boolean, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
@@ -19,31 +20,31 @@ class CommissionTier(str, enum.Enum):
     CUSTOM = "custom"  # Custom rate
 
 
-class PayoutStatus(str, enum.Enum):
-    """Payout status."""
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+# class PayoutStatus(str, enum.Enum):
+#     """Payout status."""
+#     PENDING = "pending"
+#     PROCESSING = "processing"
+#     COMPLETED = "completed"
+#     FAILED = "failed"
+#     CANCELLED = "cancelled"
 
 
-class TransactionType(str, enum.Enum):
-    """Financial transaction types."""
-    REVENUE = "revenue"
-    COMMISSION = "commission"
-    PAYOUT = "payout"
-    REFUND = "refund"
-    ADJUSTMENT = "adjustment"
+# class TransactionType(str, enum.Enum):
+#     """Financial transaction types."""
+#     REVENUE = "revenue"
+#     COMMISSION = "commission"
+#     PAYOUT = "payout"
+#     REFUND = "refund"
+#     ADJUSTMENT = "adjustment"
 
 
-class TransactionStatus(str, enum.Enum):
-    """Transaction status."""
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    REVERSED = "reversed"
+# class TransactionStatus(str, enum.Enum):
+#     """Transaction status."""
+#     PENDING = "pending"
+#     PROCESSING = "processing"
+#     COMPLETED = "completed"
+#     FAILED = "failed"
+#     REVERSED = "reversed"
 
 
 class CryptoNetwork(str, enum.Enum):
@@ -140,49 +141,50 @@ class BillingCycle(Base):
     )
 
 
-class Payout(Base):
-    """Payout records for models and agencies."""
-    __tablename__ = "payouts"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    billing_cycle_id = Column(UUID(as_uuid=True), ForeignKey("billing_cycles.id"), nullable=False)
-    recipient_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    recipient_type = Column(String(20), nullable=False)  # 'model', 'agency'
-    
-    # Payout details
-    amount = Column(Numeric(12, 2), nullable=False)
-    currency = Column(String(10), default='USD')
-    status = Column(Enum(PayoutStatus), default=PayoutStatus.PENDING)
-    
-    # Payment method
-    payment_method = Column(String(50), nullable=False)  # 'crypto', 'bank_transfer'
-    payment_details = Column(JSON)  # Encrypted payment details
-    
-    # Transaction info
-    transaction_id = Column(String(255))
-    transaction_hash = Column(String(255))  # For crypto payments
-    
-    # Processing dates
-    scheduled_at = Column(DateTime(timezone=True))
-    processed_at = Column(DateTime(timezone=True))
-    completed_at = Column(DateTime(timezone=True))
-    
-    # Error handling
-    failure_reason = Column(String(500))
-    retry_count = Column(Integer, default=0)
-    
-    # Additional metadata (approvals, etc)
-    extra_metadata = Column(JSON)
-    
-    # Metadata
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
-    __table_args__ = (
-        Index('idx_payout_cycle', 'billing_cycle_id'),
-        Index('idx_payout_recipient', 'recipient_id'),
-        Index('idx_payout_status', 'status'),
-    )
+# Commented out - using models.financial.Payout instead
+# class Payout(Base):
+#     """Payout records for models and agencies."""
+#     __tablename__ = "payouts"
+#     
+#     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+#     billing_cycle_id = Column(UUID(as_uuid=True), ForeignKey("billing_cycles.id"), nullable=False)
+#     recipient_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+#     recipient_type = Column(String(20), nullable=False)  # 'model', 'agency'
+#     
+#     # Payout details
+#     amount = Column(Numeric(12, 2), nullable=False)
+#     currency = Column(String(10), default='USD')
+#     status = Column(Enum(PayoutStatus), default=PayoutStatus.PENDING)
+#     
+#     # Payment method
+#     payment_method = Column(String(50), nullable=False)  # 'crypto', 'bank_transfer'
+#     payment_details = Column(JSON)  # Encrypted payment details
+#     
+#     # Transaction info
+#     transaction_id = Column(String(255))
+#     transaction_hash = Column(String(255))  # For crypto payments
+#     
+#     # Processing dates
+#     scheduled_at = Column(DateTime(timezone=True))
+#     processed_at = Column(DateTime(timezone=True))
+#     completed_at = Column(DateTime(timezone=True))
+#     
+#     # Error handling
+#     failure_reason = Column(String(500))
+#     retry_count = Column(Integer, default=0)
+#     
+#     # Additional metadata (approvals, etc)
+#     extra_metadata = Column(JSON)
+#     
+#     # Metadata
+#     created_at = Column(DateTime(timezone=True), server_default=func.now())
+#     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+#     
+#     __table_args__ = (
+#         Index('idx_payout_cycle', 'billing_cycle_id'),
+#         Index('idx_payout_recipient', 'recipient_id'),
+#         Index('idx_payout_status', 'status'),
+#     )
 
 
 class PayoutSchedule(Base):
@@ -311,58 +313,59 @@ class FinancialTransaction(Base):
     )
 
 
-class Invoice(Base):
-    """Invoice records for billing."""
-    __tablename__ = "invoices"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    invoice_number = Column(String(50), unique=True, nullable=False)
-    
+# Commented out - using models.financial.Invoice instead
+# class Invoice(Base):
+#     """Invoice records for billing."""
+#     __tablename__ = "invoices"
+#     
+#     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+#     invoice_number = Column(String(50), unique=True, nullable=False)
+#     
     # Billing parties
-    billing_cycle_id = Column(UUID(as_uuid=True), ForeignKey("billing_cycles.id"))
-    agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id"), nullable=False)
-    model_id = Column(UUID(as_uuid=True), ForeignKey("model_profiles.id"))
-    
+#     billing_cycle_id = Column(UUID(as_uuid=True), ForeignKey("billing_cycles.id"))
+#     agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id"), nullable=False)
+#     model_id = Column(UUID(as_uuid=True), ForeignKey("model_profiles.id"))
+#     
     # Invoice details
-    status = Column(Enum(InvoiceStatus), default=InvoiceStatus.DRAFT)
-    issue_date = Column(DateTime(timezone=True), default=func.now())
-    due_date = Column(DateTime(timezone=True))
-    paid_date = Column(DateTime(timezone=True))
-    
+#     status = Column(Enum(InvoiceStatus), default=InvoiceStatus.DRAFT)
+#     issue_date = Column(DateTime(timezone=True), default=func.now())
+#     due_date = Column(DateTime(timezone=True))
+#     paid_date = Column(DateTime(timezone=True))
+#     
     # Amounts
-    subtotal = Column(Numeric(12, 2), nullable=False)
-    tax_rate = Column(Numeric(5, 2), default=0)
-    tax_amount = Column(Numeric(12, 2), default=0)
-    total_amount = Column(Numeric(12, 2), nullable=False)
-    paid_amount = Column(Numeric(12, 2), default=0)
-    
+#     subtotal = Column(Numeric(12, 2), nullable=False)
+#     tax_rate = Column(Numeric(5, 2), default=0)
+#     tax_amount = Column(Numeric(12, 2), default=0)
+#     total_amount = Column(Numeric(12, 2), nullable=False)
+#     paid_amount = Column(Numeric(12, 2), default=0)
+#     
     # Line items (JSON array)
-    line_items = Column(JSON, default=list)
-    
+#     line_items = Column(JSON, default=list)
+#     
     # Payment info
-    payment_method = Column(String(50))
-    payment_reference = Column(String(255))
-    
+#     payment_method = Column(String(50))
+#     payment_reference = Column(String(255))
+#     
     # Notes
-    notes = Column(String(1000))
-    terms_conditions = Column(String(2000))
-    
+#     notes = Column(String(1000))
+#     terms_conditions = Column(String(2000))
+#     
     # PDF storage
-    pdf_url = Column(String(500))
-    pdf_generated_at = Column(DateTime(timezone=True))
-    
+#     pdf_url = Column(String(500))
+#     pdf_generated_at = Column(DateTime(timezone=True))
+#     
     # Metadata
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
-    __table_args__ = (
-        Index('idx_invoice_agency', 'agency_id'),
-        Index('idx_invoice_model', 'model_id'),
-        Index('idx_invoice_status', 'status'),
-        Index('idx_invoice_due_date', 'due_date'),
-    )
-
-
+#     created_at = Column(DateTime(timezone=True), server_default=func.now())
+#     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+#     
+#     __table_args__ = (
+#         Index('idx_invoice_agency', 'agency_id'),
+#         Index('idx_invoice_model', 'model_id'),
+#         Index('idx_invoice_status', 'status'),
+#         Index('idx_invoice_due_date', 'due_date'),
+#     )
+# 
+# 
 class PaymentGatewayConfig(Base):
     """Configuration for payment gateways (crypto providers)."""
     __tablename__ = "payment_gateway_configs"

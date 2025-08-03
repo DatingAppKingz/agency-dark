@@ -19,12 +19,8 @@ from modules.onlyfans_wrapper.domain.schemas import (
     OnlyFansProfile,
     OnlyFansMedia
 )
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionType,
-    TransactionStatus,
-    BillingCycle
-)
+from models.financial import TransactionType, TransactionStatus
+from modules.financial.domain.models import FinancialTransaction, BillingCycle
 from core.domain.models import ModelProfile, Fan, Subscription, Content
 
 

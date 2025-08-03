@@ -11,15 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from core.domain.models import User, UserRole, ModelProfile
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionType,
-    TransactionStatus
-)
-from modules.analytics.domain.models import (
-    RevenueTransaction,
-    MetricSnapshot
-)
+from models.financial import TransactionType, TransactionStatus
+from modules.financial.domain.models import FinancialTransaction
+from models.analytics import MetricSnapshot
+from modules.analytics.domain.models import RevenueTransaction
 from tests.conftest import create_test_user, create_test_agency
 
 

@@ -22,43 +22,43 @@ class AggregationPeriod(str, Enum):
     YEARLY = "yearly"
 
 
-class MetricSnapshot(Base):
-    """Stores point-in-time metrics for models."""
-    __tablename__ = "metric_snapshots"
+# class MetricSnapshot(Base):
+#     """Stores point-in-time metrics for models."""
+#     __tablename__ = "metric_snapshots"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    model_id = Column(UUID(as_uuid=True), ForeignKey("model_profiles.id"), nullable=False)
+#     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+#     model_id = Column(UUID(as_uuid=True), ForeignKey("model_profiles.id"), nullable=False)
     
-    # Timestamp for this snapshot
-    timestamp = Column(DateTime(timezone=True), nullable=False, default=func.now())
+#     # Timestamp for this snapshot
+#     timestamp = Column(DateTime(timezone=True), nullable=False, default=func.now())
     
-    # Subscriber metrics
-    total_subscribers = Column(Integer, default=0)
-    paying_subscribers = Column(Integer, default=0)
-    non_paying_fans = Column(Integer, default=0)
-    new_subscribers = Column(Integer, default=0)  # Since last snapshot
-    lost_subscribers = Column(Integer, default=0)  # Since last snapshot
+#     # Subscriber metrics
+#     total_subscribers = Column(Integer, default=0)
+#     paying_subscribers = Column(Integer, default=0)
+#     non_paying_fans = Column(Integer, default=0)
+#     new_subscribers = Column(Integer, default=0)  # Since last snapshot
+#     lost_subscribers = Column(Integer, default=0)  # Since last snapshot
     
-    # Revenue metrics (in USD)
-    total_revenue = Column(Numeric(12, 2), default=0)
-    subscription_revenue = Column(Numeric(12, 2), default=0)
-    tip_revenue = Column(Numeric(12, 2), default=0)
-    ppv_revenue = Column(Numeric(12, 2), default=0)
+#     # Revenue metrics (in USD)
+#     total_revenue = Column(Numeric(12, 2), default=0)
+#     subscription_revenue = Column(Numeric(12, 2), default=0)
+#     tip_revenue = Column(Numeric(12, 2), default=0)
+#     ppv_revenue = Column(Numeric(12, 2), default=0)
     
-    # Content metrics
-    total_posts = Column(Integer, default=0)
-    total_messages_sent = Column(Integer, default=0)
-    total_messages_received = Column(Integer, default=0)
+#     # Content metrics
+#     total_posts = Column(Integer, default=0)
+#     total_messages_sent = Column(Integer, default=0)
+#     total_messages_received = Column(Integer, default=0)
     
-    # Engagement metrics
-    avg_fan_spend = Column(Numeric(10, 2), default=0)
-    conversion_rate = Column(Numeric(5, 2), default=0)  # Percentage
+#     # Engagement metrics
+#     avg_fan_spend = Column(Numeric(10, 2), default=0)
+#     conversion_rate = Column(Numeric(5, 2), default=0)  # Percentage
     
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+#     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    __table_args__ = (
-        Index('idx_metric_snapshot_model_timestamp', 'model_id', 'timestamp'),
-    )
+#     __table_args__ = (
+#         Index('idx_metric_snapshot_model_timestamp', 'model_id', 'timestamp'),
+#     )
 
 
 class RevenueTransaction(Base):

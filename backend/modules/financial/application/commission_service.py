@@ -9,13 +9,8 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 
-from modules.financial.domain.models import (
-    CommissionRule,
-    CommissionTier,
-    BillingCycle,
-    FinancialTransaction,
-    TransactionType
-)
+from models.financial import TransactionType
+from modules.financial.domain.models import CommissionRule, CommissionTier, BillingCycle, FinancialTransaction
 from modules.financial.domain.schemas import (
     CommissionRuleCreate,
     CommissionRuleUpdate,

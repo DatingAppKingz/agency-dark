@@ -19,10 +19,26 @@ from models.analytics import ModelAnalytics
 # UserActivity doesn't exist yet - would need to be created
 # from models.user import UserActivity
 
-from .models.revenue_forecast import RevenueForecastModel
-from .models.churn_prediction import ChurnPredictionModel
-from .models.content_recommendation import ContentRecommendationEngine
-from .models.anomaly_detection import AnomalyDetectionModel
+from . import ML_DISABLED
+
+# Import ML models conditionally
+if ML_DISABLED:
+    RevenueForecastModel = None
+    ChurnPredictionModel = None
+    ContentRecommendationEngine = None
+    AnomalyDetectionModel = None
+else:
+    try:
+        from .models.revenue_forecast import RevenueForecastModel
+        from .models.churn_prediction import ChurnPredictionModel
+        from .models.content_recommendation import ContentRecommendationEngine
+        from .models.anomaly_detection import AnomalyDetectionModel
+    except ImportError as e:
+        print(f"Warning: ML dependencies not installed. ML features disabled. Error: {e}")
+        RevenueForecastModel = None
+        ChurnPredictionModel = None
+        ContentRecommendationEngine = None
+        AnomalyDetectionModel = None
 
 logger = logging.getLogger(__name__)
 
@@ -33,14 +49,24 @@ class MLService:
     """
     
     def __init__(self):
-        self.models = {
-            'revenue_forecast': RevenueForecastModel(),
-            'churn_prediction': ChurnPredictionModel(),
-            'content_recommendation': ContentRecommendationEngine(),
-            'anomaly_detection': AnomalyDetectionModel()
-        }
+        self.models = {}
+        
+        # Only initialize models if they're available
+        if RevenueForecastModel:
+            self.models['revenue_forecast'] = RevenueForecastModel()
+        if ChurnPredictionModel:
+            self.models['churn_prediction'] = ChurnPredictionModel()
+        if ContentRecommendationEngine:
+            self.models['content_recommendation'] = ContentRecommendationEngine()
+        if AnomalyDetectionModel:
+            self.models['anomaly_detection'] = AnomalyDetectionModel()
+            
         self.model_status = {}
-        self._initialize_models()
+        
+        if not self.models:
+            logger.warning("No ML models available. ML features will be disabled.")
+        else:
+            self._initialize_models()
     
     def _initialize_models(self):
         """Load pre-trained models if available"""

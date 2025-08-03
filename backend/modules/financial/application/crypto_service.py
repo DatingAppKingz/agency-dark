@@ -12,17 +12,8 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 
-from modules.financial.domain.models import (
-    CryptoWallet,
-    CryptoNetwork,
-    PaymentGatewayConfig,
-    CryptoPayment,
-    CryptoPaymentStatus,
-    Payout,
-    PayoutStatus,
-    FinancialTransaction,
-    TransactionType
-)
+from models.financial import Payout, PayoutStatus, TransactionType
+from modules.financial.domain.models import (\n    CryptoWallet,\n    CryptoNetwork,\n    PaymentGatewayConfig,\n    CryptoPayment,\n    CryptoPaymentStatus,\n    FinancialTransaction\n)
 from modules.financial.domain.schemas import (
     CryptoWalletCreate,
     CryptoWalletResponse,

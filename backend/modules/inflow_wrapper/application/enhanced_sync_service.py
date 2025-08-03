@@ -20,12 +20,8 @@ from sqlalchemy.dialects.postgresql import insert
 from core.database import get_db
 from core.redis import redis_manager
 from core.domain.models import ModelProfile, Fan, Subscription, Content
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionType,
-    TransactionStatus,
-    BillingCycle
-)
+from models.financial import TransactionType, TransactionStatus
+from modules.financial.domain.models import FinancialTransaction, BillingCycle
 from ..domain.schemas import (
     InflowUser,
     InflowSubscription,

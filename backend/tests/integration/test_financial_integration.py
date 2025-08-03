@@ -10,10 +10,8 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from unittest.mock import patch, MagicMock
 
-from modules.financial.domain.models import (
-    Transaction, Commission, Payout, PaymentGateway,
-    TransactionStatus, PayoutStatus, CommissionTier
-)
+from models.financial import Transaction, Payout, TransactionStatus, PayoutStatus
+from modules.financial.domain.models import Commission, PaymentGateway, CommissionTier
 from modules.financial.application.transaction_service import TransactionService
 from modules.financial.application.commission_service import CommissionService
 from modules.financial.application.payout_service import PayoutService

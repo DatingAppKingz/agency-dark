@@ -10,13 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 
 from core.database import get_db
-from modules.analytics.domain.models import (
-    MetricSnapshot,
-    RevenueTransaction,
-    ContentPerformance,
-    FanSpendingHistory,
-    CategoryPerformance
-)
+from models.analytics import MetricSnapshot
+from modules.analytics.domain.models import RevenueTransaction, ContentPerformance, FanSpendingHistory, CategoryPerformance
 from core.domain.models import (
     ModelProfile,
     Fan,

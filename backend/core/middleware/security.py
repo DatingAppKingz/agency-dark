@@ -264,7 +264,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     
     async def _validate_api_key(self, api_key: str, request: Request) -> bool:
         """Validate API key against stored keys."""
-        from core.domain.api_keys import APIKeyService
+        from models.api_key import APIKeyService
         from core.database import get_db
         
         # Check in Redis cache first

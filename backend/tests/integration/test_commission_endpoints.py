@@ -11,13 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from core.domain.models import User, UserRole, Agency, ModelProfile
-from modules.financial.domain.models import (
-    CommissionRule,
-    CommissionTier,
-    FinancialTransaction,
-    TransactionType,
-    BillingCycle
-)
+from models.financial import TransactionType
+from modules.financial.domain.models import CommissionRule, CommissionTier, FinancialTransaction, BillingCycle
 from tests.conftest import create_test_user, create_test_agency
 
 

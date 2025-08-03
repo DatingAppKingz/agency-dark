@@ -1,7 +1,8 @@
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Text, JSON, Numeric, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 import enum
-from models.base import Base, BaseModel
+from core.database import Base
+from models.base import BaseModel
 
 
 class ContentType(str, enum.Enum):

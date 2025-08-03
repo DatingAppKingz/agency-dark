@@ -15,13 +15,8 @@ from modules.financial.application.payment_gateway_service import (
     CoinbaseCommerceProvider,
     BitPayProvider
 )
-from modules.financial.domain.models import (
-    PaymentGatewayConfig,
-    CryptoPayment,
-    CryptoPaymentStatus,
-    Payout,
-    PayoutStatus
-)
+from models.financial import Payout, PayoutStatus
+from modules.financial.domain.models import PaymentGatewayConfig, CryptoPayment, CryptoPaymentStatus
 from modules.financial.domain.schemas import (
     PaymentGatewayConfigCreate,
     CryptoPaymentRequest

@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 # Use the DATABASE_URL directly from settings
 DATABASE_URL = settings.DATABASE_URL
 
+# Convert to async URL if needed
+if DATABASE_URL.startswith('postgresql://'):
+    ASYNC_DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+asyncpg://')
+else:
+    ASYNC_DATABASE_URL = DATABASE_URL
+
 naming_convention = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -26,7 +32,7 @@ Base = declarative_base(metadata=metadata)
 
 # Use optimized pool configuration for async engine
 engine = create_async_engine(
-    DATABASE_URL,
+    ASYNC_DATABASE_URL,
     **DatabasePoolConfig.get_async_pool_config()
 )
 

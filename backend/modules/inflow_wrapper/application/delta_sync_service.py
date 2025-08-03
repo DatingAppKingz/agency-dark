@@ -16,12 +16,8 @@ from sqlalchemy import select, and_, update, func
 from sqlalchemy.dialects.postgresql import insert
 
 from core.domain.models import ModelProfile, Fan, Subscription, Content, Message
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionType,
-    TransactionStatus,
-    BillingCycle
-)
+from models.financial import TransactionType, TransactionStatus
+from modules.financial.domain.models import FinancialTransaction, BillingCycle
 from modules.financial.application.transaction_service import TransactionService
 from modules.analytics.application.data_sync_service import AnalyticsDataSyncService
 from ..domain.schemas import (

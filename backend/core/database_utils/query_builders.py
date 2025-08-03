@@ -13,14 +13,10 @@ from core.domain.models import (
     ModelProfile, User, Agency, Fan, 
     Notification, AuditLog
 )
-from modules.financial.domain.models import (
-    FinancialTransaction, BillingCycle, Payout,
-    TransactionType, PayoutStatus
-)
-from modules.analytics.domain.models import (
-    MetricSnapshot, RevenueTransaction,
-    ContentPerformance, FanSpendingHistory
-)
+from models.financial import Payout, TransactionType, PayoutStatus
+from modules.financial.domain.models import FinancialTransaction, BillingCycle
+from models.analytics import MetricSnapshot
+from modules.analytics.domain.models import RevenueTransaction, ContentPerformance, FanSpendingHistory
 
 
 class OptimizedQueries:

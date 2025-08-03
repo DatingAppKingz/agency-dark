@@ -655,7 +655,7 @@ async def pause_payout_schedule(
     from modules.financial.domain.models import PayoutSchedule
     
     schedule = await db.get(PayoutSchedule, schedule_id)
-    if not schedule:
+    ifnot schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
     
     if not schedule.is_active:

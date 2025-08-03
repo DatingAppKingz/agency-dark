@@ -13,13 +13,8 @@ from modules.financial.realtime.namespace import (
     notify_payment_status,
     notify_payout_status
 )
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionStatus,
-    TransactionType,
-    Payout,
-    PayoutStatus
-)
+from models.financial import TransactionStatus, TransactionType, Payout, PayoutStatus
+from modules.financial.domain.models import FinancialTransaction
 from core.domain.models import UserRole, ModelProfile
 
 

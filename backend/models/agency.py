@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Boolean, Integer, JSON, Numeric, Text
 from sqlalchemy.orm import relationship
-from models.base import Base, BaseModel
+from core.database import Base
+from models.base import BaseModel
 
 
 class Agency(BaseModel):

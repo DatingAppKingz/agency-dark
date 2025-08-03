@@ -8,13 +8,8 @@ import json
 from uuid import uuid4
 
 from modules.financial.application.payment_gateway_service import PaymentGatewayService
-from modules.financial.domain.models import (
-    PaymentGatewayConfig,
-    CryptoPayment,
-    CryptoPaymentStatus,
-    FinancialTransaction,
-    TransactionType
-)
+from models.financial import TransactionType
+from modules.financial.domain.models import PaymentGatewayConfig, CryptoPayment, CryptoPaymentStatus, FinancialTransaction
 from modules.financial.domain.schemas import (
     PaymentGatewayConfigCreate,
     CryptoPaymentRequest

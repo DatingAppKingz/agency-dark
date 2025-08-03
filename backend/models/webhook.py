@@ -2,7 +2,8 @@ from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, JSON, Enum 
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import enum
-from models.base import Base, BaseModel
+from core.database import Base
+from models.base import BaseModel
 
 
 class WebhookEvent(str, enum.Enum):

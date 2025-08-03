@@ -8,15 +8,8 @@ from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from modules.financial.application.payout_service import PayoutService
-from modules.financial.domain.models import (
-    Payout,
-    PayoutStatus,
-    BillingCycle,
-    CryptoWallet,
-    FinancialTransaction,
-    TransactionType,
-    PayoutSchedule
-)
+from models.financial import Payout, PayoutStatus, TransactionType
+from modules.financial.domain.models import BillingCycle, CryptoWallet, FinancialTransaction, PayoutSchedule
 from modules.financial.domain.schemas import (
     PayoutRequest,
     PayoutScheduleCreate,

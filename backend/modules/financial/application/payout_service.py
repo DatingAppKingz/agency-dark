@@ -10,14 +10,8 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func, update
 
-from modules.financial.domain.models import (
-    Payout,
-    PayoutStatus,
-    BillingCycle,
-    CryptoWallet,
-    FinancialTransaction,
-    TransactionType
-)
+from models.financial import Payout, PayoutStatus, TransactionType
+from modules.financial.domain.models import BillingCycle, CryptoWallet, FinancialTransaction
 from modules.financial.domain.schemas import (
     PayoutRequest,
     PayoutResponse,

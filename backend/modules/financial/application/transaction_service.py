@@ -11,14 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func, desc
 from sqlalchemy.orm import selectinload
 
-from modules.financial.domain.models import (
-    FinancialTransaction,
-    TransactionType,
-    TransactionStatus,
-    BillingCycle,
-    Payout,
-    Invoice
-)
+from models.financial import TransactionType, TransactionStatus, Payout, Invoice
+from modules.financial.domain.models import FinancialTransaction, BillingCycle
 from modules.financial.domain.schemas import (
     TransactionCreate,
     TransactionUpdate,

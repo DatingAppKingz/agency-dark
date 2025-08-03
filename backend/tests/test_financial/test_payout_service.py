@@ -7,16 +7,8 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 
 from modules.financial.application.payout_service import PayoutService
-from modules.financial.domain.models import (
-    Payout,
-    PayoutStatus,
-    BillingCycle,
-    CryptoWallet,
-    FinancialTransaction,
-    TransactionType,
-    CryptoNetwork,
-    PayoutSchedule
-)
+from models.financial import Payout, PayoutStatus, TransactionType
+from modules.financial.domain.models import BillingCycle, CryptoWallet, FinancialTransaction, CryptoNetwork, PayoutSchedule
 from modules.financial.domain.schemas import (
     PayoutRequest,
     PayoutStatusUpdate,

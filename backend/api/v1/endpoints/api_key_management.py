@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from core.database import get_db
 from core.security import get_current_user
 from core.domain.models import User, UserRole
-from core.domain.api_keys import APIKey, APIKeyService
+from models.api_key import APIKey, APIKeyService
 from core.pagination import PaginatedResponse, get_pagination_params, paginate
 
 router = APIRouter(prefix="/api-keys", tags=["api-key-management"])

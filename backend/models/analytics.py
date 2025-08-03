@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, Numeric, JSON, Index, UniqueConstraint, Boolean, Date, Float
 from sqlalchemy.orm import relationship
-from models.base import Base, BaseModel
+from core.database import Base
+from models.base import BaseModel
 
 
 class ModelAnalytics(BaseModel):

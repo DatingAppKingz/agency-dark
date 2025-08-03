@@ -7,12 +7,8 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 
 from modules.financial.application.commission_calculator import CommissionCalculator
-from modules.financial.domain.models import (
-    CommissionRule,
-    CommissionTier,
-    FinancialTransaction,
-    TransactionType
-)
+from models.financial import TransactionType
+from modules.financial.domain.models import CommissionRule, CommissionTier, FinancialTransaction
 from modules.financial.domain.schemas import (
     CommissionRuleCreate,
     CommissionOverrideRequest

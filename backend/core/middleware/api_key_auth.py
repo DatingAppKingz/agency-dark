@@ -72,7 +72,7 @@ class APIKeyAuth(HTTPBearer):
             return None
         
         # Log the API request in audit log
-        from core.domain.api_key_models import APIKeyAuditLog
+        from models.api_key import APIKeyAuditLog
         async with AsyncSessionLocal() as db:
             audit_log = APIKeyAuditLog(
                 api_key_id=api_key_record.id,

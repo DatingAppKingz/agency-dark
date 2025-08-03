@@ -10,13 +10,7 @@ from sqlalchemy.pool import NullPool
 
 from core.database import Base
 from core.domain.models import User, Agency, ModelProfile
-from modules.financial.domain.models import (
-    BillingCycle,
-    CryptoWallet,
-    CryptoNetwork,
-    CommissionRule,
-    CommissionTier
-)
+from modules.financial.domain.models import BillingCycle, CryptoWallet, CryptoNetwork, CommissionRule, CommissionTier
 
 
 @pytest.fixture(scope="function")
