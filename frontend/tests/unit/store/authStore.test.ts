@@ -103,15 +103,14 @@ describe('AuthStore', () => {
       await act(async () => {
         await result.current.register({
           email: 'newuser@example.com',
-          username: 'newuser',
+          full_name: 'New User',
           password: 'password123',
-          password_confirm: 'password123',
         });
       });
 
       expect(result.current.user).toMatchObject({
         email: 'newuser@example.com',
-        username: 'newuser',
+        full_name: 'New User',
       });
       expect(result.current.isAuthenticated).toBe(true);
     });
@@ -123,7 +122,7 @@ describe('AuthStore', () => {
         rest.post('http://localhost:8000/api/v1/auth/register', (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ detail: 'Username already taken' })
+            ctx.json({ detail: 'Email already taken' })
           );
         })
       );
@@ -132,14 +131,13 @@ describe('AuthStore', () => {
         act(async () => {
           await result.current.register({
             email: 'test@example.com',
-            username: 'taken',
+            full_name: 'Test User',
             password: 'password123',
-            password_confirm: 'password123',
           });
         })
       ).rejects.toThrow();
 
-      expect(result.current.error).toBe('Username already taken');
+      expect(result.current.error).toBe('Email already taken');
       expect(result.current.isAuthenticated).toBe(false);
     });
   });

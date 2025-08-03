@@ -100,7 +100,6 @@ describe('User Service', () => {
         id: userId,
         email: 'user@example.com',
         full_name: 'Test User',
-        username: 'testuser',
         role: UserRole.ADMIN,
         is_active: true,
         is_verified: true,

@@ -111,9 +111,8 @@ describe('useAuth Hook', () => {
       await act(async () => {
         await result.current.register({
           email: 'newuser@example.com',
-          username: 'newuser',
+          full_name: 'New User',
           password: 'password123',
-          password_confirm: 'password123',
         });
       });
 
@@ -121,7 +120,7 @@ describe('useAuth Hook', () => {
         expect(result.current.isAuthenticated).toBe(true);
         expect(result.current.user).toMatchObject({
           email: 'newuser@example.com',
-          username: 'newuser',
+          full_name: 'New User',
         });
       });
     });
@@ -144,9 +143,8 @@ describe('useAuth Hook', () => {
         try {
           await result.current.register({
             email: 'existing@example.com',
-            username: 'newuser',
+            full_name: 'New User',
             password: 'password123',
-            password_confirm: 'password123',
           });
         } catch (error) {
           // Expected to throw

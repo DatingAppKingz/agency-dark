@@ -6,13 +6,13 @@ import { Message, Conversation } from '@/types/chat';
 export const createMockUser = (overrides?: Partial<User>): User => ({
   id: '1',
   email: 'test@example.com',
-  username: 'testuser',
-  role: 'member',
+  full_name: 'Test User',
+  role: 'model',
   is_active: true,
-  is_email_verified: true,
-  two_factor_enabled: false,
+  is_verified: true,
+  agency_id: 'agency-1',
   created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  verified_at: new Date().toISOString(),
   ...overrides,
 });
 
@@ -21,7 +21,7 @@ export const createMockAdminUser = (overrides?: Partial<User>): User =>
   createMockUser({
     role: 'agency_admin',
     email: 'admin@example.com',
-    username: 'admin',
+    full_name: 'Admin User',
     ...overrides,
   });
 
@@ -30,7 +30,17 @@ export const createMockModelUser = (overrides?: Partial<User>): User =>
   createMockUser({
     role: 'model',
     email: 'model@example.com',
-    username: 'model1',
+    full_name: 'Model User',
+    ...overrides,
+  });
+
+// Super Admin user factory
+export const createMockSuperAdminUser = (overrides?: Partial<User>): User => 
+  createMockUser({
+    role: 'super_admin',
+    email: 'superadmin@example.com',
+    full_name: 'Super Admin',
+    agency_id: null,
     ...overrides,
   });
 
@@ -126,10 +136,11 @@ export const createMockLoginData = () => ({
 
 export const createMockRegisterData = () => ({
   email: 'newuser@example.com',
-  username: 'newuser',
+  full_name: 'New User',
   password: 'password123',
   password_confirm: 'password123',
-  terms_accepted: true,
+  agency_id: 'agency-1',
+  role: 'model' as const,
 });
 
 // API response factories

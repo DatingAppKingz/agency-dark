@@ -9,15 +9,17 @@ export const handlers = [
     return res(
       ctx.json({
         access_token: 'mock-access-token',
-        refresh_token: 'mock-refresh-token',
         token_type: 'bearer',
         user: {
           id: '1',
           email: 'test@example.com',
-          username: 'testuser',
+          full_name: 'Test User',
           role: 'agency_admin',
           is_active: true,
+          is_verified: true,
           agency_id: 'agency-1',
+          created_at: new Date().toISOString(),
+          verified_at: new Date().toISOString(),
         },
       })
     );
@@ -31,14 +33,17 @@ export const handlers = [
     return res(
       ctx.json({
         access_token: 'mock-access-token',
-        refresh_token: 'mock-refresh-token',
         token_type: 'bearer',
         user: {
           id: '2',
           email: 'newuser@example.com',
-          username: 'newuser',
-          role: 'member',
+          full_name: 'New User',
+          role: 'model',
           is_active: true,
+          is_verified: false,
+          agency_id: 'agency-1',
+          created_at: new Date().toISOString(),
+          verified_at: null,
         },
       })
     );
@@ -54,10 +59,13 @@ export const handlers = [
       ctx.json({
         id: '1',
         email: 'test@example.com',
-        username: 'testuser',
+        full_name: 'Test User',
         role: 'agency_admin',
         is_active: true,
+        is_verified: true,
         agency_id: 'agency-1',
+        created_at: new Date().toISOString(),
+        verified_at: new Date().toISOString(),
       })
     );
   }),
@@ -70,16 +78,22 @@ export const handlers = [
           {
             id: '1',
             email: 'user1@example.com',
-            username: 'user1',
+            full_name: 'User One',
             role: 'agency_admin',
             is_active: true,
+            is_verified: true,
+            agency_id: 'agency-1',
+            created_at: new Date().toISOString(),
           },
           {
             id: '2',
             email: 'user2@example.com',
-            username: 'user2',
+            full_name: 'User Two',
             role: 'model',
             is_active: true,
+            is_verified: false,
+            agency_id: 'agency-1',
+            created_at: new Date().toISOString(),
           },
         ],
         total: 2,
@@ -95,9 +109,12 @@ export const handlers = [
       ctx.json({
         id,
         email: `user${id}@example.com`,
-        username: `user${id}`,
-        role: 'member',
+        full_name: `User ${id}`,
+        role: 'model',
         is_active: true,
+        is_verified: true,
+        agency_id: 'agency-1',
+        created_at: new Date().toISOString(),
       })
     );
   }),
@@ -109,7 +126,8 @@ export const handlers = [
         items: [
           {
             id: '1',
-            username: 'model1',
+            full_name: 'Model One',
+            email: 'model1@example.com',
             display_name: 'Model One',
             bio: 'Test model bio',
             is_active: true,

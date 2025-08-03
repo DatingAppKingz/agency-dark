@@ -106,9 +106,8 @@ describe('AuthService', () => {
     it('successfully registers a new user', async () => {
       const registerData = {
         email: 'newuser@example.com',
-        username: 'newuser',
+        full_name: 'New User',
         password: 'password123',
-        password_confirm: 'password123',
       };
 
       const result = await authService.register(registerData);
@@ -117,7 +116,7 @@ describe('AuthService', () => {
         access_token: 'mock-access-token',
         user: expect.objectContaining({
           email: 'newuser@example.com',
-          username: 'newuser',
+          full_name: 'New User',
         }),
       });
 
@@ -138,7 +137,7 @@ describe('AuthService', () => {
       await expect(
         authService.register({
           email: 'existing@example.com',
-          username: 'newuser',
+          full_name: 'New User',
           password: 'password123',
           password_confirm: 'password123',
         })

@@ -78,15 +78,25 @@ async def register(
             )
     
     # Create new user
+    # Extract username from email if not provided
+    username = user_data.email.split('@')[0]
+    
     user = User(
         email=user_data.email,
-        hashed_password=get_password_hash(user_data.password),
-        full_name=user_data.full_name,
+        username=username,
+        password_hash=get_password_hash(user_data.password),
         role=user_data.role or UserRole.MEMBER,
         agency_id=user_data.agency_id,
         is_active=True,  # For MVP, activate immediately
         is_verified=False
     )
+    
+    # If full_name is provided, split it into first and last names
+    if user_data.full_name:
+        names = user_data.full_name.strip().split(' ', 1)
+        user.first_name = names[0]
+        if len(names) > 1:
+            user.last_name = names[1]
     
     # Generate email verification token
     user.email_verification_token = generate_verification_token()
@@ -122,7 +132,7 @@ async def login(
     )
     user = result.scalar_one_or_none()
     
-    if not user or not verify_password(credentials.password, user.hashed_password):
+    if not user or not verify_password(credentials.password, user.password_hash):
         # Add failed login attempt tracking
         await _track_failed_login(credentials.email, request.client.host if request.client else None, db)
         raise AuthenticationError("Incorrect email or password")
@@ -439,7 +449,7 @@ async def confirm_password_reset(
         )
     
     # Update password
-    user.hashed_password = get_password_hash(reset_confirm.new_password)
+    user.password_hash = get_password_hash(reset_confirm.new_password)
     user.password_reset_token = None
     user.password_reset_expires = None
     

@@ -108,9 +108,12 @@ export const renderWithAuth = (
     user = {
       id: '1',
       email: 'test@example.com',
-      username: 'testuser',
-      role: 'member',
+      full_name: 'Test User',
+      role: 'model',
       is_active: true,
+      is_verified: true,
+      agency_id: 'agency-1',
+      created_at: new Date().toISOString(),
     },
     ...options
   }: CustomRenderOptions & { user?: any } = {}
