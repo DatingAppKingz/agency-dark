@@ -1,5 +1,5 @@
-import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box, Divider, useTheme, useMediaQuery } from '@mui/material';
-import { Dashboard, People, Person, Chat, Analytics, AttachMoney, Settings, Business, AdminPanelSettings, CloudSync, Group, Assessment } from '@mui/icons-material';
+import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box, Divider, useTheme, useMediaQuery, IconButton, Tooltip } from '@mui/material';
+import { Dashboard, People, Person, Chat, Analytics, AttachMoney, Settings, Business, AdminPanelSettings, CloudSync, Group, Assessment, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types/auth';
@@ -8,6 +8,8 @@ interface SidebarProps {
   open: boolean;
   onClose: () => void;
   width: number;
+  collapsed?: boolean;
+  onCollapse?: () => void;
 }
 
 interface MenuItem {
@@ -83,7 +85,7 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-export const Sidebar = ({ open, onClose, width }: SidebarProps) => {
+export const Sidebar = ({ open, onClose, width, collapsed = false, onCollapse }: SidebarProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
@@ -102,37 +104,70 @@ export const Sidebar = ({ open, onClose, width }: SidebarProps) => {
     }
   };
 
+  const effectiveWidth = collapsed ? 64 : width;
+
   const drawer = (
     <>
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <AdminPanelSettings sx={{ fontSize: 32, color: 'primary.main' }} />
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          AgencyDark
-        </Typography>
+      <Box sx={{ 
+        p: 2, 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 1,
+        justifyContent: collapsed ? 'center' : 'flex-start',
+        minHeight: 64,
+      }}>
+        {!collapsed && (
+          <>
+            <AdminPanelSettings sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              AgencyDark
+            </Typography>
+          </>
+        )}
+        {collapsed && (
+          <AdminPanelSettings sx={{ fontSize: 28, color: 'primary.main' }} />
+        )}
       </Box>
+      <Divider />
+      {!isMobile && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+          <IconButton onClick={onCollapse} size="small">
+            {collapsed ? <ChevronRight /> : <ChevronLeft />}
+          </IconButton>
+        </Box>
+      )}
       <Divider />
       <List>
         {filteredMenuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => handleNavigation(item.path)}
-              sx={{
-                '&.Mui-selected': {
-                  backgroundColor: 'action.selected',
-                  '&:hover': {
+            <Tooltip title={collapsed ? item.text : ''} placement="right">
+              <ListItemButton
+                selected={location.pathname === item.path}
+                onClick={() => handleNavigation(item.path)}
+                sx={{
+                  '&.Mui-selected': {
                     backgroundColor: 'action.selected',
+                    '&:hover': {
+                      backgroundColor: 'action.selected',
+                    },
                   },
-                },
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  px: collapsed ? 2 : 3,
+                }}
+              >
+                <ListItemIcon sx={{ 
+                  minWidth: collapsed ? 0 : 56,
+                  justifyContent: 'center' 
+                }}>
+                  {item.icon}
+                </ListItemIcon>
+                {!collapsed && <ListItemText primary={item.text} />}
+              </ListItemButton>
+            </Tooltip>
           </ListItem>
         ))}
       </List>
-      {user && (
+      {user && !collapsed && (
         <>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ p: 2 }}>
@@ -157,13 +192,18 @@ export const Sidebar = ({ open, onClose, width }: SidebarProps) => {
       open={open}
       onClose={onClose}
       sx={{
-        width: width,
+        width: effectiveWidth,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: width,
+          width: effectiveWidth,
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
+          transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+          overflowX: 'hidden',
         },
       }}
     >
