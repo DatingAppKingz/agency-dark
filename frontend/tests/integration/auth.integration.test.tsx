@@ -4,10 +4,9 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { render, createMockUser, mockApiResponses } from '@/tests/utils/test-utils';
-import { LoginPage, RegisterPage } from '@/pages';
-import { AuthGuard } from '../../__mocks__/components';
-import { useAuthStore } from '@/tests/utils/mock-factories';
+import { render, createMockUser, mockApiResponses } from '../../utils/test-utils';
+import LoginPage from '@/pages/auth/LoginPage'; import RegisterPage from '@/pages/auth/RegisterPage';
+import { useAuthStore } from '../../utils/mock-factories';
 
 // Setup MSW server
 const server = setupServer(

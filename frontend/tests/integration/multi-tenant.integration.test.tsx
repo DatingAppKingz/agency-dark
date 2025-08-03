@@ -4,9 +4,9 @@ import { screen, waitFor } from '@testing-library/react';
 // import userEvent from '@testing-library/user-event';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { render, createMockUser, createMockModel, createMockChat } from '@/tests/utils/test-utils';
-import { useAuthStore, apiClient } from '@/tests/utils/mock-factories';
-import { ModelsPage, UsersPage, AnalyticsPage } from '@/pages';
+import { render, createMockUser, createMockModel, createMockChat } from '../../utils/test-utils';
+import { useAuthStore, apiClient } from '../../utils/mock-factories';
+import ModelsPage from '@/pages/models/ModelsPage'; import UsersPage from '@/pages/users/UsersPage'; import AnalyticsPage from '@/pages/analytics/AnalyticsPage';
 
 // Setup MSW server with agency-aware endpoints
 const server = setupServer(

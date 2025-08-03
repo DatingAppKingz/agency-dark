@@ -1,12 +1,11 @@
 import { screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { render } from '@/tests/utils/test-utils';
+import { render } from '../../utils/test-utils';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import UsersPage from '@/pages/users/UsersPage';
 import ModelsPage from '@/pages/models/ModelsPage';
 import FinancialPage from '@/pages/financial/FinancialPage';
 import AnalyticsPage from '@/pages/analytics/AnalyticsPage';
-import { mockAuthStore } from '@/__tests__/mocks/store-mocks';
 
 describe('Role-Based Access Control', () => {
   describe('Navigation Visibility', () => {

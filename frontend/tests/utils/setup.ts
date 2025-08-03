@@ -53,6 +53,17 @@ vi.mock('@/services/pushNotifications', () => ({
   }
 }));
 
+// Import MUI icon mocks
+import mockIcons from './mui-icon-mocks';
+
+// Mock all @mui/icons-material imports
+vi.mock('@mui/icons-material', () => mockIcons);
+
+// Mock LanguageProvider to avoid loading translations in tests
+vi.mock('@/i18n/LanguageProvider', () => ({
+  LanguageProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 
@@ -147,16 +158,63 @@ globalThis.ResizeObserver = class ResizeObserver {
 // Mock scrollTo
 window.scrollTo = vi.fn();
 
+// Mock pointer capture methods
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = vi.fn(() => false);
+}
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = vi.fn();
+}
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = vi.fn();
+}
+
 // Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-  length: 0,
-  key: vi.fn(),
-};
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value.toString();
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: vi.fn((index: number) => {
+      const keys = Object.keys(store);
+      return keys[index] || null;
+    }),
+  };
+})();
 globalThis.localStorage = localStorageMock as any;
 
-// Mock sessionStorage
-globalThis.sessionStorage = localStorageMock as any;
+// Mock sessionStorage (separate instance)
+const sessionStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value.toString();
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: vi.fn((index: number) => {
+      const keys = Object.keys(store);
+      return keys[index] || null;
+    }),
+  };
+})();
+globalThis.sessionStorage = sessionStorageMock as any;

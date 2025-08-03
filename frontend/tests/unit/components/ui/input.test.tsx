@@ -1,6 +1,6 @@
 import React from 'react';
 import { vi } from 'vitest';
-import { render, screen } from '@/tests/utils/enhanced-test-utils';
+import { render, screen } from '../../../utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { Input } from '@/components/ui/input';
 

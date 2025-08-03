@@ -1,11 +1,11 @@
 import React from 'react';
 import { vi } from 'vitest';
-import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+import { render, screen, waitFor } from '../../utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
-import { server } from '@/tests/utils/test-server';
+import { server } from '../../utils/test-server';
 import { rest } from 'msw';
-import { LoginPage } from '@/pages/auth/LoginPage';
-import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+import LoginPage from '@/pages/auth/LoginPage';
+import DashboardPage from '@/pages/dashboard/DashboardPage';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Routes, Route } from 'react-router-dom';
 

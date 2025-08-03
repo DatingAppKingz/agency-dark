@@ -1,8 +1,8 @@
 import React from 'react';
 import { vi } from 'vitest';
-import { render, screen, waitFor, within } from '@/tests/utils/enhanced-test-utils';
+import { render, screen, waitFor, within } from '../../utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
-import { server } from '@/tests/utils/test-server';
+import { server } from '../../utils/test-server';
 import { rest } from 'msw';
 import App from '@/App';
 

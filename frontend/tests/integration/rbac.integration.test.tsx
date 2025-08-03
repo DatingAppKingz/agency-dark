@@ -3,9 +3,8 @@ import { vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { render, createMockUser, mockApiResponses } from '@/tests/utils/test-utils';
-import { useAuthStore } from '@/tests/utils/mock-factories';
-import { PermissionGate, RoleGuard } from '../../__mocks__/components';
+import { render, createMockUser, mockApiResponses } from '../../utils/test-utils';
+import { useAuthStore } from '../../utils/mock-factories';
 import { UsersPage, ModelsPage, AdminDashboard, SettingsPage } from '@/pages';
 
 // Setup MSW server

@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 import { vi } from 'vitest';
-import { SocketManager } from '@/tests/utils/mock-factories';
-// import { createMockUser } from '@/tests/utils/test-utils';
+import { SocketManager } from '../../utils/mock-factories';
+// import { createMockUser } from '../../utils/test-utils';
 
 // Mock socket.io-client
 vi.mock('socket.io-client');

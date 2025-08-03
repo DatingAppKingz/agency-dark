@@ -1,5 +1,6 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -154,13 +155,13 @@ export const waitForAsync = () => new Promise(resolve => setTimeout(resolve, 0))
 
 // Helper to mock fetch
 export const mockFetch = (response: any) => {
-  global.fetch = jest.fn(() =>
+  global.fetch = vi.fn(() =>
     Promise.resolve({
       ok: true,
       json: () => Promise.resolve(response),
     } as Response)
   );
-  return global.fetch as jest.Mock;
+  return global.fetch as vi.Mock;
 };
 
 // Helper to create a wrapper with custom providers

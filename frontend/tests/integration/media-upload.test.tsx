@@ -1,11 +1,11 @@
 import React from 'react';
 import { vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/tests/utils/enhanced-test-utils';
+import { render, screen, waitFor, fireEvent } from '../../utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
-import { server } from '@/tests/utils/test-server';
+import { server } from '../../utils/test-server';
 import { rest } from 'msw';
 import { MediaLibrary } from '@/components/media_library/MediaLibrary';
-import { createMockFile } from '@/tests/utils/mock-factories';
+import { createMockFile } from '../../utils/mock-factories';
 
 describe('Media Upload Integration', () => {
   beforeEach(() => {

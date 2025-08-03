@@ -1,12 +1,11 @@
 import { screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
-import { render } from '@/tests/utils/test-utils';
+import { render } from '../../utils/test-utils';
 import ModelsPage from '@/pages/models/ModelsPage';
 import ChatPage from '@/pages/chat/ChatPage';
 import FinancialPage from '@/pages/financial/FinancialPage';
-import { server } from '@/tests/utils/test-server';
+import { server } from '../../utils/test-server';
 import { rest } from 'msw';
-import { mockAuthStore } from '@/__tests__/mocks/store-mocks';
 
 describe('Multi-Tenant Isolation', () => {
   describe('Data Isolation', () => {

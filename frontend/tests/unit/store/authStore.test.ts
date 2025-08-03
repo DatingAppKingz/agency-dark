@@ -1,9 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useAuthStore } from '@/store/authStore';
-import { server } from '@/tests/utils/test-server';
+import { server } from '../../../utils/test-server';
 import { rest } from 'msw';
-import { createMockUser } from '@/tests/utils/mock-factories';
+import { createMockUser } from '../../../utils/mock-factories';
 
 describe('AuthStore', () => {
   beforeEach(() => {

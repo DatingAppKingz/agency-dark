@@ -1,6 +1,6 @@
 import React from 'react';
 import { vi } from 'vitest';
-import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+import { render, screen, waitFor } from '../../../utils/enhanced-test-utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 describe('Avatar Component', () => {

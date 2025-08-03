@@ -1,8 +1,8 @@
 import { authService } from '@/services/auth/authService';
 import { vi } from 'vitest';
-import { server } from '@/tests/utils/test-server';
+import { server } from '../../../utils/test-server';
 import { rest } from 'msw';
-import { createMockUser } from '@/tests/utils/mock-factories';
+import { createMockUser } from '../../../utils/mock-factories';
 
 describe('AuthService', () => {
   beforeEach(() => {

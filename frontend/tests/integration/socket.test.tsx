@@ -2,7 +2,6 @@ import { renderHook, act } from '@testing-library/react';
 import { vi } from 'vitest';
 import { io, Socket } from 'socket.io-client';
 import { useSocket } from '@/providers/SocketProvider';
-import { mockAuthStore } from '@/__tests__/mocks/store-mocks';
 
 // Mock socket.io-client
 vi.mock('socket.io-client');
