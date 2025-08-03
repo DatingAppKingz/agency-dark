@@ -66,4 +66,4 @@ static/
 # Certificates
 *.pem
 *.key
-*.crt
+*.crt*.har
