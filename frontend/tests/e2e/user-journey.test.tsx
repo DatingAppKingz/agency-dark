@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen, waitFor, within } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { server } from '@/tests/utils/test-server';
@@ -8,8 +9,8 @@ import App from '@/App';
 // Mock for navigation tracking
 const navigationHistory: string[] = [];
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+vi.mock('react-router-dom', () => ({
+  ...vi.requireActual('react-router-dom'),
   useNavigate: () => (path: string) => {
     navigationHistory.push(path);
   },

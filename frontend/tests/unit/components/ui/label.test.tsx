@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { Label } from '@/components/ui/label';
@@ -88,7 +89,7 @@ describe('Label Component', () => {
 
     it('works with checkbox input', async () => {
       const user = userEvent.setup();
-      const handleChange = jest.fn();
+      const handleChange = vi.fn();
       
       render(
         <>
@@ -309,7 +310,7 @@ describe('Label Component', () => {
   describe('Event Handling', () => {
     it('supports onClick handler', async () => {
       const user = userEvent.setup();
-      const handleClick = jest.fn();
+      const handleClick = vi.fn();
       
       render(
         <Label onClick={handleClick}>Clickable Label</Label>
@@ -321,8 +322,8 @@ describe('Label Component', () => {
 
     it('supports onMouseEnter and onMouseLeave', async () => {
       const user = userEvent.setup();
-      const handleMouseEnter = jest.fn();
-      const handleMouseLeave = jest.fn();
+      const handleMouseEnter = vi.fn();
+      const handleMouseLeave = vi.fn();
       
       render(
         <Label 
@@ -376,7 +377,7 @@ describe('Label Component', () => {
   describe('Integration Examples', () => {
     it('works in a complete form field', async () => {
       const user = userEvent.setup();
-      const handleSubmit = jest.fn((e) => e.preventDefault());
+      const handleSubmit = vi.fn((e) => e.preventDefault());
       
       render(
         <form onSubmit={handleSubmit}>

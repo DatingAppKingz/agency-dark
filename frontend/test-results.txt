@@ -1,0 +1,2042 @@
+
+> agencydark-frontend@0.0.0 test
+> jest --watchAll=false --verbose
+
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+FAIL tests/unit/hooks/useDebounce.test.ts
+  useDebounce Hook
+    ✓ returns initial value immediately (16 ms)
+    ✓ debounces value changes with default delay (2 ms)
+    ✓ uses custom delay (2 ms)
+    ✓ cancels pending updates when value changes again (11 ms)
+    ✓ handles rapid successive updates (2 ms)
+    ✓ works with different data types (3 ms)
+    ✓ handles null and undefined values (1 ms)
+    ✓ cleans up timeout on unmount (4 ms)
+    ✓ handles delay changes (1 ms)
+    Real-world scenarios
+      ✓ debounces search input (1 ms)
+      ✕ debounces API calls (2 ms)
+      ✓ handles form validation debouncing (2 ms)
+    Edge cases
+      ✓ handles zero delay
+      ✓ handles negative delay as zero (1 ms)
+      ✓ maintains referential equality for unchanged objects
+
+  ● useDebounce Hook › Real-world scenarios › debounces API calls
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 4
+
+      272 |
+      273 |       // No API calls yet
+    > 274 |       expect(mockApiCall).toHaveBeenCalledTimes(1); // Initial render
+          |                           ^
+      275 |
+      276 |       // Complete debounce
+      277 |       act(() => jest.advanceTimersByTime(500));
+
+      at Object.<anonymous> (tests/unit/hooks/useDebounce.test.ts:274:27)
+
+FAIL tests/unit/components/ui/switch.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Switch } from '@/components/ui/switch';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/switch.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/label.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Label } from '@/components/ui/label';
+      5 | import { Input } from '@/components/ui/input';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/label.test.tsx:2:1)
+
+FAIL tests/unit/services/analyticsService.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/api/client.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+    > 1 | import apiClient from './client';
+        | ^
+      2 | import { logger } from '@/utils/logger';
+      3 |
+      4 | export interface DashboardStats {
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/services/api/analytics.ts:1:1)
+      at Object.<anonymous> (tests/unit/services/analyticsService.test.ts:1:1)
+
+FAIL tests/unit/components/ui/select.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import {
+      5 |   Select,
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/select.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/tabs.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/tabs.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/dropdown-menu.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import {
+      5 |   DropdownMenu,
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/dropdown-menu.test.tsx:2:1)
+
+FAIL tests/unit/hooks/useNotification.test.ts
+  useNotification Hook
+    Initial State
+      ✓ starts with empty notifications array (13 ms)
+      ✓ provides showNotification and hideNotification functions (1 ms)
+    showNotification
+      ✓ adds a success notification (2 ms)
+      ✓ adds error notification (1 ms)
+      ✓ adds warning notification (30 ms)
+      ✓ adds info notification (3 ms)
+      ✓ adds multiple notifications (2 ms)
+      ✓ uses custom duration (1 ms)
+      ✓ auto-hides notification after default duration (1 ms)
+      ✓ auto-hides notification after custom duration (1 ms)
+      ✓ does not auto-hide with duration 0 (1 ms)
+      ✓ does not auto-hide with negative duration (2 ms)
+    hideNotification
+      ✓ removes notification by id (3 ms)
+      ✓ removes correct notification from multiple (1 ms)
+      ✓ does nothing if id does not exist (17 ms)
+      ✓ can be called manually before auto-hide (2 ms)
+    Real-world scenarios
+      ✓ handles form submission notifications (8 ms)
+      ✓ handles error notification flow
+      ✕ handles notification queue (2 ms)
+    Edge cases
+      ✓ maintains stable function references
+      ✓ handles empty strings (1 ms)
+      ✓ handles very long messages
+      ✓ handles rapid show/hide cycles
+
+  ● useNotification Hook › Real-world scenarios › handles notification queue
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 0
+    Received array:  []
+
+      417 |       });
+      418 |
+    > 419 |       expect(result.current.notifications).toHaveLength(2);
+          |                                            ^
+      420 |       expect(result.current.notifications.find(n => n.id === '1000')).toBeUndefined();
+      421 |
+      422 |       // Remaining notifications expire
+
+      at Object.<anonymous> (tests/unit/hooks/useNotification.test.ts:419:44)
+
+FAIL tests/unit/components/ui/scroll-area.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/scroll-area.test.tsx:2:1)
+
+FAIL tests/integration/media-upload.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor, fireEvent } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { server } from '@/tests/utils/test-server';
+      5 | import { rest } from 'msw';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/media-upload.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/avatar.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+      4 |
+      5 | describe('Avatar Component', () => {
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/avatar.test.tsx:2:1)
+
+FAIL tests/integration/auth.integration.test.tsx
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+      2 | import { screen, waitFor } from '@testing-library/react';
+      3 | import userEvent from '@testing-library/user-event';
+    > 4 | import { rest } from 'msw';
+        | ^
+      5 | import { setupServer } from 'msw/node';
+      6 | import { render, createMockUser, mockApiResponses } from '@/tests/utils/test-utils';
+      7 | import { LoginPage, RegisterPage } from '../../__mocks__/pages';
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/integration/auth.integration.test.tsx:4:1)
+
+FAIL tests/integration/rbac.integration.test.tsx
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+      1 | import React from 'react';
+      2 | import { screen, waitFor } from '@testing-library/react';
+    > 3 | import { rest } from 'msw';
+        | ^
+      4 | import { setupServer } from 'msw/node';
+      5 | import { render, createMockUser, mockApiResponses } from '@/tests/utils/test-utils';
+      6 | import { useAuthStore } from '../../__mocks__/services';
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/integration/rbac.integration.test.tsx:3:1)
+
+FAIL tests/e2e/user-journey.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor, within } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { server } from '@/tests/utils/test-server';
+      5 | import { rest } from 'msw';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/e2e/user-journey.test.tsx:2:1)
+
+FAIL tests/integration/multi-tenant.integration.test.tsx
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+      2 | import { screen, waitFor } from '@testing-library/react';
+      3 | // import userEvent from '@testing-library/user-event';
+    > 4 | import { rest } from 'msw';
+        | ^
+      5 | import { setupServer } from 'msw/node';
+      6 | import { render, createMockUser, createMockModel, createMockChat } from '@/tests/utils/test-utils';
+      7 | import { useAuthStore, apiClient } from '../../__mocks__/services';
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/integration/multi-tenant.integration.test.tsx:4:1)
+
+FAIL tests/integration/auth-flow.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { server } from '@/tests/utils/test-server';
+      5 | import { rest } from 'msw';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/auth-flow.test.tsx:2:1)
+
+FAIL tests/integration/multi-tenant.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/__tests__/utils/test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import { screen, waitFor } from '@testing-library/react';
+    > 2 | import { render } from '@/__tests__/utils/test-utils';
+        | ^
+      3 | import ModelsPage from '@/pages/models/ModelsPage';
+      4 | import ChatPage from '@/pages/chat/ChatPage';
+      5 | import FinancialPage from '@/pages/financial/FinancialPage';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/multi-tenant.test.tsx:2:1)
+
+FAIL tests/unit/services/authService.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/auth/authService.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+    > 1 | import { authService } from '@/services/auth/authService';
+        | ^
+      2 | import { server } from '@/tests/utils/test-server';
+      3 | import { rest } from 'msw';
+      4 | import { createMockUser } from '@/tests/utils/mock-factories';
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (tests/unit/services/authService.test.ts:1:1)
+
+FAIL tests/integration/rbac.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/__tests__/utils/test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import { screen } from '@testing-library/react';
+    > 2 | import { render } from '@/__tests__/utils/test-utils';
+        | ^
+      3 | import DashboardLayout from '@/layouts/DashboardLayout';
+      4 | import UsersPage from '@/pages/users/UsersPage';
+      5 | import ModelsPage from '@/pages/models/ModelsPage';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/rbac.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/card.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import {
+      4 |   Card,
+      5 |   CardHeader,
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/card.test.tsx:2:1)
+
+FAIL tests/integration/socket.integration.test.ts
+  ● Test suite failed to run
+
+    Cannot find module '../../__mocks__/services' from 'tests/integration/socket.integration.test.ts'
+
+      1 | import { io } from 'socket.io-client';
+    > 2 | import { SocketManager } from '../../__mocks__/services';
+        | ^
+      3 | // import { createMockUser } from '@/tests/utils/test-utils';
+      4 |
+      5 | // Mock socket.io-client
+
+      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)
+      at Object.<anonymous> (tests/integration/socket.integration.test.ts:2:1)
+
+FAIL tests/unit/store/authStore.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/auth/authService.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+      1 | import { create } from 'zustand';
+    > 2 | import { authService } from '@/services/auth/authService';
+        | ^
+      3 | import { User, LoginCredentials, RegisterData } from '@/types/auth';
+      4 |
+      5 | interface AuthState {
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/store/authStore.ts:2:1)
+      at Object.<anonymous> (tests/unit/store/authStore.test.ts:2:1)
+
+FAIL tests/unit/hooks/useAuth.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/auth/authService.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+      1 | import { create } from 'zustand';
+    > 2 | import { authService } from '@/services/auth/authService';
+        | ^
+      3 | import { User, LoginCredentials, RegisterData } from '@/types/auth';
+      4 |
+      5 | interface AuthState {
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/store/authStore.ts:2:1)
+      at Object.<anonymous> (src/hooks/useAuth.ts:1:1)
+      at Object.<anonymous> (tests/unit/hooks/useAuth.test.ts:2:1)
+
+FAIL tests/integration/auth.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/__tests__/utils/test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import { screen, waitFor } from '@testing-library/react';
+      2 | import userEvent from '@testing-library/user-event';
+    > 3 | import { render } from '@/__tests__/utils/test-utils';
+        | ^
+      4 | import LoginPage from '@/pages/auth/LoginPage';
+      5 | import RegisterPage from '@/pages/auth/RegisterPage';
+      6 | import { server } from '@/__tests__/mocks/api-mocks';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/auth.test.tsx:3:1)
+
+FAIL tests/unit/components/ui/input.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Input } from '@/components/ui/input';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/input.test.tsx:2:1)
+
+FAIL tests/unit/components/common/Toaster.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor, act } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Toaster, showToast } from '@/components/common/Toaster';
+      5 | import toast from 'react-hot-toast';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/common/Toaster.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/button.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Button } from '@/components/ui/button';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/button.test.tsx:2:1)
+
+FAIL tests/integration/api.integration.test.ts
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+    > 1 | import { rest } from 'msw';
+        | ^
+      2 | import { setupServer } from 'msw/node';
+      3 | import { apiClient, authService, userService, modelService } from '../../__mocks__/services';
+      4 | import { createMockUser, createMockModel, mockApiResponses } from '@/tests/utils/test-utils';
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/integration/api.integration.test.ts:1:1)
+
+FAIL tests/integration/socket.test.tsx
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/socket/socketManager.ts:46
+            const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:8000';
+                                 ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+      1 | import { createContext, useContext, useEffect, ReactNode } from 'react';
+    > 2 | import { socketManager } from '@/services/socket/socketManager';
+        | ^
+      3 | import { useAuthStore } from '@/store/authStore';
+      4 | import { useToast } from '@/components/common/Toaster';
+      5 | import { logger } from '@/utils/logger';
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/providers/SocketProvider.tsx:2:1)
+      at Object.<anonymous> (tests/integration/socket.test.tsx:3:1)
+
+FAIL tests/unit/components/ui/badge.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import { Badge } from '@/components/ui/badge';
+      4 |
+      5 | describe('Badge Component', () => {
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/badge.test.tsx:2:1)
+
+FAIL tests/utils/mock-factories.ts
+  ● Test suite failed to run
+
+    Your test suite must contain at least one test.
+
+      at onResult (node_modules/@jest/core/build/index.js:1052:18)
+      at node_modules/@jest/core/build/index.js:1122:165
+      at node_modules/emittery/index.js:363:13
+          at Array.map (<anonymous>)
+      at Emittery.emit (node_modules/emittery/index.js:361:23)
+
+FAIL tests/utils/handlers.ts
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+    > 1 | import { rest } from 'msw';
+        | ^
+      2 |
+      3 | const API_URL = 'http://localhost:8000/api/v1';
+      4 |
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/utils/handlers.ts:1:1)
+
+FAIL tests/utils/test-helpers.ts
+  ● Test suite failed to run
+
+    Your test suite must contain at least one test.
+
+      at onResult (node_modules/@jest/core/build/index.js:1052:18)
+      at node_modules/@jest/core/build/index.js:1122:165
+      at node_modules/emittery/index.js:363:13
+          at Array.map (<anonymous>)
+      at Emittery.emit (node_modules/emittery/index.js:361:23)
+
+FAIL tests/utils/setup.ts
+  ● Test suite failed to run
+
+    Your test suite must contain at least one test.
+
+      at onResult (node_modules/@jest/core/build/index.js:1052:18)
+      at node_modules/@jest/core/build/index.js:1122:165
+      at node_modules/emittery/index.js:363:13
+          at Array.map (<anonymous>)
+      at Emittery.emit (node_modules/emittery/index.js:361:23)
+
+FAIL tests/utils/test-server.ts
+  ● Test suite failed to run
+
+    ReferenceError: TransformStream is not defined
+
+    > 1 | import { setupServer } from 'msw/node';
+        | ^
+      2 | import { handlers } from './handlers';
+      3 |
+      4 | // Setup MSW server with default handlers
+
+      at Object.<anonymous> (node_modules/@mswjs/interceptors/src/interceptors/fetch/utils/brotli-decompress.ts:3:8)
+      at Object.<anonymous> (node_modules/@mswjs/interceptors/lib/node/interceptors/fetch/index.js:3:24)
+      at Object.<anonymous> (node_modules/msw/src/node/SetupServerApi.ts:5:34)
+      at Object.<anonymous> (tests/utils/test-server.ts:1:1)
+
+PASS tests/integration/simple-auth.test.tsx
+  Simple Authentication Tests
+    ✓ should handle login form submission (119 ms)
+    ✓ should store tokens on successful login
+    ✓ should clear tokens on logout
+
+FAIL tests/utils/test-utils.tsx
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/i18n/config.ts:51
+        debug: import.meta.env.NODE_ENV === 'development',
+                      ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+       6 | import { CssBaseline } from '@mui/material';
+       7 | import { I18nextProvider } from 'react-i18next';
+    >  8 | import i18n from '@/i18n/config';
+         | ^
+       9 | import { theme } from '@/theme/optimizedTheme';
+      10 |
+      11 | // Create a new QueryClient for each test
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (tests/utils/test-utils.tsx:8:1)
+
+FAIL tests/utils/enhanced-test-utils.tsx
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/auth/authService.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+      1 | import { create } from 'zustand';
+    > 2 | import { authService } from '@/services/auth/authService';
+        | ^
+      3 | import { User, LoginCredentials, RegisterData } from '@/types/auth';
+      4 |
+      5 | interface AuthState {
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/store/authStore.ts:2:1)
+      at Object.<anonymous> (src/providers/PushNotificationProvider.tsx:3:1)
+      at Object.<anonymous> (tests/utils/enhanced-test-utils.tsx:9:1)
+
+Summary of all failing tests
+FAIL tests/unit/hooks/useDebounce.test.ts
+  ● useDebounce Hook › Real-world scenarios › debounces API calls
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 4
+
+      272 |
+      273 |       // No API calls yet
+    > 274 |       expect(mockApiCall).toHaveBeenCalledTimes(1); // Initial render
+          |                           ^
+      275 |
+      276 |       // Complete debounce
+      277 |       act(() => jest.advanceTimersByTime(500));
+
+      at Object.<anonymous> (tests/unit/hooks/useDebounce.test.ts:274:27)
+
+FAIL tests/unit/components/ui/switch.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Switch } from '@/components/ui/switch';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/switch.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/label.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Label } from '@/components/ui/label';
+      5 | import { Input } from '@/components/ui/input';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/label.test.tsx:2:1)
+
+FAIL tests/unit/services/analyticsService.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/api/client.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+    > 1 | import apiClient from './client';
+        | ^
+      2 | import { logger } from '@/utils/logger';
+      3 |
+      4 | export interface DashboardStats {
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/services/api/analytics.ts:1:1)
+      at Object.<anonymous> (tests/unit/services/analyticsService.test.ts:1:1)
+
+FAIL tests/unit/components/ui/select.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import {
+      5 |   Select,
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/select.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/tabs.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/tabs.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/dropdown-menu.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import {
+      5 |   DropdownMenu,
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/dropdown-menu.test.tsx:2:1)
+
+FAIL tests/unit/hooks/useNotification.test.ts
+  ● useNotification Hook › Real-world scenarios › handles notification queue
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 0
+    Received array:  []
+
+      417 |       });
+      418 |
+    > 419 |       expect(result.current.notifications).toHaveLength(2);
+          |                                            ^
+      420 |       expect(result.current.notifications.find(n => n.id === '1000')).toBeUndefined();
+      421 |
+      422 |       // Remaining notifications expire
+
+      at Object.<anonymous> (tests/unit/hooks/useNotification.test.ts:419:44)
+
+FAIL tests/unit/components/ui/scroll-area.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/scroll-area.test.tsx:2:1)
+
+FAIL tests/integration/media-upload.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor, fireEvent } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { server } from '@/tests/utils/test-server';
+      5 | import { rest } from 'msw';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/media-upload.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/avatar.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+      4 |
+      5 | describe('Avatar Component', () => {
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/avatar.test.tsx:2:1)
+
+FAIL tests/integration/auth.integration.test.tsx
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+      2 | import { screen, waitFor } from '@testing-library/react';
+      3 | import userEvent from '@testing-library/user-event';
+    > 4 | import { rest } from 'msw';
+        | ^
+      5 | import { setupServer } from 'msw/node';
+      6 | import { render, createMockUser, mockApiResponses } from '@/tests/utils/test-utils';
+      7 | import { LoginPage, RegisterPage } from '../../__mocks__/pages';
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/integration/auth.integration.test.tsx:4:1)
+
+FAIL tests/integration/rbac.integration.test.tsx
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+      1 | import React from 'react';
+      2 | import { screen, waitFor } from '@testing-library/react';
+    > 3 | import { rest } from 'msw';
+        | ^
+      4 | import { setupServer } from 'msw/node';
+      5 | import { render, createMockUser, mockApiResponses } from '@/tests/utils/test-utils';
+      6 | import { useAuthStore } from '../../__mocks__/services';
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/integration/rbac.integration.test.tsx:3:1)
+
+FAIL tests/e2e/user-journey.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor, within } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { server } from '@/tests/utils/test-server';
+      5 | import { rest } from 'msw';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/e2e/user-journey.test.tsx:2:1)
+
+FAIL tests/integration/multi-tenant.integration.test.tsx
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+      2 | import { screen, waitFor } from '@testing-library/react';
+      3 | // import userEvent from '@testing-library/user-event';
+    > 4 | import { rest } from 'msw';
+        | ^
+      5 | import { setupServer } from 'msw/node';
+      6 | import { render, createMockUser, createMockModel, createMockChat } from '@/tests/utils/test-utils';
+      7 | import { useAuthStore, apiClient } from '../../__mocks__/services';
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/integration/multi-tenant.integration.test.tsx:4:1)
+
+FAIL tests/integration/auth-flow.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { server } from '@/tests/utils/test-server';
+      5 | import { rest } from 'msw';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/auth-flow.test.tsx:2:1)
+
+FAIL tests/integration/multi-tenant.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/__tests__/utils/test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import { screen, waitFor } from '@testing-library/react';
+    > 2 | import { render } from '@/__tests__/utils/test-utils';
+        | ^
+      3 | import ModelsPage from '@/pages/models/ModelsPage';
+      4 | import ChatPage from '@/pages/chat/ChatPage';
+      5 | import FinancialPage from '@/pages/financial/FinancialPage';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/multi-tenant.test.tsx:2:1)
+
+FAIL tests/unit/services/authService.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/auth/authService.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+    > 1 | import { authService } from '@/services/auth/authService';
+        | ^
+      2 | import { server } from '@/tests/utils/test-server';
+      3 | import { rest } from 'msw';
+      4 | import { createMockUser } from '@/tests/utils/mock-factories';
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (tests/unit/services/authService.test.ts:1:1)
+
+FAIL tests/integration/rbac.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/__tests__/utils/test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import { screen } from '@testing-library/react';
+    > 2 | import { render } from '@/__tests__/utils/test-utils';
+        | ^
+      3 | import DashboardLayout from '@/layouts/DashboardLayout';
+      4 | import UsersPage from '@/pages/users/UsersPage';
+      5 | import ModelsPage from '@/pages/models/ModelsPage';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/rbac.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/card.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import {
+      4 |   Card,
+      5 |   CardHeader,
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/card.test.tsx:2:1)
+
+FAIL tests/integration/socket.integration.test.ts
+  ● Test suite failed to run
+
+    Cannot find module '../../__mocks__/services' from 'tests/integration/socket.integration.test.ts'
+
+      1 | import { io } from 'socket.io-client';
+    > 2 | import { SocketManager } from '../../__mocks__/services';
+        | ^
+      3 | // import { createMockUser } from '@/tests/utils/test-utils';
+      4 |
+      5 | // Mock socket.io-client
+
+      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)
+      at Object.<anonymous> (tests/integration/socket.integration.test.ts:2:1)
+
+FAIL tests/unit/store/authStore.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/auth/authService.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+      1 | import { create } from 'zustand';
+    > 2 | import { authService } from '@/services/auth/authService';
+        | ^
+      3 | import { User, LoginCredentials, RegisterData } from '@/types/auth';
+      4 |
+      5 | interface AuthState {
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/store/authStore.ts:2:1)
+      at Object.<anonymous> (tests/unit/store/authStore.test.ts:2:1)
+
+FAIL tests/unit/hooks/useAuth.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/auth/authService.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+      1 | import { create } from 'zustand';
+    > 2 | import { authService } from '@/services/auth/authService';
+        | ^
+      3 | import { User, LoginCredentials, RegisterData } from '@/types/auth';
+      4 |
+      5 | interface AuthState {
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/store/authStore.ts:2:1)
+      at Object.<anonymous> (src/hooks/useAuth.ts:1:1)
+      at Object.<anonymous> (tests/unit/hooks/useAuth.test.ts:2:1)
+
+FAIL tests/integration/auth.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/__tests__/utils/test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import { screen, waitFor } from '@testing-library/react';
+      2 | import userEvent from '@testing-library/user-event';
+    > 3 | import { render } from '@/__tests__/utils/test-utils';
+        | ^
+      4 | import LoginPage from '@/pages/auth/LoginPage';
+      5 | import RegisterPage from '@/pages/auth/RegisterPage';
+      6 | import { server } from '@/__tests__/mocks/api-mocks';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/integration/auth.test.tsx:3:1)
+
+FAIL tests/unit/components/ui/input.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Input } from '@/components/ui/input';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/input.test.tsx:2:1)
+
+FAIL tests/unit/components/common/Toaster.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen, waitFor, act } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Toaster, showToast } from '@/components/common/Toaster';
+      5 | import toast from 'react-hot-toast';
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/common/Toaster.test.tsx:2:1)
+
+FAIL tests/unit/components/ui/button.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import userEvent from '@testing-library/user-event';
+      4 | import { Button } from '@/components/ui/button';
+      5 |
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/button.test.tsx:2:1)
+
+FAIL tests/integration/api.integration.test.ts
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+    > 1 | import { rest } from 'msw';
+        | ^
+      2 | import { setupServer } from 'msw/node';
+      3 | import { apiClient, authService, userService, modelService } from '../../__mocks__/services';
+      4 | import { createMockUser, createMockModel, mockApiResponses } from '@/tests/utils/test-utils';
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/integration/api.integration.test.ts:1:1)
+
+FAIL tests/integration/socket.test.tsx
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/socket/socketManager.ts:46
+            const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:8000';
+                                 ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+      1 | import { createContext, useContext, useEffect, ReactNode } from 'react';
+    > 2 | import { socketManager } from '@/services/socket/socketManager';
+        | ^
+      3 | import { useAuthStore } from '@/store/authStore';
+      4 | import { useToast } from '@/components/common/Toaster';
+      5 | import { logger } from '@/utils/logger';
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/providers/SocketProvider.tsx:2:1)
+      at Object.<anonymous> (tests/integration/socket.test.tsx:3:1)
+
+FAIL tests/unit/components/ui/badge.test.tsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/tests/utils/enhanced-test-utils mapped as:
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "/Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/$1"
+      },
+      "resolver": undefined
+    }
+
+      1 | import React from 'react';
+    > 2 | import { render, screen } from '@/tests/utils/enhanced-test-utils';
+        | ^
+      3 | import { Badge } from '@/components/ui/badge';
+      4 |
+      5 | describe('Badge Component', () => {
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.<anonymous> (tests/unit/components/ui/badge.test.tsx:2:1)
+
+FAIL tests/utils/mock-factories.ts
+  ● Test suite failed to run
+
+    Your test suite must contain at least one test.
+
+      at onResult (node_modules/@jest/core/build/index.js:1052:18)
+      at node_modules/@jest/core/build/index.js:1122:165
+      at node_modules/emittery/index.js:363:13
+          at Array.map (<anonymous>)
+      at Emittery.emit (node_modules/emittery/index.js:361:23)
+
+FAIL tests/utils/handlers.ts
+  ● Test suite failed to run
+
+    ReferenceError: BroadcastChannel is not defined
+
+    > 1 | import { rest } from 'msw';
+        | ^
+      2 |
+      3 | const API_URL = 'http://localhost:8000/api/v1';
+      4 |
+
+      at Object.<anonymous> (node_modules/msw/src/core/ws.ts:20:26)
+      at Object.<anonymous> (node_modules/msw/src/core/index.ts:13:40)
+      at Object.<anonymous> (tests/utils/handlers.ts:1:1)
+
+FAIL tests/utils/test-helpers.ts
+  ● Test suite failed to run
+
+    Your test suite must contain at least one test.
+
+      at onResult (node_modules/@jest/core/build/index.js:1052:18)
+      at node_modules/@jest/core/build/index.js:1122:165
+      at node_modules/emittery/index.js:363:13
+          at Array.map (<anonymous>)
+      at Emittery.emit (node_modules/emittery/index.js:361:23)
+
+FAIL tests/utils/setup.ts
+  ● Test suite failed to run
+
+    Your test suite must contain at least one test.
+
+      at onResult (node_modules/@jest/core/build/index.js:1052:18)
+      at node_modules/@jest/core/build/index.js:1122:165
+      at node_modules/emittery/index.js:363:13
+          at Array.map (<anonymous>)
+      at Emittery.emit (node_modules/emittery/index.js:361:23)
+
+FAIL tests/utils/test-server.ts
+  ● Test suite failed to run
+
+    ReferenceError: TransformStream is not defined
+
+    > 1 | import { setupServer } from 'msw/node';
+        | ^
+      2 | import { handlers } from './handlers';
+      3 |
+      4 | // Setup MSW server with default handlers
+
+      at Object.<anonymous> (node_modules/@mswjs/interceptors/src/interceptors/fetch/utils/brotli-decompress.ts:3:8)
+      at Object.<anonymous> (node_modules/@mswjs/interceptors/lib/node/interceptors/fetch/index.js:3:24)
+      at Object.<anonymous> (node_modules/msw/src/node/SetupServerApi.ts:5:34)
+      at Object.<anonymous> (tests/utils/test-server.ts:1:1)
+
+FAIL tests/utils/test-utils.tsx
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/i18n/config.ts:51
+        debug: import.meta.env.NODE_ENV === 'development',
+                      ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+       6 | import { CssBaseline } from '@mui/material';
+       7 | import { I18nextProvider } from 'react-i18next';
+    >  8 | import i18n from '@/i18n/config';
+         | ^
+       9 | import { theme } from '@/theme/optimizedTheme';
+      10 |
+      11 | // Create a new QueryClient for each test
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (tests/utils/test-utils.tsx:8:1)
+
+FAIL tests/utils/enhanced-test-utils.tsx
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /Users/mariuszbudzisz/SourceCode/agency-dark/frontend/src/services/auth/authService.ts:8
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+                           ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+      1 | import { create } from 'zustand';
+    > 2 | import { authService } from '@/services/auth/authService';
+        | ^
+      3 | import { User, LoginCredentials, RegisterData } from '@/types/auth';
+      4 |
+      5 | interface AuthState {
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1316:40)
+      at Object.<anonymous> (src/store/authStore.ts:2:1)
+      at Object.<anonymous> (src/providers/PushNotificationProvider.tsx:3:1)
+      at Object.<anonymous> (tests/utils/enhanced-test-utils.tsx:9:1)
+
+
+Test Suites: 37 failed, 1 passed, 38 total
+Tests:       2 failed, 39 passed, 41 total
+Snapshots:   0 total
+Time:        2.475 s
+Ran all test suites.

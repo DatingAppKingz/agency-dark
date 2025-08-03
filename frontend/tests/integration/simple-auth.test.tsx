@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
@@ -25,7 +26,7 @@ const LoginForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
 
 describe('Simple Authentication Tests', () => {
   it('should handle login form submission', async () => {
-    const mockLogin = jest.fn();
+    const mockLogin = vi.fn();
     const user = userEvent.setup();
     
     render(<LoginForm onSubmit={mockLogin} />);

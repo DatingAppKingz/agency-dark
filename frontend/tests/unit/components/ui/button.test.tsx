@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ describe('Button Component', () => {
   });
 
   it('handles click events', async () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     const user = userEvent.setup();
     
     render(<Button onClick={handleClick}>Click me</Button>);
@@ -28,7 +29,7 @@ describe('Button Component', () => {
   });
 
   it('does not trigger click when disabled', async () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     const user = userEvent.setup();
     
     render(<Button disabled onClick={handleClick}>Disabled</Button>);
@@ -135,7 +136,7 @@ describe('Button Component', () => {
   });
 
   it('handles keyboard navigation', async () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     const user = userEvent.setup();
     
     render(<Button onClick={handleClick}>Keyboard Test</Button>);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { server } from '@/tests/utils/test-server';
@@ -219,7 +220,7 @@ describe('Media Upload Integration', () => {
       await user.click(deleteOption);
 
       // Confirm deletion
-      window.confirm = jest.fn(() => true);
+      window.confirm = vi.fn(() => true);
 
       // File should be removed
       await waitFor(() => {
@@ -322,7 +323,7 @@ describe('Media Upload Integration', () => {
       await user.click(deleteButton);
 
       // Confirm bulk deletion
-      window.confirm = jest.fn(() => true);
+      window.confirm = vi.fn(() => true);
 
       // Items should be deleted
       await waitFor(() => {

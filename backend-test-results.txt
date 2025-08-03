@@ -1,0 +1,2 @@
+
+Poetry could not find a pyproject.toml file in /Users/mariuszbudzisz/SourceCode/agency-dark or its parents

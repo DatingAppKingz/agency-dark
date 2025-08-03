@@ -1,13 +1,14 @@
 import { renderHook, act } from '@testing-library/react';
+import { vi } from 'vitest';
 import { useDebounce } from '@/hooks/useDebounce';
 
 describe('useDebounce Hook', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('returns initial value immediately', () => {
@@ -32,13 +33,13 @@ describe('useDebounce Hook', () => {
 
     // Fast forward time but not enough
     act(() => {
-      jest.advanceTimersByTime(400);
+      vi.advanceTimersByTime(400);
     });
     expect(result.current).toBe('initial');
 
     // Fast forward past default delay (500ms)
     act(() => {
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
     });
     expect(result.current).toBe('updated');
   });
@@ -55,13 +56,13 @@ describe('useDebounce Hook', () => {
     
     // Should not update after 500ms
     act(() => {
-      jest.advanceTimersByTime(500);
+      vi.advanceTimersByTime(500);
     });
     expect(result.current).toBe('initial');
 
     // Should update after 1000ms
     act(() => {
-      jest.advanceTimersByTime(500);
+      vi.advanceTimersByTime(500);
     });
     expect(result.current).toBe('updated');
   });
@@ -78,7 +79,7 @@ describe('useDebounce Hook', () => {
     rerender({ value: 'second' });
     
     act(() => {
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
     });
     expect(result.current).toBe('first');
 
@@ -87,14 +88,14 @@ describe('useDebounce Hook', () => {
     
     // Advance past first timer
     act(() => {
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
     });
     // Should still be initial value because first update was cancelled
     expect(result.current).toBe('first');
 
     // Complete second timer
     act(() => {
-      jest.advanceTimersByTime(200);
+      vi.advanceTimersByTime(200);
     });
     expect(result.current).toBe('third');
   });
@@ -107,19 +108,19 @@ describe('useDebounce Hook', () => {
 
     // Rapid updates
     rerender({ value: 'ab' });
-    act(() => jest.advanceTimersByTime(100));
+    act(() => vi.advanceTimersByTime(100));
     
     rerender({ value: 'abc' });
-    act(() => jest.advanceTimersByTime(100));
+    act(() => vi.advanceTimersByTime(100));
     
     rerender({ value: 'abcd' });
-    act(() => jest.advanceTimersByTime(100));
+    act(() => vi.advanceTimersByTime(100));
     
     // None should have applied yet
     expect(result.current).toBe('a');
 
     // Complete the last timer
-    act(() => jest.advanceTimersByTime(200));
+    act(() => vi.advanceTimersByTime(200));
     expect(result.current).toBe('abcd');
   });
 
@@ -131,7 +132,7 @@ describe('useDebounce Hook', () => {
     );
     
     rerenderNumber({ value: 100 });
-    act(() => jest.advanceTimersByTime(100));
+    act(() => vi.advanceTimersByTime(100));
     expect(numberResult.current).toBe(100);
 
     // Object
@@ -142,7 +143,7 @@ describe('useDebounce Hook', () => {
     
     const newObject = { count: 2 };
     rerenderObject({ value: newObject });
-    act(() => jest.advanceTimersByTime(100));
+    act(() => vi.advanceTimersByTime(100));
     expect(objectResult.current).toBe(newObject);
 
     // Array
@@ -153,7 +154,7 @@ describe('useDebounce Hook', () => {
     
     const newArray = [4, 5, 6];
     rerenderArray({ value: newArray });
-    act(() => jest.advanceTimersByTime(100));
+    act(() => vi.advanceTimersByTime(100));
     expect(arrayResult.current).toBe(newArray);
   });
 
@@ -166,16 +167,16 @@ describe('useDebounce Hook', () => {
     expect(result.current).toBeNull();
 
     rerender({ value: 'value' });
-    act(() => jest.advanceTimersByTime(200));
+    act(() => vi.advanceTimersByTime(200));
     expect(result.current).toBe('value');
 
     rerender({ value: undefined as string | undefined });
-    act(() => jest.advanceTimersByTime(200));
+    act(() => vi.advanceTimersByTime(200));
     expect(result.current).toBeUndefined();
   });
 
   it('cleans up timeout on unmount', () => {
-    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
     
     const { unmount, rerender } = renderHook(
       ({ value }) => useDebounce(value, 500),
@@ -204,14 +205,14 @@ describe('useDebounce Hook', () => {
     
     // Old timer should be cancelled, new one with 200ms delay
     act(() => {
-      jest.advanceTimersByTime(200);
+      vi.advanceTimersByTime(200);
     });
     expect(result.current).toBe('updated');
   });
 
   describe('Real-world scenarios', () => {
     it('debounces search input', () => {
-      const mockSearch = jest.fn();
+      const mockSearch = vi.fn();
       
       const { result, rerender } = renderHook(
         ({ query }) => {
@@ -223,16 +224,16 @@ describe('useDebounce Hook', () => {
 
       // User types "react"
       rerender({ query: 'r' });
-      act(() => jest.advanceTimersByTime(100));
+      act(() => vi.advanceTimersByTime(100));
       
       rerender({ query: 're' });
-      act(() => jest.advanceTimersByTime(100));
+      act(() => vi.advanceTimersByTime(100));
       
       rerender({ query: 'rea' });
-      act(() => jest.advanceTimersByTime(100));
+      act(() => vi.advanceTimersByTime(100));
       
       rerender({ query: 'reac' });
-      act(() => jest.advanceTimersByTime(100));
+      act(() => vi.advanceTimersByTime(100));
       
       rerender({ query: 'react' });
       
@@ -241,7 +242,7 @@ describe('useDebounce Hook', () => {
       expect(mockSearch).not.toHaveBeenCalled();
 
       // Complete debounce
-      act(() => jest.advanceTimersByTime(300));
+      act(() => vi.advanceTimersByTime(300));
       
       // Now search should be triggered with final value
       if (result.current) mockSearch(result.current);
@@ -249,7 +250,7 @@ describe('useDebounce Hook', () => {
     });
 
     it('debounces API calls', () => {
-      const mockApiCall = jest.fn();
+      const mockApiCall = vi.fn();
       
       const { rerender } = renderHook(
         ({ filters }) => {
@@ -274,7 +275,7 @@ describe('useDebounce Hook', () => {
       expect(mockApiCall).toHaveBeenCalledTimes(1); // Initial render
 
       // Complete debounce
-      act(() => jest.advanceTimersByTime(500));
+      act(() => vi.advanceTimersByTime(500));
       
       // Should call with final filters
       expect(mockApiCall).toHaveBeenCalledWith({
@@ -285,7 +286,7 @@ describe('useDebounce Hook', () => {
     });
 
     it('handles form validation debouncing', () => {
-      const mockValidate = jest.fn();
+      const mockValidate = vi.fn();
       
       const { result, rerender } = renderHook(
         ({ email }) => {
@@ -310,7 +311,7 @@ describe('useDebounce Hook', () => {
       }
       expect(mockValidate).not.toHaveBeenCalled();
 
-      act(() => jest.advanceTimersByTime(400));
+      act(() => vi.advanceTimersByTime(400));
 
       // Now validation can run
       if (result.current.debouncedEmail) {
@@ -331,7 +332,7 @@ describe('useDebounce Hook', () => {
       
       // Should update immediately (next tick)
       act(() => {
-        jest.advanceTimersByTime(0);
+        vi.advanceTimersByTime(0);
       });
       expect(result.current).toBe('updated');
     });
@@ -345,7 +346,7 @@ describe('useDebounce Hook', () => {
       rerender({ value: 'updated' });
       
       act(() => {
-        jest.advanceTimersByTime(0);
+        vi.advanceTimersByTime(0);
       });
       expect(result.current).toBe('updated');
     });
@@ -361,7 +362,7 @@ describe('useDebounce Hook', () => {
       // Rerender without changing the object
       rerender();
       
-      act(() => jest.advanceTimersByTime(100));
+      act(() => vi.advanceTimersByTime(100));
       
       // Should be the same reference
       expect(result.current).toBe(firstResult);

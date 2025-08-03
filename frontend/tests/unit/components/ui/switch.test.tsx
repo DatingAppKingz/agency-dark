@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { Switch } from '@/components/ui/switch';
@@ -54,7 +55,7 @@ describe('Switch Component', () => {
 
     it('calls onCheckedChange when toggled', async () => {
       const user = userEvent.setup();
-      const handleChange = jest.fn();
+      const handleChange = vi.fn();
       
       render(<Switch onCheckedChange={handleChange} />);
       
@@ -109,7 +110,7 @@ describe('Switch Component', () => {
 
     it('does not toggle when disabled', async () => {
       const user = userEvent.setup();
-      const handleChange = jest.fn();
+      const handleChange = vi.fn();
       
       render(<Switch disabled onCheckedChange={handleChange} />);
       
@@ -189,7 +190,7 @@ describe('Switch Component', () => {
 
     it('submits correct value in form', async () => {
       const user = userEvent.setup();
-      const handleSubmit = jest.fn((e) => {
+      const handleSubmit = vi.fn((e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         return Object.fromEntries(formData);
@@ -377,7 +378,7 @@ describe('Switch Component', () => {
 
     it('works for enabling/disabling features', async () => {
       const user = userEvent.setup();
-      const handleToggle = jest.fn();
+      const handleToggle = vi.fn();
       
       const FeatureToggle = () => {
         const [enabled, setEnabled] = React.useState(false);

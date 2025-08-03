@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -109,7 +110,7 @@ describe('Tabs Component', () => {
 
     it('calls onValueChange when tab changes', async () => {
       const user = userEvent.setup();
-      const handleChange = jest.fn();
+      const handleChange = vi.fn();
       
       render(
         <Tabs defaultValue="tab1" onValueChange={handleChange}>

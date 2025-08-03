@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen, waitFor, act } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { Toaster, showToast } from '@/components/common/Toaster';

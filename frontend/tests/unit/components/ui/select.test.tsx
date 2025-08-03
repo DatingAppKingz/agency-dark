@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import {
@@ -86,7 +87,7 @@ describe('Select Component', () => {
 
     it('selects an option when clicked', async () => {
       const user = userEvent.setup();
-      const handleChange = jest.fn();
+      const handleChange = vi.fn();
       
       render(
         <Select onValueChange={handleChange}>

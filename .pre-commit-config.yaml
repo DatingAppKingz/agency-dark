@@ -1,0 +1,65 @@
+repos:
+  # Frontend hooks
+  - repo: local
+    hooks:
+      - id: frontend-lint
+        name: Frontend Lint
+        entry: bash -c 'cd frontend && npm run lint:check'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.(ts|tsx|js|jsx)$
+      
+      - id: frontend-tests
+        name: Frontend Tests
+        entry: bash -c 'cd frontend && npm test -- --run --changed'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.(ts|tsx|js|jsx)$
+        stages: [push]
+  
+  # Backend hooks
+  - repo: local
+    hooks:
+      - id: backend-ruff
+        name: Backend Ruff Check
+        entry: bash -c 'cd backend && poetry run ruff check --fix'
+        language: system
+        pass_filenames: false
+        files: ^backend/.*\.py$
+      
+      - id: backend-mypy
+        name: Backend Type Check
+        entry: bash -c 'cd backend && poetry run mypy .'
+        language: system
+        pass_filenames: false
+        files: ^backend/.*\.py$
+      
+      - id: backend-tests
+        name: Backend Tests
+        entry: bash -c 'cd backend && poetry run pytest tests/unit/ -x'
+        language: system
+        pass_filenames: false
+        files: ^backend/.*\.py$
+        stages: [push]
+  
+  # General hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-json
+      - id: check-merge-conflict
+      - id: detect-private-key
+  
+  # Security checks
+  - repo: local
+    hooks:
+      - id: no-secrets
+        name: Check for secrets
+        entry: bash -c 'git diff --cached --name-only -z | xargs -0 grep -E "(password|secret|token|key)\\s*=\\s*[\"'\''][^\"'\'']+[\"'\'']" || true'
+        language: system
+        pass_filenames: false

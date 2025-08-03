@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { Input } from '@/components/ui/input';
@@ -20,7 +21,7 @@ describe('Input Component', () => {
   });
 
   it('handles onChange events', async () => {
-    const handleChange = jest.fn();
+    const handleChange = vi.fn();
     const user = userEvent.setup();
     
     render(<Input onChange={handleChange} placeholder="Type here" />);
@@ -83,8 +84,8 @@ describe('Input Component', () => {
   });
 
   it('handles focus and blur events', async () => {
-    const handleFocus = jest.fn();
-    const handleBlur = jest.fn();
+    const handleFocus = vi.fn();
+    const handleBlur = vi.fn();
     const user = userEvent.setup();
     
     render(

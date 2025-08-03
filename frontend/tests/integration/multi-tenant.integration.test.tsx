@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 // import userEvent from '@testing-library/user-event';
 import { rest } from 'msw';
@@ -425,13 +426,13 @@ describe('Multi-Tenant Isolation Tests', () => {
 
       // Mock socket manager
       const mockSocket = {
-        on: jest.fn(),
-        emit: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        emit: vi.fn(),
+        off: vi.fn(),
       };
 
       // Simulate receiving events
-      const _eventHandler = jest.fn();
+      const _eventHandler = vi.fn();
       mockSocket.on.mockImplementation((event, handler) => {
         if (event === 'model:update') {
           // Simulate receiving updates

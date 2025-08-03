@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import { render } from '@/__tests__/utils/test-utils';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import UsersPage from '@/pages/users/UsersPage';
@@ -10,7 +11,7 @@ import { mockAuthStore } from '@/__tests__/mocks/store-mocks';
 describe('Role-Based Access Control', () => {
   describe('Navigation Visibility', () => {
     it('should show all menu items for super_admin', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'super_admin' },
@@ -34,7 +35,7 @@ describe('Role-Based Access Control', () => {
     });
 
     it('should show limited menu items for model', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'model' },
@@ -59,7 +60,7 @@ describe('Role-Based Access Control', () => {
     });
 
     it('should show appropriate menu items for agency_owner', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'agency_owner' },
@@ -83,7 +84,7 @@ describe('Role-Based Access Control', () => {
 
   describe('Page Access Control', () => {
     it('should deny access to users page for non-admins', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'model' },
@@ -97,7 +98,7 @@ describe('Role-Based Access Control', () => {
     });
 
     it('should allow access to users page for super_admin', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'super_admin' },
@@ -112,7 +113,7 @@ describe('Role-Based Access Control', () => {
 
     it('should show role-specific analytics for different users', () => {
       // Test super_admin analytics
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'super_admin' },
@@ -123,7 +124,7 @@ describe('Role-Based Access Control', () => {
       expect(screen.getByText(/platform overview/i)).toBeInTheDocument();
 
       // Test model analytics
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'model' },
@@ -138,7 +139,7 @@ describe('Role-Based Access Control', () => {
 
   describe('Feature Permissions', () => {
     it('should show create user button only for admins', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'super_admin' },
@@ -150,7 +151,7 @@ describe('Role-Based Access Control', () => {
     });
 
     it('should hide financial management for regular members', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'member' },
@@ -162,7 +163,7 @@ describe('Role-Based Access Control', () => {
     });
 
     it('should show model assignment only for agency roles', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'agency_admin' },
@@ -177,7 +178,7 @@ describe('Role-Based Access Control', () => {
   describe('Data Filtering', () => {
     it('should filter data based on user role and permissions', async () => {
       // Agency owner should only see their agency's data
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -198,7 +199,7 @@ describe('Role-Based Access Control', () => {
     });
 
     it('should show all data for super_admin', async () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'super_admin' },
@@ -214,7 +215,7 @@ describe('Role-Based Access Control', () => {
 
   describe('Action Permissions', () => {
     it('should disable edit actions for read-only roles', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'member' },
@@ -230,7 +231,7 @@ describe('Role-Based Access Control', () => {
     });
 
     it('should enable all actions for admin roles', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: { ...mockAuthStore.user, role: 'super_admin' },

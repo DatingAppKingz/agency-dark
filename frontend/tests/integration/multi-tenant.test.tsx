@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { render } from '@/__tests__/utils/test-utils';
 import ModelsPage from '@/pages/models/ModelsPage';
 import ChatPage from '@/pages/chat/ChatPage';
@@ -12,7 +13,7 @@ describe('Multi-Tenant Isolation', () => {
     it('should only show agency-specific models for agency users', async () => {
       const agencyId = 'agency123';
       
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -66,7 +67,7 @@ describe('Multi-Tenant Isolation', () => {
       const agencyId = 'agency123';
       const otherAgencyConversationId = 'conv456';
       
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -100,7 +101,7 @@ describe('Multi-Tenant Isolation', () => {
     it('should isolate financial data by agency', async () => {
       const agencyId = 'agency123';
       
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -146,7 +147,7 @@ describe('Multi-Tenant Isolation', () => {
       const agencyId = 'agency123';
       // const otherAgencyId = 'agency456'; // Would be used to test cross-agency access prevention
       
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -183,7 +184,7 @@ describe('Multi-Tenant Isolation', () => {
     it('should validate agency context in API requests', async () => {
       const agencyId = 'agency123';
       
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -221,16 +222,16 @@ describe('Multi-Tenant Isolation', () => {
 
   describe('Tenant Switching', () => {
     it('should clear cache when switching agencies (super_admin)', async () => {
-      const clearCacheSpy = jest.fn();
+      const clearCacheSpy = vi.fn();
       
-      jest.mock('@tanstack/react-query', () => ({
-        ...jest.requireActual('@tanstack/react-query'),
+      vi.mock('@tanstack/react-query', () => ({
+        ...vi.requireActual('@tanstack/react-query'),
         useQueryClient: () => ({
           clear: clearCacheSpy,
         }),
       }));
 
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -244,7 +245,7 @@ describe('Multi-Tenant Isolation', () => {
       const { rerender } = render(<ModelsPage />);
 
       // Simulate agency switch
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -263,7 +264,7 @@ describe('Multi-Tenant Isolation', () => {
     it('should update UI to show current agency context', async () => {
       const agencyId = 'agency123';
       
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -288,7 +289,7 @@ describe('Multi-Tenant Isolation', () => {
       const agencyId = 'agency123';
       const modelId = 'model123';
       
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {
@@ -327,7 +328,7 @@ describe('Multi-Tenant Isolation', () => {
     it('should restrict financial access to own earnings for models', async () => {
       const modelId = 'model123';
       
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           user: {

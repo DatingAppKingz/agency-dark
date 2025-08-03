@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import {
@@ -72,7 +73,7 @@ describe('DropdownMenu Component', () => {
   describe('Menu Items', () => {
     it('executes onClick handler when item is clicked', async () => {
       const user = userEvent.setup();
-      const handleClick = jest.fn();
+      const handleClick = vi.fn();
       
       render(
         <DropdownMenu>
@@ -111,7 +112,7 @@ describe('DropdownMenu Component', () => {
 
     it('prevents default on item click with preventDefault', async () => {
       const user = userEvent.setup();
-      const handleClick = jest.fn((e) => e.preventDefault());
+      const handleClick = vi.fn((e) => e.preventDefault());
       
       render(
         <DropdownMenu>
@@ -132,7 +133,7 @@ describe('DropdownMenu Component', () => {
 
     it('supports disabled items', async () => {
       const user = userEvent.setup();
-      const handleClick = jest.fn();
+      const handleClick = vi.fn();
       
       render(
         <DropdownMenu>
@@ -158,7 +159,7 @@ describe('DropdownMenu Component', () => {
   describe('Checkbox Items', () => {
     it('toggles checkbox state on click', async () => {
       const user = userEvent.setup();
-      const handleChange = jest.fn();
+      const handleChange = vi.fn();
       
       render(
         <DropdownMenu>
@@ -216,7 +217,7 @@ describe('DropdownMenu Component', () => {
   describe('Radio Items', () => {
     it('selects radio item on click', async () => {
       const user = userEvent.setup();
-      const handleChange = jest.fn();
+      const handleChange = vi.fn();
       
       render(
         <DropdownMenu>
@@ -483,7 +484,7 @@ describe('DropdownMenu Component', () => {
 
     it('activates items with Enter key', async () => {
       const user = userEvent.setup();
-      const handleClick = jest.fn();
+      const handleClick = vi.fn();
       
       render(
         <DropdownMenu>

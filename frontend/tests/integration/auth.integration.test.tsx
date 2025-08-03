@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { rest } from 'msw';
@@ -38,14 +39,14 @@ afterEach(() => {
     user: null,
     isAuthenticated: false,
     permissions: [],
-    setAuth: jest.fn(),
-    logout: jest.fn(() => {
+    setAuth: vi.fn(),
+    logout: vi.fn(() => {
       localStorage.clear();
     }),
-    refreshToken: jest.fn(),
-    initializeAuth: jest.fn(),
+    refreshToken: vi.fn(),
+    initializeAuth: vi.fn(),
   };
-  (useAuthStore.getState as jest.Mock).mockReturnValue(mockAuthStore);
+  (useAuthStore.getState as vi.Mock).mockReturnValue(mockAuthStore);
   localStorage.clear();
 });
 afterAll(() => server.close());
@@ -72,7 +73,7 @@ describe('Authentication Flow Tests', () => {
       });
 
       // Check that setAuth was called
-      const mockAuthStore = (useAuthStore.getState as jest.Mock).mock.results[0].value;
+      const mockAuthStore = (useAuthStore.getState as vi.Mock).mock.results[0].value;
       expect(mockAuthStore.setAuth).toHaveBeenCalledWith(expect.objectContaining({
         user: expect.objectContaining({
           email: 'test@example.com',

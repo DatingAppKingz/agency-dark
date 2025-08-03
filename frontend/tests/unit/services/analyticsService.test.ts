@@ -1,22 +1,23 @@
 import { analyticsService } from '@/services/api/analytics';
+import { vi } from 'vitest';
 import apiClient from '@/services/api/client';
 import { logger } from '@/utils/logger';
 
 // Mock the dependencies
-jest.mock('@/services/api/client');
-jest.mock('@/utils/logger', () => ({
+vi.mock('@/services/api/client');
+vi.mock('@/utils/logger', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
+const mockedApiClient = apiClient as vi.Mocked<typeof apiClient>;
 
 describe('Analytics Service', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getDashboardSummary', () => {

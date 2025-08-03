@@ -1,10 +1,11 @@
 import { renderHook, act } from '@testing-library/react';
+import { vi } from 'vitest';
 import { io, Socket } from 'socket.io-client';
 import { useSocket } from '@/providers/SocketProvider';
 import { mockAuthStore } from '@/__tests__/mocks/store-mocks';
 
 // Mock socket.io-client
-jest.mock('socket.io-client');
+vi.mock('socket.io-client');
 
 describe('Socket.IO Connection', () => {
   let mockSocket: Partial<Socket>;
@@ -12,24 +13,24 @@ describe('Socket.IO Connection', () => {
   beforeEach(() => {
     mockSocket = {
       connected: false,
-      on: jest.fn(),
-      off: jest.fn(),
-      emit: jest.fn(),
-      connect: jest.fn(),
-      disconnect: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+      emit: vi.fn(),
+      connect: vi.fn(),
+      disconnect: vi.fn(),
       id: 'mock-socket-id',
     };
 
-    (io as jest.Mock).mockReturnValue(mockSocket);
+    (io as vi.Mock).mockReturnValue(mockSocket);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Connection Management', () => {
     it('should establish socket connection when authenticated', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => mockAuthStore,
       }));
 
@@ -46,7 +47,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should not connect when not authenticated', () => {
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           ...mockAuthStore,
           isAuthenticated: false,
@@ -64,7 +65,7 @@ describe('Socket.IO Connection', () => {
 
       // Simulate connection
       act(() => {
-        const connectHandler = (mockSocket.on as jest.Mock).mock.calls.find(
+        const connectHandler = (mockSocket.on as vi.Mock).mock.calls.find(
           ([event]) => event === 'connect'
         )?.[1];
         if (connectHandler) {
@@ -81,7 +82,7 @@ describe('Socket.IO Connection', () => {
 
       // Simulate disconnection
       act(() => {
-        const disconnectHandler = (mockSocket.on as jest.Mock).mock.calls.find(
+        const disconnectHandler = (mockSocket.on as vi.Mock).mock.calls.find(
           ([event]) => event === 'disconnect'
         )?.[1];
         if (disconnectHandler) {
@@ -98,7 +99,7 @@ describe('Socket.IO Connection', () => {
 
       // Simulate reconnect attempt
       act(() => {
-        const reconnectHandler = (mockSocket.on as jest.Mock).mock.calls.find(
+        const reconnectHandler = (mockSocket.on as vi.Mock).mock.calls.find(
           ([event]) => event === 'reconnect_attempt'
         )?.[1];
         if (reconnectHandler) {
@@ -129,7 +130,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should handle incoming messages', () => {
-      const messageHandler = jest.fn();
+      const messageHandler = vi.fn();
       renderHook(() => useSocket());
       const socket = result.current;
 
@@ -145,7 +146,7 @@ describe('Socket.IO Connection', () => {
       };
 
       act(() => {
-        const handler = (mockSocket.on as jest.Mock).mock.calls.find(
+        const handler = (mockSocket.on as vi.Mock).mock.calls.find(
           ([event]) => event === 'new_message'
         )?.[1];
         if (handler) {
@@ -174,7 +175,7 @@ describe('Socket.IO Connection', () => {
     });
 
     it('should handle typing status updates', () => {
-      const typingHandler = jest.fn();
+      const typingHandler = vi.fn();
       renderHook(() => useSocket());
       const socket = result.current;
 
@@ -189,7 +190,7 @@ describe('Socket.IO Connection', () => {
       };
 
       act(() => {
-        const handler = (mockSocket.on as jest.Mock).mock.calls.find(
+        const handler = (mockSocket.on as vi.Mock).mock.calls.find(
           ([event]) => event === 'typing_status'
         )?.[1];
         if (handler) {
@@ -231,7 +232,7 @@ describe('Socket.IO Connection', () => {
 
   describe('Error Handling', () => {
     it('should handle connection errors', () => {
-      const errorHandler = jest.fn();
+      const errorHandler = vi.fn();
       renderHook(() => useSocket());
       const socket = result.current;
 
@@ -242,7 +243,7 @@ describe('Socket.IO Connection', () => {
       const error = new Error('Connection failed');
 
       act(() => {
-        const handler = (mockSocket.on as jest.Mock).mock.calls.find(
+        const handler = (mockSocket.on as vi.Mock).mock.calls.find(
           ([event]) => event === 'connect_error'
         )?.[1];
         if (handler) {
@@ -259,7 +260,7 @@ describe('Socket.IO Connection', () => {
       const authError = { message: 'Invalid token' };
 
       act(() => {
-        const handler = (mockSocket.on as jest.Mock).mock.calls.find(
+        const handler = (mockSocket.on as vi.Mock).mock.calls.find(
           ([event]) => event === 'auth_error'
         )?.[1];
         if (handler) {
@@ -285,7 +286,7 @@ describe('Socket.IO Connection', () => {
     it('should remove specific event listeners', () => {
       renderHook(() => useSocket());
       const socket = result.current;
-      const handler = jest.fn();
+      const handler = vi.fn();
 
       act(() => {
         socket.on('test_event', handler);

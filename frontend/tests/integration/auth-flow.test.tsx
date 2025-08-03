@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { server } from '@/tests/utils/test-server';
@@ -9,9 +10,9 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Routes, Route } from 'react-router-dom';
 
 // Mock navigate
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
+  ...vi.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
 }));
 

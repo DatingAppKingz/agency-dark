@@ -1,4 +1,5 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { useAuth } from '@/hooks/useAuth';
 import { createWrapper } from '@/tests/utils/enhanced-test-utils';
 import { server } from '@/tests/utils/test-server';

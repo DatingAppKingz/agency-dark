@@ -4,9 +4,18 @@ module.exports = {
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.tsx?$': ['ts-jest', {
+      tsconfig: {
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+      },
+    }],
+    '^.+\\.(js|jsx)$': '<rootDir>/jest.transform.cjs',
   },
   moduleNameMapper: {
+    // Test utilities must come first to avoid conflicts
+    '^@/tests/(.*)$': '<rootDir>/tests/$1',
+    // Source code mappings
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@components/(.*)$': '<rootDir>/src/components/$1',
     '^@pages/(.*)$': '<rootDir>/src/pages/$1',
@@ -15,8 +24,9 @@ module.exports = {
     '^@store/(.*)$': '<rootDir>/src/store/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
-    '^@/tests/(.*)$': '<rootDir>/tests/$1',
+    // Style and asset mocks
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    // Service mocks
     '^@/services/pushNotifications$': '<rootDir>/src/services/__mocks__/pushNotifications.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/tests/utils/setup.ts'],
@@ -41,14 +51,6 @@ module.exports = {
       functions: 70,
       lines: 70,
       statements: 70,
-    },
-  },
-  globals: {
-    'ts-jest': {
-      tsconfig: {
-        esModuleInterop: true,
-      },
-      isolatedModules: true,
     },
   },
   testEnvironmentOptions: {

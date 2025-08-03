@@ -14,8 +14,9 @@ from core.database import Base
 from core.config import settings
 from main import app
 from core.dependencies import get_db
-from modules.auth.domain.models import User, Agency, UserRole
-from modules.auth.application.auth_service import AuthService
+from models.user import User, UserRole
+from models.agency import Agency
+from core.auth.auth_service import AuthService
 from core.security import get_password_hash
 
 

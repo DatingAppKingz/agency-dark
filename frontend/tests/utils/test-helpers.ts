@@ -1,200 +1,204 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 
-// Wait for element to be removed
-export const waitForElementToBeRemoved = async (element: HTMLElement | (() => HTMLElement)) => {
-  await waitFor(() => {
-    if (typeof element === 'function') {
-      expect(element).toThrow();
-    } else {
-      expect(element).not.toBeInTheDocument();
-    }
-  });
-};
-
-// Wait for loading to complete
+/**
+ * Wait for loading states to finish
+ */
 export const waitForLoadingToFinish = async () => {
-  const loadingElements = screen.queryAllByTestId(/loading|spinner|skeleton/i);
-  if (loadingElements.length > 0) {
-    await waitFor(() => {
-      loadingElements.forEach(element => {
-        expect(element).not.toBeInTheDocument();
-      });
-    });
-  }
+  await waitFor(() => {
+    const loadingElements = screen.queryAllByText(/loading/i);
+    const spinners = screen.queryAllByRole('progressbar');
+    expect(loadingElements.length + spinners.length).toBe(0);
+  });
 };
 
-// Fill form helper
-export const fillForm = async (formData: Record<string, string | boolean>) => {
-  const user = userEvent.setup();
+/**
+ * Login a user for testing
+ */
+export const loginUser = async (user = { email: 'test@example.com', password: 'password123' }) => {
+  const userInstance = userEvent.setup();
   
-  for (const [field, value] of Object.entries(formData)) {
-    const element = screen.getByLabelText(new RegExp(field, 'i'));
-    
-    if (element.getAttribute('type') === 'checkbox') {
-      if (value === true) {
-        await user.click(element);
-      }
-    } else {
-      await user.clear(element);
-      await user.type(element, value.toString());
-    }
-  }
-};
-
-// Submit form helper
-export const submitForm = async (buttonText = /submit|save|create/i) => {
-  const user = userEvent.setup();
-  const submitButton = screen.getByRole('button', { name: buttonText });
-  await user.click(submitButton);
-};
-
-// Login helper
-export const loginUser = async (email = 'test@example.com', password = 'password123') => {
-  await fillForm({ email, password });
-  await submitForm(/log in|sign in/i);
+  // Fill in login form
+  const emailInput = screen.getByLabelText(/email/i);
+  const passwordInput = screen.getByLabelText(/password/i);
+  
+  await userInstance.type(emailInput, user.email);
+  await userInstance.type(passwordInput, user.password);
+  
+  // Submit form
+  const submitButton = screen.getByRole('button', { name: /login|sign in/i });
+  await userInstance.click(submitButton);
+  
+  // Wait for login to complete
   await waitForLoadingToFinish();
-};
-
-// Assert toast message
-export const expectToastMessage = async (message: string | RegExp, type?: 'success' | 'error' | 'info') => {
-  const toast = await screen.findByText(message);
-  expect(toast).toBeInTheDocument();
   
-  if (type) {
-    const toastContainer = toast.closest('[role="alert"]');
-    expect(toastContainer).toHaveAttribute('data-type', type);
-  }
+  return user;
 };
 
-// Assert redirect
-export const expectRedirect = (expectedPath: string) => {
-  expect(window.location.pathname).toBe(expectedPath);
+/**
+ * Mock successful API response
+ */
+export const mockApiSuccess = (data: any, delay = 0) => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve({ data, status: 200 }), delay);
+  });
 };
 
-// Mock console methods
-export const mockConsole = () => {
+/**
+ * Mock API error response
+ */
+export const mockApiError = (message: string, status = 400, delay = 0) => {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject({ 
+      response: { 
+        data: { message }, 
+        status 
+      } 
+    }), delay);
+  });
+};
+
+/**
+ * Get all elements by test ID pattern
+ */
+export const getAllByTestIdPattern = (pattern: RegExp) => {
+  const elements = screen.queryAllByTestId(pattern);
+  return elements;
+};
+
+/**
+ * Wait for element to be removed
+ */
+export const waitForElementToBeRemoved = async (query: () => HTMLElement | null) => {
+  await waitFor(() => {
+    expect(query()).not.toBeInTheDocument();
+  });
+};
+
+/**
+ * Mock intersection observer
+ */
+export const mockIntersectionObserver = () => {
+  const mockIntersectionObserver = vi.fn();
+  mockIntersectionObserver.mockReturnValue({
+    observe: () => null,
+    unobserve: () => null,
+    disconnect: () => null
+  });
+  window.IntersectionObserver = mockIntersectionObserver as any;
+};
+
+/**
+ * Create mock file for upload testing
+ */
+export const createMockFile = (name: string, size: number, type: string): File => {
+  const file = new File(['x'.repeat(size)], name, { type });
+  Object.defineProperty(file, 'size', { value: size });
+  return file;
+};
+
+/**
+ * Simulate file drop
+ */
+export const dropFile = async (element: HTMLElement, file: File) => {
+  const dataTransfer = {
+    files: [file],
+    items: [{
+      kind: 'file',
+      type: file.type,
+      getAsFile: () => file
+    }],
+    types: ['Files']
+  };
+
+  const dropEvent = new Event('drop', { bubbles: true });
+  Object.defineProperty(dropEvent, 'dataTransfer', {
+    value: dataTransfer
+  });
+
+  element.dispatchEvent(dropEvent);
+  await waitFor(() => {});
+};
+
+/**
+ * Get computed styles of an element
+ */
+export const getComputedStyles = (element: HTMLElement) => {
+  return window.getComputedStyle(element);
+};
+
+/**
+ * Simulate network conditions
+ */
+export const simulateSlowNetwork = (delay = 2000) => {
+  const originalFetch = global.fetch;
+  global.fetch = vi.fn((...args) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(originalFetch(...args));
+      }, delay);
+    });
+  }) as any;
+  
+  return () => {
+    global.fetch = originalFetch;
+  };
+};
+
+/**
+ * Create mock WebSocket
+ */
+export const createMockWebSocket = () => {
+  const mockSocket = {
+    send: vi.fn(),
+    close: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    readyState: WebSocket.OPEN,
+    CONNECTING: 0,
+    OPEN: 1,
+    CLOSING: 2,
+    CLOSED: 3,
+  };
+  
+  return mockSocket;
+};
+
+/**
+ * Wait for debounced input
+ */
+export const waitForDebouncedInput = async (ms = 500) => {
+  await act(async () => {
+    vi.advanceTimersByTime(ms);
+  });
+  await waitFor(() => {});
+};
+
+/**
+ * Assert element has focus
+ */
+export const assertHasFocus = (element: HTMLElement) => {
+  expect(document.activeElement).toBe(element);
+};
+
+/**
+ * Get all console method calls during test
+ */
+export const captureConsole = () => {
   const originalConsole = { ...console };
+  const calls: { method: string; args: any[] }[] = [];
   
-  beforeAll(() => {
-    console.error = jest.fn();
-    console.warn = jest.fn();
-    console.log = jest.fn();
-  });
-  
-  afterAll(() => {
-    console.error = originalConsole.error;
-    console.warn = originalConsole.warn;
-    console.log = originalConsole.log;
+  ['log', 'warn', 'error', 'info'].forEach(method => {
+    console[method as keyof Console] = vi.fn((...args) => {
+      calls.push({ method, args });
+    }) as any;
   });
   
   return {
-    expectNoConsoleErrors: () => {
-      expect(console.error).not.toHaveBeenCalled();
-    },
-    expectConsoleError: (message?: string | RegExp) => {
-      if (message) {
-        expect(console.error).toHaveBeenCalledWith(
-          expect.stringMatching(message)
-        );
-      } else {
-        expect(console.error).toHaveBeenCalled();
-      }
-    },
-  };
-};
-
-// Mock window methods
-export const mockWindow = () => {
-  const originalWindow = { ...window };
-  
-  return {
-    mockMatchMedia: () => {
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: jest.fn().mockImplementation(query => ({
-          matches: false,
-          media: query,
-          onchange: null,
-          addListener: jest.fn(),
-          removeListener: jest.fn(),
-          addEventListener: jest.fn(),
-          removeEventListener: jest.fn(),
-          dispatchEvent: jest.fn(),
-        })),
-      });
-    },
-    
-    mockLocalStorage: () => {
-      const store: Record<string, string> = {};
-      
-      const mockLocalStorage = {
-        getItem: jest.fn((key: string) => store[key] || null),
-        setItem: jest.fn((key: string, value: string) => {
-          store[key] = value;
-        }),
-        removeItem: jest.fn((key: string) => {
-          delete store[key];
-        }),
-        clear: jest.fn(() => {
-          Object.keys(store).forEach(key => delete store[key]);
-        }),
-      };
-      
-      Object.defineProperty(window, 'localStorage', {
-        value: mockLocalStorage,
-      });
-      
-      return mockLocalStorage;
-    },
-    
+    calls,
     restore: () => {
-      Object.assign(window, originalWindow);
-    },
+      Object.assign(console, originalConsole);
+    }
   };
-};
-
-// Accessibility helpers
-export const checkAccessibility = async (container: HTMLElement) => {
-  const results = await import('jest-axe').then(({ axe }) => axe(container));
-  expect(results).toHaveNoViolations();
-};
-
-// Debug helper
-export const debugScreen = () => {
-  screen.debug(undefined, Infinity);
-};
-
-// Custom queries
-export const getByTestId = (testId: string) => {
-  return screen.getByTestId(testId);
-};
-
-export const queryByTestId = (testId: string) => {
-  return screen.queryByTestId(testId);
-};
-
-// Performance helpers
-export const measureRenderTime = async (callback: () => void | Promise<void>) => {
-  const start = performance.now();
-  await callback();
-  const end = performance.now();
-  return end - start;
-};
-
-// Network helpers
-export const waitForRequest = async (url: string | RegExp, timeout = 5000) => {
-  const start = Date.now();
-  
-  while (Date.now() - start < timeout) {
-    const requests = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-    const found = requests.find(req => 
-      typeof url === 'string' ? req.name.includes(url) : url.test(req.name)
-    );
-    
-    if (found) return found;
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-  
-  throw new Error(`Request to ${url} not found within ${timeout}ms`);
 };

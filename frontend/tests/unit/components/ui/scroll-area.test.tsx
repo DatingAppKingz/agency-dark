@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen } from '@/tests/utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -381,7 +382,7 @@ describe('ScrollArea Component', () => {
 
     it('preserves event handlers on children', async () => {
       const user = userEvent.setup();
-      const handleClick = jest.fn();
+      const handleClick = vi.fn();
 
       render(
         <ScrollArea>

@@ -1,9 +1,10 @@
 import { io } from 'socket.io-client';
+import { vi } from 'vitest';
 import { SocketManager } from '../../__mocks__/services';
 // import { createMockUser } from '@/tests/utils/test-utils';
 
 // Mock socket.io-client
-jest.mock('socket.io-client');
+vi.mock('socket.io-client');
 
 describe('Socket.IO Integration Tests', () => {
   let mockSocket: any;
@@ -15,24 +16,24 @@ describe('Socket.IO Integration Tests', () => {
     mockSocket = {
       connected: false,
       id: 'mock-socket-id',
-      on: jest.fn(),
-      off: jest.fn(),
-      emit: jest.fn(),
-      connect: jest.fn(),
-      disconnect: jest.fn(),
-      onAny: jest.fn(),
-      offAny: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+      emit: vi.fn(),
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      onAny: vi.fn(),
+      offAny: vi.fn(),
     };
 
     // Mock io function to return our mock socket
-    (io as jest.Mock).mockReturnValue(mockSocket);
+    (io as vi.Mock).mockReturnValue(mockSocket);
 
     // Create socket manager instance
     socketManager = SocketManager.getInstance();
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Reset singleton instance
     (SocketManager as any).instance = null;
   });
@@ -55,7 +56,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle successful connection', () => {
-      const onConnect = jest.fn();
+      const onConnect = vi.fn();
       socketManager.on('connect', onConnect);
 
       socketManager.connect('token');
@@ -71,7 +72,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle connection errors', () => {
-      const onError = jest.fn();
+      const onError = vi.fn();
       socketManager.on('connect_error', onError);
 
       socketManager.connect('token');
@@ -94,7 +95,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle reconnection attempts', () => {
-      const onReconnect = jest.fn();
+      const onReconnect = vi.fn();
       socketManager.on('reconnect_attempt', onReconnect);
 
       socketManager.connect('token');
@@ -127,7 +128,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should receive and handle incoming messages', () => {
-      const onMessage = jest.fn();
+      const onMessage = vi.fn();
       socketManager.on('chat:message', onMessage);
 
       const incomingMessage = {
@@ -148,7 +149,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle typing indicators', () => {
-      const onTyping = jest.fn();
+      const onTyping = vi.fn();
       socketManager.on('chat:typing', onTyping);
 
       // Emit typing start
@@ -172,7 +173,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle message delivery status', () => {
-      const onDelivered = jest.fn();
+      const onDelivered = vi.fn();
       socketManager.on('chat:delivered', onDelivered);
 
       const deliveryStatus = {
@@ -191,7 +192,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle message read status', () => {
-      const onRead = jest.fn();
+      const onRead = vi.fn();
       socketManager.on('chat:read', onRead);
 
       const readStatus = {
@@ -231,7 +232,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle room join confirmation', () => {
-      const onJoined = jest.fn();
+      const onJoined = vi.fn();
       socketManager.on('chat:joined', onJoined);
 
       const joinConfirmation = {
@@ -263,7 +264,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should receive presence updates', () => {
-      const onPresence = jest.fn();
+      const onPresence = vi.fn();
       socketManager.on('presence:update', onPresence);
 
       const presenceUpdate = {
@@ -282,7 +283,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle bulk presence updates', () => {
-      const onBulkPresence = jest.fn();
+      const onBulkPresence = vi.fn();
       socketManager.on('presence:bulk', onBulkPresence);
 
       const bulkUpdate = {
@@ -307,7 +308,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle authentication errors', () => {
-      const onAuthError = jest.fn();
+      const onAuthError = vi.fn();
       socketManager.on('auth:error', onAuthError);
 
       const authError = {
@@ -325,7 +326,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle rate limiting', () => {
-      const onRateLimit = jest.fn();
+      const onRateLimit = vi.fn();
       socketManager.on('error:rate_limit', onRateLimit);
 
       const rateLimitError = {
@@ -343,7 +344,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should handle general socket errors', () => {
-      const onError = jest.fn();
+      const onError = vi.fn();
       socketManager.on('error', onError);
 
       const error = new Error('Socket error occurred');
@@ -377,7 +378,7 @@ describe('Socket.IO Integration Tests', () => {
     });
 
     it('should not receive messages from other agencies', () => {
-      const onMessage = jest.fn();
+      const onMessage = vi.fn();
       socketManager.on('chat:message', onMessage);
 
       // Message from same agency

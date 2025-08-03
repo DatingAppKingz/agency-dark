@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import { render, screen, waitFor } from '@/tests/utils/enhanced-test-utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -62,7 +63,7 @@ describe('Avatar Component', () => {
     });
 
     it('handles image loading states', async () => {
-      const onLoadingStatusChange = jest.fn();
+      const onLoadingStatusChange = vi.fn();
       
       render(
         <Avatar>
@@ -80,7 +81,7 @@ describe('Avatar Component', () => {
 
     it('shows fallback when image fails to load', async () => {
       // Mock image error
-      const onError = jest.fn();
+      const onError = vi.fn();
       
       render(
         <Avatar>
@@ -158,7 +159,7 @@ describe('Avatar Component', () => {
 
   describe('Loading States', () => {
     it('delays showing fallback with delayMs', async () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
       
       render(
         <Avatar>
@@ -171,13 +172,13 @@ describe('Avatar Component', () => {
       expect(screen.queryByText('DL')).not.toBeInTheDocument();
 
       // Fast forward time
-      jest.advanceTimersByTime(700);
+      vi.advanceTimersByTime(700);
 
       await waitFor(() => {
         expect(screen.getByText('DL')).toBeInTheDocument();
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 
@@ -385,7 +386,7 @@ describe('Avatar Component', () => {
     });
 
     it('handles network errors', async () => {
-      const consoleError = jest.spyOn(console, 'error').mockImplementation();
+      const consoleError = vi.spyOn(console, 'error').mockImplementation();
       
       render(
         <Avatar>

@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { render } from '@/__tests__/utils/test-utils';
 import LoginPage from '@/pages/auth/LoginPage';
@@ -52,7 +53,7 @@ describe('Authentication Flow', () => {
 
     it('should successfully login with valid credentials', async () => {
       const user = userEvent.setup();
-      const mockPush = jest.fn();
+      const mockPush = vi.fn();
       
       render(<LoginPage />, {
         router: { push: mockPush },
@@ -133,7 +134,7 @@ describe('Authentication Flow', () => {
 
     it('should successfully register with valid data', async () => {
       const user = userEvent.setup();
-      const mockPush = jest.fn();
+      const mockPush = vi.fn();
       
       render(<RegisterPage />, {
         router: { push: mockPush },
@@ -197,10 +198,10 @@ describe('Authentication Flow', () => {
 
   describe('Protected Routes', () => {
     it('should redirect to login when accessing protected route without auth', () => {
-      const mockPush = jest.fn();
+      const mockPush = vi.fn();
       
       // Mock unauthenticated state
-      jest.mock('@/store/authStore', () => ({
+      vi.mock('@/store/authStore', () => ({
         useAuthStore: () => ({
           isAuthenticated: false,
           user: null,

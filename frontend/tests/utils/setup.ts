@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
+import { vi } from 'vitest';
 
 // Set environment variables
 process.env.VITE_API_URL = 'http://localhost:8000';
@@ -8,18 +9,18 @@ process.env.VITE_PUBLIC_VAPID_KEY = 'test-vapid-key';
 process.env.NODE_ENV = 'test';
 
 // Mock pushNotifications service before any imports
-jest.mock('@/services/pushNotifications', () => ({
+vi.mock('@/services/pushNotifications', () => ({
   pushNotifications: {
-    isSupported: jest.fn().mockReturnValue(true),
-    requestPermission: jest.fn().mockResolvedValue(true),
-    subscribeUser: jest.fn().mockResolvedValue({
+    isSupported: vi.fn().mockReturnValue(true),
+    requestPermission: vi.fn().mockResolvedValue(true),
+    subscribeUser: vi.fn().mockResolvedValue({
       endpoint: 'https://push.example.com/123',
       keys: { p256dh: 'test-key', auth: 'test-auth' }
     }),
-    unsubscribeUser: jest.fn().mockResolvedValue(undefined),
-    sendNotification: jest.fn().mockResolvedValue(undefined),
-    isSubscribed: jest.fn().mockResolvedValue(false),
-    getSubscription: jest.fn().mockResolvedValue(null),
+    unsubscribeUser: vi.fn().mockResolvedValue(undefined),
+    sendNotification: vi.fn().mockResolvedValue(undefined),
+    isSubscribed: vi.fn().mockResolvedValue(false),
+    getSubscription: vi.fn().mockResolvedValue(null),
   }
 }));
 
@@ -60,17 +61,27 @@ afterEach(() => {
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   })),
 });
+
+// Mock BroadcastChannel for MSW
+globalThis.BroadcastChannel = class BroadcastChannel {
+  constructor(public name: string) {}
+  postMessage(message: any) {}
+  close() {}
+  addEventListener() {}
+  removeEventListener() {}
+  dispatchEvent() { return true; }
+} as any;
 
 // Mock IntersectionObserver
 globalThis.IntersectionObserver = class IntersectionObserver {
@@ -96,16 +107,16 @@ globalThis.ResizeObserver = class ResizeObserver {
 };
 
 // Mock scrollTo
-window.scrollTo = jest.fn();
+window.scrollTo = vi.fn();
 
 // Mock localStorage
 const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
   length: 0,
-  key: jest.fn(),
+  key: vi.fn(),
 };
 globalThis.localStorage = localStorageMock as any;
 

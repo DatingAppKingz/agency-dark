@@ -1,4 +1,5 @@
 import { rest } from 'msw';
+import { vi } from 'vitest';
 import { setupServer } from 'msw/node';
 import { apiClient, authService, userService, modelService } from '../../__mocks__/services';
 import { createMockUser, createMockModel, mockApiResponses } from '@/tests/utils/test-utils';

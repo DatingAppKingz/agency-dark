@@ -1,15 +1,16 @@
 import { renderHook, act } from '@testing-library/react';
+import { vi } from 'vitest';
 import { useNotification } from '@/hooks/useNotification';
 
 describe('useNotification Hook', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.spyOn(Date, 'now').mockReturnValue(1000);
+    vi.useFakeTimers();
+    vi.spyOn(Date, 'now').mockReturnValue(1000);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   describe('Initial State', () => {
@@ -96,14 +97,14 @@ describe('useNotification Hook', () => {
 
       act(() => {
         // Mock different timestamps
-        jest.spyOn(Date, 'now').mockReturnValueOnce(1000);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(1000);
         result.current.showNotification({
           title: 'First',
           message: 'First notification',
           type: 'info'
         });
 
-        jest.spyOn(Date, 'now').mockReturnValueOnce(2000);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(2000);
         result.current.showNotification({
           title: 'Second',
           message: 'Second notification',
@@ -146,7 +147,7 @@ describe('useNotification Hook', () => {
 
       // Advance time by default duration (5000ms)
       act(() => {
-        jest.advanceTimersByTime(5000);
+        vi.advanceTimersByTime(5000);
       });
 
       expect(result.current.notifications).toHaveLength(0);
@@ -167,12 +168,12 @@ describe('useNotification Hook', () => {
       expect(result.current.notifications).toHaveLength(1);
 
       act(() => {
-        jest.advanceTimersByTime(2999);
+        vi.advanceTimersByTime(2999);
       });
       expect(result.current.notifications).toHaveLength(1);
 
       act(() => {
-        jest.advanceTimersByTime(1);
+        vi.advanceTimersByTime(1);
       });
       expect(result.current.notifications).toHaveLength(0);
     });
@@ -192,7 +193,7 @@ describe('useNotification Hook', () => {
       expect(result.current.notifications).toHaveLength(1);
 
       act(() => {
-        jest.advanceTimersByTime(10000);
+        vi.advanceTimersByTime(10000);
       });
 
       // Should still be there
@@ -212,7 +213,7 @@ describe('useNotification Hook', () => {
       });
 
       act(() => {
-        jest.advanceTimersByTime(10000);
+        vi.advanceTimersByTime(10000);
       });
 
       expect(result.current.notifications).toHaveLength(1);
@@ -244,21 +245,21 @@ describe('useNotification Hook', () => {
       const { result } = renderHook(() => useNotification());
 
       act(() => {
-        jest.spyOn(Date, 'now').mockReturnValueOnce(1000);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(1000);
         result.current.showNotification({
           title: 'First',
           message: 'First message',
           type: 'info'
         });
 
-        jest.spyOn(Date, 'now').mockReturnValueOnce(2000);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(2000);
         result.current.showNotification({
           title: 'Second',
           message: 'Second message',
           type: 'success'
         });
 
-        jest.spyOn(Date, 'now').mockReturnValueOnce(3000);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(3000);
         result.current.showNotification({
           title: 'Third',
           message: 'Third message',
@@ -314,7 +315,7 @@ describe('useNotification Hook', () => {
 
       // Hide manually after 1 second
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
         result.current.hideNotification('1000');
       });
 
@@ -322,7 +323,7 @@ describe('useNotification Hook', () => {
 
       // Advance to when auto-hide would have occurred
       act(() => {
-        jest.advanceTimersByTime(4000);
+        vi.advanceTimersByTime(4000);
       });
 
       // Should still be empty (no errors from trying to hide already hidden notification)
@@ -336,7 +337,7 @@ describe('useNotification Hook', () => {
 
       // Show loading notification
       act(() => {
-        jest.spyOn(Date, 'now').mockReturnValueOnce(1000);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(1000);
         result.current.showNotification({
           title: 'Saving',
           message: 'Saving your changes...',
@@ -350,7 +351,7 @@ describe('useNotification Hook', () => {
       // Hide loading and show success
       act(() => {
         result.current.hideNotification('1000');
-        jest.spyOn(Date, 'now').mockReturnValueOnce(2000);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(2000);
         result.current.showNotification({
           title: 'Success',
           message: 'Changes saved successfully!',
@@ -384,7 +385,7 @@ describe('useNotification Hook', () => {
 
       // Simulate multiple rapid notifications
       act(() => {
-        jest.spyOn(Date, 'now').mockReturnValueOnce(1000);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(1000);
         result.current.showNotification({
           title: 'Upload 1',
           message: 'File 1 uploaded',
@@ -392,7 +393,7 @@ describe('useNotification Hook', () => {
           duration: 3000
         });
 
-        jest.spyOn(Date, 'now').mockReturnValueOnce(1100);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(1100);
         result.current.showNotification({
           title: 'Upload 2',
           message: 'File 2 uploaded',
@@ -400,7 +401,7 @@ describe('useNotification Hook', () => {
           duration: 3000
         });
 
-        jest.spyOn(Date, 'now').mockReturnValueOnce(1200);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(1200);
         result.current.showNotification({
           title: 'Upload 3',
           message: 'File 3 uploaded',
@@ -413,7 +414,7 @@ describe('useNotification Hook', () => {
 
       // First notification expires
       act(() => {
-        jest.advanceTimersByTime(3000);
+        vi.advanceTimersByTime(3000);
       });
 
       expect(result.current.notifications).toHaveLength(2);
@@ -421,7 +422,7 @@ describe('useNotification Hook', () => {
 
       // Remaining notifications expire
       act(() => {
-        jest.advanceTimersByTime(200);
+        vi.advanceTimersByTime(200);
       });
 
       expect(result.current.notifications).toHaveLength(0);
