@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import bcrypt
 from uuid import uuid4
 
-from models.user import User, UserRole, UserStatus
+from models.user import User, UserRole
 from models.agency import Agency
 from tests.factories import create_test_user, create_test_agency
 
@@ -17,15 +17,12 @@ class TestUserModel:
     @pytest.mark.asyncio
     async def test_create_user_with_valid_data(self, db_session: AsyncSession):
         """Test creating a user with all valid data."""
-        agency = await create_test_agency()
-        
         user = User(
             email="test@example.com",
             username="testuser",
             password_hash=bcrypt.hashpw("password123".encode(), bcrypt.gensalt()).decode(),
-            role=UserRole.ADMIN,
-            agency_id=agency.id,
-            status=UserStatus.ACTIVE
+            role=UserRole.AGENCY_ADMIN,
+            is_active=True
         )
         
         db_session.add(user)
@@ -35,8 +32,8 @@ class TestUserModel:
         assert user.id is not None
         assert user.email == "test@example.com"
         assert user.username == "testuser"
-        assert user.role == UserRole.ADMIN
-        assert user.status == UserStatus.ACTIVE
+        assert user.role == UserRole.AGENCY_ADMIN
+        assert user.is_active == True
         assert user.created_at is not None
     
     @pytest.mark.asyncio
@@ -97,10 +94,10 @@ class TestUserModel:
         agency = await create_test_agency()
         
         # Create users with different roles
-        admin = await create_test_user(role=UserRole.ADMIN, agency_id=agency.id)
-        manager = await create_test_user(role=UserRole.MANAGER, agency_id=agency.id)
-        chatter = await create_test_user(role=UserRole.CHATTER, agency_id=agency.id)
-        model = await create_test_user(role=UserRole.MODEL, agency_id=agency.id)
+        admin = await create_test_user(role=UserRole.AGENCY_ADMIN)
+        manager = await create_test_user(role=UserRole.AGENCY_STAFF)
+        chatter = await create_test_user(role=UserRole.CHATTER)
+        model = await create_test_user(role=UserRole.MODEL)
         
         # Test role-based permissions
         assert admin.can_manage_users() is True
@@ -126,23 +123,23 @@ class TestUserModel:
     @pytest.mark.asyncio
     async def test_user_status_transitions(self, db_session: AsyncSession):
         """Test valid user status transitions."""
-        user = await create_test_user(status=UserStatus.ACTIVE)
+        user = await create_test_user(is_active=True)
         
         # Active -> Inactive
         user.deactivate(reason="Vacation")
-        assert user.status == UserStatus.INACTIVE
+        assert user.is_active == False
         assert user.deactivated_at is not None
         assert user.deactivation_reason == "Vacation"
         
         # Inactive -> Active
         user.activate()
-        assert user.status == UserStatus.ACTIVE
+        assert user.is_active == True
         assert user.deactivated_at is None
         assert user.deactivation_reason is None
         
         # Active -> Suspended
         user.suspend(reason="Policy violation", duration_hours=24)
-        assert user.status == UserStatus.SUSPENDED
+        assert user.is_active == False  # Suspended users are inactive
         assert user.suspended_at is not None
         assert user.suspension_reason == "Policy violation"
         assert user.suspension_ends_at is not None
@@ -155,7 +152,7 @@ class TestUserModel:
         
         # Auto-reactivate after suspension
         user.check_suspension_status()
-        assert user.status == UserStatus.ACTIVE
+        assert user.is_active == True
     
     @pytest.mark.asyncio
     async def test_user_last_login_tracking(self, db_session: AsyncSession):
@@ -320,7 +317,7 @@ class TestUserModel:
         assert user.can_access_agency(agency2.id) is False
         
         # Admin can switch agencies (if multi-agency enabled)
-        admin = await create_test_user(role=UserRole.ADMIN, agency_id=agency1.id)
+        admin = await create_test_user(role=UserRole.AGENCY_ADMIN)
         admin.enable_multi_agency_access([agency1.id, agency2.id])
         assert admin.can_access_agency(agency1.id) is True
         assert admin.can_access_agency(agency2.id) is True
@@ -334,7 +331,7 @@ class TestUserModel:
         # Soft delete
         user.soft_delete()
         assert user.deleted_at is not None
-        assert user.status == UserStatus.DELETED
+        assert user.is_active == False  # Deleted users are inactive
         
         # User should not appear in active queries
         active_users = await db_session.query(User).filter(
@@ -460,7 +457,7 @@ class TestUserAuthentication:
         assert login_result["error"] == "Account suspended"
         
         # Deleted account
-        user.status = UserStatus.ACTIVE
+        user.is_active = True
         user.soft_delete()
         
         login_result = await user.authenticate(password=password)
@@ -503,28 +500,28 @@ class TestUserPermissions:
     @pytest.mark.asyncio
     async def test_role_based_permissions(self, db_session: AsyncSession):
         """Test role-based permission checks."""
-        admin = await create_test_user(role=UserRole.ADMIN)
-        manager = await create_test_user(role=UserRole.MANAGER)
+        admin = await create_test_user(role=UserRole.AGENCY_ADMIN)
+        manager = await create_test_user(role=UserRole.AGENCY_STAFF)
         chatter = await create_test_user(role=UserRole.CHATTER)
         model = await create_test_user(role=UserRole.MODEL)
         
         # Permission matrix
         permissions = {
-            "manage_users": [UserRole.ADMIN, UserRole.MANAGER],
-            "manage_agency": [UserRole.ADMIN],
-            "view_all_models": [UserRole.ADMIN, UserRole.MANAGER],
-            "chat_as_model": [UserRole.CHATTER, UserRole.MANAGER, UserRole.ADMIN],
+            "manage_users": [UserRole.AGENCY_ADMIN, UserRole.AGENCY_STAFF],
+            "manage_agency": [UserRole.AGENCY_ADMIN],
+            "view_all_models": [UserRole.AGENCY_ADMIN, UserRole.AGENCY_STAFF],
+            "chat_as_model": [UserRole.CHATTER, UserRole.AGENCY_STAFF, UserRole.AGENCY_ADMIN],
             "view_own_earnings": [UserRole.MODEL],
-            "manage_finances": [UserRole.ADMIN, UserRole.MANAGER],
-            "view_analytics": [UserRole.ADMIN, UserRole.MANAGER, UserRole.MODEL],
-            "manage_content": [UserRole.ADMIN, UserRole.MANAGER, UserRole.MODEL],
-            "manage_subscriptions": [UserRole.ADMIN, UserRole.MANAGER]
+            "manage_finances": [UserRole.AGENCY_ADMIN, UserRole.AGENCY_STAFF],
+            "view_analytics": [UserRole.AGENCY_ADMIN, UserRole.AGENCY_STAFF, UserRole.MODEL],
+            "manage_content": [UserRole.AGENCY_ADMIN, UserRole.AGENCY_STAFF, UserRole.MODEL],
+            "manage_subscriptions": [UserRole.AGENCY_ADMIN, UserRole.AGENCY_STAFF]
         }
         
         # Test each permission
         for permission, allowed_roles in permissions.items():
-            assert admin.has_permission(permission) == (UserRole.ADMIN in allowed_roles)
-            assert manager.has_permission(permission) == (UserRole.MANAGER in allowed_roles)
+            assert admin.has_permission(permission) == (UserRole.AGENCY_ADMIN in allowed_roles)
+            assert manager.has_permission(permission) == (UserRole.AGENCY_STAFF in allowed_roles)
             assert chatter.has_permission(permission) == (UserRole.CHATTER in allowed_roles)
             assert model.has_permission(permission) == (UserRole.MODEL in allowed_roles)
     
@@ -535,8 +532,8 @@ class TestUserPermissions:
         agency2 = await create_test_agency()
         
         # Users from different agencies
-        user1 = await create_test_user(role=UserRole.MANAGER, agency_id=agency1.id)
-        user2 = await create_test_user(role=UserRole.MANAGER, agency_id=agency2.id)
+        user1 = await create_test_user(role=UserRole.AGENCY_STAFF)
+        user2 = await create_test_user(role=UserRole.AGENCY_STAFF)
         
         # Model from agency1
         from models.model import Model
@@ -555,7 +552,7 @@ class TestUserPermissions:
         assert user2.can_access_model(model.id) is False
         
         # Admin from agency1 can access
-        admin1 = await create_test_user(role=UserRole.ADMIN, agency_id=agency1.id)
+        admin1 = await create_test_user(role=UserRole.AGENCY_ADMIN)
         assert admin1.can_access_model(model.id) is True
     
     @pytest.mark.asyncio
