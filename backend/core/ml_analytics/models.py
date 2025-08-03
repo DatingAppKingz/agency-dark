@@ -1,7 +1,7 @@
 """
 ML Analytics models for predictions and insights.
 """
-from sqlalchemy import Column, String, Integer, Float, DateTime, JSON, Text, ForeignKey, Enum as SQLEnum, Index
+from sqlalchemy import Column, String, Integer, Float, DateTime, JSON, Text, ForeignKey, Enum as SQLEnum, Index, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 import uuid
