@@ -32,18 +32,25 @@ if [ -d "backend" ]; then
         echo "Installing backend dependencies..."
         poetry install --no-interaction --no-root
         
-        echo -e "\n${GREEN}Running backend tests with coverage...${NC}"
-        echo -e "${YELLOW}Note: Backend tests require database setup.${NC}"
-        echo -e "${YELLOW}To run backend tests:${NC}"
-        echo -e "${YELLOW}1. Create test database: createdb agencydark_test${NC}"
-        echo -e "${YELLOW}2. Set DATABASE_URL environment variable${NC}"
-        echo -e "${YELLOW}3. Run: poetry run pytest --cov=. --cov-report=html${NC}"
-        echo ""
-        echo -e "${YELLOW}See BACKEND_TEST_FIX_SUMMARY.md for details${NC}"
+        echo -e "\n${GREEN}Checking for test database...${NC}"
         
-        # Uncomment when database is set up:
-        # poetry run pytest --cov=. --cov-report=html --cov-report=term -v
-        # echo -e "\n${GREEN}Backend coverage report generated at: backend/htmlcov/index.html${NC}"
+        # Check if test environment variables are set
+        if [ -f "../.env.test" ]; then
+            source ../.env.test
+        fi
+        
+        # Check if test database is accessible
+        if pg_isready -h localhost -p 5433 -U postgres > /dev/null 2>&1; then
+            echo -e "${GREEN}Test database found. Running backend tests...${NC}"
+            export DATABASE_URL="postgresql://postgres:postgres@localhost:5433/agencydark_test"
+            export TEST_DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5433/agencydark_test"
+            poetry run pytest --cov=. --cov-report=html --cov-report=term -v
+            echo -e "\n${GREEN}Backend coverage report generated at: backend/htmlcov/index.html${NC}"
+        else
+            echo -e "${YELLOW}Test database not found.${NC}"
+            echo -e "${YELLOW}To set up test environment, run: ./setup-test-env.sh${NC}"
+            echo -e "${YELLOW}See BACKEND_TEST_FIX_SUMMARY.md for manual setup${NC}"
+        fi
     else
         echo -e "${RED}Poetry not found. Please install Poetry to run backend tests.${NC}"
     fi

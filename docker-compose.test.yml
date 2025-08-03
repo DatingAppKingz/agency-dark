@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for backend tests
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: agencydark-test-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agencydark_test
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis for backend tests (caching, sessions)
+  redis-test:
+    image: redis:7-alpine
+    container_name: agencydark-test-redis
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-test-data:
+
+# Network configuration
+networks:
+  default:
+    name: agencydark-test-network

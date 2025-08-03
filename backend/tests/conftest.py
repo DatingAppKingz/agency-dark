@@ -21,9 +21,13 @@ from core.security import get_password_hash
 
 
 # Test database URL
-TEST_DATABASE_URL = settings.DATABASE_URL.replace(
-    "postgresql://", "postgresql+asyncpg://"
-).replace("/agencydark", "/agencydark_test")
+import os
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    settings.DATABASE_URL.replace(
+        "postgresql://", "postgresql+asyncpg://"
+    ).replace("/agencydark", "/agencydark_test")
+)
 
 
 # Create test engine

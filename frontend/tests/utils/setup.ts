@@ -1,14 +1,43 @@
-import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
 import { vi } from 'vitest';
 
-// Set environment variables
-process.env.VITE_API_URL = 'http://localhost:8000';
-process.env.VITE_WS_URL = 'http://localhost:8000';
-process.env.VITE_PUBLIC_VAPID_KEY = 'test-vapid-key';
-process.env.NODE_ENV = 'test';
+// Mock axios before any imports
+vi.mock('axios', () => {
+  const mockAxios = {
+    create: vi.fn(() => mockAxios),
+    get: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    post: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    put: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    patch: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    delete: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    request: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() }
+    }
+  };
+  return {
+    default: mockAxios,
+    ...mockAxios
+  };
+});
 
-// Mock pushNotifications service before any imports
+// Mock API client
+vi.mock('@/services/api/client', () => ({
+  default: {
+    get: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    post: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    put: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    patch: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    delete: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    request: vi.fn().mockRejectedValue(new Error('API calls should be mocked in tests')),
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() }
+    }
+  }
+}));
+
+// Mock pushNotifications service
 vi.mock('@/services/pushNotifications', () => ({
   pushNotifications: {
     isSupported: vi.fn().mockReturnValue(true),
@@ -23,6 +52,15 @@ vi.mock('@/services/pushNotifications', () => ({
     getSubscription: vi.fn().mockResolvedValue(null),
   }
 }));
+
+import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+
+// Set environment variables
+process.env.VITE_API_URL = 'http://localhost:8000';
+process.env.VITE_WS_URL = 'http://localhost:8000';
+process.env.VITE_PUBLIC_VAPID_KEY = 'test-vapid-key';
+process.env.NODE_ENV = 'test';
 
 // Add TextEncoder/TextDecoder polyfills for Node.js environment
 if (typeof globalThis.TextEncoder === 'undefined') {
@@ -103,7 +141,7 @@ globalThis.ResizeObserver = class ResizeObserver {
   constructor() {}
   disconnect() {}
   observe() {}
-  unobserve() {}
+  unobserve() {};
 };
 
 // Mock scrollTo
