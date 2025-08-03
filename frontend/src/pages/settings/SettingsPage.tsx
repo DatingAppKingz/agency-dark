@@ -16,6 +16,7 @@ import {
   Key,
   Webhook } from '@mui/icons-material';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -42,10 +43,17 @@ const TabPanel = (props: TabPanelProps) => {
 const SettingsPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
   };
+
+  // Check if user can manage API keys
+  const canManageApiKeys = ['super_admin', 'agency_owner', 'agency_admin'].includes(user?.role || '');
+  
+  // Check if user can manage webhooks
+  const canManageWebhooks = ['super_admin', 'agency_owner', 'agency_admin'].includes(user?.role || '');
 
   return (
     <Box>
@@ -64,8 +72,8 @@ const SettingsPage = () => {
           <Tab icon={<Person />} label="Profile" />
           <Tab icon={<Notifications />} label="Notifications" />
           <Tab icon={<Security />} label="Security" />
-          <Tab icon={<Key />} label="API Keys" />
-          <Tab icon={<Webhook />} label="Webhooks" />
+          {canManageApiKeys && <Tab icon={<Key />} label="API Keys" />}
+          {canManageWebhooks && <Tab icon={<Webhook />} label="Webhooks" />}
           <Tab icon={<Palette />} label="Appearance" />
           <Tab icon={<Language />} label="Language" />
         </Tabs>
