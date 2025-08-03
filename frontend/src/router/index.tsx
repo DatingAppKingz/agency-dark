@@ -28,6 +28,7 @@ const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'));
 const ReportBuilderPage = lazy(() => import('@/pages/reports/ReportBuilderPage'));
 const ReportViewerPage = lazy(() => import('@/pages/reports/ReportViewerPage'));
 const AgencySettingsPage = lazy(() => import('@/pages/agency/AgencySettingsPage'));
+const AgenciesListPage = lazy(() => import('@/pages/agencies/AgenciesListPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const ApiTestPage = lazy(() => import('@/pages/ApiTestPage'));
 const DebugAnalytics = lazy(() => import('@/pages/DebugAnalytics'));
@@ -219,6 +220,14 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <UserProfilePage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'agencies',
+            element: (
+              <LazyPage>
+                <AgenciesListPage />
               </LazyPage>
             ),
           },

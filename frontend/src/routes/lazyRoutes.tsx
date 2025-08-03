@@ -35,6 +35,7 @@ export const LanguageSettings = lazyLoad(() => import('@/pages/settings/Language
 
 // Agency
 export const AgencySettingsPage = lazyLoad(() => import('@/pages/agency/AgencySettingsPage'));
+export const AgenciesListPage = lazyLoad(() => import('@/pages/agencies/AgenciesListPage'));
 
 // Error Pages
 export const NotFoundPage = lazyLoad(() => import('@/pages/errors/NotFoundPage'));
@@ -89,6 +90,7 @@ export const routeConfig = {
   },
   agency: {
     settings: '/agency/settings',
+    list: '/agencies',
   },
   errors: {
     notFound: '/404',

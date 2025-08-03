@@ -9,7 +9,8 @@ class AuthService {
 
   constructor() {
     // Try to restore session on init
-    this.checkAuth();
+    // Commented out to prevent unnecessary API calls on app load
+    // this.checkAuth();
   }
 
   getAccessToken(): string | null {
@@ -113,10 +114,20 @@ class AuthService {
 
   async checkAuth(): Promise<User | null> {
     try {
-      // Try to get current user, which will trigger token refresh if needed
+      // Only check if we have a token
+      if (!this.accessToken) {
+        return null;
+      }
+      
+      // Try to get current user with the token
       const response = await axios.get<User>(
         `${API_URL}/auth/me`,
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`
+          }
+        }
       );
       return response.data;
     } catch (error) {
