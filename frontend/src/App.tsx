@@ -9,6 +9,7 @@ import { Toaster } from './components/common/Toaster';
 import { PushNotificationProvider } from './providers/PushNotificationProvider';
 import { LanguageProvider } from './i18n/LanguageProvider';
 import { PerformanceProvider } from './providers/PerformanceProvider';
+import { RealtimeProvider } from './providers/RealtimeProvider';
 import './i18n';
 
 const queryClient = new QueryClient({
@@ -29,10 +30,12 @@ function App() {
           <CssBaseline />
           <LanguageProvider>
             <PerformanceProvider>
-              <PushNotificationProvider>
-                <RouterProvider router={router} />
-                <Toaster />
-              </PushNotificationProvider>
+              <RealtimeProvider>
+                <PushNotificationProvider>
+                  <RouterProvider router={router} />
+                  <Toaster />
+                </PushNotificationProvider>
+              </RealtimeProvider>
             </PerformanceProvider>
           </LanguageProvider>
         </ThemeProvider>
