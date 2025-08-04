@@ -112,8 +112,11 @@ class Message(BaseModel):
     # Message content
     type = Column(SQLEnum(MessageType), default=MessageType.TEXT, nullable=False)
     content = Column(Text, nullable=True)
+    encrypted_content = Column(Text, nullable=True)  # For encrypted messages
+    encryption_key_id = Column(String(255), nullable=True)  # Reference to encryption key
     media_url = Column(String(500), nullable=True)
     thumbnail_url = Column(String(500), nullable=True)
+    media_encryption_key = Column(Text, nullable=True)  # For encrypted media
     
     # Status
     status = Column(SQLEnum(MessageStatus), default=MessageStatus.SENT, nullable=False)

@@ -1,3 +1,1 @@
-"""
-Real-time features using Socket.IO.
-"""
+# Real-time communication module
