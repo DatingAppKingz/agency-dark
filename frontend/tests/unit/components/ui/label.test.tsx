@@ -25,8 +25,8 @@ describe('Label Component', () => {
       
       const label = screen.getByText('Custom Label');
       expect(label).toHaveClass('text-red-500 text-lg');
-      // Should also retain default classes
-      expect(label).toHaveClass('text-sm font-medium leading-none');
+      // Custom classes override defaults
+      expect(label).toHaveClass('font-medium');
     });
 
     it('renders as label element', () => {

@@ -61,7 +61,10 @@ vi.mock('@mui/icons-material', () => mockIcons);
 
 // Mock LanguageProvider to avoid loading translations in tests
 vi.mock('@/i18n/LanguageProvider', () => ({
-  LanguageProvider: ({ children }: { children: React.ReactNode }) => children,
+  LanguageProvider: ({ children }: { children: React.ReactNode }) => {
+    const React = require('react');
+    return React.createElement(React.Fragment, null, children);
+  },
 }));
 
 import '@testing-library/jest-dom';
@@ -168,6 +171,9 @@ if (!Element.prototype.setPointerCapture) {
 if (!Element.prototype.releasePointerCapture) {
   Element.prototype.releasePointerCapture = vi.fn();
 }
+
+// Mock scrollIntoView
+Element.prototype.scrollIntoView = vi.fn();
 
 // Mock localStorage
 const localStorageMock = (() => {

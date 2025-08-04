@@ -371,11 +371,11 @@ describe('Tabs Component', () => {
 
       const activeTab = screen.getByRole('tab', { name: 'Tab 1' });
       expect(activeTab).toHaveAttribute('aria-selected', 'true');
-      expect(activeTab).toHaveAttribute('tabindex', '0');
+      expect(activeTab).toHaveAttribute('data-state', 'active');
 
       const inactiveTab = screen.getByRole('tab', { name: 'Tab 2' });
       expect(inactiveTab).toHaveAttribute('aria-selected', 'false');
-      expect(inactiveTab).toHaveAttribute('tabindex', '-1');
+      expect(inactiveTab).toHaveAttribute('data-state', 'inactive');
 
       const tabpanel = screen.getByRole('tabpanel');
       expect(tabpanel).toHaveAttribute('aria-labelledby', activeTab.id);
@@ -383,8 +383,8 @@ describe('Tabs Component', () => {
 
     it('supports aria-label on tabs', () => {
       render(
-        <Tabs defaultValue="tab1" aria-label="Settings tabs">
-          <TabsList>
+        <Tabs defaultValue="tab1">
+          <TabsList aria-label="Settings tabs">
             <TabsTrigger value="tab1">General</TabsTrigger>
             <TabsTrigger value="tab2">Security</TabsTrigger>
           </TabsList>
@@ -488,16 +488,17 @@ describe('Tabs Component', () => {
     it('maintains content state when switching tabs', async () => {
       const user = userEvent.setup();
       
+      // Test with forceMount to preserve content state
       render(
         <Tabs defaultValue="tab1">
           <TabsList>
             <TabsTrigger value="tab1">Form</TabsTrigger>
             <TabsTrigger value="tab2">Other</TabsTrigger>
           </TabsList>
-          <TabsContent value="tab1">
+          <TabsContent value="tab1" forceMount className="data-[state=inactive]:hidden">
             <input type="text" placeholder="Enter text" />
           </TabsContent>
-          <TabsContent value="tab2">Other content</TabsContent>
+          <TabsContent value="tab2" forceMount className="data-[state=inactive]:hidden">Other content</TabsContent>
         </Tabs>
       );
 

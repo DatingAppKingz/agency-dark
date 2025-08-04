@@ -341,19 +341,13 @@ export const ModelPerformance = ({ dateRange, refreshKey }: ModelPerformanceProp
                   </ListItemAvatar>
                   <ListItemText
                     primary={fan.name}
-                    secondary={
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">
-                          ${fan.spent} spent • {fan.messages} messages
-                        </Typography>
-                        <Chip 
-                          label={fan.tier} 
-                          size="small" 
-                          color={fan.tier === 'VIP' ? 'primary' : 'default'}
-                          sx={{ mt: 0.5 }}
-                        />
-                      </Box>
-                    }
+                    secondary={`$${fan.spent.toLocaleString()} spent • ${fan.messages} messages`}
+                    secondaryTypographyProps={{ component: 'div' }}
+                  />
+                  <Chip 
+                    label={fan.tier} 
+                    size="small" 
+                    color={fan.tier === 'VIP' ? 'primary' : 'default'}
                   />
                 </ListItem>
               ))}
@@ -373,12 +367,12 @@ export const ModelPerformance = ({ dateRange, refreshKey }: ModelPerformanceProp
                   <ListItemText
                     primary={goal.name}
                     secondary={
-                      <Box sx={{ mt: 1 }}>
+                      <Box component="span" sx={{ mt: 1, display: 'block' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2">
-                            {goal.current.toLocaleString()} / {goal.target.toLocaleString()}
+                          <Typography variant="body2" component="span">
+                            {goal.name.toLowerCase().includes('revenue') ? '$' : ''}{goal.current.toLocaleString()} / {goal.name.toLowerCase().includes('revenue') ? '$' : ''}{goal.target.toLocaleString()}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.secondary" component="span">
                             {goal.percentage}%
                           </Typography>
                         </Box>
@@ -386,9 +380,11 @@ export const ModelPerformance = ({ dateRange, refreshKey }: ModelPerformanceProp
                           variant="determinate" 
                           value={goal.percentage} 
                           color={goal.percentage >= 80 ? 'success' : 'primary'}
+                          sx={{ mt: 1 }}
                         />
                       </Box>
                     }
+                    secondaryTypographyProps={{ component: 'div' }}
                   />
                 </ListItem>
               ))}

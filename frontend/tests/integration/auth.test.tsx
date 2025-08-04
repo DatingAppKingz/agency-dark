@@ -1,11 +1,11 @@
 import { screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render } from '../../utils/test-utils';
+import { render } from '../utils/enhanced-test-utils';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
-import { server } from '../../utils/test-server';
-import { rest } from 'msw';
+import { server } from '../utils/test-server';
+import { http, HttpResponse } from 'msw';
 
 // Enable API mocking
 beforeAll(() => server.listen());
@@ -75,10 +75,10 @@ describe('Authentication Flow', () => {
 
     it('should handle login errors', async () => {
       server.use(
-        rest.post('*/auth/login', (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({ detail: 'Invalid credentials' })
+        http.post('*/auth/login', () => {
+          return HttpResponse.json(
+            { detail: 'Invalid credentials' },
+            { status: 401 }
           );
         })
       );
@@ -164,10 +164,10 @@ describe('Authentication Flow', () => {
 
     it('should handle registration errors', async () => {
       server.use(
-        rest.post('*/auth/register', (req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({ detail: 'Email already exists' })
+        http.post('*/auth/register', () => {
+          return HttpResponse.json(
+            { detail: 'Email already exists' },
+            { status: 400 }
           );
         })
       );
