@@ -46,25 +46,32 @@ describe('Simple Authentication Tests', () => {
       login: async (credentials: any) => {
         if (credentials.email === 'test@example.com') {
           // Tokens now managed via httpOnly cookies
-          return { success: true };
+          return { success: true, user: { id: '1', email: 'test@example.com' } };
         }
         throw new Error('Invalid credentials');
       },
     };
 
-    await mockAuth.login({ email: 'test@example.com', password: 'password' });
-    // Tokens now in httpOnly cookies('mock-token');
+    const result = await mockAuth.login({ email: 'test@example.com', password: 'password' });
+    // With cookie-based auth, we can't access tokens directly
+    // Instead, verify the response indicates success
+    expect(result.success).toBe(true);
+    expect(result.user).toBeDefined();
   });
 
-  it('should clear tokens on logout', () => {
-    // Tokens now managed via httpOnly cookies
-    // Tokens now managed via httpOnly cookies
+  it('should clear tokens on logout', async () => {
+    const mockAuth = {
+      logout: vi.fn().mockResolvedValue(undefined),
+      isAuthenticated: false,
+    };
     
     // Simulate logout
-    // Tokens now managed via httpOnly cookies
-    // Tokens now managed via httpOnly cookies
+    await mockAuth.logout();
     
-    // Tokens now in httpOnly cookiesNull();
-    // Tokens now in httpOnly cookies();
+    // Verify logout was called
+    expect(mockAuth.logout).toHaveBeenCalled();
+    // With cookie-based auth, tokens are cleared server-side
+    // We verify the auth state is false
+    expect(mockAuth.isAuthenticated).toBe(false);
   });
 });

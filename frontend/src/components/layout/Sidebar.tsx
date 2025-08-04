@@ -1,5 +1,5 @@
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box, Divider, useTheme, useMediaQuery, IconButton, Tooltip } from '@mui/material';
-import { Dashboard, People, Person, Chat, Analytics, AttachMoney, Settings, Business, AdminPanelSettings, CloudSync, Group, Assessment, ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Dashboard, People, Person, Chat, Analytics, AttachMoney, Settings, Business, AdminPanelSettings, CloudSync, Group, Assessment, ChevronLeft, ChevronRight, Psychology } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types/auth';
@@ -53,6 +53,12 @@ const menuItems: MenuItem[] = [
     text: 'Analytics',
     icon: <Analytics />,
     path: '/dashboard/analytics',
+  },
+  {
+    text: 'ML Insights',
+    icon: <Psychology />,
+    path: '/dashboard/ml-insights',
+    roles: [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN],
   },
   {
     text: 'Bulk Operations',

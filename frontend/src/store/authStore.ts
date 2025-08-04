@@ -18,7 +18,7 @@ interface AuthState {
   checkAuth: () => Promise<void>;
   clearError: () => void;
   setAuth: (data: { user: User; accessToken: string; refreshToken: string }) => void;
-  refreshToken: () => Promise<void>;
+  refreshAuthToken: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -138,7 +138,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Tokens are now stored in httpOnly cookies by the backend
   },
 
-  refreshToken: async () => {
+  refreshAuthToken: async () => {
     try {
       const response = await authService.refreshToken();
       // Tokens are automatically updated in cookies by the backend

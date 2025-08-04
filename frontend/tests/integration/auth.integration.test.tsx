@@ -153,7 +153,7 @@ describe('Authentication Integration Tests', () => {
       // Tokens now managed via httpOnly cookies
 
       // Trigger refresh
-      await useAuthStore.getState().refreshToken();
+      await useAuthStore.getState().refreshAuthToken();
 
       await waitFor(() => {
         // Tokens are now managed via httpOnly cookies
@@ -182,7 +182,7 @@ describe('Authentication Integration Tests', () => {
 
       // Attempt to refresh token
       try {
-        await useAuthStore.getState().refreshToken();
+        await useAuthStore.getState().refreshAuthToken();
       } catch (error) {
         // Expected to fail
       }

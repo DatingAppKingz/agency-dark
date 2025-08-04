@@ -5,6 +5,7 @@ export * from './bulkOperations';
 export * from './chat';
 export * from './client';
 export * from './financial';
+export * from './mlInsights';
 export * from './models';
 export * from './reports';
 export * from './sync';

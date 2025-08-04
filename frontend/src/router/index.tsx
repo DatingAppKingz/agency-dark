@@ -33,6 +33,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const ApiTestPage = lazy(() => import('@/pages/ApiTestPage'));
 const DebugAnalytics = lazy(() => import('@/pages/DebugAnalytics'));
 const DashboardDebug = lazy(() => import('@/pages/dashboard/DashboardDebug'));
+const MLInsightsPage = lazy(() => import('@/pages/ml/MLInsightsPage'));
 
 // Wrapper for lazy loaded components
 const LazyPage = ({ children }: { children: React.ReactNode }) => (
@@ -132,6 +133,14 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <AnalyticsPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'ml-insights',
+            element: (
+              <LazyPage>
+                <MLInsightsPage />
               </LazyPage>
             ),
           },

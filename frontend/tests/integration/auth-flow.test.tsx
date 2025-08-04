@@ -1,9 +1,9 @@
 import React from 'react';
 import { vi } from 'vitest';
-import { render, screen, waitFor } from '../../utils/enhanced-test-utils';
+import { render, screen, waitFor } from '../utils/enhanced-test-utils';
 import userEvent from '@testing-library/user-event';
-import { server } from '../../utils/test-server';
-import { rest } from 'msw';
+import { server } from '../utils/test-server';
+import { http, HttpResponse } from 'msw';
 import LoginPage from '@/pages/auth/LoginPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
@@ -46,18 +46,18 @@ describe('Authentication Flow Integration', () => {
       });
 
       // Check that tokens are stored
-      // Tokens now in httpOnly cookies('mock-access-token');
-      // Tokens now in httpOnly cookies('mock-refresh-token');
+      // Tokens now in httpOnly cookies
+      // Tokens now in httpOnly cookies
     });
 
     it('shows error message on invalid credentials', async () => {
       const user = userEvent.setup();
 
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/login', (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({ detail: 'Invalid email or password' })
+        http.post('http://localhost:8000/api/v1/auth/login', () => {
+          return HttpResponse.json(
+            { detail: 'Invalid email or password' },
+            { status: 401 }
           );
         })
       );
@@ -81,7 +81,7 @@ describe('Authentication Flow Integration', () => {
       expect(mockNavigate).not.toHaveBeenCalled();
       
       // Should not store tokens
-      // Tokens now in httpOnly cookiesNull();
+      // Tokens now in httpOnly cookies
     });
 
     it('disables form during submission', async () => {
@@ -208,9 +208,9 @@ describe('Authentication Flow Integration', () => {
 
       // Wait for logout to complete
       await waitFor(() => {
-        // Tokens now in httpOnly cookiesNull();
-        // Tokens now in httpOnly cookiesNull();
-        // Tokens now in httpOnly cookies();
+        // Tokens now in httpOnly cookies
+        // Tokens now in httpOnly cookies
+        // Tokens now in httpOnly cookies
       });
 
       // Should redirect to login
@@ -227,22 +227,20 @@ describe('Authentication Flow Integration', () => {
 
       server.use(
         // First call returns 401
-        rest.get('http://localhost:8000/api/v1/users', (req, res, ctx) => {
+        http.get('http://localhost:8000/api/v1/users', () => {
           if (!tokenRefreshCalled) {
-            return res(ctx.status(401), ctx.json({ detail: 'Token expired' }));
+            return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
           }
           // After refresh, return success
-          return res(ctx.json({ items: [], total: 0 }));
+          return HttpResponse.json({ items: [], total: 0 });
         }),
         // Token refresh endpoint
-        rest.post('http://localhost:8000/api/v1/auth/refresh', (req, res, ctx) => {
+        http.post('http://localhost:8000/api/v1/auth/refresh', () => {
           tokenRefreshCalled = true;
-          return res(
-            ctx.json({
-              access_token: 'new-access-token',
-              refresh_token: 'new-refresh-token',
-            })
-          );
+          return HttpResponse.json({
+            access_token: 'new-access-token',
+            refresh_token: 'new-refresh-token',
+          });
         })
       );
 
@@ -250,8 +248,8 @@ describe('Authentication Flow Integration', () => {
 
       // Wait for token refresh and retry
       await waitFor(() => {
-        // Tokens now in httpOnly cookies('new-access-token');
-        // Tokens now in httpOnly cookies('new-refresh-token');
+        // Tokens now in httpOnly cookies
+        // Tokens now in httpOnly cookies
       });
     });
 
@@ -260,11 +258,11 @@ describe('Authentication Flow Integration', () => {
       // Tokens now managed via httpOnly cookies
 
       server.use(
-        rest.get('http://localhost:8000/api/v1/users', (req, res, ctx) => {
-          return res(ctx.status(401));
+        http.get('http://localhost:8000/api/v1/users', () => {
+          return HttpResponse.json({ detail: 'Unauthorized' }, { status: 401 });
         }),
-        rest.post('http://localhost:8000/api/v1/auth/refresh', (req, res, ctx) => {
-          return res(ctx.status(401), ctx.json({ detail: 'Invalid refresh token' }));
+        http.post('http://localhost:8000/api/v1/auth/refresh', () => {
+          return HttpResponse.json({ detail: 'Invalid refresh token' }, { status: 401 });
         })
       );
 
@@ -272,8 +270,8 @@ describe('Authentication Flow Integration', () => {
 
       // Should clear tokens and redirect
       await waitFor(() => {
-        // Tokens now in httpOnly cookiesNull();
-        // Tokens now in httpOnly cookiesNull();
+        // Tokens now in httpOnly cookies
+        // Tokens now in httpOnly cookies
         expect(mockNavigate).toHaveBeenCalledWith('/login');
       });
     });
