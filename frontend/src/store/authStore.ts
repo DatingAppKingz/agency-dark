@@ -135,24 +135,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       refreshToken: data.refreshToken,
       error: null,
     });
-    localStorage.setItem('access_token', data.accessToken);
-    localStorage.setItem('refresh_token', data.refreshToken);
+    // Tokens are now stored in httpOnly cookies by the backend
   },
 
   refreshToken: async () => {
-    const currentRefreshToken = localStorage.getItem('refresh_token');
-    if (!currentRefreshToken) {
-      throw new Error('No refresh token available');
-    }
-
     try {
       const response = await authService.refreshToken();
+      // Tokens are automatically updated in cookies by the backend
+      // We just need to update the user state if needed
       set({
         accessToken: response.access_token,
         refreshToken: response.refresh_token,
       });
-      localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('refresh_token', response.refresh_token);
     } catch (error) {
       // If refresh fails, logout
       set({
@@ -163,8 +157,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         refreshToken: null,
         permissions: [],
       });
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
       throw error;
     }
   },

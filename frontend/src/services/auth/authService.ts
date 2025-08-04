@@ -4,27 +4,17 @@ import { AuthResponse, LoginCredentials, RegisterData, User } from '@/types/auth
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 class AuthService {
-  private accessToken: string | null = null;
   private refreshPromise: Promise<void> | null = null;
 
   constructor() {
-    // Try to restore session on init
-    // Commented out to prevent unnecessary API calls on app load
-    // this.checkAuth();
-    
-    // Restore token from localStorage on init
-    const storedToken = localStorage.getItem('auth_token');
-    if (storedToken) {
-      this.accessToken = storedToken;
-    }
+    // No need to restore from localStorage anymore
+    // Cookies will be sent automatically
   }
 
   getAccessToken(): string | null {
-    return this.accessToken;
-  }
-
-  setAccessToken(token: string): void {
-    this.accessToken = token;
+    // Access token is now in httpOnly cookie, not accessible via JS
+    // This method is kept for backward compatibility but returns null
+    return null;
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -43,21 +33,14 @@ class AuthService {
       }
     );
     
-    this.setAccessToken(response.data.access_token);
-    
-    // Store tokens in localStorage
-    if (response.data.access_token && response.data.refresh_token) {
-      this.setTokens(response.data.access_token, response.data.refresh_token);
-    }
+    // Tokens are now stored in httpOnly cookies automatically
+    // No need to store in localStorage
     
     // Get user info after login
     const userResponse = await axios.get<User>(
       `${API_URL}/auth/me`,
       {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${response.data.access_token}`,
-        },
+        withCredentials: true, // Cookie will be sent automatically
       }
     );
     
@@ -74,12 +57,7 @@ class AuthService {
       { withCredentials: true }
     );
     
-    this.setAccessToken(response.data.access_token);
-    
-    // Store tokens in localStorage
-    if (response.data.access_token && response.data.refresh_token) {
-      this.setTokens(response.data.access_token, response.data.refresh_token);
-    }
+    // Tokens are now stored in httpOnly cookies automatically
     
     return response.data;
   }
@@ -90,17 +68,13 @@ class AuthService {
         `${API_URL}/auth/logout`,
         {},
         { 
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`
-          }
+          withCredentials: true
         }
       );
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
-      this.clearTokens();
     }
+    // No need to clear tokens as they're in httpOnly cookies
   }
 
   async refreshToken(): Promise<void> {
@@ -116,17 +90,12 @@ class AuthService {
         { withCredentials: true }
       )
       .then((response) => {
-        // Use setTokens to handle both tokens properly
-        if (response.data.refresh_token) {
-          this.setTokens(response.data.access_token, response.data.refresh_token);
-        } else {
-          this.setAccessToken(response.data.access_token);
-          localStorage.setItem('auth_token', response.data.access_token);
-        }
+        // Tokens are now stored in httpOnly cookies automatically
+        // No need to handle them in JavaScript
         return response.data;
       })
       .catch((error) => {
-        this.clearTokens();
+        // No need to clear tokens as they're in httpOnly cookies
         throw error;
       })
       .finally(() => {
@@ -138,20 +107,11 @@ class AuthService {
 
   async checkAuth(): Promise<User | null> {
     try {
-      // Check for token in memory or localStorage
-      const token = this.accessToken || localStorage.getItem('auth_token');
-      if (!token) {
-        return null;
-      }
-      
-      // Try to get current user with the token
+      // Try to get current user - cookie will be sent automatically
       const response = await axios.get<User>(
         `${API_URL}/auth/me`,
         { 
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          withCredentials: true
         }
       );
       return response.data;
@@ -178,24 +138,25 @@ class AuthService {
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
+    // Refresh token is now in httpOnly cookie, not accessible via JS
+    return null;
   }
 
   isAuthenticated(): boolean {
-    return !!this.accessToken || !!localStorage.getItem('auth_token');
+    // Since tokens are in httpOnly cookies, we can't check them directly
+    // This method should be replaced with a server-side check
+    // For now, return false - the actual auth state should be managed by the store
+    return false;
   }
 
   setTokens(accessToken: string, refreshToken: string): void {
-    this.accessToken = accessToken;
-    localStorage.setItem('auth_token', accessToken);
-    localStorage.setItem('refresh_token', refreshToken);
+    // Tokens are now stored in httpOnly cookies by the backend
+    // This method is kept for backward compatibility but does nothing
   }
 
   clearTokens(): void {
-    this.accessToken = null;
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
+    // Tokens are now in httpOnly cookies and cleared by the backend
+    // This method is kept for backward compatibility but does nothing
   }
 
   async requestPasswordReset(email: string): Promise<{ message: string }> {

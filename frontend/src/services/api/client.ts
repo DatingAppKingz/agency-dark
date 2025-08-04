@@ -15,10 +15,7 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = authService.getAccessToken();
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // No need to add Authorization header - cookies are sent automatically
     
     // Debug logging
     console.log('🚀 API Request:', {
@@ -64,13 +61,10 @@ apiClient.interceptors.response.use(
 
       try {
         await authService.refreshToken();
-        const token = authService.getAccessToken();
-        if (token && originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-        }
+        // Retry the original request - cookies will be sent automatically
         return apiClient(originalRequest);
       } catch (refreshError) {
-        authService.logout();
+        await authService.logout();
         window.location.href = '/auth/login';
         return Promise.reject(refreshError);
       }

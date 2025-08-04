@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 
 from core.database import get_db
-from api.v1.endpoints.auth_simple import get_current_user, get_optional_current_user
+from core.auth.dependencies import get_current_user, get_optional_current_user
 from models.user import User
 
 

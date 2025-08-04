@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, Cookie
 from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -18,6 +18,7 @@ from core.security import (
     verify_token_fingerprint
 )
 from core.auth.token_blacklist import token_blacklist_service
+from core.auth.cookie_utils import set_auth_cookies, clear_auth_cookies
 from core.config import settings
 from models.user import User, Session, UserRole
 from models.agency import Agency
@@ -203,28 +204,25 @@ async def login(
     
     await db.commit()
     
-    # Set cookies with appropriate expiration
-    cookie_max_age = refresh_token_days * 24 * 60 * 60
-    
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        max_age=cookie_max_age,
-        httponly=True,
-        secure=settings.ENVIRONMENT == "production",
-        samesite="strict" if settings.ENVIRONMENT == "production" else "lax"
+    # Set auth cookies using our utility
+    set_auth_cookies(
+        response=response,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        access_token_expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     
     # Set fingerprint cookie (not httponly, needs to be readable by JS)
     response.set_cookie(
         key="__Secure-Fgp",
         value=raw_fingerprint,
-        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        max_age=refresh_token_days * 24 * 60 * 60,
         secure=settings.ENVIRONMENT == "production",
         samesite="strict" if settings.ENVIRONMENT == "production" else "lax",
         httponly=False
     )
     
+    # Return tokens (for backward compatibility, but cookies are primary)
     return Token(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -299,14 +297,11 @@ async def refresh_token(
     
     await db.commit()
     
-    # Update cookie
-    response.set_cookie(
-        key="refresh_token",
-        value=new_refresh_token,
-        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        httponly=True,
-        secure=settings.ENVIRONMENT == "production",
-        samesite="lax"
+    # Update cookies with new tokens
+    set_auth_cookies(
+        response=response,
+        access_token=new_access_token,
+        refresh_token=new_refresh_token
     )
     
     return Token(
@@ -354,9 +349,9 @@ async def logout(
     
     await db.commit()
     
-    # Clear cookies
-    response.delete_cookie(key="refresh_token")
-    response.delete_cookie(key="__Secure-Fgp")
+    # Clear all auth cookies
+    clear_auth_cookies(response)
+    response.delete_cookie(key="__Secure-Fgp")  # Also clear fingerprint
     
     return {"message": "Successfully logged out"}
 
