@@ -56,6 +56,30 @@ vi.mock('@/services/auth/authService', () => ({
   }
 }));
 
+// Create global mockAuthStore for tests
+(globalThis as any).mockAuthStore = {
+  user: {
+    id: '1',
+    email: 'test@example.com',
+    full_name: 'Test User',
+    role: 'agency_admin',
+    is_active: true,
+    is_verified: true,
+    agency_id: 'agency-1',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  isAuthenticated: true,
+  isPending: false,
+  error: null,
+  token: 'mock-access-token',
+  login: vi.fn(),
+  register: vi.fn(),
+  logout: vi.fn(),
+  checkAuth: vi.fn(),
+  clearError: vi.fn(),
+};
+
 // Mock pushNotifications service
 vi.mock('@/services/pushNotifications', () => ({
   pushNotifications: {
