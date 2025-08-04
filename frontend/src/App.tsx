@@ -10,6 +10,8 @@ import { PushNotificationProvider } from './providers/PushNotificationProvider';
 import { LanguageProvider } from './i18n/LanguageProvider';
 import { PerformanceProvider } from './providers/PerformanceProvider';
 import { RealtimeProvider } from './providers/RealtimeProvider';
+import { ErrorNotificationProvider } from './providers/ErrorNotificationProvider';
+import { ErrorBoundary, AsyncErrorBoundary } from './components/ErrorBoundary';
 import './i18n';
 
 const queryClient = new QueryClient({
@@ -24,23 +26,29 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <LanguageProvider>
-            <PerformanceProvider>
-              <RealtimeProvider>
-                <PushNotificationProvider>
-                  <RouterProvider router={router} />
-                  <Toaster />
-                </PushNotificationProvider>
-              </RealtimeProvider>
-            </PerformanceProvider>
-          </LanguageProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </HelmetProvider>
+    <ErrorBoundary>
+      <AsyncErrorBoundary>
+        <HelmetProvider>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <LanguageProvider>
+                <ErrorNotificationProvider>
+                  <PerformanceProvider>
+                    <RealtimeProvider>
+                      <PushNotificationProvider>
+                        <RouterProvider router={router} />
+                        <Toaster />
+                      </PushNotificationProvider>
+                    </RealtimeProvider>
+                  </PerformanceProvider>
+                </ErrorNotificationProvider>
+              </LanguageProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
+        </HelmetProvider>
+      </AsyncErrorBoundary>
+    </ErrorBoundary>
   );
 }
 
