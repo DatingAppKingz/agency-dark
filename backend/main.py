@@ -18,6 +18,7 @@ from core.middleware.fraud_detection import FraudDetectionMiddleware
 from core.middleware.debugging import DebuggingMiddleware, RequestBodyMiddleware, DatabaseQueryLoggingMiddleware, PerformanceProfilingMiddleware
 from core.middleware.api_usage import APIUsageMiddleware
 from core.middleware.csrf import CSRFMiddleware
+from core.middleware.validation import ValidationMiddleware
 from core.tasks.sync_tasks import start_sync_scheduler, stop_sync_scheduler
 from core.realtime.server import socket_app
 from core.cache import initialize_cache, shutdown_cache
@@ -208,6 +209,7 @@ app.add_middleware(FraudDetectionMiddleware)
 app.add_middleware(EnhancedAPIKeyMiddleware)  # Enhanced API key validation
 app.add_middleware(SecurityHeadersMiddleware)  # Security headers
 app.add_middleware(CSRFMiddleware)  # CSRF protection
+app.add_middleware(ValidationMiddleware)  # Input validation
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(AuthenticationMiddleware)
 app.add_middleware(TenantMiddleware)
