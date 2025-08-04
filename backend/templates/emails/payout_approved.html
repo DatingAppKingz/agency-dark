@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Payout Approved!{% endblock %}
+
+{% block header %}Your Payout Has Been Approved! 💰{% endblock %}
+
+{% block content %}
+<h2 style="color: #333; margin-bottom: 20px;">Great News, {{ model_name }}!</h2>
+
+<div class="alert alert-success">
+    <strong>Your payout #{{ payout_number }} has been approved and is now being processed!</strong>
+</div>
+
+<p>Your payout request has been reviewed and approved. The funds are now being prepared for transfer to your registered payment method.</p>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h3 style="color: #333; margin-top: 0;">Payout Summary</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6;"><strong>Payout Number:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6; text-align: right;">{{ payout_number }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6;"><strong>Amount:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6; text-align: right; font-size: 18px; color: #28a745;"><strong>${{ net_amount }}</strong></td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6;"><strong>Payment Method:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6; text-align: right;">{{ payment_method }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0;"><strong>Expected Arrival:</strong></td>
+            <td style="padding: 8px 0; text-align: right;">{{ expected_date }}</td>
+        </tr>
+    </table>
+</div>
+
+<h3 style="color: #333; margin-top: 30px;">What Happens Next?</h3>
+
+<ol style="margin: 20px 0; padding-left: 20px;">
+    <li style="margin-bottom: 10px;">Your payment is being processed by our payment provider</li>
+    <li style="margin-bottom: 10px;">You'll receive a confirmation once the transfer is complete</li>
+    <li style="margin-bottom: 10px;">Funds should appear in your account within {{ processing_days }} business days</li>
+</ol>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ payout_url }}" class="button">Track Your Payout</a>
+</div>
+
+<div style="background-color: #e3f2fd; padding: 20px; border-radius: 5px; margin-top: 30px;">
+    <h4 style="color: #1565c0; margin-top: 0;">💡 Pro Tip</h4>
+    <p style="margin-bottom: 0; color: #1565c0;">Set up automatic payouts in your dashboard to receive your earnings on a regular schedule without manual requests.</p>
+</div>
+
+<p style="margin-top: 30px;">Thank you for being a valued member of {{ company_name }}!</p>
+
+<p>Best regards,<br>The {{ company_name }} Finance Team</p>
+{% endblock %}

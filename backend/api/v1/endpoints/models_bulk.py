@@ -12,6 +12,7 @@ from models.user import User, UserRole
 from models.model import Model, ModelStatus
 from api.v1.endpoints.auth_simple import get_current_user
 from core.logger import get_logger
+from services.email_notifications import EmailNotificationService
 
 logger = get_logger(__name__)
 
@@ -255,7 +256,14 @@ async def approve_model(
     await db.commit()
     await db.refresh(model)
     
-    # TODO: Send email notification about approval/rejection
+    # Send email notification about approval/rejection
+    email_service = EmailNotificationService(db)
+    await email_service.send_model_approval_email(
+        model=model,
+        approved=approval_data.approved,
+        reason=approval_data.rejection_reason,
+        admin_notes=approval_data.notes
+    )
     
     return {
         "message": message,

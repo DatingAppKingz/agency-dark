@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}New Payout Created{% endblock %}
+
+{% block header %}Payout Request Created{% endblock %}
+
+{% block content %}
+<h2 style="color: #333; margin-bottom: 20px;">Hello {{ model_name }},</h2>
+
+<p>A new payout has been created for your earnings. Here are the details:</p>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h3 style="color: #333; margin-top: 0;">Payout Details</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6;"><strong>Payout Number:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6; text-align: right;">{{ payout_number }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6;"><strong>Period:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6; text-align: right;">{{ period_start }} - {{ period_end }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6;"><strong>Gross Earnings:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6; text-align: right;">${{ gross_earnings }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6;"><strong>Agency Commission:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6; text-align: right;">-${{ commission_amount }}</td>
+        </tr>
+        {% if adjustments != 0 %}
+        <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6;"><strong>Adjustments:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #dee2e6; text-align: right;">{% if adjustments > 0 %}+{% endif %}${{ adjustments }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td style="padding: 12px 0; font-size: 18px;"><strong>Net Amount:</strong></td>
+            <td style="padding: 12px 0; font-size: 18px; text-align: right; color: #28a745;"><strong>${{ net_amount }}</strong></td>
+        </tr>
+    </table>
+</div>
+
+<div class="alert alert-info">
+    <h4 style="margin-top: 0;">Status: {{ status }}</h4>
+    <p style="margin-bottom: 0;">Your payout is currently pending approval. We'll notify you once it's been processed.</p>
+</div>
+
+<h3 style="color: #333; margin-top: 30px;">Payment Method</h3>
+<p>This payout will be sent to your {{ payment_method }} on file. Please ensure your payment details are up to date.</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ payout_url }}" class="button">View Payout Details</a>
+</div>
+
+<h3 style="color: #333; margin-top: 30px;">Expected Timeline</h3>
+<ul style="margin: 20px 0; padding-left: 20px;">
+    <li style="margin-bottom: 10px;"><strong>Approval:</strong> 1-2 business days</li>
+    <li style="margin-bottom: 10px;"><strong>Processing:</strong> 2-3 business days after approval</li>
+    <li style="margin-bottom: 10px;"><strong>Payment Arrival:</strong> Depends on your payment method (typically 1-5 business days)</li>
+</ul>
+
+{% if notes %}
+<div style="background-color: #fff3cd; padding: 20px; border-radius: 5px; margin-top: 30px;">
+    <h4 style="color: #856404; margin-top: 0;">Notes</h4>
+    <p style="margin-bottom: 0; color: #856404;">{{ notes }}</p>
+</div>
+{% endif %}
+
+<p style="margin-top: 30px;">If you have any questions about this payout, please contact our support team.</p>
+
+<p>Best regards,<br>The {{ company_name }} Team</p>
+{% endblock %}

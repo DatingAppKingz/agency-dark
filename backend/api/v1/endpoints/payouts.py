@@ -16,6 +16,7 @@ from models.financial import Payout, PayoutStatus, Earning, Transaction, Payment
 from models.payment_method import PaymentMethodModel
 from api.v1.endpoints.auth_simple import get_current_user
 from core.logger import get_logger
+from services.email_notifications import EmailNotificationService
 
 logger = get_logger(__name__)
 
@@ -246,6 +247,10 @@ async def create_payout(
     await db.commit()
     await db.refresh(payout)
     
+    # Send email notification
+    email_service = EmailNotificationService(db)
+    await email_service.send_payout_created_email(payout)
+    
     # Return response
     return PayoutResponse(
         id=payout.id,
@@ -451,6 +456,11 @@ async def approve_payout(
     payout.updated_at = datetime.utcnow()
     
     await db.commit()
+    
+    # Send email notification if approved
+    if approval_data.approved:
+        email_service = EmailNotificationService(db)
+        await email_service.send_payout_approved_email(payout)
     
     return {
         "message": message,
