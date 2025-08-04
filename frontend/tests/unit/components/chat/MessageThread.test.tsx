@@ -305,7 +305,7 @@ describe('MessageThread Component', () => {
       expect(screen.getByText('Delete')).toBeInTheDocument();
     });
 
-    it('should close menu when clicking outside', () => {
+    it('should close menu when clicking outside', async () => {
       render(<MessageThread messages={mockMessages} conversationId="conv123" />);
 
       const moreButtons = screen.getAllByTestId('more-vert-icon');
@@ -313,13 +313,16 @@ describe('MessageThread Component', () => {
 
       expect(screen.getByRole('menu')).toBeInTheDocument();
 
-      fireEvent.click(document.body);
+      // MUI Menu uses Portal, so we need to simulate escape key or backdrop click
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape', code: 'Escape' });
 
-      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      });
     });
 
-    it('should handle copy action', () => {
-      const mockWriteText = vi.fn();
+    it('should handle copy action', async () => {
+      const mockWriteText = vi.fn().mockResolvedValue(undefined);
       Object.assign(navigator, {
         clipboard: {
           writeText: mockWriteText

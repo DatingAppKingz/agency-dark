@@ -8,7 +8,6 @@ export const ResetPasswordPage = lazyLoad(() => import('@/pages/auth/ResetPasswo
 
 // Dashboard Pages (with retry for critical pages)
 export const DashboardPage = lazyLoadWithRetry(() => import('@/pages/dashboard/DashboardPage'));
-
 // User Management
 export const UsersPage = lazyLoad(() => import('@/pages/users/UsersPage'));
 export const UserProfilePage = lazyLoad(() => import('@/pages/profile/UserProfilePage'));

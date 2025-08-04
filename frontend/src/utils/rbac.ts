@@ -1,5 +1,23 @@
 import { User } from '@/types/auth';
 
+// Helper functions for RBAC
+export const hasPermission = (permissions: string[], permission: string): boolean => {
+  return permissions.includes(permission) || permissions.includes('*:*');
+};
+
+export const hasAnyPermission = (permissions: string[], requiredPermissions: string[]): boolean => {
+  return requiredPermissions.some(perm => hasPermission(permissions, perm));
+};
+
+export const hasAllPermissions = (permissions: string[], requiredPermissions: string[]): boolean => {
+  return requiredPermissions.every(perm => hasPermission(permissions, perm));
+};
+
+export const hasRole = (user: User | null, roles: string[]): boolean => {
+  if (!user) return false;
+  return roles.includes(user.role);
+};
+
 // Permission types
 export type Permission = 
   | 'users:read'

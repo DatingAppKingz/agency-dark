@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { io, Socket } from 'socket.io-client';
-import { socketManager } from '@/services/socket/socketManager';
 import { authService } from '@/services/auth/authService';
+import { socketManager } from '@/services/socket/socketManager';
 
 // Mock socket.io-client
 vi.mock('socket.io-client');
@@ -9,7 +9,7 @@ vi.mock('socket.io-client');
 // Mock authService
 vi.mock('@/services/auth/authService');
 
-// Mock logger
+// Mock logger to prevent console errors
 vi.mock('@/utils/logger', () => ({
   logger: {
     info: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('@/utils/logger', () => ({
   },
 }));
 
-describe('Socket.IO Integration Tests', () => {
+describe('Socket.IO Connection - Simplified', () => {
   let mockSockets: Record<string, any> = {};
   let eventHandlers: Record<string, Record<string, Function>> = {};
 

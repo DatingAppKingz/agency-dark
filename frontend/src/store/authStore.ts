@@ -7,6 +7,9 @@ interface AuthState {
   isAuthenticated: boolean;
   isPending: boolean;
   error: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  permissions: string[];
   
   // Actions
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -14,6 +17,8 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearError: () => void;
+  setAuth: (data: { user: User; accessToken: string; refreshToken: string }) => void;
+  refreshToken: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -21,6 +26,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isPending: true,
   error: null,
+  accessToken: null,
+  refreshToken: null,
+  permissions: [],
 
   login: async (credentials) => {
     set({ isPending: true, error: null });
@@ -116,5 +124,48 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  setAuth: (data) => {
+    set({
+      user: data.user,
+      isAuthenticated: true,
+      isPending: false,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      error: null,
+    });
+    localStorage.setItem('access_token', data.accessToken);
+    localStorage.setItem('refresh_token', data.refreshToken);
+  },
+
+  refreshToken: async () => {
+    const currentRefreshToken = localStorage.getItem('refresh_token');
+    if (!currentRefreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    try {
+      const response = await authService.refreshToken();
+      set({
+        accessToken: response.access_token,
+        refreshToken: response.refresh_token,
+      });
+      localStorage.setItem('access_token', response.access_token);
+      localStorage.setItem('refresh_token', response.refresh_token);
+    } catch (error) {
+      // If refresh fails, logout
+      set({
+        user: null,
+        isAuthenticated: false,
+        isPending: false,
+        accessToken: null,
+        refreshToken: null,
+        permissions: [],
+      });
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      throw error;
+    }
   },
 }));
