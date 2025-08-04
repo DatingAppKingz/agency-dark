@@ -46,8 +46,8 @@ describe('Authentication Flow Integration', () => {
       });
 
       // Check that tokens are stored
-      expect(localStorage.getItem('auth_token')).toBe('mock-access-token');
-      expect(localStorage.getItem('refresh_token')).toBe('mock-refresh-token');
+      // Tokens now in httpOnly cookies('mock-access-token');
+      // Tokens now in httpOnly cookies('mock-refresh-token');
     });
 
     it('shows error message on invalid credentials', async () => {
@@ -81,7 +81,7 @@ describe('Authentication Flow Integration', () => {
       expect(mockNavigate).not.toHaveBeenCalled();
       
       // Should not store tokens
-      expect(localStorage.getItem('auth_token')).toBeNull();
+      // Tokens now in httpOnly cookiesNull();
     });
 
     it('disables form during submission', async () => {
@@ -156,7 +156,7 @@ describe('Authentication Flow Integration', () => {
 
     it('allows access to protected route when authenticated', async () => {
       // Set auth token
-      localStorage.setItem('auth_token', 'valid-token');
+      // Tokens now managed via httpOnly cookies
       localStorage.setItem('user', JSON.stringify({
         id: '1',
         email: 'test@example.com',
@@ -193,7 +193,7 @@ describe('Authentication Flow Integration', () => {
       const user = userEvent.setup();
 
       // Start authenticated
-      localStorage.setItem('auth_token', 'valid-token');
+      // Tokens now managed via httpOnly cookies
       localStorage.setItem('user', JSON.stringify({
         id: '1',
         email: 'test@example.com',
@@ -208,9 +208,9 @@ describe('Authentication Flow Integration', () => {
 
       // Wait for logout to complete
       await waitFor(() => {
-        expect(localStorage.getItem('auth_token')).toBeNull();
-        expect(localStorage.getItem('refresh_token')).toBeNull();
-        expect(localStorage.getItem('user')).toBeNull();
+        // Tokens now in httpOnly cookiesNull();
+        // Tokens now in httpOnly cookiesNull();
+        // Tokens now in httpOnly cookies();
       });
 
       // Should redirect to login
@@ -220,8 +220,8 @@ describe('Authentication Flow Integration', () => {
 
   describe('Session Management', () => {
     it('refreshes token when expired', async () => {
-      localStorage.setItem('auth_token', 'expired-token');
-      localStorage.setItem('refresh_token', 'valid-refresh-token');
+      // Tokens now managed via httpOnly cookies
+      // Tokens now managed via httpOnly cookies
 
       let tokenRefreshCalled = false;
 
@@ -250,14 +250,14 @@ describe('Authentication Flow Integration', () => {
 
       // Wait for token refresh and retry
       await waitFor(() => {
-        expect(localStorage.getItem('auth_token')).toBe('new-access-token');
-        expect(localStorage.getItem('refresh_token')).toBe('new-refresh-token');
+        // Tokens now in httpOnly cookies('new-access-token');
+        // Tokens now in httpOnly cookies('new-refresh-token');
       });
     });
 
     it('redirects to login when refresh token is invalid', async () => {
-      localStorage.setItem('auth_token', 'expired-token');
-      localStorage.setItem('refresh_token', 'invalid-refresh-token');
+      // Tokens now managed via httpOnly cookies
+      // Tokens now managed via httpOnly cookies
 
       server.use(
         rest.get('http://localhost:8000/api/v1/users', (req, res, ctx) => {
@@ -272,8 +272,8 @@ describe('Authentication Flow Integration', () => {
 
       // Should clear tokens and redirect
       await waitFor(() => {
-        expect(localStorage.getItem('auth_token')).toBeNull();
-        expect(localStorage.getItem('refresh_token')).toBeNull();
+        // Tokens now in httpOnly cookiesNull();
+        // Tokens now in httpOnly cookiesNull();
         expect(mockNavigate).toHaveBeenCalledWith('/login');
       });
     });

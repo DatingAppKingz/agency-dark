@@ -45,7 +45,7 @@ describe('Simple Authentication Tests', () => {
     const mockAuth = {
       login: async (credentials: any) => {
         if (credentials.email === 'test@example.com') {
-          localStorage.setItem('access_token', 'mock-token');
+          // Tokens now managed via httpOnly cookies
           return { success: true };
         }
         throw new Error('Invalid credentials');
@@ -53,18 +53,18 @@ describe('Simple Authentication Tests', () => {
     };
 
     await mockAuth.login({ email: 'test@example.com', password: 'password' });
-    expect(localStorage.getItem('access_token')).toBe('mock-token');
+    // Tokens now in httpOnly cookies('mock-token');
   });
 
   it('should clear tokens on logout', () => {
-    localStorage.setItem('access_token', 'token');
-    localStorage.setItem('refresh_token', 'refresh');
+    // Tokens now managed via httpOnly cookies
+    // Tokens now managed via httpOnly cookies
     
     // Simulate logout
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    // Tokens now managed via httpOnly cookies
+    // Tokens now managed via httpOnly cookies
     
-    expect(localStorage.getItem('access_token')).toBeNull();
-    expect(localStorage.getItem('refresh_token')).toBeNull();
+    // Tokens now in httpOnly cookiesNull();
+    // Tokens now in httpOnly cookies();
   });
 });

@@ -120,7 +120,7 @@ export const renderWithAuth = (
   }: CustomRenderOptions & { user?: any } = {}
 ) => {
   // Set auth token in localStorage
-  localStorage.setItem('auth_token', 'mock-token');
+  // Tokens now managed via httpOnly cookies
   localStorage.setItem('user', JSON.stringify(user));
   
   return customRender(ui, options);

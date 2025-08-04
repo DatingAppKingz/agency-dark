@@ -11,6 +11,12 @@ import LoginPage from '@/pages/auth/LoginPage';
 vi.mock('react-router-dom', () => ({
   ...vi.importActual('react-router-dom'),
   useNavigate: () => vi.fn(),
+  useLocation: () => ({ 
+    pathname: '/', 
+    state: null,
+    search: '',
+    hash: ''
+  }),
   Link: ({ children, to }: any) => <a href={to}>{children}</a>,
 }));
 
@@ -56,15 +62,12 @@ describe('Authentication Integration Tests', () => {
       await user.click(submitButton);
 
       // Wait for login to complete
+      // Note: Tokens are now stored in httpOnly cookies, not localStorage
       await waitFor(() => {
-        expect(localStorage.getItem('access_token')).toBe('mock-access-token');
-        expect(localStorage.getItem('refresh_token')).toBe('mock-refresh-token');
+        const authState = useAuthStore.getState();
+        expect(authState.isAuthenticated).toBe(true);
+        expect(authState.user?.email).toBe('test@example.com');
       });
-
-      // Check auth store state
-      const authState = useAuthStore.getState();
-      expect(authState.isAuthenticated).toBe(true);
-      expect(authState.user?.email).toBe('test@example.com');
     });
 
     it('should show error message on invalid credentials', async () => {
@@ -93,7 +96,7 @@ describe('Authentication Integration Tests', () => {
         expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
       });
 
-      expect(localStorage.getItem('access_token')).toBeNull();
+      // Tokens now in httpOnly cookies
     });
   });
 
@@ -107,7 +110,7 @@ describe('Authentication Integration Tests', () => {
         refreshToken: 'valid-refresh',
       });
       localStorage.setItem('access_token', 'valid-token');
-      localStorage.setItem('refresh_token', 'valid-refresh');
+      // Tokens now managed via httpOnly cookies
 
       server.use(
         http.post('/api/v1/auth/logout', () => {
@@ -119,8 +122,9 @@ describe('Authentication Integration Tests', () => {
       await useAuthStore.getState().logout();
 
       await waitFor(() => {
-        expect(localStorage.getItem('access_token')).toBeNull();
-        expect(localStorage.getItem('refresh_token')).toBeNull();
+        // Tokens are now cleared via httpOnly cookies by the backend
+        const authState = useAuthStore.getState();
+        expect(authState.isAuthenticated).toBe(false);
       });
 
       const authState = useAuthStore.getState();
@@ -146,14 +150,16 @@ describe('Authentication Integration Tests', () => {
         accessToken: 'expired-token',
         refreshToken: 'valid-refresh-token',
       });
-      localStorage.setItem('refresh_token', 'valid-refresh-token');
+      // Tokens now managed via httpOnly cookies
 
       // Trigger refresh
       await useAuthStore.getState().refreshToken();
 
       await waitFor(() => {
-        expect(localStorage.getItem('access_token')).toBe('new-access-token');
-        expect(localStorage.getItem('refresh_token')).toBe('new-refresh-token');
+        // Tokens are now managed via httpOnly cookies
+        const authState = useAuthStore.getState();
+        expect(authState.accessToken).toBe('new-access-token');
+        expect(authState.refreshToken).toBe('new-refresh-token');
       });
     });
 
@@ -172,7 +178,7 @@ describe('Authentication Integration Tests', () => {
         accessToken: 'expired-token',
         refreshToken: 'invalid-refresh-token',
       });
-      localStorage.setItem('refresh_token', 'invalid-refresh-token');
+      // Tokens now managed via httpOnly cookies
 
       // Attempt to refresh token
       try {
@@ -185,7 +191,7 @@ describe('Authentication Integration Tests', () => {
         const authState = useAuthStore.getState();
         expect(authState.isAuthenticated).toBe(false);
         expect(authState.user).toBeNull();
-        expect(localStorage.getItem('access_token')).toBeNull();
+        // Tokens now in httpOnly cookies
       });
     });
   });

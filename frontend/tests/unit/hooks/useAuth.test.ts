@@ -206,7 +206,7 @@ describe('useAuth Hook', () => {
   describe('logout', () => {
     it('successfully logs out user', async () => {
       // Start with authenticated state
-      localStorage.setItem('auth_token', 'mock-token');
+      // Tokens now managed via httpOnly cookies
       
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -231,7 +231,7 @@ describe('useAuth Hook', () => {
     it('clears auth state even if API call fails', async () => {
       authService.logout.mockResolvedValueOnce(undefined);
 
-      localStorage.setItem('auth_token', 'mock-token');
+      // Tokens now managed via httpOnly cookies
       
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper(),
@@ -248,7 +248,7 @@ describe('useAuth Hook', () => {
 
   describe('checkAuth', () => {
     it('loads user data when token exists', async () => {
-      localStorage.setItem('auth_token', 'valid-token');
+      // Tokens now managed via httpOnly cookies
 
       const mockUser = {
         id: '1',
@@ -297,12 +297,12 @@ describe('useAuth Hook', () => {
     });
 
     it('handles expired token', async () => {
-      localStorage.setItem('auth_token', 'expired-token');
+      // Tokens now managed via httpOnly cookies
 
       authService.checkAuth.mockRejectedValueOnce(new Error('Token expired'));
       authService.clearTokens.mockImplementationOnce(() => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
+        // Tokens now managed via httpOnly cookies
+        // Tokens now managed via httpOnly cookies
         localStorage.removeItem('user');
       });
 
@@ -368,7 +368,7 @@ describe('useAuth Hook', () => {
         updated_at: new Date().toISOString(),
       };
       
-      localStorage.setItem('auth_token', 'valid-token');
+      // Tokens now managed via httpOnly cookies
       localStorage.setItem('user', JSON.stringify(mockUser));
       
       authService.checkAuth.mockResolvedValue(mockUser);

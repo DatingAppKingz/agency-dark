@@ -207,8 +207,8 @@ describe('AuthStore', () => {
         });
       });
 
-      localStorage.setItem('auth_token', 'mock-token');
-      localStorage.setItem('refresh_token', 'mock-refresh');
+      // Tokens now managed via httpOnly cookies
+      // Tokens now managed via httpOnly cookies
 
       await act(async () => {
         await result.current.logout();
@@ -258,7 +258,7 @@ describe('AuthStore', () => {
       authService.checkAuth.mockResolvedValueOnce(mockUser);
       authService.getAccessToken.mockReturnValueOnce('valid-token');
 
-      localStorage.setItem('auth_token', 'valid-token');
+      // Tokens now managed via httpOnly cookies
 
       await act(async () => {
         await result.current.checkAuth();
@@ -290,7 +290,7 @@ describe('AuthStore', () => {
 
       authService.checkAuth.mockRejectedValueOnce(new Error('Unauthorized'));
 
-      localStorage.setItem('auth_token', 'invalid-token');
+      // Tokens now managed via httpOnly cookies
 
       await act(async () => {
         await result.current.checkAuth();
@@ -350,7 +350,7 @@ describe('AuthStore', () => {
     it('recovers state from localStorage on init', async () => {
       const mockUser = createMockUser();
       localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('auth_token', 'stored-token');
+      // Tokens now managed via httpOnly cookies
 
       authService.checkAuth.mockResolvedValueOnce(mockUser);
       authService.getAccessToken.mockReturnValueOnce('stored-token');

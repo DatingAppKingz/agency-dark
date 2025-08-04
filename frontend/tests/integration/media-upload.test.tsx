@@ -9,7 +9,7 @@ import { createMockFile } from '../../utils/mock-factories';
 
 describe('Media Upload Integration', () => {
   beforeEach(() => {
-    localStorage.setItem('auth_token', 'valid-token');
+    // Tokens now managed via httpOnly cookies
   });
 
   afterEach(() => {
