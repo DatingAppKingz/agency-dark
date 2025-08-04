@@ -7,19 +7,38 @@ export interface ChatUser {
   subscription_tier?: string;
 }
 
+export enum MessageType {
+  TEXT = 'text',
+  VOICE = 'voice',
+  IMAGE = 'image',
+  VIDEO = 'video',
+  FILE = 'file',
+}
+
+export enum MessageStatus {
+  SENDING = 'sending',
+  SENT = 'sent',
+  DELIVERED = 'delivered',
+  READ = 'read',
+  FAILED = 'failed',
+}
+
 export interface Message {
   id: string;
   conversation_id: string;
   sender_id: string;
   sender_type: 'model' | 'fan' | 'chatter';
   content: string;
-  message_type?: 'text' | 'voice' | 'image' | 'video';
+  message_type: MessageType;
+  status?: MessageStatus;
   attachments?: MessageAttachment[];
   created_at: string;
   updated_at?: string;
   read_at?: string;
   delivered_at?: string;
   is_automated?: boolean;
+  is_edited?: boolean;
+  metadata?: Record<string, any>;
 }
 
 export interface MessageAttachment {
@@ -33,26 +52,43 @@ export interface MessageAttachment {
   mime_type?: string;
 }
 
+export interface ConversationParticipant {
+  id: string;
+  role: 'model' | 'fan' | 'chatter';
+  name: string;
+  avatar_url?: string;
+  last_seen: string;
+  is_online: boolean;
+}
+
 export interface Conversation {
   id: string;
-  fan_id: string;
-  model_id: string;
-  assigned_chatter_id?: string;
-  fan: ChatUser;
-  model: ChatUser;
-  assigned_chatter?: ChatUser;
-  last_message?: Message;
+  participants: ConversationParticipant[];
+  last_message?: {
+    id: string;
+    content: string;
+    sender_id: string;
+    created_at: string;
+  };
   unread_count: number;
   is_pinned: boolean;
-  is_archived: boolean;
-  is_favorite: boolean;
+  is_muted: boolean;
+  is_archived?: boolean;
+  is_favorite?: boolean;
   created_at: string;
   updated_at: string;
+  // Legacy fields for backward compatibility
+  fan_id?: string;
+  model_id?: string;
+  assigned_chatter_id?: string;
+  fan?: ChatUser;
+  model?: ChatUser;
+  assigned_chatter?: ChatUser;
 }
 
 export interface TypingStatus {
-  conversation_id: string;
   user_id: string;
+  conversation_id: string;
   is_typing: boolean;
 }
 

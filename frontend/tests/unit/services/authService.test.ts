@@ -45,7 +45,7 @@ describe('AuthService', () => {
         refresh_token: 'mock-refresh-token',
         user: expect.objectContaining({
           email: 'test@example.com',
-          role: 'agency_admin',
+          role: 'model',
         }),
       });
 

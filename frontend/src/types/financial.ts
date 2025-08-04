@@ -34,27 +34,33 @@ export enum PaymentMethodType {
 }
 
 export interface Transaction {
-  id: number;
-  agency_id: number;
-  model_id: number;
+  id: string;
+  agency_id?: number;
+  model_id: string;
+  fan_id?: string;
+  amount: number;
+  currency: string;
   type: TransactionType;
   status: TransactionStatus;
-  platform_transaction_id?: string;
-  conversation_id?: number;
-  message_id?: number;
-  gross_amount: number;
-  platform_fee: number;
-  agency_commission: number;
-  net_amount: number;
-  currency: string;
-  fan_id: string;
-  fan_username: string;
-  transaction_date: string;
-  processed_at?: string;
   description?: string;
+  reference_id?: string;
+  payment_method_id?: string;
+  refunded_amount?: number;
   metadata?: Record<string, any>;
   created_at: string;
   updated_at: string;
+  completed_at?: string;
+  // Legacy fields for backward compatibility
+  platform_transaction_id?: string;
+  conversation_id?: number;
+  message_id?: number;
+  gross_amount?: number;
+  platform_fee?: number;
+  agency_commission?: number;
+  net_amount?: number;
+  fan_username?: string;
+  transaction_date?: string;
+  processed_at?: string;
 }
 
 export interface Earning {
@@ -108,49 +114,40 @@ export interface BankDetails {
 }
 
 export interface PaymentMethod {
-  id: number;
+  id: string;
+  type: 'card' | 'bank_account' | 'paypal' | 'crypto';
+  last4?: string;
+  brand?: string;
+  bank_name?: string;
+  is_default: boolean;
+  created_at: string;
+  expires_at?: string;
+  metadata?: Record<string, any>;
+  // Legacy fields for backward compatibility
   model_id?: number;
   agency_id?: number;
-  method_type: PaymentMethodType;
-  is_primary: boolean;
-  is_active: boolean;
+  method_type?: PaymentMethodType;
+  is_primary?: boolean;
+  is_active?: boolean;
   nickname?: string;
-  
-  // Bank transfer
-  bank_name?: string;
   account_holder_name?: string;
-  account_number?: string; // Masked in responses
-  routing_number?: string; // Masked in responses
+  account_number?: string;
+  routing_number?: string;
   swift_code?: string;
-  iban?: string; // Masked in responses
-  
-  // PayPal
+  iban?: string;
   paypal_email?: string;
-  
-  // Crypto
   crypto_currency?: string;
-  crypto_address?: string; // Partially masked in responses
+  crypto_address?: string;
   crypto_network?: string;
-  
-  // Wire
   wire_instructions?: Record<string, any>;
-  
-  // Verification
-  is_verified: boolean;
+  is_verified?: boolean;
   verified_at?: string;
   verification_notes?: string;
-  
-  // Settings
-  minimum_payout: number;
-  processing_days: number;
-  
-  // Metadata
+  minimum_payout?: number;
+  processing_days?: number;
   last_used_at?: string;
-  usage_count: number;
-  created_at: string;
-  updated_at: string;
-  
-  // Computed property for display
+  usage_count?: number;
+  updated_at?: string;
   display_name?: string;
 }
 
@@ -254,4 +251,53 @@ export interface FinancialSummary {
   currency: string;
   last_payout?: Payout;
   next_payout_date?: string;
+}
+
+// New interfaces for test compatibility
+export interface PayoutRequest {
+  id: string;
+  model_id: string;
+  amount: number;
+  currency: string;
+  status: PayoutStatus;
+  method: string;
+  destination: Record<string, any>;
+  requested_at: string;
+  processed_at: string | null;
+  completed_at?: string;
+  failed_at?: string;
+  failure_reason?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface CreateTransactionData {
+  model_id: string;
+  amount: number;
+  type: TransactionType;
+  description?: string;
+  fan_id?: string;
+  payment_method_id?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface CreatePayoutData {
+  model_id: string;
+  amount: number;
+  method: string;
+  destination?: Record<string, any>;
+  metadata?: Record<string, any>;
+}
+
+export interface TaxInformation {
+  tax_id: string;
+  tax_classification: 'individual' | 'business';
+  business_name?: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    country?: string;
+  };
+  metadata?: Record<string, any>;
 }
