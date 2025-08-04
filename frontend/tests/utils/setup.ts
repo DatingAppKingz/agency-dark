@@ -104,6 +104,28 @@ import mockIcons from './mui-icon-mocks';
 // Mock all @mui/icons-material imports
 vi.mock('@mui/icons-material', () => mockIcons);
 
+// Mock @mui/x-date-pickers to avoid ESM import issues
+vi.mock('@mui/x-date-pickers/DatePicker', () => ({
+  DatePicker: ({ label, value, onChange, ...props }: any) => {
+    const React = require('react');
+    return React.createElement('input', {
+      type: 'date',
+      'aria-label': label,
+      value: value ? new Date(value).toISOString().split('T')[0] : '',
+      onChange: (e: any) => onChange(new Date(e.target.value)),
+      ...props
+    });
+  }
+}));
+
+vi.mock('@mui/x-date-pickers/LocalizationProvider', () => ({
+  LocalizationProvider: ({ children }: any) => children
+}));
+
+vi.mock('@mui/x-date-pickers/AdapterDateFns', () => ({
+  AdapterDateFns: class AdapterDateFns {}
+}));
+
 // Mock LanguageProvider to avoid loading translations in tests
 vi.mock('@/i18n/LanguageProvider', () => ({
   LanguageProvider: ({ children }: { children: React.ReactNode }) => {

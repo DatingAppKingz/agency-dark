@@ -1,11 +1,11 @@
 import { screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
-import { render } from '../../utils/test-utils';
+import { render } from '../utils/test-utils';
 import ModelsPage from '@/pages/models/ModelsPage';
 import ChatPage from '@/pages/chat/ChatPage';
 import FinancialPage from '@/pages/financial/FinancialPage';
-import { server } from '../../utils/test-server';
-import { rest } from 'msw';
+import { server } from '../utils/test-server';
+import { http, HttpResponse } from 'msw';
 
 describe('Multi-Tenant Isolation', () => {
   describe('Data Isolation', () => {
@@ -24,15 +24,15 @@ describe('Multi-Tenant Isolation', () => {
       }));
 
       server.use(
-        rest.get('*/models', (req, res, ctx) => {
-          const agency = req.url.searchParams.get('agency_id');
+        http.get('*/models', ({ request }) => {
+          const url = new URL(request.url);
+          const agency = url.searchParams.get('agency_id');
           
           if (agency !== agencyId) {
-            return res(ctx.status(403), ctx.json({ detail: 'Forbidden' }));
+            return HttpResponse.json({ detail: 'Forbidden' }, { status: 403 });
           }
           
-          return res(
-            ctx.json({
+          return HttpResponse.json({
               items: [
                 {
                   id: '1',
@@ -46,8 +46,7 @@ describe('Multi-Tenant Isolation', () => {
                 },
               ],
               total: 2,
-            })
-          );
+            });
         })
       );
 
@@ -78,11 +77,8 @@ describe('Multi-Tenant Isolation', () => {
       }));
 
       server.use(
-        rest.get(`*/chat/conversations/${otherAgencyConversationId}/messages`, (req, res, ctx) => {
-          return res(
-            ctx.status(403),
-            ctx.json({ detail: 'You do not have access to this conversation' })
-          );
+        http.get(`*/chat/conversations/${otherAgencyConversationId}/messages`, () => {
+          return HttpResponse.json({ detail: 'You do not have access to this conversation' }, { status: 403 });
         })
       );
 
@@ -112,12 +108,11 @@ describe('Multi-Tenant Isolation', () => {
       }));
 
       server.use(
-        rest.get('*/financial/summary', (req, res, ctx) => {
-          // const authHeader = req.headers.get('Authorization'); // Would validate auth token
+        http.get('*/financial/summary', ({ request }) => {
+          // const authHeader = request.headers.get('Authorization'); // Would validate auth token
           
           // Return only agency-specific financial data
-          return res(
-            ctx.json({
+          return HttpResponse.json({
               agency_id: agencyId,
               total_revenue: 50000,
               models_revenue: {
@@ -125,8 +120,7 @@ describe('Multi-Tenant Isolation', () => {
                 model2: 25000,
               },
               // Should not include data from other agencies
-            })
-          );
+            });
         })
       );
 
@@ -158,17 +152,14 @@ describe('Multi-Tenant Isolation', () => {
       }));
 
       server.use(
-        rest.patch('*/models/:id', async (req, res, ctx) => {
-          const body = await req.json();
+        http.patch('*/models/:id', async ({ request }) => {
+          const body = await request.json();
           
           if (body.agency_id && body.agency_id !== agencyId) {
-            return res(
-              ctx.status(403),
-              ctx.json({ detail: 'Cannot reassign model to different agency' })
-            );
+            return HttpResponse.json({ detail: 'Cannot reassign model to different agency' }, { status: 403 });
           }
           
-          return res(ctx.json({ success: true }));
+          return HttpResponse.json({ success: true });
         })
       );
 
@@ -196,17 +187,15 @@ describe('Multi-Tenant Isolation', () => {
 
       // All API requests should include agency context
       server.use(
-        rest.get('*/users', (req, res, ctx) => {
-          const agencyParam = req.url.searchParams.get('agency_id');
+        http.get('*/users', ({ request }) => {
+          const url = new URL(request.url);
+          const agencyParam = url.searchParams.get('agency_id');
           
           if (agencyParam !== agencyId) {
-            return res(
-              ctx.status(400),
-              ctx.json({ detail: 'Invalid agency context' })
-            );
+            return HttpResponse.json({ detail: 'Invalid agency context' }, { status: 400 });
           }
           
-          return res(ctx.json({ items: [], total: 0 }));
+          return HttpResponse.json({ items: [], total: 0 });
         })
       );
 
@@ -301,18 +290,16 @@ describe('Multi-Tenant Isolation', () => {
       }));
 
       server.use(
-        rest.get('*/chat/conversations', (req, res, ctx) => {
+        http.get('*/chat/conversations', () => {
           // Return only conversations for assigned models
-          return res(
-            ctx.json([
+          return HttpResponse.json([
               {
                 id: '1',
                 model_id: modelId,
                 fan_id: 'fan1',
                 // ... other fields
               },
-            ])
-          );
+            ]);
         })
       );
 
@@ -339,23 +326,19 @@ describe('Multi-Tenant Isolation', () => {
       }));
 
       server.use(
-        rest.get('*/financial/earnings', (req, res, ctx) => {
-          const requestModelId = req.url.searchParams.get('model_id');
+        http.get('*/financial/earnings', ({ request }) => {
+          const url = new URL(request.url);
+          const requestModelId = url.searchParams.get('model_id');
           
           if (requestModelId !== modelId) {
-            return res(
-              ctx.status(403),
-              ctx.json({ detail: 'Can only view own earnings' })
-            );
+            return HttpResponse.json({ detail: 'Can only view own earnings' }, { status: 403 });
           }
           
-          return res(
-            ctx.json({
+          return HttpResponse.json({
               model_id: modelId,
               total_earnings: 15000,
               pending_payout: 3000,
-            })
-          );
+            });
         })
       );
 

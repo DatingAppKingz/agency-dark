@@ -31,6 +31,8 @@ export const mockIcons = {
   Search: () => <div data-testid="search-icon" />,
   FilterList: () => <div data-testid="filter-list-icon" />,
   Clear: () => <div data-testid="clear-icon" />,
+  ViewModule: () => <div data-testid="view-module-icon" />,
+  ViewList: () => <div data-testid="view-list-icon" />,
   
   // Status & Feedback
   TrendingUp: () => <div data-testid="trending-up-icon" />,

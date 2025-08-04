@@ -11,12 +11,15 @@ export interface User {
   id: string;
   email: string;
   full_name: string;
-  role: UserRole;
-  agency_id?: string;
+  role: 'super_admin' | 'agency_owner' | 'agency_admin' | 'model' | 'chatter' | 'member';
+  agency_id: string | null;
   is_active: boolean;
-  is_verified?: boolean;
+  is_verified: boolean;
   created_at: string;
+  updated_at: string;
   verified_at?: string;
+  assigned_model_ids?: string[];
+  impersonating_agency_id?: string;
 }
 
 export interface AuthResponse {
