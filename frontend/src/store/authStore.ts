@@ -35,6 +35,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         error: error.response?.data?.detail || 'Login failed',
         isPending: false,
+        isAuthenticated: false,
+        user: null,
       });
       throw error;
     }
@@ -53,6 +55,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         error: error.response?.data?.detail || 'Registration failed',
         isPending: false,
+        isAuthenticated: false,
+        user: null,
       });
       throw error;
     }

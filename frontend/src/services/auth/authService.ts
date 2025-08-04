@@ -11,6 +11,12 @@ class AuthService {
     // Try to restore session on init
     // Commented out to prevent unnecessary API calls on app load
     // this.checkAuth();
+    
+    // Restore token from localStorage on init
+    const storedToken = localStorage.getItem('auth_token');
+    if (storedToken) {
+      this.accessToken = storedToken;
+    }
   }
 
   getAccessToken(): string | null {
@@ -39,6 +45,11 @@ class AuthService {
     
     this.setAccessToken(response.data.access_token);
     
+    // Store tokens in localStorage
+    if (response.data.access_token && response.data.refresh_token) {
+      this.setTokens(response.data.access_token, response.data.refresh_token);
+    }
+    
     // Get user info after login
     const userResponse = await axios.get<User>(
       `${API_URL}/auth/me`,
@@ -64,6 +75,12 @@ class AuthService {
     );
     
     this.setAccessToken(response.data.access_token);
+    
+    // Store tokens in localStorage
+    if (response.data.access_token && response.data.refresh_token) {
+      this.setTokens(response.data.access_token, response.data.refresh_token);
+    }
+    
     return response.data;
   }
 
@@ -82,7 +99,7 @@ class AuthService {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      this.accessToken = null;
+      this.clearTokens();
     }
   }
 
@@ -99,10 +116,17 @@ class AuthService {
         { withCredentials: true }
       )
       .then((response) => {
-        this.setAccessToken(response.data.access_token);
+        // Use setTokens to handle both tokens properly
+        if (response.data.refresh_token) {
+          this.setTokens(response.data.access_token, response.data.refresh_token);
+        } else {
+          this.setAccessToken(response.data.access_token);
+          localStorage.setItem('auth_token', response.data.access_token);
+        }
+        return response.data;
       })
       .catch((error) => {
-        this.accessToken = null;
+        this.clearTokens();
         throw error;
       })
       .finally(() => {
@@ -114,8 +138,9 @@ class AuthService {
 
   async checkAuth(): Promise<User | null> {
     try {
-      // Only check if we have a token
-      if (!this.accessToken) {
+      // Check for token in memory or localStorage
+      const token = this.accessToken || localStorage.getItem('auth_token');
+      if (!token) {
         return null;
       }
       
@@ -125,7 +150,7 @@ class AuthService {
         { 
           withCredentials: true,
           headers: {
-            Authorization: `Bearer ${this.accessToken}`
+            Authorization: `Bearer ${token}`
           }
         }
       );
@@ -143,12 +168,47 @@ class AuthService {
     );
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    await axios.post(
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const response = await axios.post<{ message: string }>(
       `${API_URL}/auth/password-reset/confirm`,
       { token, new_password: newPassword },
       { withCredentials: true }
     );
+    return response.data;
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.accessToken || !!localStorage.getItem('auth_token');
+  }
+
+  setTokens(accessToken: string, refreshToken: string): void {
+    this.accessToken = accessToken;
+    localStorage.setItem('auth_token', accessToken);
+    localStorage.setItem('refresh_token', refreshToken);
+  }
+
+  clearTokens(): void {
+    this.accessToken = null;
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+  }
+
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    const response = await axios.post<{ message: string }>(
+      `${API_URL}/auth/forgot-password`,
+      { email },
+      { withCredentials: true }
+    );
+    return response.data;
+  }
+
+  async getCurrentUser(): Promise<User | null> {
+    return this.checkAuth();
   }
 }
 

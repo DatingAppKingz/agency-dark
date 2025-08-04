@@ -37,10 +37,31 @@ vi.mock('@/services/api/client', () => ({
   }
 }));
 
+// Mock authService - needs to be before other mocks
+vi.mock('@/services/auth/authService', () => ({
+  authService: {
+    login: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+    checkAuth: vi.fn(),
+    refreshToken: vi.fn(),
+    getAccessToken: vi.fn(),
+    getRefreshToken: vi.fn(),
+    isAuthenticated: vi.fn(),
+    setTokens: vi.fn(),
+    clearTokens: vi.fn(),
+    requestPasswordReset: vi.fn(),
+    resetPassword: vi.fn(),
+    getCurrentUser: vi.fn(),
+  }
+}));
+
 // Mock pushNotifications service
 vi.mock('@/services/pushNotifications', () => ({
   pushNotifications: {
+    init: vi.fn().mockResolvedValue(true),
     isSupported: vi.fn().mockReturnValue(true),
+    getPermissionStatus: vi.fn().mockReturnValue('default'),
     requestPermission: vi.fn().mockResolvedValue(true),
     subscribeUser: vi.fn().mockResolvedValue({
       endpoint: 'https://push.example.com/123',
@@ -48,7 +69,7 @@ vi.mock('@/services/pushNotifications', () => ({
     }),
     unsubscribeUser: vi.fn().mockResolvedValue(undefined),
     sendNotification: vi.fn().mockResolvedValue(undefined),
-    isSubscribed: vi.fn().mockResolvedValue(false),
+    isSubscribed: vi.fn().mockReturnValue(false),
     getSubscription: vi.fn().mockResolvedValue(null),
   }
 }));
@@ -71,7 +92,7 @@ import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 
 // Set environment variables
-process.env.VITE_API_URL = 'http://localhost:8000';
+process.env.VITE_API_URL = 'http://localhost:8000/api/v1';
 process.env.VITE_WS_URL = 'http://localhost:8000';
 process.env.VITE_PUBLIC_VAPID_KEY = 'test-vapid-key';
 process.env.NODE_ENV = 'test';
@@ -87,7 +108,7 @@ if (typeof globalThis.TextEncoder === 'undefined') {
 (globalThis as any).import = {
   meta: {
     env: {
-      VITE_API_URL: 'http://localhost:8000',
+      VITE_API_URL: 'http://localhost:8000/api/v1',
       VITE_WS_URL: 'http://localhost:8000',
       VITE_PUBLIC_VAPID_KEY: 'test-vapid-key',
       MODE: 'test',

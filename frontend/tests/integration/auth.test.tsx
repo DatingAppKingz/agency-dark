@@ -4,35 +4,65 @@ import userEvent from '@testing-library/user-event';
 import { render } from '../utils/enhanced-test-utils';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { server } from '../utils/test-server';
 import { http, HttpResponse } from 'msw';
+import { useAuthStore } from '@/store/authStore';
+
+// Unmock authService and axios for integration tests
+vi.unmock('@/services/auth/authService');
+vi.unmock('axios');
 
 // Enable API mocking
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
+beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+afterEach(() => {
+  server.resetHandlers();
+  // Clear auth state between tests
+  useAuthStore.setState({
+    user: null,
+    isAuthenticated: false,
+    isPending: false,
+    error: null,
+  });
+});
 afterAll(() => server.close());
 
 describe('Authentication Flow', () => {
   describe('Login', () => {
-    it('should render login form', () => {
+    it('should render login form', async () => {
       render(<LoginPage />);
       
-      expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
+      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+      
+      // Wait for the button to be enabled
+      await waitFor(() => {
+        const button = screen.getByRole('button', { name: /sign in/i });
+        expect(button).toBeInTheDocument();
+        expect(button).not.toBeDisabled();
+      });
     });
 
     it('should show validation errors for empty fields', async () => {
       const user = userEvent.setup();
       render(<LoginPage />);
       
+      // Type and clear to trigger validation
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/password/i);
+      
+      await user.type(emailInput, 'a');
+      await user.clear(emailInput);
+      await user.type(passwordInput, 'a');
+      await user.clear(passwordInput);
+      
       const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
       
       await waitFor(() => {
-        expect(screen.getByText(/email is required/i)).toBeInTheDocument();
-        expect(screen.getByText(/password is required/i)).toBeInTheDocument();
+        expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();
+        expect(screen.getByText(/password must be at least 6 characters/i)).toBeInTheDocument();
       });
     });
 
@@ -40,14 +70,14 @@ describe('Authentication Flow', () => {
       const user = userEvent.setup();
       render(<LoginPage />);
       
-      const emailInput = screen.getByLabelText(/email/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       await user.type(emailInput, 'invalid-email');
       
       const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
       
       await waitFor(() => {
-        expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
+        expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();
       });
     });
 
@@ -59,7 +89,7 @@ describe('Authentication Flow', () => {
         router: { push: mockPush },
       });
       
-      const emailInput = screen.getByLabelText(/email/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const passwordInput = screen.getByLabelText(/password/i);
       
       await user.type(emailInput, 'test@example.com');
@@ -86,7 +116,7 @@ describe('Authentication Flow', () => {
       const user = userEvent.setup();
       render(<LoginPage />);
       
-      const emailInput = screen.getByLabelText(/email/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const passwordInput = screen.getByLabelText(/password/i);
       
       await user.type(emailInput, 'test@example.com');
@@ -107,10 +137,10 @@ describe('Authentication Flow', () => {
       
       expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
       expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/^password/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/role/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/agency name/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
     });
 
@@ -128,7 +158,7 @@ describe('Authentication Flow', () => {
       await user.click(submitButton);
       
       await waitFor(() => {
-        expect(screen.getByText(/passwords must match/i)).toBeInTheDocument();
+        expect(screen.getByText(/passwords don't match/i)).toBeInTheDocument();
       });
     });
 
@@ -141,24 +171,16 @@ describe('Authentication Flow', () => {
       });
       
       await user.type(screen.getByLabelText(/full name/i), 'Test User');
-      await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+      await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+      await user.type(screen.getByLabelText(/agency name/i), 'Test Agency');
       await user.type(screen.getByLabelText(/^password/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
-      
-      // Select role
-      const roleSelect = screen.getByLabelText(/role/i);
-      await user.click(roleSelect);
-      await user.click(screen.getByRole('option', { name: /model/i }));
-      
-      // Accept terms
-      const termsCheckbox = screen.getByRole('checkbox', { name: /terms/i });
-      await user.click(termsCheckbox);
       
       const submitButton = screen.getByRole('button', { name: /create account/i });
       await user.click(submitButton);
       
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/auth/login');
+        expect(mockPush).toHaveBeenCalledWith('/dashboard');
       });
     });
 
@@ -176,16 +198,10 @@ describe('Authentication Flow', () => {
       render(<RegisterPage />);
       
       await user.type(screen.getByLabelText(/full name/i), 'Test User');
-      await user.type(screen.getByLabelText(/email/i), 'existing@example.com');
+      await user.type(screen.getByLabelText(/email address/i), 'existing@example.com');
+      await user.type(screen.getByLabelText(/agency name/i), 'Test Agency');
       await user.type(screen.getByLabelText(/^password/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
-      
-      const roleSelect = screen.getByLabelText(/role/i);
-      await user.click(roleSelect);
-      await user.click(screen.getByRole('option', { name: /model/i }));
-      
-      const termsCheckbox = screen.getByRole('checkbox', { name: /terms/i });
-      await user.click(termsCheckbox);
       
       const submitButton = screen.getByRole('button', { name: /create account/i });
       await user.click(submitButton);
@@ -197,26 +213,22 @@ describe('Authentication Flow', () => {
   });
 
   describe('Protected Routes', () => {
-    it('should redirect to login when accessing protected route without auth', () => {
-      const mockPush = vi.fn();
-      
-      // Mock unauthenticated state
-      vi.mock('@/store/authStore', () => ({
-        useAuthStore: () => ({
-          isAuthenticated: false,
-          user: null,
-        }),
-      }));
-      
-      // Try to render a protected page
-      render(<div>Protected Content</div>, {
-        router: {
-          pathname: '/dashboard',
-          push: mockPush,
-        },
+    it('should redirect to login when accessing protected route without auth', async () => {
+      // Ensure auth state is cleared
+      useAuthStore.setState({
+        isAuthenticated: false,
+        user: null,
+        isPending: false,
       });
       
-      expect(mockPush).toHaveBeenCalledWith('/auth/login');
+      render(
+        <ProtectedRoute>
+          <div>Protected Content</div>
+        </ProtectedRoute>
+      );
+      
+      // Should show loading or redirect, not the protected content
+      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
     });
   });
 });

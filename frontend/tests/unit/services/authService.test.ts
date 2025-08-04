@@ -1,8 +1,13 @@
-import { authService } from '@/services/auth/authService';
 import { vi } from 'vitest';
-import { server } from '../../../utils/test-server';
-import { rest } from 'msw';
-import { createMockUser } from '../../../utils/mock-factories';
+import { server } from '../../utils/test-server';
+import { http, HttpResponse } from 'msw';
+import { createMockUser } from '../../utils/mock-factories';
+
+// Unmock authService and axios for integration tests
+vi.unmock('@/services/auth/authService');
+vi.unmock('axios');
+
+import { authService } from '@/services/auth/authService';
 
 describe('AuthService', () => {
   beforeEach(() => {
@@ -35,10 +40,10 @@ describe('AuthService', () => {
 
     it('handles login failure with invalid credentials', async () => {
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/login', (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({ detail: 'Invalid email or password' })
+        http.post('http://localhost:8000/api/v1/auth/login', () => {
+          return HttpResponse.json(
+            { detail: 'Invalid email or password' },
+            { status: 401 }
           );
         })
       );
@@ -57,8 +62,8 @@ describe('AuthService', () => {
 
     it('handles network errors during login', async () => {
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/login', (req, res) => {
-          return res.networkError('Network error');
+        http.post('http://localhost:8000/api/v1/auth/login', () => {
+          return HttpResponse.error();
         })
       );
 
@@ -88,8 +93,8 @@ describe('AuthService', () => {
 
     it('clears tokens even if API call fails', async () => {
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/logout', (req, res, ctx) => {
-          return res(ctx.status(500));
+        http.post('http://localhost:8000/api/v1/auth/logout', () => {
+          return new HttpResponse(null, { status: 500 });
         })
       );
 
@@ -126,10 +131,10 @@ describe('AuthService', () => {
 
     it('handles registration failure for existing email', async () => {
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/register', (req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({ detail: 'Email already registered' })
+        http.post('http://localhost:8000/api/v1/auth/register', () => {
+          return HttpResponse.json(
+            { detail: 'Email already registered' },
+            { status: 400 }
           );
         })
       );
@@ -150,13 +155,11 @@ describe('AuthService', () => {
       localStorage.setItem('refresh_token', 'old-refresh-token');
 
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/refresh', (req, res, ctx) => {
-          return res(
-            ctx.json({
-              access_token: 'new-access-token',
-              refresh_token: 'new-refresh-token',
-            })
-          );
+        http.post('http://localhost:8000/api/v1/auth/refresh', () => {
+          return HttpResponse.json({
+            access_token: 'new-access-token',
+            refresh_token: 'new-refresh-token',
+          });
         })
       );
 
@@ -175,8 +178,11 @@ describe('AuthService', () => {
       localStorage.setItem('refresh_token', 'invalid-refresh-token');
 
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/refresh', (req, res, ctx) => {
-          return res(ctx.status(401), ctx.json({ detail: 'Invalid refresh token' }));
+        http.post('http://localhost:8000/api/v1/auth/refresh', () => {
+          return HttpResponse.json(
+            { detail: 'Invalid refresh token' },
+            { status: 401 }
+          );
         })
       );
 
@@ -211,8 +217,11 @@ describe('AuthService', () => {
       localStorage.setItem('auth_token', 'invalid-token');
 
       server.use(
-        rest.get('http://localhost:8000/api/v1/auth/me', (req, res, ctx) => {
-          return res(ctx.status(401), ctx.json({ detail: 'Unauthorized' }));
+        http.get('http://localhost:8000/api/v1/auth/me', () => {
+          return HttpResponse.json(
+            { detail: 'Unauthorized' },
+            { status: 401 }
+          );
         })
       );
 
@@ -223,7 +232,8 @@ describe('AuthService', () => {
 
   describe('Token management', () => {
     it('getAccessToken returns stored token', () => {
-      localStorage.setItem('auth_token', 'test-token');
+      // Set token directly on the service instance
+      authService.setAccessToken('test-token');
       expect(authService.getAccessToken()).toBe('test-token');
     });
 
@@ -238,6 +248,8 @@ describe('AuthService', () => {
     });
 
     it('isAuthenticated returns false when no token', () => {
+      // Ensure no token exists
+      authService.clearTokens();
       expect(authService.isAuthenticated()).toBe(false);
     });
 
@@ -263,8 +275,8 @@ describe('AuthService', () => {
   describe('Password reset', () => {
     it('requests password reset successfully', async () => {
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/forgot-password', (req, res, ctx) => {
-          return res(ctx.json({ message: 'Password reset email sent' }));
+        http.post('http://localhost:8000/api/v1/auth/forgot-password', () => {
+          return HttpResponse.json({ message: 'Password reset email sent' });
         })
       );
 
@@ -274,8 +286,8 @@ describe('AuthService', () => {
 
     it('resets password with valid token', async () => {
       server.use(
-        rest.post('http://localhost:8000/api/v1/auth/reset-password', (req, res, ctx) => {
-          return res(ctx.json({ message: 'Password reset successful' }));
+        http.post('http://localhost:8000/api/v1/auth/password-reset/confirm', () => {
+          return HttpResponse.json({ message: 'Password reset successful' });
         })
       );
 

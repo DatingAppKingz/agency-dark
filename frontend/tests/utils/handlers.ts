@@ -8,6 +8,7 @@ export const handlers = [
   http.post(`${API_URL}/auth/login`, () => {
     return HttpResponse.json({
         access_token: 'mock-access-token',
+        refresh_token: 'mock-refresh-token',
         token_type: 'bearer',
         user: {
           id: '1',
@@ -30,6 +31,7 @@ export const handlers = [
   http.post(`${API_URL}/auth/register`, () => {
     return HttpResponse.json({
         access_token: 'mock-access-token',
+        refresh_token: 'mock-refresh-token',
         token_type: 'bearer',
         user: {
           id: '2',
@@ -43,6 +45,31 @@ export const handlers = [
           verified_at: null,
         },
       });
+  }),
+
+  http.post(`${API_URL}/auth/refresh`, () => {
+    return HttpResponse.json({
+      access_token: 'new-access-token',
+      refresh_token: 'new-refresh-token',
+    });
+  }),
+
+  http.post(`${API_URL}/auth/forgot-password`, () => {
+    return HttpResponse.json({
+      message: 'Password reset email sent',
+    });
+  }),
+
+  http.post(`${API_URL}/auth/reset-password`, () => {
+    return HttpResponse.json({
+      message: 'Password reset successful',
+    });
+  }),
+
+  http.post(`${API_URL}/auth/password-reset/confirm`, () => {
+    return HttpResponse.json({
+      message: 'Password reset successful',
+    });
   }),
 
   http.get(`${API_URL}/auth/me`, ({ request }) => {
@@ -195,6 +222,34 @@ export const handlers = [
         status: 'healthy',
         timestamp: new Date().toISOString(),
       });
+  }),
+
+  // Translations endpoints
+  http.get(`${API_URL}/translations/export/:lang`, () => {
+    return HttpResponse.json({
+      translations: {
+        common: {
+          login: 'Login',
+          logout: 'Logout',
+          save: 'Save',
+          cancel: 'Cancel',
+        },
+      },
+    });
+  }),
+
+  // Handle different port in test environment
+  http.get('http://localhost:3000/api/v1/translations/export/:lang', () => {
+    return HttpResponse.json({
+      translations: {
+        common: {
+          login: 'Login',
+          logout: 'Logout',
+          save: 'Save',
+          cancel: 'Cancel',
+        },
+      },
+    });
   }),
 
   // Catch-all for unhandled requests
