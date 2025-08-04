@@ -19,6 +19,7 @@ from core.security import (
 )
 from core.auth.token_blacklist import token_blacklist_service
 from core.auth.cookie_utils import set_auth_cookies, clear_auth_cookies
+from core.auth.csrf import generate_csrf_token, verify_csrf_token
 from core.config import settings
 from models.user import User, Session, UserRole
 from models.agency import Agency
@@ -222,11 +223,15 @@ async def login(
         httponly=False
     )
     
+    # Generate CSRF token for the session
+    csrf_token = generate_csrf_token(response)
+    
     # Return tokens (for backward compatibility, but cookies are primary)
     return Token(
         access_token=access_token,
         refresh_token=refresh_token,
-        token_type="bearer"
+        token_type="bearer",
+        csrf_token=csrf_token  # Include CSRF token in response
     )
 
 
@@ -360,6 +365,13 @@ async def logout(
 async def get_current_user_info(current_user: CurrentUser):
     """Get current user information."""
     return current_user
+
+
+@router.get("/csrf-token")
+async def get_csrf_token(response: Response):
+    """Get a new CSRF token. This endpoint is used to obtain a CSRF token for forms."""
+    csrf_token = generate_csrf_token(response)
+    return {"csrf_token": csrf_token}
 
 
 @router.post("/verify-email/{token}")

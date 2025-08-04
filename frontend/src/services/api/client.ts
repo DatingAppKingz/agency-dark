@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { authService } from '../auth/authService';
+import { getCSRFToken } from '@/utils/csrf';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
@@ -14,8 +15,17 @@ const apiClient: AxiosInstance = axios.create({
 
 // Request interceptor
 apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     // No need to add Authorization header - cookies are sent automatically
+    
+    // Add CSRF token for state-changing methods
+    const needsCSRF = config.method && ['post', 'put', 'patch', 'delete'].includes(config.method.toLowerCase());
+    if (needsCSRF && config.headers) {
+      const csrfToken = await getCSRFToken();
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = csrfToken;
+      }
+    }
     
     // Debug logging
     console.log('🚀 API Request:', {

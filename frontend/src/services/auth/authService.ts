@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { AuthResponse, LoginCredentials, RegisterData, User } from '@/types/auth';
+import { clearCSRFToken } from '@/utils/csrf';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
@@ -74,7 +75,9 @@ class AuthService {
     } catch (error) {
       console.error('Logout error:', error);
     }
-    // No need to clear tokens as they're in httpOnly cookies
+    // Clear CSRF token on logout
+    clearCSRFToken();
+    // No need to clear auth tokens as they're in httpOnly cookies
   }
 
   async refreshToken(): Promise<void> {
