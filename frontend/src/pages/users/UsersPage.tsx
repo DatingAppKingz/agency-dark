@@ -35,6 +35,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { UserRole } from '@/types/auth';
 import { UserDialog } from '@/components/users/UserDialog';
+import { UserListView } from '@/components/users/UserListView';
 import {
   useUsers,
   useCreateUser,
@@ -309,84 +310,39 @@ const UsersPage = () => {
           />
         </Box>
 
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    indeterminate={selected.length > 0 && selected.length < users.length}
-                    checked={users.length > 0 && selected.length === users.length}
-                    onChange={handleSelectAllClick}
-                  />
-                </TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {isPending ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    Loading...
-                  </TableCell>
-                </TableRow>
-              ) : users.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    No users found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                users.map((user) => {
-                  const isItemSelected = isSelected(user.id);
-                  return (
-                    <TableRow
-                      key={user.id}
-                      hover
-                      selected={isItemSelected}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={isItemSelected}
-                          onChange={() => handleSelectClick(user.id)}
-                        />
-                      </TableCell>
-                      <TableCell>{user.full_name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.role.replace('_', ' ')}
-                          size="small"
-                          color={getRoleColor(user.role)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.is_active ? 'Active' : 'Inactive'}
-                          size="small"
-                          color={user.is_active ? 'success' : 'default'}
-                          icon={user.is_active ? <CheckCircle /> : <Block />}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton
-                          onClick={(e) => handleMenuOpen(e, user.id)}
-                          disabled={user.id === currentUser?.id}
-                        >
-                          <MoreVert />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        {isPending ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography>Loading...</Typography>
+          </Box>
+        ) : users.length === 0 ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography>No users found</Typography>
+          </Box>
+        ) : (
+          <UserListView
+            users={users.map((user: any) => ({
+              ...user,
+              username: user.full_name || user.username,
+              status: user.is_active ? 'active' : 'inactive',
+            }))}
+            selected={selected}
+            onSelectAll={handleSelectAllClick}
+            onSelectOne={handleSelectClick}
+            onEdit={(user) => {
+              setEditingUser(user);
+              setDialogOpen(true);
+            }}
+            onDelete={handleDeleteUser}
+            onToggleStatus={async (userId, status) => {
+              await toggleStatus.mutateAsync({
+                userId,
+                isActive: status === 'active',
+              });
+            }}
+            onMenuClick={handleMenuOpen}
+            viewMode={users.length > 20 ? 'virtual' : 'table'}
+          />
+        )}
 
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}

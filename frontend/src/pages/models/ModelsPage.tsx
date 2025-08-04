@@ -28,6 +28,7 @@ import { Link } from 'react-router-dom';
 import { ModelCard } from '@/components/models/ModelCard';
 import { ModelDialog } from '@/components/models/ModelDialog';
 import { ModelBulkActions } from '@/components/models/ModelBulkActions';
+import { ModelListView } from '@/components/models/ModelListView';
 import { 
   useModels, 
   useCreateModel, 
@@ -268,10 +269,15 @@ const ModelsPage = () => {
           ))}
         </Grid>
       ) : (
-        <Paper>
-          {/* TODO: Implement list view */}
-          <Typography sx={{ p: 3 }}>List view coming soon...</Typography>
-        </Paper>
+        <ModelListView
+          models={models}
+          selectedIds={selectedIds}
+          onSelectIds={setSelectedIds}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onToggleStatus={handleToggleStatus}
+          viewMode={models.length > 20 ? 'virtual' : 'table'}
+        />
       )}
 
       <ModelDialog

@@ -39,9 +39,48 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Generate optimized image URL (in production, this would use a CDN)
+  // CDN configuration
+  const CDN_BASE_URL = process.env.REACT_APP_CDN_URL || '';
+  const CDN_ENABLED = !!CDN_BASE_URL;
+  
+  // Generate optimized image URL with CDN support
   const getOptimizedUrl = (url: string, width?: number) => {
-    // This is a placeholder - in production, use a real image optimization service
+    // If URL is already absolute, check if it needs CDN
+    const isAbsoluteUrl = url.startsWith('http://') || url.startsWith('https://');
+    
+    // Cloudflare/Cloudinary-style transformations
+    if (CDN_ENABLED) {
+      // Extract path from absolute URL or use as-is for relative URLs
+      const imagePath = isAbsoluteUrl ? new URL(url).pathname : url;
+      
+      // Build transformation parameters
+      const transforms = [];
+      if (width && typeof width === 'number') {
+        transforms.push(`w_${width}`);
+      }
+      transforms.push(`q_${quality}`);
+      transforms.push('f_auto'); // Auto format selection
+      transforms.push('c_limit'); // Limit dimensions to original
+      
+      // Cloudflare Images URL format
+      if (CDN_BASE_URL.includes('cloudflare')) {
+        return `${CDN_BASE_URL}/cdn-cgi/image/${transforms.join(',')}${imagePath}`;
+      }
+      
+      // Cloudinary URL format
+      if (CDN_BASE_URL.includes('cloudinary')) {
+        const transformString = transforms.join(',');
+        return `${CDN_BASE_URL}/image/upload/${transformString}${imagePath}`;
+      }
+      
+      // Generic CDN with query params
+      return `${CDN_BASE_URL}${imagePath}?${transforms.map(t => {
+        const [key, value] = t.split('_');
+        return `${key}=${value}`;
+      }).join('&')}`;
+    }
+    
+    // Fallback to simple query params
     if (width && typeof width === 'number') {
       return `${url}?w=${width}&q=${quality}`;
     }

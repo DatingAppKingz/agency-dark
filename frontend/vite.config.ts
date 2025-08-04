@@ -59,9 +59,30 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
+        passes: 2,
+        unsafe_arrows: true,
+        module: true,
+        toplevel: true,
+        dead_code: true,
+        unused: true,
+      },
+      mangle: {
+        properties: false,
+        toplevel: true,
+      },
+      format: {
+        comments: false,
       },
     },
     rollupOptions: {
+      treeshake: {
+        preset: 'recommended',
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
+        unknownGlobalSideEffects: false,
+      },
       output: {
         manualChunks: (id) => {
           // Core React dependencies
