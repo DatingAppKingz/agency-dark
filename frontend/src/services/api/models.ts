@@ -32,7 +32,7 @@ export const modelsService = {
 
   // Get unified fans for a model
   async getModelFans(_modelId: string, params?: { limit?: number; offset?: number }): Promise<any> {
-    const { data } = await apiClient.get(`/orchestration/fans/${event}`, { params });
+    const { data } = await apiClient.get(`/orchestration/fans/${_modelId}`, { params });
     return data;
   },
 

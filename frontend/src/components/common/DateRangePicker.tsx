@@ -38,7 +38,6 @@ export const DateRangePicker = ({
   const open = Boolean(anchorEl);
 
   const presetRanges = [
-    { label: '', start: new Date(), end: new Date() },
     { label: 'Yesterday', start: subDays(new Date(), 1), end: subDays(new Date(), 1) },
     { label: 'Last 7 Days', start: subDays(new Date(), 7), end: new Date() },
     { label: 'Last 30 Days', start: subDays(new Date(), 30), end: new Date() },

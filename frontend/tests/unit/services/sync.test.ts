@@ -347,11 +347,12 @@ describe('Sync Service', () => {
 
       await syncService.getDashboardHistory(filters);
 
+      // URLSearchParams encodes the colons in ISO date strings
       const expectedUrl = '/api/v1/sync/dashboard/history?' +
         'api_key_id=key123&' +
         'status=failed&' +
-        `start_date=${filters.startDate.toISOString()}&` +
-        `end_date=${filters.endDate.toISOString()}&` +
+        `start_date=${encodeURIComponent(filters.startDate.toISOString())}&` +
+        `end_date=${encodeURIComponent(filters.endDate.toISOString())}&` +
         'limit=50';
 
       expect(mockedApiClient.get).toHaveBeenCalledWith(expectedUrl);

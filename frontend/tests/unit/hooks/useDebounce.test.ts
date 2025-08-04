@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi } from 'vitest';
+import React from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 
 describe('useDebounce Hook', () => {
@@ -257,9 +258,11 @@ describe('useDebounce Hook', () => {
           const debouncedFilters = useDebounce(filters, 500);
           
           // Simulate effect that makes API call
-          if (debouncedFilters) {
-            mockApiCall(debouncedFilters);
-          }
+          React.useEffect(() => {
+            if (debouncedFilters) {
+              mockApiCall(debouncedFilters);
+            }
+          }, [debouncedFilters]);
           
           return debouncedFilters;
         },
@@ -271,14 +274,15 @@ describe('useDebounce Hook', () => {
       rerender({ filters: { category: 'electronics', price: 100 } });
       rerender({ filters: { category: 'electronics', price: 100, brand: 'Apple' } });
 
-      // No API calls yet
+      // No API calls yet (only initial)
       expect(mockApiCall).toHaveBeenCalledTimes(1); // Initial render
 
       // Complete debounce
       act(() => vi.advanceTimersByTime(500));
       
-      // Should call with final filters
-      expect(mockApiCall).toHaveBeenCalledWith({
+      // Should have made one more call with final filters
+      expect(mockApiCall).toHaveBeenCalledTimes(2);
+      expect(mockApiCall).toHaveBeenLastCalledWith({
         category: 'electronics',
         price: 100,
         brand: 'Apple'
