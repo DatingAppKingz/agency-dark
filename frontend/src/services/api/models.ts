@@ -12,14 +12,29 @@ import { logger } from '@/utils/logger';
 import { QueryParams } from '@/types/api';
 
 export const modelsService = {
-  // Note: Backend uses orchestration endpoints for model data
-  // The following methods integrate with the available backend endpoints
-
-  // Get model profile via orchestration
-  async getModel(_modelId: string): Promise<any> {
-    // Use orchestration endpoint to get model data
-    const { data } = await apiClient.get(`/orchestration/sync/${_modelId}/status`);
+  // Model CRUD operations
+  async getModels(params?: QueryParams): Promise<any> {
+    const { data } = await apiClient.get('/models', { params });
     return data;
+  },
+
+  async getModel(modelId: string): Promise<ModelProfile> {
+    const { data } = await apiClient.get(`/models/${modelId}`);
+    return data;
+  },
+
+  async createModel(modelData: CreateModelProfileData): Promise<ModelProfile> {
+    const { data } = await apiClient.post('/models', modelData);
+    return data;
+  },
+
+  async updateModel(modelId: string, updateData: UpdateModelProfileData): Promise<ModelProfile> {
+    const { data } = await apiClient.patch(`/models/${modelId}`, updateData);
+    return data;
+  },
+
+  async deleteModel(modelId: string): Promise<void> {
+    await apiClient.delete(`/models/${modelId}`);
   },
 
   // Get model analytics
@@ -168,6 +183,40 @@ export const modelsService = {
     throw new Error('Avatar upload not implemented in backend');
   },
 
-  async uploadCover(_modelId: string, _file: File): Promise<{ cover_image_url: string }> {
-    throw new Error('Cover upload not implemented in backend');
-  } };
+  async uploadCover(modelId: string, file: File): Promise<{ cover_image_url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await apiClient.post(`/models/${modelId}/upload-photo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      params: { photo_type: 'cover' }
+    });
+    return data;
+  },
+
+  // Bulk operations
+  async bulkUpdate(updateData: any): Promise<any> {
+    const { data } = await apiClient.post('/models/bulk/update', updateData);
+    return data;
+  },
+
+  async bulkDelete(deleteData: { model_ids: number[]; permanent: boolean }): Promise<any> {
+    const { data } = await apiClient.post('/models/bulk/delete', deleteData);
+    return data;
+  },
+
+  // Approval workflow
+  async approveModel(approvalData: {
+    model_id: number;
+    approved: boolean;
+    rejection_reason?: string;
+    notes?: string;
+  }): Promise<any> {
+    const { data } = await apiClient.post('/models/approve', approvalData);
+    return data;
+  },
+
+  async getPendingModels(params?: { limit?: number; offset?: number }): Promise<ModelProfile[]> {
+    const { data } = await apiClient.get('/models/pending-approval', { params });
+    return data;
+  }
+};

@@ -9,10 +9,13 @@ from models.base import BaseModel
 class ModelStatus(str, enum.Enum):
     """Model status enumeration."""
     PENDING = "pending"  # Awaiting verification
+    UNDER_REVIEW = "under_review"  # Being reviewed by admin
     ACTIVE = "active"  # Active and working
     PAUSED = "paused"  # Temporarily paused
     INACTIVE = "inactive"  # No longer active
     BANNED = "banned"  # Banned from platform
+    REJECTED = "rejected"  # Application rejected
+    DELETED = "deleted"  # Soft deleted
 
 
 class Platform(str, enum.Enum):
@@ -48,6 +51,13 @@ class Model(BaseModel):
     status = Column(SQLEnum(ModelStatus), default=ModelStatus.PENDING, nullable=False)
     verification_status = Column(String(50), default="unverified", nullable=False)
     verified_at = Column(String(30), nullable=True)  # ISO datetime
+    
+    # Approval workflow
+    reviewed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(String(30), nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    admin_notes = Column(Text, nullable=True)
+    id_document_url = Column(String(500), nullable=True)  # For age verification
     
     # Media
     profile_photo_url = Column(String(500), nullable=True)

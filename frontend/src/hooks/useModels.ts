@@ -161,3 +161,65 @@ export const useUploadCover = () => {
     },
   });
 };
+
+export const useBulkUpdateModels = () => {
+  const queryClient = useQueryClient();
+  const { success, error } = useToast();
+
+  return useMutation({
+    mutationFn: (data: any) => modelsService.bulkUpdate(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['models'] });
+      success(`Successfully updated ${response.successful} models`);
+    },
+    onError: (err: ApiError) => {
+      error(err.response?.data?.detail || 'Failed to update models');
+    },
+  });
+};
+
+export const useBulkDeleteModels = () => {
+  const queryClient = useQueryClient();
+  const { success, error } = useToast();
+
+  return useMutation({
+    mutationFn: (data: { model_ids: number[]; permanent: boolean }) =>
+      modelsService.bulkDelete(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['models'] });
+      success(`Successfully deleted ${response.successful} models`);
+    },
+    onError: (err: ApiError) => {
+      error(err.response?.data?.detail || 'Failed to delete models');
+    },
+  });
+};
+
+export const useApproveModel = () => {
+  const queryClient = useQueryClient();
+  const { success, error } = useToast();
+
+  return useMutation({
+    mutationFn: (data: {
+      model_id: number;
+      approved: boolean;
+      rejection_reason?: string;
+      notes?: string;
+    }) => modelsService.approveModel(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['models'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-models'] });
+      success(response.message);
+    },
+    onError: (err: ApiError) => {
+      error(err.response?.data?.detail || 'Failed to process model approval');
+    },
+  });
+};
+
+export const usePendingModels = (params?: { limit?: number; offset?: number }) => {
+  return useQuery({
+    queryKey: ['pending-models', params],
+    queryFn: () => modelsService.getPendingModels(params),
+  });
+};

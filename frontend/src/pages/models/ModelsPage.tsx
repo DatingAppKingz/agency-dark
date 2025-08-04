@@ -14,15 +14,20 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Skeleton,
+  Checkbox,
+  Chip,
 } from '@mui/material';
 import {
   Add,
   Search,
   ViewModule,
   ViewList,
+  AdminPanelSettings,
 } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import { ModelCard } from '@/components/models/ModelCard';
 import { ModelDialog } from '@/components/models/ModelDialog';
+import { ModelBulkActions } from '@/components/models/ModelBulkActions';
 import { 
   useModels, 
   useCreateModel, 
@@ -30,17 +35,27 @@ import {
   useDeleteModel,
   useToggleModelStatus 
 } from '@/hooks/useModels';
-import { ModelProfile } from '@/types/models';
+import { ModelProfile, ModelStatus } from '@/types/models';
+import { useAuthStore } from '@/store/authStore';
+import { UserRole } from '@/types/auth';
 
 const ModelsPage = () => {
+  const { user } = useAuthStore();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingModel, setEditingModel] = useState<ModelProfile | undefined>();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     search: '',
     status: 'all',
     sortBy: 'created_at',
   });
+
+  const canManageModels = user && [
+    UserRole.SUPER_ADMIN,
+    UserRole.AGENCY_OWNER,
+    UserRole.AGENCY_ADMIN
+  ].includes(user.role);
 
   // API hooks
   const { data, isPending } = useModels({
@@ -98,20 +113,59 @@ const ModelsPage = () => {
     </>
   );
 
+  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      const allIds = data?.map(model => model.id) || [];
+      setSelectedIds(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectModel = (modelId: string) => {
+    setSelectedIds(prev => 
+      prev.includes(modelId) 
+        ? prev.filter(id => id !== modelId)
+        : [...prev, modelId]
+    );
+  };
+
+  const handleBulkComplete = () => {
+    setSelectedIds([]);
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Models</Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => {
-            setEditingModel(undefined);
-            setDialogOpen(true);
-          }}
-        >
-          Add Model
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {canManageModels && (
+            <>
+              <Button
+                component={Link}
+                to="/dashboard/models/pending"
+                variant="outlined"
+                startIcon={<AdminPanelSettings />}
+              >
+                Pending Approvals
+              </Button>
+              <ModelBulkActions
+                selectedIds={selectedIds}
+                onComplete={handleBulkComplete}
+              />
+            </>
+          )}
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => {
+              setEditingModel(undefined);
+              setDialogOpen(true);
+            }}
+          >
+            Add Model
+          </Button>
+        </Box>
       </Box>
 
       <Paper sx={{ p: 2, mb: 3 }}>

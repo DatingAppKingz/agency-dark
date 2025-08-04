@@ -1,14 +1,58 @@
+export enum ModelStatus {
+  PENDING = 'pending',
+  UNDER_REVIEW = 'under_review',
+  ACTIVE = 'active',
+  PAUSED = 'paused',
+  INACTIVE = 'inactive',
+  BANNED = 'banned',
+  REJECTED = 'rejected',
+  DELETED = 'deleted',
+}
+
+export enum Platform {
+  ONLYFANS = 'onlyfans',
+  FANSLY = 'fansly',
+  FANVUE = 'fanvue',
+  CUSTOM = 'custom',
+}
+
 export interface ModelProfile {
   id: string;
   user_id: string;
+  agency_id: string;
   stage_name: string;
+  real_name?: string;
   bio?: string;
-  avatar_url?: string;
-  cover_image_url?: string;
+  profile_photo_url?: string;
+  avatar_url?: string; // Alias for backward compatibility
+  cover_photo_url?: string;
+  cover_image_url?: string; // Alias for backward compatibility
+  platform: Platform;
+  platform_username: string;
+  platform_url?: string;
+  status: ModelStatus;
+  verification_status: string;
+  verified_at?: string;
   subscription_price: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  
+  // Approval workflow
+  reviewed_by?: string;
+  reviewed_at?: string;
+  rejection_reason?: string;
+  admin_notes?: string;
+  id_document_url?: string;
+  
+  // Additional fields
+  email?: string;
+  phone?: string;
+  categories?: string[];
+  tags?: string[];
+  languages?: string[];
+  chat_enabled?: boolean;
+  commission_rate?: number;
   
   // Relations
   user?: {

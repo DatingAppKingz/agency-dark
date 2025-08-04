@@ -34,6 +34,8 @@ const ApiTestPage = lazy(() => import('@/pages/ApiTestPage'));
 const DebugAnalytics = lazy(() => import('@/pages/DebugAnalytics'));
 const DashboardDebug = lazy(() => import('@/pages/dashboard/DashboardDebug'));
 const MLInsightsPage = lazy(() => import('@/pages/ml/MLInsightsPage'));
+const PendingApprovalsPage = lazy(() => import('@/pages/models/PendingApprovalsPage'));
+const ModelOnboardingPage = lazy(() => import('@/pages/models/ModelOnboardingPage'));
 
 // Wrapper for lazy loaded components
 const LazyPage = ({ children }: { children: React.ReactNode }) => (
@@ -117,6 +119,22 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <ModelDetailPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'models/pending',
+            element: (
+              <LazyPage>
+                <PendingApprovalsPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'models/onboarding',
+            element: (
+              <LazyPage>
+                <ModelOnboardingPage />
               </LazyPage>
             ),
           },
