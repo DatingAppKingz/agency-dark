@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import auth, auth_minimal, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search, notifications, translations, data_export, data_import, cache, external_api, enhanced_reports, schedule, models, models_bulk
+from .endpoints import auth, auth_minimal, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search, notifications, translations, data_export, data_import, cache, external_api, enhanced_reports, schedule, models, models_bulk, payouts, invoices
 from .secure_api_keys import router as secure_api_keys_router
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
@@ -27,6 +27,8 @@ api_router.include_router(auth_minimal.router, prefix="/auth", tags=["authentica
 api_router.include_router(users.router, tags=["users"])
 api_router.include_router(models.router, prefix="/models", tags=["models"])
 api_router.include_router(models_bulk.router, prefix="/models", tags=["models-bulk"])
+api_router.include_router(payouts.router, prefix="/payouts", tags=["payouts"])
+api_router.include_router(invoices.router, prefix="/invoices", tags=["invoices"])
 api_router.include_router(media.router, tags=["media"])
 api_router.include_router(sync_status.router, tags=["sync"])
 api_router.include_router(sync_scheduler.router, tags=["sync-scheduler"])
