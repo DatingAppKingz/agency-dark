@@ -14,7 +14,7 @@ import { SEOHead } from '@/components/seo/SEOHead';
 
 const DashboardPage = () => {
   const { user } = useAuthStore();
-  const [viewMode, setViewMode] = useState<'classic' | 'custom'>('custom');
+  const [viewMode, setViewMode] = useState<'classic' | 'custom'>('classic');
   const [editMode, setEditMode] = useState(false);
 
   if (!user) {
