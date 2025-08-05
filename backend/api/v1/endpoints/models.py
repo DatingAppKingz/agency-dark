@@ -9,6 +9,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, HttpUrl
 
 from core.database import get_db
+from core.auth.decorators import require_roles, require_model_assignment, require_admin
 from models.user import User, UserRole
 from models.agency import Agency
 from models.model import Model, ModelStatus, Platform
@@ -164,6 +165,7 @@ async def verify_model_access(model_id: int, user: User, db: AsyncSession) -> Mo
 
 # Endpoints
 @router.get("/", response_model=ModelListResponse)
+@require_roles([UserRole.SUPER_ADMIN.value, UserRole.AGENCY_OWNER.value, UserRole.AGENCY_ADMIN.value, UserRole.CHATTER.value])
 async def list_models(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
@@ -235,6 +237,7 @@ async def list_models(
 
 
 @router.post("/", response_model=ModelResponse)
+@require_admin()
 async def create_model(
     model_data: ModelCreate,
     current_user: User = Depends(get_current_user),
@@ -344,6 +347,7 @@ async def create_model(
 
 
 @router.get("/{model_id}", response_model=ModelResponse)
+@require_model_assignment(model_id_param="model_id")
 async def get_model(
     model_id: int,
     current_user: User = Depends(get_current_user),
@@ -355,6 +359,7 @@ async def get_model(
 
 
 @router.patch("/{model_id}", response_model=ModelResponse)
+@require_model_assignment(model_id_param="model_id")
 async def update_model(
     model_id: int,
     update_data: ModelUpdate,
@@ -385,6 +390,7 @@ async def update_model(
 
 
 @router.delete("/{model_id}")
+@require_admin()
 async def delete_model(
     model_id: int,
     current_user: User = Depends(get_current_user),
@@ -413,6 +419,7 @@ async def delete_model(
 
 
 @router.get("/{model_id}/stats", response_model=ModelStatsResponse)
+@require_model_assignment(model_id_param="model_id")
 async def get_model_stats(
     model_id: int,
     current_user: User = Depends(get_current_user),
@@ -486,6 +493,7 @@ async def get_model_stats(
 
 
 @router.get("/{model_id}/settings")
+@require_model_assignment(model_id_param="model_id")
 async def get_model_settings(
     model_id: int,
     current_user: User = Depends(get_current_user),
@@ -505,6 +513,7 @@ async def get_model_settings(
 
 
 @router.patch("/{model_id}/settings")
+@require_model_assignment(model_id_param="model_id")
 async def update_model_settings(
     model_id: int,
     settings_data: ModelSettingsUpdate,
@@ -538,6 +547,7 @@ async def update_model_settings(
 
 
 @router.get("/{model_id}/schedule", response_model=List[Dict[str, Any]])
+@require_model_assignment(model_id_param="model_id")
 async def get_model_schedule(
     model_id: int,
     current_user: User = Depends(get_current_user),
@@ -567,6 +577,7 @@ async def get_model_schedule(
 
 
 @router.post("/{model_id}/schedule")
+@require_model_assignment(model_id_param="model_id")
 async def add_model_schedule(
     model_id: int,
     schedule_data: ModelScheduleCreate,
@@ -596,6 +607,7 @@ async def add_model_schedule(
 
 
 @router.post("/{model_id}/upload-photo")
+@require_model_assignment(model_id_param="model_id")
 async def upload_model_photo(
     model_id: int,
     photo_type: str = Query(..., pattern="^(profile|cover)$"),

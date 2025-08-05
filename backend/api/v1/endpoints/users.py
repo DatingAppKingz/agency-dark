@@ -9,6 +9,7 @@ from sqlalchemy import select, and_, or_, func
 from sqlalchemy.orm import selectinload
 from core.database import get_db
 from core.auth import get_current_user
+from core.auth.decorators import require_roles, require_agency_match, require_self_or_admin, require_admin
 from models.user import User, UserRole
 from api.v1.dependencies import check_permissions
 from pydantic import BaseModel
@@ -44,6 +45,7 @@ class PaginatedUsersResponse(BaseModel):
 
 
 @router.get("/", response_model=PaginatedUsersResponse)
+@require_admin()
 async def list_users(
     role: Optional[UserRole] = Query(None, description="Filter by user role"),
     agency_id: Optional[UUID] = Query(None, description="Filter by agency ID"),
@@ -145,6 +147,7 @@ async def list_users(
 
 
 @router.get("/models", response_model=List[UserListResponse])
+@require_roles([UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN, UserRole.MODEL])
 async def list_model_users(
     agency_id: Optional[UUID] = Query(None, description="Filter by agency ID"),
     is_active: bool = Query(True, description="Filter by active status"),
@@ -200,6 +203,7 @@ async def list_model_users(
 
 
 @router.get("/{user_id}", response_model=UserListResponse)
+@require_self_or_admin(user_id_param="user_id")
 async def get_user(
     user_id: UUID,
     current_user: User = Depends(get_current_user),

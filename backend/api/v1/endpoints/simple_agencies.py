@@ -8,8 +8,9 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from core.database import get_db
+from core.auth.decorators import require_super_admin, require_roles, require_agency_match
 from models.agency import Agency
-from models.user import User
+from models.user import User, UserRole
 from api.v1.endpoints.auth_simple import get_current_user
 
 
@@ -49,6 +50,7 @@ class AgencyResponse(BaseModel):
 
 
 @router.post("/", response_model=AgencyResponse)
+@require_super_admin()
 async def create_agency(
     agency: AgencyCreate,
     db: AsyncSession = Depends(get_db),
@@ -83,6 +85,7 @@ async def create_agency(
 
 
 @router.get("/", response_model=List[AgencyResponse])
+@require_super_admin()
 async def list_agencies(
     skip: int = 0,
     limit: int = 100,
@@ -97,6 +100,7 @@ async def list_agencies(
 
 
 @router.get("/{agency_id}", response_model=AgencyResponse)
+@require_roles([UserRole.SUPER_ADMIN.value, UserRole.AGENCY_OWNER.value, UserRole.AGENCY_ADMIN.value])
 async def get_agency(
     agency_id: int,
     db: AsyncSession = Depends(get_db),
@@ -114,6 +118,7 @@ async def get_agency(
 
 
 @router.patch("/{agency_id}", response_model=AgencyResponse)
+@require_roles([UserRole.SUPER_ADMIN.value, UserRole.AGENCY_OWNER.value])
 async def update_agency(
     agency_id: int,
     agency_update: AgencyUpdate,

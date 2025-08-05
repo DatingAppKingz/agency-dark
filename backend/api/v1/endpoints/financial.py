@@ -9,6 +9,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field
 
 from core.database import get_db
+from core.auth.decorators import require_roles, require_admin, require_model_assignment
 from models.user import User, UserRole
 from models.agency import Agency
 from models.model import Model
@@ -142,6 +143,7 @@ async def verify_model_access(model_id: int, user: User, db: AsyncSession) -> Mo
 
 # Endpoints
 @router.get("/transactions", response_model=List[TransactionResponse])
+@require_roles([UserRole.SUPER_ADMIN.value, UserRole.AGENCY_OWNER.value, UserRole.AGENCY_ADMIN.value, UserRole.MODEL.value])
 async def list_transactions(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
@@ -228,6 +230,7 @@ async def list_transactions(
 
 
 @router.post("/transactions", response_model=TransactionResponse)
+@require_admin()
 async def create_transaction(
     transaction_data: TransactionCreate,
     current_user: User = Depends(get_current_user),
@@ -313,6 +316,7 @@ async def create_transaction(
 
 
 @router.get("/payouts", response_model=List[PayoutResponse])
+@require_roles([UserRole.SUPER_ADMIN.value, UserRole.AGENCY_OWNER.value, UserRole.AGENCY_ADMIN.value, UserRole.MODEL.value])
 async def list_payouts(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
@@ -377,6 +381,7 @@ async def list_payouts(
 
 
 @router.post("/payouts", response_model=PayoutResponse)
+@require_admin()
 async def create_payout(
     payout_data: PayoutCreate,
     current_user: User = Depends(get_current_user),
@@ -436,6 +441,7 @@ async def create_payout(
 
 
 @router.patch("/payouts/{payout_id}/process")
+@require_admin()
 async def process_payout(
     payout_id: int,
     external_id: str,
@@ -475,6 +481,7 @@ async def process_payout(
 
 
 @router.get("/summary", response_model=FinancialSummary)
+@require_roles([UserRole.SUPER_ADMIN.value, UserRole.AGENCY_OWNER.value, UserRole.AGENCY_ADMIN.value, UserRole.MODEL.value])
 async def get_financial_summary(
     model_id: Optional[int] = None,
     current_user: User = Depends(get_current_user),
@@ -633,6 +640,7 @@ async def get_financial_summary(
 
 
 @router.get("/invoices", response_model=List[InvoiceResponse])
+@require_roles([UserRole.SUPER_ADMIN.value, UserRole.AGENCY_OWNER.value])
 async def list_invoices(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
@@ -680,6 +688,7 @@ async def list_invoices(
 
 # Commission endpoints
 @router.get("/commission/tiers")
+@require_admin()
 async def get_commission_tiers(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -717,6 +726,7 @@ async def get_commission_tiers(
 
 
 @router.get("/commission/model/{model_id}")
+@require_model_assignment(model_id_param="model_id")
 async def get_model_commission_info(
     model_id: int,
     current_user: User = Depends(get_current_user),
@@ -761,6 +771,7 @@ async def get_model_commission_info(
 
 
 @router.post("/commission/calculate")
+@require_admin()
 async def calculate_commission(
     model_id: int,
     amount: Decimal = Field(..., gt=0),
