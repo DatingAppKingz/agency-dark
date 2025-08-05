@@ -26,12 +26,14 @@ class User(BaseModel):
     
     # Authentication fields
     email = Column(String(255), unique=True, index=True, nullable=False)
-    username = Column(String(100), unique=True, index=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
+    username = Column(String(100), unique=True, index=True, nullable=True)  # Made nullable for existing DB
+    password_hash = Column("hashed_password", String(255), nullable=False)  # Map to actual column name
     
     # Profile fields
-    first_name = Column(String(100), nullable=True)
-    last_name = Column(String(100), nullable=True)
+    # Note: Database uses 'full_name' but we map it differently
+    _full_name = Column("full_name", String(255), nullable=True)
+    first_name = Column(String(100), nullable=True)  # Virtual - will use _full_name
+    last_name = Column(String(100), nullable=True)   # Virtual - will use _full_name
     phone = Column(String(20), nullable=True)
     avatar_url = Column(String(500), nullable=True)
     bio = Column(String(1000), nullable=True)
@@ -111,9 +113,13 @@ class User(BaseModel):
     @property
     def full_name(self):
         """Get user's full name."""
+        # If we have the database full_name, use it
+        if self._full_name:
+            return self._full_name
+        # Otherwise try to construct from first/last name
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
-        return self.username
+        return self.username or self.email
     
     @property
     def is_agency_member(self):

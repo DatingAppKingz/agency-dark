@@ -129,6 +129,14 @@ async def get_translations(language: str, format: str = "json"):
     # Return empty translations to stop 404 errors
     return {}
 
+# Add temporary auth fix
+try:
+    from auth_fix import router as auth_fix_router
+    app.include_router(auth_fix_router, prefix="/api/v1/auth", tags=["auth-fix"])
+    logger.info("✅ Auth fix endpoints loaded")
+except Exception as e:
+    logger.error(f"❌ Failed to load auth fix endpoints: {e}")
+
 # Add a simple stats endpoint for testing
 @app.get("/api/v1/stats")
 async def get_stats():
