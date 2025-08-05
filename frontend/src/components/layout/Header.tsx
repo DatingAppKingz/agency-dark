@@ -40,7 +40,7 @@ import {
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { UserRole } from '@/types/auth';
+import { UserRole, normalizeRole } from '@/types/auth';
 
 interface NavItem {
   text: string;
@@ -143,7 +143,11 @@ export const Header = () => {
 
   const filteredNavItems = navItems.filter((item) => {
     if (!item.roles) return true;
-    return user && item.roles.includes(user.role);
+    if (!user) return false;
+    
+    // Normalize user role to match enum values
+    const normalizedUserRole = normalizeRole(user.role);
+    return item.roles.some(role => role === normalizedUserRole);
   });
 
   // Show only important items on tablet, all on desktop

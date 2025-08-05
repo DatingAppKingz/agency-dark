@@ -4,6 +4,8 @@ import { RootLayout } from '@/layouts/RootLayout';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { RoleProtectedRoute } from '@/components/auth/RoleProtectedRoute';
+import { UserRole } from '@/types/auth';
 import { PageLoader } from '@/components/common/PageLoader';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
@@ -104,17 +106,21 @@ export const router = createBrowserRouter([
           {
             path: 'users',
             element: (
-              <LazyPage>
-                <UsersPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]}>
+                <LazyPage>
+                  <UsersPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
             path: 'models',
             element: (
-              <LazyPage>
-                <ModelOverviewPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN, UserRole.MODEL]}>
+                <LazyPage>
+                  <ModelOverviewPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
@@ -144,9 +150,11 @@ export const router = createBrowserRouter([
           {
             path: 'chat',
             element: (
-              <LazyPage>
-                <ChatPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.MODEL, UserRole.CHATTER]}>
+                <LazyPage>
+                  <ChatPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
@@ -200,41 +208,51 @@ export const router = createBrowserRouter([
           {
             path: 'settings/api-keys',
             element: (
-              <LazyPage>
-                <ApiKeysPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER]}>
+                <LazyPage>
+                  <ApiKeysPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
             path: 'settings/webhooks',
             element: (
-              <LazyPage>
-                <WebhooksPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER]}>
+                <LazyPage>
+                  <WebhooksPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
             path: 'bulk-operations',
             element: (
-              <LazyPage>
-                <BulkOperationsPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]}>
+                <LazyPage>
+                  <BulkOperationsPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
             path: 'admin/users',
             element: (
-              <LazyPage>
-                <AdminUsersPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+                <LazyPage>
+                  <AdminUsersPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
             path: 'sync',
             element: (
-              <LazyPage>
-                <SyncDashboardPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]}>
+                <LazyPage>
+                  <SyncDashboardPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
@@ -280,17 +298,21 @@ export const router = createBrowserRouter([
           {
             path: 'agencies',
             element: (
-              <LazyPage>
-                <AgenciesListPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+                <LazyPage>
+                  <AgenciesListPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
             path: 'agency',
             element: (
-              <LazyPage>
-                <AgencySettingsPage />
-              </LazyPage>
+              <RoleProtectedRoute allowedRoles={[UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]}>
+                <LazyPage>
+                  <AgencySettingsPage />
+                </LazyPage>
+              </RoleProtectedRoute>
             ),
           },
           {
