@@ -85,10 +85,10 @@ const navItems: NavItem[] = [
     path: '/dashboard/analytics',
   },
   {
-    text: 'Bulk Ops',
-    icon: <Group />,
-    path: '/dashboard/bulk-operations',
-    roles: [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN],
+    text: 'User Mgmt',
+    icon: <AdminPanelSettings />,
+    path: '/dashboard/admin/users',
+    roles: [UserRole.SUPER_ADMIN],
   },
   {
     text: 'Reports',

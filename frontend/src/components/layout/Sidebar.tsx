@@ -61,10 +61,10 @@ const menuItems: MenuItem[] = [
     roles: [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN],
   },
   {
-    text: 'Bulk Operations',
-    icon: <Group />,
-    path: '/dashboard/bulk-operations',
-    roles: [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN],
+    text: 'User Management',
+    icon: <AdminPanelSettings />,
+    path: '/dashboard/admin/users',
+    roles: [UserRole.SUPER_ADMIN],
   },
   {
     text: 'Reports',

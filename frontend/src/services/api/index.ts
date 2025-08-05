@@ -3,7 +3,7 @@ export * from './analytics';
 export * from './apiKeys';
 export * from './bulkOperations';
 export * from './chat';
-export * from './client';
+// Skip export * from './client' since it only has a default export
 export * from './financial';
 export * from './mlInsights';
 export * from './models';

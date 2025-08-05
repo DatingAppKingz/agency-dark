@@ -94,6 +94,22 @@ try:
 except Exception as e:
     logger.error(f"❌ Failed to load users endpoints: {e}")
 
+# Add simple users endpoint for admin panel
+try:
+    from users_simple import router as simple_users_router
+    app.include_router(simple_users_router, prefix="/api/v1/admin/users", tags=["admin-users"])
+    logger.info("✅ Simple users endpoints loaded")
+except Exception as e:
+    logger.error(f"❌ Failed to load simple users endpoints: {e}")
+
+# Add simple agencies endpoint for admin panel
+try:
+    from agencies_simple import router as simple_agencies_router
+    app.include_router(simple_agencies_router, prefix="/api/v1/admin/agencies", tags=["admin-agencies"])
+    logger.info("✅ Simple agencies endpoints loaded")
+except Exception as e:
+    logger.error(f"❌ Failed to load simple agencies endpoints: {e}")
+
 try:
     from api.v1.endpoints.models import router as models_router
     app.include_router(models_router, prefix="/api/v1/models", tags=["models"])

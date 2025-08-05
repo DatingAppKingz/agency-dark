@@ -22,6 +22,7 @@ const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 const ApiKeysPage = lazy(() => import('@/pages/settings/ApiKeysPage'));
 const WebhooksPage = lazy(() => import('@/pages/settings/WebhooksPage'));
 const BulkOperationsPage = lazy(() => import('@/pages/bulk/BulkOperationsPage'));
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
 const SyncDashboardPage = lazy(() => import('@/pages/sync/SyncDashboardPage'));
 const UserProfilePage = lazy(() => import('@/pages/profile/UserProfilePage'));
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'));
@@ -217,6 +218,14 @@ export const router = createBrowserRouter([
             element: (
               <LazyPage>
                 <BulkOperationsPage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'admin/users',
+            element: (
+              <LazyPage>
+                <AdminUsersPage />
               </LazyPage>
             ),
           },
