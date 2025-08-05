@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from .endpoints import auth, auth_minimal, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, chat_enhanced, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search, notifications, translations, data_export, data_import, cache, external_api, enhanced_reports, schedule, models, models_bulk, payouts, invoices, email_preferences
 from .platform_api_keys import router as platform_api_keys_router
+from .audit import router as audit_router
 from .secure_api_keys import router as secure_api_keys_router
 from .monitoring.performance import router as performance_router
 from .mobile import auth as mobile_auth, messages as mobile_messages, analytics as mobile_analytics, notifications as mobile_notifications
@@ -46,6 +47,7 @@ api_router.include_router(secure_api_keys_router, tags=["api-keys-secure"])
 api_router.include_router(platform_api_keys_router, prefix="/platform-keys", tags=["platform-api-keys"])
 api_router.include_router(api_usage.router, tags=["api-usage"])
 api_router.include_router(api_audit.router, tags=["api-audit"])
+api_router.include_router(audit_router, tags=["audit-logs"])
 api_router.include_router(rate_limits.router, tags=["rate-limits"])
 api_router.include_router(fraud_detection.router, tags=["fraud-detection"])
 api_router.include_router(bulk_operations.router, tags=["bulk-operations"])

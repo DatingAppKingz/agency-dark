@@ -33,6 +33,7 @@ from middleware.i18n import I18nMiddleware
 from middleware.logging_context import LoggingContextMiddleware, UserContextMiddleware
 from logging_config import configure_structured_logging
 from core.security.api_keys.auth_middleware import log_api_key_usage
+from core.middleware.audit import AuditLoggingMiddleware, ComplianceAuditMiddleware
 
 # Configure structured logging
 configure_structured_logging()
@@ -208,6 +209,10 @@ app.add_middleware(UserContextMiddleware)  # User context for logging
 @app.middleware("http")
 async def api_key_usage_logging_middleware(request: Request, call_next):
     return await log_api_key_usage(request, call_next)
+
+# Add audit logging middlewares
+app.add_middleware(ComplianceAuditMiddleware)  # Compliance-specific audit logging
+app.add_middleware(AuditLoggingMiddleware)  # General audit logging
 
 app.add_middleware(APIUsageMiddleware)  # API usage tracking and limits
 app.add_middleware(AdvancedRateLimitMiddleware)  # New advanced rate limiting
