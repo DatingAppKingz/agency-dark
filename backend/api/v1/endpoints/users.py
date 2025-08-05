@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from core.database import get_db
 from core.auth import get_current_user
 from core.auth.decorators import require_roles, require_agency_match, require_self_or_admin, require_admin
+from core.repositories.user_repository import UserRepository
 from models.user import User, UserRole
 from api.v1.dependencies import check_permissions
 from pydantic import BaseModel
@@ -59,61 +60,44 @@ async def list_users(
     """
     List users with optional filters.
     
-    Permissions:
+    The repository automatically handles agency-based filtering:
     - Super admins can see all users
     - Agency owners/admins can see users in their agency
     - Models can only see themselves
     - Chatters can only see models they're assigned to
     """
-    # Build base query with model profile eager loading
-    query = select(User).options(selectinload(User.model_profile))
+    # Create repository with current user context
+    user_repo = UserRepository(db, current_user)
     
-    # Apply permission filters
-    if current_user.role == UserRole.SUPER_ADMIN:
-        # Can see all users
-        pass
-    elif current_user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
-        # Can only see users in their agency
-        query = query.where(User.agency_id == current_user.agency_id)
-    elif current_user.role == UserRole.MODEL:
-        # Can only see themselves
-        query = query.where(User.id == current_user.id)
-    else:
-        # Chatters - would need additional logic for assigned models
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions to list users"
-        )
+    # Build filters
+    filters = []
     
-    # Apply filters
     if role:
-        query = query.where(User.role == role)
+        filters.append(User.role == role)
     
-    if agency_id and current_user.role == UserRole.SUPER_ADMIN:
-        query = query.where(User.agency_id == agency_id)
+    if agency_id and current_user.role == UserRole.SUPER_ADMIN.value:
+        filters.append(User.agency_id == agency_id)
     
     if is_active is not None:
-        query = query.where(User.is_active == is_active)
+        filters.append(User.is_active == is_active)
     
+    # Handle search
     if search:
-        search_filter = or_(
-            User.full_name.ilike(f"%{search}%"),
-            User.email.ilike(f"%{search}%")
+        users = await user_repo.search_users(search, skip=(page - 1) * per_page, limit=per_page)
+        total = await user_repo.count([
+            or_(
+                User.full_name.ilike(f"%{search}%"),
+                User.email.ilike(f"%{search}%")
+            )
+        ])
+    else:
+        # Get users with filters
+        users = await user_repo.get_all(
+            skip=(page - 1) * per_page,
+            limit=per_page,
+            filters=filters
         )
-        query = query.where(search_filter)
-    
-    # Count total results
-    count_query = select(func.count()).select_from(query.subquery())
-    total_result = await db.execute(count_query)
-    total = total_result.scalar() or 0
-    
-    # Apply pagination
-    offset = (page - 1) * per_page
-    query = query.offset(offset).limit(per_page)
-    
-    # Execute query
-    result = await db.execute(query)
-    users = result.scalars().all()
+        total = await user_repo.count(filters)
     
     # Transform users to response model
     user_list = []
@@ -211,28 +195,19 @@ async def get_user(
 ):
     """
     Get a specific user by ID.
+    
+    The repository automatically handles agency-based filtering.
     """
-    # Build query with permission check
-    query = select(User).where(User.id == user_id)
+    # Create repository with current user context
+    user_repo = UserRepository(db, current_user)
     
-    # Apply permission filters
-    if current_user.role != UserRole.SUPER_ADMIN:
-        if current_user.role in [UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN]:
-            query = query.where(User.agency_id == current_user.agency_id)
-        elif current_user.id != user_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions to view this user"
-            )
-    
-    # Execute query
-    result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    # Get user - repository will handle permissions
+    user = await user_repo.get_by_id(user_id)
     
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail="User not found or access denied"
         )
     
     return UserListResponse(
