@@ -14,6 +14,12 @@ from core.middleware.auth import AuthenticationMiddleware
 from core.middleware.security import SecurityMiddleware, APIKeyMiddleware
 from core.middleware.enhanced_security import EnhancedAPIKeyMiddleware, APIKeyRateLimitMiddleware, SecurityHeadersMiddleware
 from core.middleware.rate_limit import AdvancedRateLimitMiddleware
+from core.middleware.rate_limit_advanced import (
+    AdvancedRateLimitMiddleware as DynamicRateLimitMiddleware,
+    CostBasedRateLimitMiddleware,
+    GeographicRateLimitMiddleware,
+    AdaptiveRateLimitMiddleware
+)
 from core.middleware.fraud_detection import FraudDetectionMiddleware
 from core.middleware.debugging import DebuggingMiddleware, RequestBodyMiddleware, DatabaseQueryLoggingMiddleware, PerformanceProfilingMiddleware
 from core.middleware.api_usage import APIUsageMiddleware
@@ -34,6 +40,7 @@ from middleware.logging_context import LoggingContextMiddleware, UserContextMidd
 from logging_config import configure_structured_logging
 from core.security.api_keys.auth_middleware import log_api_key_usage
 from core.middleware.audit import AuditLoggingMiddleware, ComplianceAuditMiddleware
+from core.middleware.feature_permissions import FeaturePermissionMiddleware, DataFilteringMiddleware
 
 # Configure structured logging
 configure_structured_logging()
@@ -214,8 +221,18 @@ async def api_key_usage_logging_middleware(request: Request, call_next):
 app.add_middleware(ComplianceAuditMiddleware)  # Compliance-specific audit logging
 app.add_middleware(AuditLoggingMiddleware)  # General audit logging
 
+# Add feature permission middlewares
+app.add_middleware(DataFilteringMiddleware)  # Data filtering based on permissions
+app.add_middleware(FeaturePermissionMiddleware)  # Feature permission checking
+
+# Add advanced rate limiting middlewares
+app.add_middleware(AdaptiveRateLimitMiddleware)  # Adaptive rate limiting based on load
+app.add_middleware(GeographicRateLimitMiddleware)  # Geographic-based rate limiting
+app.add_middleware(CostBasedRateLimitMiddleware)  # Cost-based rate limiting
+app.add_middleware(DynamicRateLimitMiddleware)  # Dynamic rate limiting with config
+
 app.add_middleware(APIUsageMiddleware)  # API usage tracking and limits
-app.add_middleware(AdvancedRateLimitMiddleware)  # New advanced rate limiting
+app.add_middleware(AdvancedRateLimitMiddleware)  # Legacy advanced rate limiting
 app.add_middleware(APIKeyRateLimitMiddleware)  # API key specific rate limiting
 app.add_middleware(FraudDetectionMiddleware)
 app.add_middleware(EnhancedAPIKeyMiddleware)  # Enhanced API key validation
