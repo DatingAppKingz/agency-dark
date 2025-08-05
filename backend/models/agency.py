@@ -89,6 +89,23 @@ class Agency(BaseModel):
     
     # Scheduled tasks
     scheduled_tasks = relationship("ScheduledTask", back_populates="agency", cascade="all, delete-orphan")
+    tasks = relationship("TaskResult", back_populates="agency", cascade="all, delete-orphan")
+    
+    # Analytics
+    metrics = relationship("AgencyMetrics", back_populates="agency", cascade="all, delete-orphan")
+    metric_snapshots = relationship("MetricSnapshot", back_populates="agency", cascade="all, delete-orphan")
+    
+    # Media
+    media_files = relationship("Media", back_populates="agency", cascade="all, delete-orphan")
+    
+    # Other relationships
+    saved_searches = relationship("SavedSearch", back_populates="agency", cascade="all, delete-orphan")
+    invoices = relationship("Invoice", back_populates="agency", cascade="all, delete-orphan")
+    chat_templates = relationship("ChatTemplate", back_populates="agency", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="agency", cascade="all, delete-orphan")
+    notification_templates = relationship("NotificationTemplate", back_populates="agency", cascade="all, delete-orphan")
+    webhooks = relationship("Webhook", back_populates="agency", cascade="all, delete-orphan")
+    content_templates = relationship("ContentTemplate", back_populates="agency", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Agency {self.name}>"

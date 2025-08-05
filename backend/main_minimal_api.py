@@ -122,6 +122,13 @@ try:
 except Exception as e:
     logger.error(f"❌ Failed to load notifications endpoints: {e}")
 
+# Add a simple translation endpoint stub
+@app.get("/api/v1/translations/export/{language}")
+async def get_translations(language: str, format: str = "json"):
+    """Get translations for a specific language."""
+    # Return empty translations to stop 404 errors
+    return {}
+
 # Add a simple stats endpoint for testing
 @app.get("/api/v1/stats")
 async def get_stats():

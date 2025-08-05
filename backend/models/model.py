@@ -102,7 +102,7 @@ class Model(BaseModel):
     welcome_message = Column(Text, nullable=True)
     
     # Relationships
-    user = relationship("User", back_populates="model_profile", uselist=False)
+    user = relationship("User", back_populates="model_profile", uselist=False, foreign_keys=[user_id])
     agency = relationship("Agency", back_populates="models")
     conversations = relationship("Conversation", back_populates="model", cascade="all, delete-orphan")
     content = relationship("Content", back_populates="model", cascade="all, delete-orphan")
@@ -111,6 +111,7 @@ class Model(BaseModel):
     analytics = relationship("ModelAnalytics", back_populates="model", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="model", cascade="all, delete-orphan")
     vault = relationship("Vault", back_populates="model", uselist=False, cascade="all, delete-orphan")
+    media_files = relationship("Media", back_populates="model", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Model {self.stage_name}>"

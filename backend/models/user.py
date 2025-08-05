@@ -59,10 +59,10 @@ class User(BaseModel):
     # Relationships
     agency = relationship("Agency", back_populates="users", lazy="joined")
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
-    api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")
+    api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan", foreign_keys="[APIKey.user_id]")
     
     # Model-specific relationships (when user is a model)
-    model_profile = relationship("Model", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    model_profile = relationship("Model", back_populates="user", uselist=False, cascade="all, delete-orphan", foreign_keys="[Model.user_id]")
     
     # Chatter-specific relationships
     assigned_conversations = relationship("Conversation", back_populates="assigned_chatter", foreign_keys="Conversation.assigned_chatter_id")
@@ -91,6 +91,19 @@ class User(BaseModel):
     
     # Scheduled tasks
     created_scheduled_tasks = relationship("ScheduledTask", back_populates="created_by", foreign_keys="ScheduledTask.created_by_id")
+    
+    # Task results
+    tasks = relationship("TaskResult", back_populates="user", cascade="all, delete-orphan")
+    
+    # Media
+    uploaded_media = relationship("Media", back_populates="uploader", cascade="all, delete-orphan")
+    
+    # Other relationships
+    saved_searches = relationship("SavedSearch", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    notification_preferences = relationship("NotificationPreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    mobile_devices = relationship("MobileDevice", back_populates="user", cascade="all, delete-orphan")
+    language_preference = relationship("LanguagePreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User {self.email}>"

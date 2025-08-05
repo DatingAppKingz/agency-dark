@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend</title>
+</head>
+<body>
+    <h1>Testing Frontend Connection</h1>
+    <div id="status"></div>
+    <div id="auth-status"></div>
+    <script>
+        const statusEl = document.getElementById('status');
+        const authStatusEl = document.getElementById('auth-status');
+        
+        // Test API connection
+        fetch('http://localhost:8000/api/v1/stats')
+            .then(res => res.json())
+            .then(data => {
+                statusEl.innerHTML = '<p style="color: green;">✓ Backend API is running</p>';
+                console.log('Stats:', data);
+            })
+            .catch(err => {
+                statusEl.innerHTML = '<p style="color: red;">✗ Backend API is not accessible</p>';
+                console.error('Error:', err);
+            });
+            
+        // Test auth endpoint
+        fetch('http://localhost:8000/api/v1/auth/me', {
+            credentials: 'include'
+        })
+            .then(res => {
+                if (res.status === 401) {
+                    authStatusEl.innerHTML = '<p style="color: orange;">✓ Auth endpoint working (401 - Not authenticated)</p>';
+                } else {
+                    return res.json();
+                }
+            })
+            .then(data => {
+                if (data) {
+                    authStatusEl.innerHTML = '<p style="color: green;">✓ Authenticated as: ' + data.email + '</p>';
+                }
+            })
+            .catch(err => {
+                authStatusEl.innerHTML = '<p style="color: red;">✗ Auth endpoint error</p>';
+                console.error('Auth Error:', err);
+            });
+    </script>
+</body>
+</html>

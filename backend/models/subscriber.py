@@ -67,6 +67,7 @@ class Subscriber(BaseModel):
     # Relationships
     user = relationship("User", backref="subscriptions", foreign_keys=[user_id])
     model = relationship("Model", backref="subscribers", foreign_keys=[model_id])
+    claims = relationship("FanClaim", back_populates="fan", cascade="all, delete-orphan")
     
     # Unique constraint - one subscription per user per model
     __table_args__ = (

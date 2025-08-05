@@ -1,66 +1,73 @@
-#!/usr/bin/env python3
-"""Create a simple test user for API testing"""
-
+"""Create a test user for authentication testing."""
 import asyncio
+import os
 from datetime import datetime
-import uuid
-
+from passlib.context import CryptContext
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.database import AsyncSessionLocal, create_tables
-from core.security import get_password_hash
-from core.domain.models import Agency, User, UserRole
 
+# Set up environment
+os.environ['DATABASE_URL'] = 'postgresql+asyncpg://mariuszbudzisz@localhost/agencydark_dev'
+os.environ['REDIS_URL'] = 'redis://localhost:6379'
+os.environ['JWT_SECRET_KEY'] = 'your-secret-key-here'
+os.environ['DISABLE_ML'] = 'true'
+
+from core.database import engine, Base
+from models.agency import Agency
+from models.user import User, UserRole
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def create_test_data():
-    """Create test agency and user"""
-    async with AsyncSessionLocal() as session:
-        try:
+    """Create test agency and user."""
+    async with AsyncSession(engine) as session:
+        # Check if agency exists
+        result = await session.execute(select(Agency).where(Agency.name == "Test Agency"))
+        agency = result.scalar_one_or_none()
+        
+        if not agency:
             # Create test agency
             agency = Agency(
-                id=uuid.uuid4(),
                 name="Test Agency",
-                slug="test-agency",
-                domain="test.agency.com",
-                subscription_status="active",
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                domain="testagency",
+                email="admin@testagency.com",
+                settings={},
+                is_active=True
             )
             session.add(agency)
-            await session.flush()
-            
+            await session.commit()
+            await session.refresh(agency)
+            print(f"Created agency: {agency.name} (ID: {agency.id})")
+        else:
+            print(f"Agency already exists: {agency.name} (ID: {agency.id})")
+        
+        # Check if user exists
+        result = await session.execute(select(User).where(User.email == "admin@agency.com"))
+        user = result.scalar_one_or_none()
+        
+        if not user:
             # Create test user
             user = User(
-                id=uuid.uuid4(),
                 agency_id=agency.id,
-                email="test@example.com",
-                hashed_password=get_password_hash("password123"),
-                full_name="Test User",
-                role=UserRole.AGENCY_ADMIN,
+                email="admin@agency.com",
+                username="admin",
+                password_hash=pwd_context.hash("admin123"),
+                first_name="Admin",
+                last_name="User",
+                role=UserRole.AGENCY_OWNER,
                 is_active=True,
                 is_verified=True,
-                verified_at=datetime.utcnow(),
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
             session.add(user)
-            
             await session.commit()
-            print(f"✅ Created test agency: {agency.name} (ID: {agency.id})")
-            print(f"✅ Created test user: {user.email} with password: password123")
-            
-        except Exception as e:
-            await session.rollback()
-            print(f"❌ Error creating test data: {e}")
-            raise
-
-
-async def main():
-    """Run the seed script"""
-    print("Creating test data...")
-    await create_tables()
-    await create_test_data()
-    print("✅ Test data created successfully!")
-
+            print(f"Created user: {user.email} with password: admin123")
+        else:
+            print(f"User already exists: {user.email}")
+        
+        # Close the engine
+        await engine.dispose()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(create_test_data())

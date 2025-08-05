@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from './api';
 import { 
   Transaction, 
   Earning, 
@@ -19,17 +19,17 @@ export const transactionService = {
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get<Transaction[]>('/transactions', { params });
+    const response = await apiClient.get<Transaction[]>('/transactions', { params });
     return response.data;
   },
 
   async getTransaction(id: number) {
-    const response = await api.get<Transaction>(`/transactions/${id}`);
+    const response = await apiClient.get<Transaction>(`/transactions/${id}`);
     return response.data;
   },
 
   async createTransaction(data: Partial<Transaction>) {
-    const response = await api.post<Transaction>('/transactions', data);
+    const response = await apiClient.post<Transaction>('/transactions', data);
     return response.data;
   },
 };
@@ -44,12 +44,12 @@ export const earningService = {
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get<Earning[]>('/earnings', { params });
+    const response = await apiClient.get<Earning[]>('/earnings', { params });
     return response.data;
   },
 
   async getEarningSummary(modelId: number, year?: number, month?: number) {
-    const response = await api.get<any>(`/earnings/summary`, {
+    const response = await apiClient.get<any>(`/earnings/summary`, {
       params: { modelId, year, month }
     });
     return response.data;
@@ -66,12 +66,12 @@ export const payoutService = {
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get<Payout[]>('/payouts', { params });
+    const response = await apiClient.get<Payout[]>('/payouts', { params });
     return response.data;
   },
 
   async getPayout(id: number) {
-    const response = await api.get<Payout>(`/payouts/${id}`);
+    const response = await apiClient.get<Payout>(`/payouts/${id}`);
     return response.data;
   },
 
@@ -84,17 +84,17 @@ export const payoutService = {
     notes?: string;
     scheduled_date?: string;
   }) {
-    const response = await api.post<Payout>('/payouts', data);
+    const response = await apiClient.post<Payout>('/payouts', data);
     return response.data;
   },
 
   async updatePayout(id: number, data: Partial<Payout>) {
-    const response = await api.patch<Payout>(`/payouts/${id}`, data);
+    const response = await apiClient.patch<Payout>(`/payouts/${id}`, data);
     return response.data;
   },
 
   async approvePayout(id: number, approved: boolean, notes?: string) {
-    const response = await api.post<any>(`/payouts/${id}/approve`, {
+    const response = await apiClient.post<any>(`/payouts/${id}/approve`, {
       approved,
       notes
     });
@@ -102,7 +102,7 @@ export const payoutService = {
   },
 
   async bulkPayoutAction(payoutIds: number[], action: 'approve' | 'process' | 'cancel', notes?: string) {
-    const response = await api.post<any>('/payouts/bulk-action', {
+    const response = await apiClient.post<any>('/payouts/bulk-action', {
       payout_ids: payoutIds,
       action,
       notes
@@ -111,7 +111,7 @@ export const payoutService = {
   },
 
   async getPayoutEarnings(payoutId: number) {
-    const response = await api.get<any[]>(`/payouts/${payoutId}/earnings`);
+    const response = await apiClient.get<any[]>(`/payouts/${payoutId}/earnings`);
     return response.data;
   },
 };
@@ -123,37 +123,37 @@ export const paymentMethodService = {
     if (modelId) params.model_id = modelId;
     if (agencyId) params.agency_id = agencyId;
     
-    const response = await api.get<PaymentMethod[]>('/payment-methods', { params });
+    const response = await apiClient.get<PaymentMethod[]>('/payment-methods', { params });
     return response.data;
   },
 
   async getPaymentMethod(id: number) {
-    const response = await api.get<PaymentMethod>(`/payment-methods/${id}`);
+    const response = await apiClient.get<PaymentMethod>(`/payment-methods/${id}`);
     return response.data;
   },
 
   async createPaymentMethod(data: Partial<PaymentMethod>) {
-    const response = await api.post<PaymentMethod>('/payment-methods', data);
+    const response = await apiClient.post<PaymentMethod>('/payment-methods', data);
     return response.data;
   },
 
   async updatePaymentMethod(id: number, data: Partial<PaymentMethod>) {
-    const response = await api.patch<PaymentMethod>(`/payment-methods/${id}`, data);
+    const response = await apiClient.patch<PaymentMethod>(`/payment-methods/${id}`, data);
     return response.data;
   },
 
   async deletePaymentMethod(id: number) {
-    const response = await api.delete(`/payment-methods/${id}`);
+    const response = await apiClient.delete(`/payment-methods/${id}`);
     return response.data;
   },
 
   async setPrimaryPaymentMethod(id: number) {
-    const response = await api.post<PaymentMethod>(`/payment-methods/${id}/set-primary`);
+    const response = await apiClient.post<PaymentMethod>(`/payment-methods/${id}/set-primary`);
     return response.data;
   },
 
   async verifyPaymentMethod(id: number, verified: boolean, notes?: string) {
-    const response = await api.post<PaymentMethod>(`/payment-methods/${id}/verify`, {
+    const response = await apiClient.post<PaymentMethod>(`/payment-methods/${id}/verify`, {
       verified,
       notes
     });
@@ -171,32 +171,32 @@ export const invoiceService = {
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get<Invoice[]>('/invoices', { params });
+    const response = await apiClient.get<Invoice[]>('/invoices', { params });
     return response.data;
   },
 
   async getInvoice(id: number) {
-    const response = await api.get<Invoice>(`/invoices/${id}`);
+    const response = await apiClient.get<Invoice>(`/invoices/${id}`);
     return response.data;
   },
 
   async createInvoice(data: Partial<Invoice>) {
-    const response = await api.post<Invoice>('/invoices', data);
+    const response = await apiClient.post<Invoice>('/invoices', data);
     return response.data;
   },
 
   async updateInvoice(id: number, data: Partial<Invoice>) {
-    const response = await api.patch<Invoice>(`/invoices/${id}`, data);
+    const response = await apiClient.patch<Invoice>(`/invoices/${id}`, data);
     return response.data;
   },
 
   async sendInvoice(id: number) {
-    const response = await api.post<any>(`/invoices/${id}/send`);
+    const response = await apiClient.post<any>(`/invoices/${id}/send`);
     return response.data;
   },
 
   async markInvoiceAsPaid(id: number, paymentMethod: string, paidDate: string) {
-    const response = await api.post<Invoice>(`/invoices/${id}/mark-paid`, {
+    const response = await apiClient.post<Invoice>(`/invoices/${id}/mark-paid`, {
       payment_method: paymentMethod,
       paid_date: paidDate
     });
@@ -204,7 +204,7 @@ export const invoiceService = {
   },
 
   async downloadInvoice(id: number) {
-    const response = await api.get(`/invoices/${id}/download`, {
+    const response = await apiClient.get(`/invoices/${id}/download`, {
       responseType: 'blob'
     });
     return response.data;
@@ -218,7 +218,7 @@ export const financialService = {
     if (modelId) params.model_id = modelId;
     if (agencyId) params.agency_id = agencyId;
     
-    const response = await api.get<FinancialSummary>('/financial/summary', { params });
+    const response = await apiClient.get<FinancialSummary>('/financial/summary', { params });
     return response.data;
   },
 
@@ -229,7 +229,7 @@ export const financialService = {
     endDate: string;
     groupBy?: 'day' | 'week' | 'month';
   }) {
-    const response = await api.get<any>('/financial/revenue-report', { params });
+    const response = await apiClient.get<any>('/financial/revenue-report', { params });
     return response.data;
   },
 
@@ -238,7 +238,7 @@ export const financialService = {
     startDate: string;
     endDate: string;
   }) {
-    const response = await api.get<any>('/financial/commission-report', { params });
+    const response = await apiClient.get<any>('/financial/commission-report', { params });
     return response.data;
   },
 
@@ -249,7 +249,7 @@ export const financialService = {
     endDate: string;
     format?: 'csv' | 'xlsx' | 'pdf';
   }) {
-    const response = await api.get('/financial/export', {
+    const response = await apiClient.get('/financial/export', {
       params,
       responseType: 'blob'
     });
