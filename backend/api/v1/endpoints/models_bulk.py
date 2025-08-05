@@ -27,7 +27,7 @@ class BulkModelUpdate(BaseModel):
     commission_rate: Optional[float] = Field(None, ge=0, le=100)
     tags: Optional[List[str]] = None
     categories: Optional[List[str]] = None
-    action: Optional[str] = Field(None, regex="^(add|remove|replace)$")
+    action: Optional[str] = Field(None, pattern="^(add|remove|replace)$")
 
 
 class BulkModelDelete(BaseModel):

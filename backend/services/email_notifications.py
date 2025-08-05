@@ -13,7 +13,8 @@ from services.email_queue import EmailQueueService
 from models.user import User
 from models.model import Model
 from models.financial import Payout
-from models.email_preferences import EmailPreferences, EmailPriority
+from models.email_preferences import EmailPreferences
+from models.email_queue import EmailPriority
 
 logger = get_logger(__name__)
 

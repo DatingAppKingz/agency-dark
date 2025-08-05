@@ -79,7 +79,7 @@ class EmailQueue(BaseModel):
     # Additional data
     attachments = Column(JSON, nullable=True)  # List of attachment info
     headers = Column(JSON, nullable=True)  # Custom headers
-    metadata = Column(JSON, nullable=True)  # Additional metadata
+    email_metadata = Column(JSON, nullable=True)  # Additional metadata
     
     # Indexes for performance
     __table_args__ = (

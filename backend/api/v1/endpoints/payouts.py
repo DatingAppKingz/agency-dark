@@ -53,7 +53,7 @@ class PayoutApproval(BaseModel):
 class PayoutBulkAction(BaseModel):
     """Bulk action on payouts."""
     payout_ids: List[int]
-    action: str = Field(..., regex="^(approve|process|cancel)$")
+    action: str = Field(..., pattern="^(approve|process|cancel)$")
     notes: Optional[str] = None
 
 

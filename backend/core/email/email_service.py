@@ -3,7 +3,7 @@ Email Service for Authentication
 
 Handles sending authentication-related emails like password reset and verification.
 """
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import logging
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
@@ -11,10 +11,26 @@ from email.mime.multipart import MIMEMultipart
 import aiosmtplib
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import os
+from pydantic import BaseModel, EmailStr
 
 from core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+class EmailMessage(BaseModel):
+    """Email message model."""
+    to: List[EmailStr]
+    cc: Optional[List[EmailStr]] = None
+    bcc: Optional[List[EmailStr]] = None
+    subject: str
+    body: str
+    html_body: Optional[str] = None
+    from_email: Optional[EmailStr] = None
+    from_name: Optional[str] = None
+    reply_to: Optional[EmailStr] = None
+    headers: Optional[Dict[str, str]] = None
+    attachments: Optional[List[Dict[str, Any]]] = None
 
 
 class EmailService:
@@ -288,6 +304,54 @@ The {self.app_name} Team
             logger.error(f"Failed to send account locked email: {e}")
             return False
     
+    async def send_email(self, email_message: EmailMessage) -> bool:
+        """Send email from EmailMessage object."""
+        try:
+            # Convert to MIME message
+            if email_message.html_body:
+                message = MIMEMultipart('alternative')
+                text_part = MIMEText(email_message.body, 'plain')
+                html_part = MIMEText(email_message.html_body, 'html')
+                message.attach(text_part)
+                message.attach(html_part)
+            else:
+                message = MIMEText(email_message.body, 'plain')
+            
+            # Set headers
+            message['Subject'] = email_message.subject
+            message['From'] = f"{email_message.from_name or self.from_name} <{email_message.from_email or self.from_email}>"
+            message['To'] = ', '.join(email_message.to)
+            
+            if email_message.cc:
+                message['Cc'] = ', '.join(email_message.cc)
+            if email_message.bcc:
+                message['Bcc'] = ', '.join(email_message.bcc)
+            if email_message.reply_to:
+                message['Reply-To'] = email_message.reply_to
+            
+            # Add custom headers
+            if email_message.headers:
+                for key, value in email_message.headers.items():
+                    message[key] = value
+            
+            # Send email
+            async with aiosmtplib.SMTP(
+                hostname=self.smtp_host,
+                port=self.smtp_port,
+                use_tls=self.smtp_use_tls
+            ) as smtp:
+                if self.smtp_username and self.smtp_password:
+                    await smtp.login(self.smtp_username, self.smtp_password)
+                
+                await smtp.send_message(message)
+            
+            logger.info(f"Email sent successfully to {', '.join(email_message.to)}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+            return False
+    
     async def _send_email(
         self,
         to_email: str,
@@ -339,3 +403,8 @@ The {self.app_name} Team
 
 # Global instance
 email_service = EmailService()
+
+
+def get_email_service() -> EmailService:
+    """Get email service instance."""
+    return email_service

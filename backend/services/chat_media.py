@@ -11,7 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 import aiofiles
 from PIL import Image
-import magic
+try:
+    import magic
+except ImportError:
+    magic = None
 
 from core.config import settings
 from core.storage import storage_service
@@ -78,7 +81,13 @@ class ChatMediaService:
         
         try:
             # Detect file type
-            mime_type = magic.from_file(file_path, mime=True)
+            if magic:
+                mime_type = magic.from_file(file_path, mime=True)
+            else:
+                # Fallback to mimetypes if magic is not available
+                mime_type, _ = mimetypes.guess_type(file_path)
+                if not mime_type:
+                    mime_type = 'application/octet-stream'
             message_type = self._get_message_type(mime_type)
             
             # Process based on type
