@@ -2,6 +2,11 @@
 
 This guide contains all test users and data for the Agency Dark platform. Use this to login as different user types and explore the system.
 
+## Important Note
+**ALL USERS USE THE SAME PASSWORD: `admin123`**
+
+Passwords are stored in plain text for testing purposes only.
+
 ## Test User Credentials
 
 ### Platform Level Users
@@ -16,7 +21,7 @@ This guide contains all test users and data for the Agency Dark platform. Use th
 
 #### Agency Owner
 - **Email**: owner@elitemodels.com
-- **Password**: owner123
+- **Password**: admin123
 - **Role**: AGENCY_OWNER
 - **Agency**: Elite Models Agency
 - **Purpose**: Complete agency control
@@ -31,38 +36,38 @@ This guide contains all test users and data for the Agency Dark platform. Use th
 #### Models
 1. **Sarah Johnson** (Top Performer)
    - **Email**: sarah@elitemodels.com
-   - **Password**: model123
+   - **Password**: admin123
    - **Stage Name**: SarahJ
    - **Role**: MODEL
    
 2. **Emma Davis** (Mid-tier)
    - **Email**: emma@elitemodels.com
-   - **Password**: model123
+   - **Password**: admin123
    - **Stage Name**: EmmaD
    - **Role**: MODEL
 
 3. **Lisa Brown** (New Model)
    - **Email**: lisa@elitemodels.com
-   - **Password**: model123
+   - **Password**: admin123
    - **Stage Name**: LisaB
    - **Role**: MODEL
 
 #### Chatters
 1. **John Smith** (Senior Chatter)
    - **Email**: john@elitemodels.com
-   - **Password**: chatter123
+   - **Password**: admin123
    - **Role**: CHATTER
    - **Assigned to**: Sarah, Emma
 
 2. **Mike Wilson** (Junior Chatter)
    - **Email**: mike@elitemodels.com
-   - **Password**: chatter123
+   - **Password**: admin123
    - **Role**: CHATTER
    - **Assigned to**: Lisa
 
 #### Agency Member
 - **Email**: support@elitemodels.com
-- **Password**: member123
+- **Password**: admin123
 - **Role**: AGENCY_MEMBER
 - **Purpose**: Support staff with view-only access
 
@@ -70,26 +75,26 @@ This guide contains all test users and data for the Agency Dark platform. Use th
 
 #### Agency Owner
 - **Email**: owner@premiumtalent.com
-- **Password**: owner123
+- **Password**: admin123
 - **Role**: AGENCY_OWNER
 - **Agency**: Premium Talent Management
 
 #### Models
 1. **Jessica White**
    - **Email**: jessica@premiumtalent.com
-   - **Password**: model123
+   - **Password**: admin123
    - **Stage Name**: JessicaW
    - **Role**: MODEL
 
 2. **Ashley Green**
    - **Email**: ashley@premiumtalent.com
-   - **Password**: model123
+   - **Password**: admin123
    - **Stage Name**: AshleyG
    - **Role**: MODEL
 
 #### Chatter
 - **Email**: alex@premiumtalent.com
-- **Password**: chatter123
+- **Password**: admin123
 - **Role**: CHATTER
 - **Assigned to**: Jessica, Ashley
 
@@ -97,13 +102,13 @@ This guide contains all test users and data for the Agency Dark platform. Use th
 
 #### Agency Owner
 - **Email**: owner@risingstars.com
-- **Password**: owner123
+- **Password**: admin123
 - **Role**: AGENCY_OWNER
 - **Agency**: Rising Stars Agency
 
 #### Model
 - **Email**: sophia@risingstars.com
-- **Password**: model123
+- **Password**: admin123
 - **Stage Name**: SophiaR
 - **Role**: MODEL
 
@@ -149,11 +154,11 @@ This guide contains all test users and data for the Agency Dark platform. Use th
 | Role | Email | Password | Agency |
 |------|-------|----------|---------|
 | Super Admin | admin@agency.com | admin123 | Platform |
-| Agency Owner | owner@elitemodels.com | owner123 | Elite Models |
+| Agency Owner | owner@elitemodels.com | admin123 | Elite Models |
 | Agency Admin | admin@elitemodels.com | admin123 | Elite Models |
-| Model | sarah@elitemodels.com | model123 | Elite Models |
-| Chatter | john@elitemodels.com | chatter123 | Elite Models |
-| Member | support@elitemodels.com | member123 | Elite Models |
+| Model | sarah@elitemodels.com | admin123 | Elite Models |
+| Chatter | john@elitemodels.com | admin123 | Elite Models |
+| Member | support@elitemodels.com | admin123 | Elite Models |
 
 ## Testing Scenarios
 
@@ -195,7 +200,9 @@ To populate the database with this test data:
 
 ## Notes
 
-- All passwords are intentionally simple for testing
+- **ALL PASSWORDS ARE `admin123`** - Same password for every user for testing convenience
+- Passwords are stored in plain text (not hashed) for testing purposes only
 - Financial data uses realistic but fictional amounts
 - Dates are relative to maintain relevance
 - Email addresses use test domains
+- This is TEST DATA ONLY - never use plain text passwords in production!
