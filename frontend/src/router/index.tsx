@@ -13,8 +13,8 @@ const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const UsersPage = lazy(() => import('@/pages/users/UsersPage'));
-const ModelsPage = lazy(() => import('@/pages/models/ModelsPage'));
-const ModelDetailPage = lazy(() => import('@/pages/models/ModelDetailPage'));
+const ModelOverviewPage = lazy(() => import('@/pages/models/ModelOverviewPage'));
+const ModelDetailsPage = lazy(() => import('@/pages/models/ModelDetailsPage'));
 const ChatPage = lazy(() => import('@/pages/chat/ChatPage'));
 const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'));
 const FinancialPage = lazy(() => import('@/pages/financial/FinancialPage'));
@@ -113,7 +113,7 @@ export const router = createBrowserRouter([
             path: 'models',
             element: (
               <LazyPage>
-                <ModelsPage />
+                <ModelOverviewPage />
               </LazyPage>
             ),
           },
@@ -121,7 +121,7 @@ export const router = createBrowserRouter([
             path: 'models/:modelId',
             element: (
               <LazyPage>
-                <ModelDetailPage />
+                <ModelDetailsPage />
               </LazyPage>
             ),
           },

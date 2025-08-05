@@ -65,10 +65,10 @@ const navItems: NavItem[] = [
     text: 'Users',
     icon: <People />,
     path: '/dashboard/users',
-    roles: [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN],
+    roles: [UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN], // Removed SUPER_ADMIN
   },
   {
-    text: 'Models',
+    text: 'Model Overview',
     icon: <Person />,
     path: '/dashboard/models',
     roles: [UserRole.SUPER_ADMIN, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN, UserRole.MODEL],
@@ -85,7 +85,7 @@ const navItems: NavItem[] = [
     path: '/dashboard/analytics',
   },
   {
-    text: 'User Mgmt',
+    text: 'User Management',
     icon: <AdminPanelSettings />,
     path: '/dashboard/admin/users',
     roles: [UserRole.SUPER_ADMIN],
