@@ -51,8 +51,8 @@ async def login_fix(
     if not user:
         return {"error": "Invalid credentials"}, 401
     
-    # Verify password
-    if not pwd_context.verify(credentials.password, user.hashed_password):
+    # Verify password (plain text comparison)
+    if credentials.password != user.hashed_password:
         return {"error": "Invalid credentials"}, 401
     
     if not user.is_active:
