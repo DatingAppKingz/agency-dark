@@ -32,6 +32,7 @@ from services.sync_scheduler import get_sync_scheduler, shutdown_scheduler
 from middleware.i18n import I18nMiddleware
 from middleware.logging_context import LoggingContextMiddleware, UserContextMiddleware
 from logging_config import configure_structured_logging
+from core.security.api_keys.auth_middleware import log_api_key_usage
 
 # Configure structured logging
 configure_structured_logging()
@@ -202,6 +203,12 @@ app.add_middleware(LoggingContextMiddleware)  # Structured logging context
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(UserContextMiddleware)  # User context for logging
 # app.add_middleware(monitoring_middleware)  # TODO: Fix this - needs to be a proper middleware class
+
+# Add platform API key usage logging middleware
+@app.middleware("http")
+async def api_key_usage_logging_middleware(request: Request, call_next):
+    return await log_api_key_usage(request, call_next)
+
 app.add_middleware(APIUsageMiddleware)  # API usage tracking and limits
 app.add_middleware(AdvancedRateLimitMiddleware)  # New advanced rate limiting
 app.add_middleware(APIKeyRateLimitMiddleware)  # API key specific rate limiting
