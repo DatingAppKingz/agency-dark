@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Box, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { ViewModule, Dashboard } from '@mui/icons-material';
 import { useAuthStore } from '@/store/authStore';
-import { UserRole } from '@/types/auth';
+import { UserRole, normalizeRole } from '@/types/auth';
 import { SuperAdminDashboard } from './SuperAdminDashboard';
 import { AgencyOwnerDashboard } from './AgencyOwnerDashboard';
 import { AgencyAdminDashboard } from './AgencyAdminDashboard';
@@ -27,7 +27,10 @@ const DashboardPage = () => {
 
   // Render role-specific dashboard
   const renderClassicDashboard = () => {
-    switch (user.role) {
+    // Normalize role to handle case differences from backend
+    const normalizedRole = normalizeRole(user.role);
+    
+    switch (normalizedRole) {
       case UserRole.SUPER_ADMIN:
         return <SuperAdminDashboard />;
       case UserRole.AGENCY_OWNER:
@@ -43,7 +46,7 @@ const DashboardPage = () => {
       default:
         return (
           <Box>
-            <Typography>Unknown role: {user.role}</Typography>
+            <Typography>Unknown role: {user.role} (normalized: {normalizedRole})</Typography>
           </Box>
         );
     }
