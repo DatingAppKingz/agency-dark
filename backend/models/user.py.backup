@@ -4,6 +4,7 @@ from sqlalchemy.sql import func
 from datetime import datetime
 import enum
 from core.database import Base
+from models.base import BaseModel
 
 
 class UserRole(str, enum.Enum):
@@ -17,15 +18,11 @@ class UserRole(str, enum.Enum):
     MEMBER = "member"  # Basic member
 
 
-class User(Base):
+class User(BaseModel):
     """User model for authentication and profile."""
     __table_args__ = {"extend_existing": True}
+
     __tablename__ = "users"
-    
-    # BaseModel fields (explicitly defined since we're not inheriting from BaseModel)
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     # Authentication fields
     email = Column(String(255), unique=True, index=True, nullable=False)
@@ -103,8 +100,12 @@ class User(Base):
     # Media
     uploaded_media = relationship("Media", back_populates="uploader", cascade="all, delete-orphan")
     
-    # Other relationships (removed duplicates)
+    # Other relationships
+    saved_searches = relationship("SavedSearch", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    notification_preferences = relationship("NotificationPreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
     mobile_devices = relationship("MobileDevice", back_populates="user", cascade="all, delete-orphan")
+    language_preference = relationship("LanguagePreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User {self.email}>"
@@ -139,21 +140,13 @@ class User(Base):
     def can_chat(self):
         """Check if user can access chat features."""
         return self.role in [UserRole.CHATTER, UserRole.MODEL, UserRole.AGENCY_OWNER, UserRole.AGENCY_ADMIN, UserRole.SUPER_ADMIN]
-    
-    def dict(self):
-        """Convert model to dictionary (compatibility method from BaseModel)."""
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class Session(Base):
+class Session(BaseModel):
     """User session model for managing active sessions."""
     __table_args__ = {"extend_existing": True}
+
     __tablename__ = "sessions"
-    
-    # BaseModel fields
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     token = Column(String(500), unique=True, index=True, nullable=False)
