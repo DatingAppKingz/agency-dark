@@ -156,11 +156,24 @@ class AuditLog(Base):
     # Performance
     duration_ms = Column(Integer, nullable=True)  # For performance tracking
     
-    # Relationships
-    user = relationship("User", foreign_keys=[user_id], backref="audit_logs")
-    impersonator = relationship("User", foreign_keys=[impersonator_id])
-    agency = relationship("Agency", backref="audit_logs")
-    api_key = relationship("PlatformAPIKey", backref="audit_logs")
+    # Relationships - Commented out for now due to model conflicts
+    # Will need to be fixed when User model inheritance is resolved
+    # user = relationship("User", 
+    #                    foreign_keys=[user_id], 
+    #                    primaryjoin="AuditLog.user_id == User.id",
+    #                    backref="audit_logs_as_user")
+    # impersonator = relationship("User", 
+    #                            foreign_keys=[impersonator_id],
+    #                            primaryjoin="AuditLog.impersonator_id == User.id",
+    #                            backref="audit_logs_as_impersonator")
+    # agency = relationship("Agency", 
+    #                      foreign_keys=[agency_id],
+    #                      primaryjoin="AuditLog.agency_id == Agency.id",
+    #                      backref="audit_logs")
+    # api_key = relationship("PlatformAPIKey", 
+    #                       foreign_keys=[api_key_id],
+    #                       primaryjoin="AuditLog.api_key_id == PlatformAPIKey.id",
+    #                       backref="audit_logs")
     
     def __repr__(self):
         return f"<AuditLog {self.action} by {self.user_id} at {self.timestamp}>"
@@ -177,7 +190,7 @@ class AuditLog(Base):
             "resource_id": self.resource_id,
             "description": self.description,
             "changes": self.changes,
-            "metadata": self.metadata,
+            "metadata": self.audit_metadata,
             "ip_address": self.ip_address,
             "severity": self.severity.value,
             "risk_score": self.risk_score
@@ -249,8 +262,8 @@ class AuditLogExport(Base):
     encrypted = Column(Boolean, default=True, nullable=False)
     encryption_key_id = Column(String(255), nullable=True)
     
-    # Relationships
-    exported_by = relationship("User")
+    # Relationships - Commented out for now due to model conflicts
+    # exported_by = relationship("User")
     
     def __repr__(self):
         return f"<AuditLogExport {self.start_date} to {self.end_date}>"
