@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { authService } from '@/services/auth/authService';
+import authService from '@/services/auth'; // Use the index export
 import { User, LoginCredentials, RegisterData } from '@/types/auth';
 
 interface AuthState {
