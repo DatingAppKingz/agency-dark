@@ -11,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import re
 import json
 
-from core.database import get_db_context
+from core.database import AsyncSessionLocal
 from core.security.dependencies import get_user_from_token
 from models.feature_permission import FeatureType
 from core.security.feature_permissions.service import feature_permission_service
@@ -158,7 +158,7 @@ class FeaturePermissionMiddleware(BaseHTTPMiddleware):
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
             try:
-                async with get_db_context() as db:
+                async with AsyncSessionLocal() as db:
                     user = await get_user_from_token(token, db)
                     return user
             except Exception as e:

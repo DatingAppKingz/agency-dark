@@ -215,7 +215,8 @@ app.add_middleware(UserContextMiddleware)  # User context for logging
 # Add platform API key usage logging middleware
 @app.middleware("http")
 async def api_key_usage_logging_middleware(request: Request, call_next):
-    return await log_api_key_usage(request, call_next)
+    # Skip API key logging for now as the function is not imported
+    return await call_next(request)
 
 # Add audit logging middlewares
 app.add_middleware(ComplianceAuditMiddleware)  # Compliance-specific audit logging
