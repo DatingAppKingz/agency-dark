@@ -16,7 +16,7 @@ from models.model import Model, ModelStatus
 from models.chat import Conversation, ConversationStatus, Message
 from models.subscriber import Subscriber, SubscriptionTier
 from models.financial import Transaction, TransactionType, TransactionStatus, Payout
-from api.v1.endpoints.auth_simple import get_current_user
+from core.dependencies import CurrentUser
 
 
 router = APIRouter()
@@ -102,7 +102,7 @@ def dashboard_cache_key(period: str, current_user: User, db: AsyncSession) -> st
 @cached(expire=300, prefix="analytics", key_func=dashboard_cache_key)  # Cache for 5 minutes
 async def get_dashboard_stats(
     period: str = Query("week", pattern="^(day|week|month|year)$"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get dashboard statistics for the current user's agency."""
@@ -330,7 +330,7 @@ async def get_dashboard_stats(
 async def get_revenue_analytics(
     period: str = Query("month", pattern="^(week|month|quarter|year)$"),
     model_id: Optional[int] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get detailed revenue analytics."""
@@ -479,7 +479,7 @@ async def get_revenue_analytics(
 async def get_model_stats(
     model_id: int,
     period: str = Query("month", pattern="^(week|month|year)$"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get detailed statistics for a specific model."""
@@ -575,7 +575,7 @@ async def get_model_stats(
 @router.get("/chatters/performance", response_model=List[ChatterPerformance])
 async def get_chatter_performance(
     period: str = Query("month", pattern="^(week|month|year)$"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get performance metrics for all chatters in the agency."""

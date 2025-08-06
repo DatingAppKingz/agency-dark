@@ -21,7 +21,7 @@ class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     // Backend expects JSON with email and password
     const response = await axios.post<AuthResponse>(
-      `${API_URL}/auth/login-fix`,
+      `${API_URL}/auth/login`,
       {
         email: credentials.email,
         password: credentials.password,

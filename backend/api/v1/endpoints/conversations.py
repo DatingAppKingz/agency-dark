@@ -19,7 +19,7 @@ from models.chat import (
 from models.subscriber import Subscriber, SubscriptionTier, SubscriptionStatus
 from models.content import Content, ContentType
 from models.financial import Transaction, TransactionType, TransactionStatus
-from api.v1.endpoints.auth_simple import get_current_user
+from core.dependencies import CurrentUser
 
 
 router = APIRouter()
@@ -194,7 +194,7 @@ async def list_active_chats(
     assigned_to_me: bool = False,
     search: Optional[str] = None,
     sort_by: str = Query("last_message", pattern="^(last_message|created_at|total_spent)$"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """List active conversations with filtering and pagination."""
@@ -362,7 +362,7 @@ async def list_active_chats(
 @router.get("/stats", response_model=ConversationStats)
 async def get_conversation_stats(
     model_id: Optional[int] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get conversation statistics."""
@@ -473,7 +473,7 @@ async def get_conversation_stats(
 @router.get("/{conversation_id}", response_model=ChatResponse)
 async def get_chat(
     conversation_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific chat's details."""
@@ -565,7 +565,7 @@ async def get_chat_messages(
     conversation_id: int,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get messages for a specific chat."""
@@ -635,7 +635,7 @@ async def get_chat_messages(
 async def send_message(
     conversation_id: int,
     message_data: MessageCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Send a message in a chat."""
@@ -686,7 +686,7 @@ async def send_message(
 async def assign_chat(
     conversation_id: int,
     chatter_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Assign a chat to a chatter."""
@@ -725,7 +725,7 @@ async def assign_chat(
 async def toggle_chat_priority(
     conversation_id: int,
     is_priority: bool,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Toggle chat priority status."""
@@ -746,7 +746,7 @@ async def get_model_subscribers(
     status: Optional[SubscriptionStatus] = None,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get subscribers for a model."""

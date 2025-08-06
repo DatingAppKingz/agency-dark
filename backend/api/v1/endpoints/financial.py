@@ -19,7 +19,7 @@ from models.financial import (
     Invoice
 )
 from models.chat import Conversation as Chat
-from api.v1.endpoints.auth_simple import get_current_user
+from core.dependencies import CurrentUser
 from core.errors import NotFoundError, AuthorizationError, ValidationError as AppValidationError
 from core.logger import get_logger
 from services.commission_service import CommissionService
@@ -152,7 +152,7 @@ async def list_transactions(
     status: Optional[TransactionStatus] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """List transactions with filtering and pagination."""
@@ -233,7 +233,7 @@ async def list_transactions(
 @require_admin()
 async def create_transaction(
     transaction_data: TransactionCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new transaction."""
@@ -322,7 +322,7 @@ async def list_payouts(
     limit: int = Query(50, ge=1, le=100),
     model_id: Optional[int] = None,
     status: Optional[PayoutStatus] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """List payouts with filtering and pagination."""
@@ -384,7 +384,7 @@ async def list_payouts(
 @require_admin()
 async def create_payout(
     payout_data: PayoutCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new payout request."""
@@ -446,7 +446,7 @@ async def process_payout(
     payout_id: int,
     external_id: str,
     status: PayoutStatus,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Process a payout (mark as completed/failed)."""
@@ -484,7 +484,7 @@ async def process_payout(
 @require_roles([UserRole.SUPER_ADMIN.value, UserRole.AGENCY_OWNER.value, UserRole.AGENCY_ADMIN.value, UserRole.MODEL.value])
 async def get_financial_summary(
     model_id: Optional[int] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get financial summary for the agency or a specific model."""
@@ -644,7 +644,7 @@ async def get_financial_summary(
 async def list_invoices(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """List agency invoices."""
@@ -690,7 +690,7 @@ async def list_invoices(
 @router.get("/commission/tiers")
 @require_admin()
 async def get_commission_tiers(
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get commission tier structure."""
@@ -729,7 +729,7 @@ async def get_commission_tiers(
 @require_model_assignment(model_id_param="model_id")
 async def get_model_commission_info(
     model_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get commission information for a specific model."""
@@ -775,7 +775,7 @@ async def get_model_commission_info(
 async def calculate_commission(
     model_id: int,
     amount: Decimal = Field(..., gt=0),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Calculate commission for a given amount and model."""

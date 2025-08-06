@@ -16,7 +16,7 @@ from models.model import Model, ModelStatus, Platform
 from models.model_settings import ModelSettings, ModelSchedule
 from models.subscriber import Subscriber
 from models.financial import Transaction, TransactionStatus
-from api.v1.endpoints.auth_simple import get_current_user, get_password_hash
+from core.dependencies import CurrentUser, get_password_hash
 from core.errors import DuplicateError, NotFoundError, AuthorizationError, ValidationError as AppValidationError
 from core.logger import get_logger
 
@@ -174,7 +174,7 @@ async def list_models(
     search: Optional[str] = None,
     sort_by: str = Query("created_at", pattern="^(created_at|stage_name|followers_count|total_earnings)$"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """List models with filtering and pagination."""
@@ -240,7 +240,7 @@ async def list_models(
 @require_admin()
 async def create_model(
     model_data: ModelCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new model profile."""
@@ -350,7 +350,7 @@ async def create_model(
 @require_model_assignment(model_id_param="model_id")
 async def get_model(
     model_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific model's details."""
@@ -363,7 +363,7 @@ async def get_model(
 async def update_model(
     model_id: int,
     update_data: ModelUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Update a model's profile."""
@@ -393,7 +393,7 @@ async def update_model(
 @require_admin()
 async def delete_model(
     model_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a model (soft delete by setting status to deleted)."""
@@ -422,7 +422,7 @@ async def delete_model(
 @require_model_assignment(model_id_param="model_id")
 async def get_model_stats(
     model_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get detailed statistics for a model."""
@@ -496,7 +496,7 @@ async def get_model_stats(
 @require_model_assignment(model_id_param="model_id")
 async def get_model_settings(
     model_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get model settings."""
@@ -517,7 +517,7 @@ async def get_model_settings(
 async def update_model_settings(
     model_id: int,
     settings_data: ModelSettingsUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Update model settings."""
@@ -550,7 +550,7 @@ async def update_model_settings(
 @require_model_assignment(model_id_param="model_id")
 async def get_model_schedule(
     model_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get model's availability schedule."""
@@ -581,7 +581,7 @@ async def get_model_schedule(
 async def add_model_schedule(
     model_id: int,
     schedule_data: ModelScheduleCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Add a schedule entry for a model."""
@@ -612,7 +612,7 @@ async def upload_model_photo(
     model_id: int,
     photo_type: str = Query(..., pattern="^(profile|cover)$"),
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Upload profile or cover photo for a model."""

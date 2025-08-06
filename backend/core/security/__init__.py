@@ -5,10 +5,7 @@ Security module for application hardening.
 from .headers import SecurityHeadersMiddleware, security_headers_config
 from .api_keys_module import APIKeyManager, rotate_api_keys
 from .audit import AuditLogger, audit_log
-try:
-    from .secrets import SecretsManager, SecretRotator
-except ImportError:
-    from .secrets_minimal import SecretsManager, SecretRotator
+from .secrets import SecretsManager, SecretRotator
 try:
     from .vulnerability import VulnerabilityScanner, scan_dependencies
 except ImportError:
@@ -22,8 +19,15 @@ except ImportError:
     def scan_dependencies():
         return {"status": "ok"}
 
-# Import simple auth functions for plain text passwords
-from .auth_simple import verify_password, get_password_hash
+# Import auth functions - implementing plain text passwords per requirements
+# TODO: Implement these functions directly in this module or auth_security module
+def verify_password(plain_password: str, stored_password: str) -> bool:
+    """Verify password - plain text comparison per requirements."""
+    return plain_password == stored_password
+
+def get_password_hash(password: str) -> str:
+    """Return password as-is - no hashing per requirements."""
+    return password
 
 # Import other auth functions from the auth_security module if it exists
 try:
@@ -70,8 +74,8 @@ except ImportError:
     def decrypt_data(data):
         return data  # No decryption for simplicity
 
-# Import get_current_user from auth module
-from ..auth import get_current_user
+# Import get_current_user from auth module - removed to avoid circular import
+# from ..auth import get_current_user
 
 __all__ = [
     "SecurityHeadersMiddleware",
@@ -95,5 +99,5 @@ __all__ = [
     "hash_token",
     "encrypt_data",
     "decrypt_data",
-    "get_current_user",
+    # "get_current_user",  # Removed to avoid circular import
 ]

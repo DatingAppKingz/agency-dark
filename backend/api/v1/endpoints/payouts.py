@@ -14,7 +14,7 @@ from models.user import User, UserRole
 from models.model import Model
 from models.financial import Payout, PayoutStatus, Earning, Transaction, PaymentMethod
 from models.payment_method import PaymentMethodModel
-from api.v1.endpoints.auth_simple import get_current_user
+from core.dependencies import CurrentUser
 from core.logger import get_logger
 from services.email_notifications import EmailNotificationService
 
@@ -86,7 +86,7 @@ class PayoutResponse(BaseModel):
 
 @router.get("/", response_model=List[PayoutResponse])
 async def get_payouts(
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db),
     status: Optional[PayoutStatus] = None,
     model_id: Optional[int] = None,
@@ -168,7 +168,7 @@ async def get_payouts(
 @router.post("/", response_model=PayoutResponse)
 async def create_payout(
     payout_data: PayoutCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new payout for a model."""
@@ -279,7 +279,7 @@ async def create_payout(
 @router.get("/{payout_id}", response_model=PayoutResponse)
 async def get_payout(
     payout_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific payout."""
@@ -332,7 +332,7 @@ async def get_payout(
 async def update_payout(
     payout_id: int,
     update_data: PayoutUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Update a payout."""
@@ -422,7 +422,7 @@ async def update_payout(
 async def approve_payout(
     payout_id: int,
     approval_data: PayoutApproval,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Approve or reject a payout."""
@@ -472,7 +472,7 @@ async def approve_payout(
 @router.post("/bulk-action", response_model=Dict[str, Any])
 async def bulk_payout_action(
     action_data: PayoutBulkAction,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Perform bulk action on multiple payouts."""
@@ -547,7 +547,7 @@ async def bulk_payout_action(
 @router.get("/{payout_id}/earnings", response_model=List[Dict[str, Any]])
 async def get_payout_earnings(
     payout_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get earnings included in a payout."""

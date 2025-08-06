@@ -9,7 +9,7 @@ from pydantic import BaseModel, EmailStr
 from core.database import get_db
 from models.user import User
 from models.email_preferences import EmailPreferences
-from api.v1.endpoints.auth_simple import get_current_user
+from core.dependencies import CurrentUser
 from services.email_notifications import EmailNotificationService
 from services.email_queue import EmailQueueService
 from core.logger import get_logger
@@ -89,7 +89,7 @@ class EmailPreferencesResponse(BaseModel):
 
 @router.get("/preferences", response_model=EmailPreferencesResponse)
 async def get_email_preferences(
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get current user's email preferences."""
@@ -102,7 +102,7 @@ async def get_email_preferences(
 @router.put("/preferences", response_model=EmailPreferencesResponse)
 async def update_email_preferences(
     updates: EmailPreferencesUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Update email preferences."""
@@ -134,7 +134,7 @@ async def unsubscribe(
 
 @router.post("/resubscribe")
 async def resubscribe(
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Resubscribe to email notifications."""
@@ -156,7 +156,7 @@ async def resubscribe(
 
 @router.get("/queue/stats")
 async def get_email_queue_stats(
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get email queue statistics (admin only)."""
@@ -173,7 +173,7 @@ async def get_email_queue_stats(
 async def send_test_email(
     template_id: str = Query("welcome", description="Template to test"),
     to_email: Optional[EmailStr] = Query(None, description="Override recipient email"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Send test email (admin only)."""
@@ -199,7 +199,7 @@ async def send_test_email(
 @router.post("/process-queue")
 async def process_email_queue(
     batch_size: int = Query(100, le=1000),
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Manually process email queue (admin only)."""
@@ -214,7 +214,7 @@ async def process_email_queue(
 
 @router.post("/retry-failed")
 async def retry_failed_emails(
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Retry failed emails (admin only)."""

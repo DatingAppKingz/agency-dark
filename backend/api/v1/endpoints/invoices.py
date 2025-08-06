@@ -21,7 +21,7 @@ from models.user import User, UserRole
 from models.agency import Agency
 from models.financial import Invoice
 from models.financial import Transaction
-from api.v1.endpoints.auth_simple import get_current_user
+from core.dependencies import CurrentUser
 from core.logger import get_logger
 
 logger = get_logger(__name__)
@@ -75,7 +75,7 @@ class InvoiceResponse(BaseModel):
 
 @router.get("/", response_model=List[InvoiceResponse])
 async def get_invoices(
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db),
     agency_id: Optional[int] = None,
     status: Optional[str] = None,
@@ -156,7 +156,7 @@ async def get_invoices(
 @router.post("/", response_model=InvoiceResponse)
 async def create_invoice(
     invoice_data: InvoiceCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new invoice for an agency."""
@@ -263,7 +263,7 @@ async def create_invoice(
 @router.get("/{invoice_id}", response_model=InvoiceResponse)
 async def get_invoice(
     invoice_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific invoice."""
@@ -307,7 +307,7 @@ async def get_invoice(
 async def mark_invoice_paid(
     invoice_id: int,
     payment_data: Dict[str, str] = {},
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Mark an invoice as paid."""
@@ -359,7 +359,7 @@ async def mark_invoice_paid(
 @router.get("/{invoice_id}/download")
 async def download_invoice(
     invoice_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Download invoice as PDF."""
@@ -481,7 +481,7 @@ async def download_invoice(
 @router.get("/agency/{agency_id}/summary", response_model=Dict[str, Any])
 async def get_agency_invoice_summary(
     agency_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Get invoice summary for an agency."""

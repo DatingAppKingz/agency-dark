@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from core.database import get_db
 from models.user import User, UserRole
 from models.model import Model, ModelStatus
-from api.v1.endpoints.auth_simple import get_current_user
+from core.dependencies import CurrentUser
 from core.logger import get_logger
 from services.email_notifications import EmailNotificationService
 
@@ -55,7 +55,7 @@ class BulkOperationResponse(BaseModel):
 @router.post("/bulk/update", response_model=BulkOperationResponse)
 async def bulk_update_models(
     update_data: BulkModelUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Bulk update multiple models."""
@@ -137,7 +137,7 @@ async def bulk_update_models(
 @router.post("/bulk/delete", response_model=BulkOperationResponse)
 async def bulk_delete_models(
     delete_data: BulkModelDelete,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Bulk delete multiple models."""
@@ -203,7 +203,7 @@ async def bulk_delete_models(
 @router.post("/approve", response_model=Dict[str, Any])
 async def approve_model(
     approval_data: ModelApproval,
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db)
 ):
     """Approve or reject a model."""
@@ -275,7 +275,7 @@ async def approve_model(
 
 @router.get("/pending-approval", response_model=List[Dict[str, Any]])
 async def get_pending_models(
-    current_user: User = Depends(get_current_user),
+    current_user: User = CurrentUser,
     db: AsyncSession = Depends(get_db),
     limit: int = 100,
     offset: int = 0
