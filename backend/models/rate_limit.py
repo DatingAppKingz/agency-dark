@@ -106,7 +106,7 @@ class RateLimitConfig(Base):
     negotiation_notes = Column(String(1000), nullable=True)
     
     # Metadata
-    metadata = Column(JSONB, default=dict)
+    rate_metadata = Column(JSONB, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     expires_at = Column(DateTime(timezone=True), nullable=True)
@@ -322,7 +322,7 @@ class RateLimitOverride(Base):
     is_active = Column(Boolean, default=True)
     
     # Metadata
-    metadata = Column(JSONB, default=dict)
+    rate_metadata = Column(JSONB, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     

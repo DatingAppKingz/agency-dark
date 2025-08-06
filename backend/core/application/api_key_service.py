@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import secrets
 import hashlib
 
-from models.webhook import APIKey
+from models.api_key import APIKey
 from core.exceptions import NotFoundError, ValidationError, PermissionError
 
 

@@ -168,7 +168,7 @@ class FeaturePermission(Base):
     priority = Column(Integer, default=0)  # Higher priority overrides lower
     is_active = Column(Boolean, default=True)
     is_system = Column(Boolean, default=False)  # System permissions can't be modified
-    metadata = Column(JSONB, default=dict)
+    permission_metadata = Column(JSONB, default=dict)
     created_at = Column(DateTime(timezone=True), server_default='now()')
     updated_at = Column(DateTime(timezone=True), server_default='now()', onupdate='now()')
     expires_at = Column(DateTime(timezone=True), nullable=True)
@@ -229,7 +229,7 @@ class FeatureUsageLog(Base):
     # Metadata
     request_id = Column(String(255), nullable=True)
     session_id = Column(String(255), nullable=True)
-    metadata = Column(JSONB, default=dict)
+    permission_metadata = Column(JSONB, default=dict)
     
     # Relationships
     permission = relationship("FeaturePermission", back_populates="usage_logs")
@@ -296,7 +296,7 @@ class ReportTemplate(Base):
     created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id"), nullable=True)
     tags = Column(JSONB, default=list)
-    metadata = Column(JSONB, default=dict)
+    permission_metadata = Column(JSONB, default=dict)
     created_at = Column(DateTime(timezone=True), server_default='now()')
     updated_at = Column(DateTime(timezone=True), server_default='now()', onupdate='now()')
     
@@ -343,7 +343,7 @@ class ReportSchedule(Base):
     failure_count = Column(Integer, default=0)
     
     # Metadata
-    metadata = Column(JSONB, default=dict)
+    permission_metadata = Column(JSONB, default=dict)
     created_at = Column(DateTime(timezone=True), server_default='now()')
     updated_at = Column(DateTime(timezone=True), server_default='now()', onupdate='now()')
     expires_at = Column(DateTime(timezone=True), nullable=True)
@@ -392,7 +392,7 @@ class ReportExecution(Base):
     # Metadata
     ip_address = Column(String(45), nullable=True)
     user_agent = Column(String(500), nullable=True)
-    metadata = Column(JSONB, default=dict)
+    permission_metadata = Column(JSONB, default=dict)
     
     # Relationships
     template = relationship("ReportTemplate", back_populates="executions")

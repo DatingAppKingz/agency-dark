@@ -88,7 +88,7 @@ class PlatformAPIKey(Base):
     error_count = Column(Integer, default=0, nullable=False)
     
     # Advanced features
-    metadata = Column(JSON, default=dict)  # Custom metadata
+    key_metadata = Column(JSON, default=dict)  # Custom metadata
     webhook_url = Column(String(500), nullable=True)  # For webhook-enabled keys
     webhook_secret = Column(String(255), nullable=True)  # For webhook signature
     allowed_models = Column(JSON, nullable=True)  # Restrict to specific model IDs

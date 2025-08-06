@@ -130,7 +130,7 @@ class AuditLog(Base):
     # Details
     description = Column(Text, nullable=True)  # Human-readable description
     changes = Column(JSONB, nullable=True)  # Before/after values for updates
-    metadata = Column(JSONB, nullable=True)  # Additional context
+    audit_metadata = Column(JSONB, nullable=True)  # Additional context
     
     # Where
     ip_address = Column(String(45), nullable=True, index=True)
