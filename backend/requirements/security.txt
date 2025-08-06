@@ -1,0 +1,17 @@
+# Authentication & Authorization
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.1
+python-jose[cryptography]==3.5.0
+cryptography==41.0.7
+PyJWT==2.8.0
+
+# Rate Limiting
+slowapi==0.1.9
+limits==3.7.0
+
+# Security headers and CORS
+secure==0.3.0
+
+# Input validation
+email-validator==2.1.0
+python-magic==0.4.27
