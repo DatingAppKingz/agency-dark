@@ -28,7 +28,7 @@ from models.user import User, Session
 
 # 3. Models that depend on User and/or Agency
 from models.model import Model
-from models.audit import AuditLog
+from models.audit_log import AuditLog
 from models.scheduled_task import ScheduledTask
 from models.task_result import TaskResult
 from models.saved_search import SavedSearch

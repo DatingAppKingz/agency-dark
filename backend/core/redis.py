@@ -170,6 +170,30 @@ class RedisManager:
             await self.connect()
         keys = await self.client.keys(pattern)
         return [key.decode('utf-8') if isinstance(key, bytes) else key for key in keys]
+    
+    async def incr(self, key: str) -> int:
+        """Increment a key value."""
+        if not self.client:
+            await self.connect()
+        return await self.client.incr(key)
+    
+    async def zadd(self, key: str, mapping: dict, **kwargs) -> int:
+        """Add members to a sorted set."""
+        if not self.client:
+            await self.connect()
+        return await self.client.zadd(key, mapping, **kwargs)
+    
+    async def zcount(self, key: str, min: float, max: float) -> int:
+        """Count members in a sorted set with scores within the given values."""
+        if not self.client:
+            await self.connect()
+        return await self.client.zcount(key, min, max)
+    
+    async def zremrangebyscore(self, key: str, min: float, max: float) -> int:
+        """Remove all members in a sorted set within the given scores."""
+        if not self.client:
+            await self.connect()
+        return await self.client.zremrangebyscore(key, min, max)
 
 
 # Global Redis manager instance

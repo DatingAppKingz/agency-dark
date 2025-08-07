@@ -15,3 +15,7 @@ export * from './whitelabel';
 
 // Re-export commonly used items for convenience
 export { default as apiClient } from './client';
+
+// Default export for backward compatibility
+import apiClient from './client';
+export default apiClient;

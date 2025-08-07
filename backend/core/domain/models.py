@@ -12,7 +12,7 @@ from models.financial import Transaction, TransactionType, TransactionStatus, Pa
 from models.content import Content, ContentType, ContentStatus, ContentCategory
 from models.subscriber import Subscriber, SubscriptionStatus
 from models.model_settings import ModelSettings, ModelSchedule
-from models.audit import AuditLog
+from models.audit_log import AuditLog
 from models.api_key import APIKey
 from models.notification import Notification, NotificationType, NotificationStatus, NotificationPriority
 from models.fan_claim import FanClaim

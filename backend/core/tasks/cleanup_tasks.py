@@ -12,7 +12,7 @@ from sqlalchemy import select, delete, and_, or_
 
 from .db_context import get_db_context
 from models.user import Session
-from models.audit import AuditLog
+from models.audit_log import AuditLog
 # from models.notification import EmailLog
 from models.sync_log import SyncLog
 from models.temp_file import TempFile

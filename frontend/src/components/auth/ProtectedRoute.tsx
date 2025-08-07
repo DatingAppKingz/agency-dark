@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { PageLoader } from '@/components/common/PageLoader';
-import { UserRole } from '@/types/auth';
+import { UserRole, normalizeRole } from '@/types/auth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -25,8 +25,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check role-based access if roles are specified
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
+  if (allowedRoles && user) {
+    const normalizedRole = normalizeRole(user.role);
+    if (!allowedRoles.includes(normalizedRole)) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;

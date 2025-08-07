@@ -156,25 +156,22 @@ class AuditLog(Base):
     # Performance
     duration_ms = Column(Integer, nullable=True)  # For performance tracking
     
-    # Relationships - Fixed with proper foreign key configuration
-    user = relationship("User", 
-                       foreign_keys=[user_id], 
-                       primaryjoin="AuditLog.user_id == User.id",
-                       backref="audit_logs_as_user",
-                       overlaps="impersonator")
-    impersonator = relationship("User", 
-                               foreign_keys=[impersonator_id],
-                               primaryjoin="AuditLog.impersonator_id == User.id",
-                               backref="audit_logs_as_impersonator",
-                               overlaps="user")
-    agency = relationship("Agency", 
-                         foreign_keys=[agency_id],
-                         primaryjoin="AuditLog.agency_id == Agency.id",
-                         backref="audit_logs")
-    api_key = relationship("PlatformAPIKey", 
-                          foreign_keys=[api_key_id],
-                          primaryjoin="AuditLog.api_key_id == PlatformAPIKey.id",
-                          backref="audit_logs")
+    # Relationships - Comment out for now to avoid mapper issues
+    # We'll use lazy loading and direct queries instead of relationships
+    # until we can properly fix the circular dependency issues
+    
+    # user = relationship("User", 
+    #                    foreign_keys=[user_id], 
+    #                    backref="audit_logs_as_user")
+    # impersonator = relationship("User", 
+    #                            foreign_keys=[impersonator_id],
+    #                            backref="audit_logs_as_impersonator")
+    # agency = relationship("Agency", 
+    #                      foreign_keys=[agency_id],
+    #                      backref="audit_logs")
+    # api_key = relationship("PlatformAPIKey", 
+    #                       foreign_keys=[api_key_id],
+    #                       backref="audit_logs")
     
     def __repr__(self):
         return f"<AuditLog {self.action} by {self.user_id} at {self.timestamp}>"

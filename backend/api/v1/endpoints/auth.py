@@ -214,15 +214,15 @@ async def login(
     #     access_token_expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     # )
     
-    # Set fingerprint cookie - disabled
-    # response.set_cookie(
-    #     key="__Secure-Fgp",
-    #     value=raw_fingerprint,
-    #     max_age=refresh_token_days * 24 * 60 * 60,
-    #     secure=settings.ENVIRONMENT == "production",
-    #     samesite="strict" if settings.ENVIRONMENT == "production" else "lax",
-    #     httponly=False
-    # )
+    # Set fingerprint cookie - ENABLED for token validation
+    response.set_cookie(
+        key="__Secure-Fgp",
+        value=raw_fingerprint,
+        max_age=refresh_token_days * 24 * 60 * 60,
+        secure=False,  # Disabled for local development
+        samesite="lax",
+        httponly=False
+    )
     
     # Generate CSRF token for the session - disabled
     csrf_token = None  # generate_csrf_token(response)

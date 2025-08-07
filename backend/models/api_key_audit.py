@@ -2,8 +2,10 @@
 API Key Audit Log Model
 """
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
+import uuid
 
 from core.database import Base
 
@@ -12,9 +14,9 @@ class APIKeyAudit(Base):
     """Audit log for API key operations"""
     __tablename__ = "api_key_audits"
     
-    id = Column(Integer, primary_key=True, index=True)
-    api_key_id = Column(Integer, ForeignKey("api_keys.id"), nullable=False, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    api_key_id = Column(UUID(as_uuid=True), ForeignKey("api_keys.id"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
     
     # Audit information
     action = Column(String(50), nullable=False)  # created, used, rotated, revoked, failed_verification

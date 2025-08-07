@@ -68,17 +68,27 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
     
-    # Get user from database
-    user = await db.get(User, int(user_id) if isinstance(user_id, str) else user_id)
+    # Get user from database using raw SQL to avoid ORM mapper issues
+    from sqlalchemy import text
+    result = await db.execute(
+        text("SELECT * FROM users WHERE id = :user_id"),
+        {"user_id": user_id}
+    )
+    user_row = result.fetchone()
     
-    if user is None:
+    if user_row is None:
         raise credentials_exception
     
-    if not user.is_active:
+    if not user_row.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Inactive user"
         )
+    
+    # Convert row to User object
+    user = User()
+    for key, value in user_row._mapping.items():
+        setattr(user, key, value)
     
     return user
 
@@ -110,9 +120,21 @@ async def get_optional_current_user(
         if not user_id:
             return None
         
-        # Get user
-        user = await db.get(User, int(user_id) if isinstance(user_id, str) else user_id)
-        return user if user and user.is_active else None
+        # Get user using raw SQL to avoid ORM mapper issues
+        from sqlalchemy import text
+        result = await db.execute(
+            text("SELECT * FROM users WHERE id = :user_id"),
+            {"user_id": user_id}
+        )
+        user_row = result.fetchone()
+        
+        if user_row and user_row.is_active:
+            # Convert row to User object
+            user = User()
+            for key, value in user_row._mapping.items():
+                setattr(user, key, value)
+            return user
+        return None
         
     except (JWTError, HTTPException):
         return None

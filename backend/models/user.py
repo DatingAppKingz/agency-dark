@@ -61,7 +61,7 @@ class User(Base):
     two_factor_secret = Column(String(255), nullable=True)
     
     # Agency relationship
-    agency_id = Column(Integer, ForeignKey("agencies.id", ondelete="SET NULL"), nullable=True)
+    agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id", ondelete="SET NULL"), nullable=True)
     
     # Relationships
     agency = relationship("Agency", back_populates="users", lazy="joined")
@@ -76,8 +76,8 @@ class User(Base):
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="Message.sender_id")
     
     # Audit fields
-    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    updated_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    updated_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     
     # Performance metrics (for chatters)
     performance_metrics = relationship("ChatterPerformance", back_populates="chatter", cascade="all, delete-orphan")
@@ -153,11 +153,11 @@ class Session(Base):
     __tablename__ = "sessions"
     
     # BaseModel fields
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     token = Column(String(500), unique=True, index=True, nullable=False)
     refresh_token = Column(String(500), unique=True, nullable=True)
     

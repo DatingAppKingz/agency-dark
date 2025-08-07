@@ -53,3 +53,6 @@ class APIKey(BaseModel):
     # Relationships
     user = relationship("User", back_populates="api_keys")
     agency = relationship("Agency", back_populates="api_keys")
+    audit_logs = relationship("APIKeyAudit", back_populates="api_key", cascade="all, delete-orphan")
+    sync_conflicts = relationship("SyncConflictLog", back_populates="api_key", cascade="all, delete-orphan")
+    sync_errors = relationship("SyncErrorLog", back_populates="api_key", cascade="all, delete-orphan")

@@ -20,7 +20,7 @@ class SyncConflictLog(Base):
     
     # Sync context
     sync_job_id = Column(String, nullable=True, index=True)
-    api_key_id = Column(Integer, ForeignKey("api_keys.id"), nullable=True)
+    api_key_id = Column(UUID(as_uuid=True), ForeignKey("api_keys.id"), nullable=True)
     agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id"), nullable=False, index=True)
     
     # Conflict details
