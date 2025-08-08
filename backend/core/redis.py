@@ -194,6 +194,12 @@ class RedisManager:
         if not self.client:
             await self.connect()
         return await self.client.zremrangebyscore(key, min, max)
+    
+    async def close(self):
+        """Close Redis connection."""
+        if self.client:
+            await self.client.close()
+            self.client = None
 
 
 # Global Redis manager instance

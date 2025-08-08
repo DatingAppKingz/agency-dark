@@ -44,8 +44,10 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
         "iss": "agencydark",  # Issuer
     })
     
-    # Sign the token
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    # Sign the token - use JWT_SECRET_KEY if available, fall back to SECRET_KEY
+    secret_key = settings.JWT_SECRET_KEY or settings.SECRET_KEY
+    algorithm = settings.JWT_ALGORITHM or settings.ALGORITHM
+    encoded_jwt = jwt.encode(to_encode, secret_key, algorithm=algorithm)
     return encoded_jwt
 
 
@@ -65,31 +67,39 @@ def create_refresh_token(data: Dict[str, Any]) -> str:
     })
     
     # Sign the token with a different key for refresh tokens
-    refresh_key = hashlib.sha256((settings.SECRET_KEY + "_refresh").encode()).hexdigest()
-    encoded_jwt = jwt.encode(to_encode, refresh_key, algorithm=settings.ALGORITHM)
+    secret_key = settings.JWT_SECRET_KEY or settings.SECRET_KEY
+    refresh_key = hashlib.sha256((secret_key + "_refresh").encode()).hexdigest()
+    algorithm = settings.JWT_ALGORITHM or settings.ALGORITHM
+    encoded_jwt = jwt.encode(to_encode, refresh_key, algorithm=algorithm)
     return encoded_jwt
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    # Plain text comparison per requirements
+    return plain_password == hashed_password
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    # Return password as-is - no hashing per requirements
+    return password
 
 
 def decode_token(token: str, token_type: str = "access") -> Optional[Dict[str, Any]]:
     try:
+        # Use consistent secret key
+        secret_key = settings.JWT_SECRET_KEY or settings.SECRET_KEY
+        algorithm = settings.JWT_ALGORITHM or settings.ALGORITHM
+        
         # Use different keys for different token types
         if token_type == "refresh":
-            key = hashlib.sha256((settings.SECRET_KEY + "_refresh").encode()).hexdigest()
+            key = hashlib.sha256((secret_key + "_refresh").encode()).hexdigest()
         else:
-            key = settings.SECRET_KEY
+            key = secret_key
             
         payload = jwt.decode(
             token, 
             key, 
-            algorithms=[settings.ALGORITHM],
+            algorithms=[algorithm],
             options={"verify_exp": True, "verify_nbf": True}
         )
         

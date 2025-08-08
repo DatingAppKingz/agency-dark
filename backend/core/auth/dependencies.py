@@ -50,6 +50,11 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db)
 ) -> User:
     """Get current authenticated user from token (header or cookie)."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"get_current_user called with token: {token[:20] if token else 'None'}...")
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -57,40 +62,66 @@ async def get_current_user(
     )
     
     try:
+        logger.info(f"Decoding JWT with secret key: {(settings.JWT_SECRET_KEY or settings.SECRET_KEY)[:10]}...")
         payload = jwt.decode(
             token, 
             settings.JWT_SECRET_KEY or settings.SECRET_KEY, 
             algorithms=[settings.JWT_ALGORITHM or "HS256"]
         )
+        logger.info(f"JWT decoded successfully. Payload: {payload}")
+        
         user_id = payload.get("user_id") or payload.get("sub")
+        logger.info(f"Extracted user_id: {user_id}")
+        
         if user_id is None:
+            logger.error("No user_id found in token payload")
             raise credentials_exception
-    except JWTError:
+    except JWTError as e:
+        logger.error(f"JWT decode error: {e}")
         raise credentials_exception
     
     # Get user from database using raw SQL to avoid ORM mapper issues
     from sqlalchemy import text
-    result = await db.execute(
-        text("SELECT * FROM users WHERE id = :user_id"),
-        {"user_id": user_id}
-    )
-    user_row = result.fetchone()
+    logger.info(f"Querying database for user_id: {user_id}")
     
-    if user_row is None:
-        raise credentials_exception
-    
-    if not user_row.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
+    try:
+        result = await db.execute(
+            text("SELECT * FROM users WHERE id = :user_id"),
+            {"user_id": user_id}
         )
-    
-    # Convert row to User object
-    user = User()
-    for key, value in user_row._mapping.items():
-        setattr(user, key, value)
-    
-    return user
+        user_row = result.fetchone()
+        
+        if user_row is None:
+            logger.error(f"No user found with id: {user_id}")
+            raise credentials_exception
+        
+        logger.info(f"User found: email={user_row.email}, role={user_row.role}, is_active={user_row.is_active}")
+        
+        if not user_row.is_active:
+            logger.error(f"User {user_row.email} is inactive")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Inactive user"
+            )
+        
+        # Create a simple user object without triggering ORM mapper
+        # Using a simple namespace to hold user data
+        from types import SimpleNamespace
+        user_dict = dict(user_row._mapping)
+        logger.info(f"User row keys: {list(user_dict.keys())}")
+        
+        # Create user object with all attributes from database
+        user = SimpleNamespace(**user_dict)
+        
+        # Ensure the object looks like a User model for compatibility
+        user.__class__.__name__ = 'User'
+        
+        logger.info(f"User object created successfully: id={user.id}, email={user.email}")
+        return user
+        
+    except Exception as e:
+        logger.error(f"Database query error: {e}", exc_info=True)
+        raise credentials_exception
 
 
 async def get_optional_current_user(
