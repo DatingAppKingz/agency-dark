@@ -28,7 +28,13 @@ class AdvancedRateLimitMiddleware(BaseHTTPMiddleware):
         "/metrics",
         "/docs",
         "/redoc",
-        "/openapi.json"
+        "/openapi.json",
+        "/api/v1/auth/login",
+        "/api/v1/auth/register",
+        "/api/v1/auth/refresh",
+        "/api/v1/auth/csrf-token",
+        "/api/v1/auth/password-reset/request",
+        "/api/v1/auth/password-reset/confirm"
     }
     
     async def dispatch(self, request: Request, call_next):

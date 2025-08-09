@@ -75,13 +75,13 @@ def create_refresh_token(data: Dict[str, Any]) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # Plain text comparison per requirements
-    return plain_password == hashed_password
+    # Use bcrypt to verify the password
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
-    # Return password as-is - no hashing per requirements
-    return password
+    # Use bcrypt to hash the password
+    return pwd_context.hash(password)
 
 
 def decode_token(token: str, token_type: str = "access") -> Optional[Dict[str, Any]]:

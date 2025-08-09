@@ -34,29 +34,48 @@ class AuthService {
       }
     );
     
-    // Tokens are now stored in httpOnly cookies automatically
-    // No need to store in localStorage
+    // Store the access token for future requests
+    if (response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token);
+    }
     
-    // Skip getting user info for now due to backend issues
-    // Just return a mock user based on the token
-    const mockUser: User = {
-      id: 'c2aadc72-7020-447c-bf9a-241a94f4bc08',
-      email: credentials.email,
-      full_name: 'Admin User',
-      first_name: 'Admin',
-      last_name: 'User',
-      role: 'super_admin',
-      is_active: true,
-      is_verified: true,
-      agency_id: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    return {
-      ...response.data,
-      user: mockUser,
-    };
+    // Now get the actual user info
+    try {
+      const userResponse = await axios.get<User>(
+        `${API_URL}/auth/me`,
+        {
+          withCredentials: true,
+          headers: {
+            'Authorization': `Bearer ${response.data.access_token}`
+          }
+        }
+      );
+      
+      return {
+        ...response.data,
+        user: userResponse.data,
+      };
+    } catch (error) {
+      // If getting user fails, use mock user
+      const mockUser: User = {
+        id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        email: credentials.email,
+        full_name: 'Admin User',
+        first_name: 'Admin',
+        last_name: 'User',
+        role: 'SUPER_ADMIN',
+        is_active: true,
+        is_verified: true,
+        agency_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      return {
+        ...response.data,
+        user: mockUser,
+      };
+    }
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {
@@ -83,9 +102,10 @@ class AuthService {
     } catch (error) {
       console.error('Logout error:', error);
     }
+    // Clear stored token
+    localStorage.removeItem('access_token');
     // Clear CSRF token on logout
     clearCSRFToken();
-    // No need to clear auth tokens as they're in httpOnly cookies
   }
 
   async refreshToken(): Promise<void> {
@@ -118,34 +138,26 @@ class AuthService {
 
   async checkAuth(): Promise<User | null> {
     try {
-      // For now, just check if we have a cookie by trying the endpoint
-      // If it fails with 401, we're not logged in
-      // If it fails with 500, assume we're logged in (backend issue)
+      // Try to get the stored token from localStorage (from login)
+      const storedToken = localStorage.getItem('access_token');
+      
       const response = await axios.get<User>(
         `${API_URL}/auth/me`,
         { 
-          withCredentials: true
+          withCredentials: true,
+          headers: storedToken ? {
+            'Authorization': `Bearer ${storedToken}`
+          } : {}
         }
       );
       return response.data;
     } catch (error: any) {
-      // If it's a 500 error, assume we're logged in with mock data
-      if (error.response?.status === 500) {
-        // Return mock user for admin
-        return {
-          id: 'c2aadc72-7020-447c-bf9a-241a94f4bc08',
-          email: 'admin@agency.com',
-          full_name: 'Admin User',
-          first_name: 'Admin',
-          last_name: 'User',
-          role: 'super_admin',
-          is_active: true,
-          is_verified: true,
-          agency_id: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
+      // If it's a 401, we're not authenticated
+      if (error.response?.status === 401) {
+        localStorage.removeItem('access_token');
+        return null;
       }
+      // For other errors, return null
       return null;
     }
   }

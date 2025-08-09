@@ -19,15 +19,8 @@ except ImportError:
     def scan_dependencies():
         return {"status": "ok"}
 
-# Import auth functions - implementing plain text passwords per requirements
-# TODO: Implement these functions directly in this module or auth_security module
-def verify_password(plain_password: str, stored_password: str) -> bool:
-    """Verify password - plain text comparison per requirements."""
-    return plain_password == stored_password
-
-def get_password_hash(password: str) -> str:
-    """Return password as-is - no hashing per requirements."""
-    return password
+# Import auth functions from auth_security module
+from ..auth_security import verify_password, get_password_hash
 
 # Import other auth functions from the auth_security module if it exists
 try:

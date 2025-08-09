@@ -54,7 +54,12 @@ class AdvancedRateLimitMiddleware(BaseHTTPMiddleware):
         "/metrics",
         "/docs",
         "/openapi.json",
-        "/redoc"
+        "/redoc",
+        "/api/v1/auth/login",
+        "/api/v1/auth/register",
+        "/api/v1/auth/refresh",
+        "/api/v1/auth/csrf-token",
+        "/api/v1/auth/password-reset"
     ]
     
     # Paths that use specific strategies
