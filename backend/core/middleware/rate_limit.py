@@ -15,7 +15,7 @@ from starlette.responses import JSONResponse
 from starlette.requests import Request
 from fastapi import status
 
-from core.security.rate_limiter import rate_limiter, RateLimitStrategy, RateLimitConfig
+from core.security_v2.rate_limiter import rate_limiter, RateLimitStrategy, RateLimitConfig
 from core.logging import get_logger
 from core.config import settings
 

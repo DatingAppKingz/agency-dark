@@ -12,9 +12,9 @@ import re
 import json
 
 from core.database import AsyncSessionLocal
-from core.security.dependencies import get_user_from_token
+from core.security_v2.dependencies import get_user_from_token
 from models.feature_permission import FeatureType
-from core.security.feature_permissions.service import feature_permission_service
+from core.security_v2.feature_permissions.service import feature_permission_service
 from core.logger import get_logger
 from core.geo import get_country_from_ip
 

@@ -12,7 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import json
 from typing import Optional, Dict, Any
 
-from core.security.fraud_detector import fraud_detector, FraudRiskLevel
+from core.security_v2.fraud_detector import fraud_detector, FraudRiskLevel
 from core.logging import get_logger
 
 logger = get_logger(__name__)

@@ -10,7 +10,7 @@ from starlette.requests import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.tasks.db_context import get_db_context
-from core.security.api_key_manager import secure_api_key_manager
+from core.security_v2.api_key_manager import secure_api_key_manager
 from core.redis import redis_client
 from core.logging import get_logger
 from core.config import settings
