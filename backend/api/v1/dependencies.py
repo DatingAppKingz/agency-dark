@@ -3,7 +3,7 @@
 from typing import List
 from fastapi import HTTPException, status, Depends
 from models.user import User, UserRole
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 
 
 def check_permissions(required_roles: List[UserRole]):

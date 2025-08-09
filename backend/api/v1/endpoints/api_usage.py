@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from core.database import get_db
 from core.dependencies import get_current_active_user
-from core.rbac import check_permission
+from core.security_v2.authorization import check_permission
 from models.user import User
 from services.api_usage_tracker import get_usage_tracker, UsageMetric, RateLimitConfig
 from services.api_key_service import APIKeyService

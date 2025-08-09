@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.orm import selectinload
 from core.database import get_db
-from core.auth import get_current_user
-from core.auth.decorators import require_roles, require_agency_match, require_self_or_admin, require_admin
+from core.security_v2 import get_current_user
+from core.security_v2.decorators import require_roles, require_agency_match, require_self_or_admin, require_admin
 from core.repositories.user_repository import UserRepository
 from models.user import User, UserRole
 from api.v1.dependencies import check_permissions

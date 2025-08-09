@@ -13,7 +13,7 @@ from sqlalchemy import Column, String, DateTime, ForeignKey, JSON
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 
 from core.database import get_db, Base
-from core.security import get_current_user
+from core.security_v2 import get_current_user
 from core.domain.models import User
 from core.config import settings
 

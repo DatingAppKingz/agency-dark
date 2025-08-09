@@ -15,7 +15,7 @@ import hashlib
 import hmac
 from typing import List, Dict, Any
 
-from core.security import get_password_hash, verify_password
+from core.security_v2 import hash_password, verify_password
 from core.config import settings
 
 
@@ -381,7 +381,7 @@ class TestDataProtection:
         password = "SecurePassword123!"
         
         # Hash password
-        hashed = get_password_hash(password)
+        hashed = hash_password(password)
         
         # Verify it's not plaintext
         assert password not in hashed
@@ -390,7 +390,7 @@ class TestDataProtection:
         assert hashed.startswith("$2b$") or hashed.startswith("$argon2")
         
         # Verify same password produces different hashes (salted)
-        hashed2 = get_password_hash(password)
+        hashed2 = hash_password(password)
         assert hashed != hashed2
         
         # Verify both hashes validate

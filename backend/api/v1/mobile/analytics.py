@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from datetime import datetime, date, timedelta
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from core.performance import cached
 from models.user import User
 from modules.analytics.application.service import AnalyticsService

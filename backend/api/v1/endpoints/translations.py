@@ -8,7 +8,7 @@ import json
 
 from core.database import get_db
 from core.dependencies import get_current_active_user
-from core.rbac import check_permission
+from core.security_v2.authorization import check_permission
 from core.i18n import i18n, SUPPORTED_LANGUAGES, get_language_from_request, _
 from services.translation_service import TranslationService
 from models.user import User

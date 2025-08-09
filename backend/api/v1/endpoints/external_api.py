@@ -9,7 +9,7 @@ from schemas.pagination import PaginatedResponse
 from utils.pagination import paginate_params, PaginationParams
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from core.logger import get_logger
 from models.user import User
 from models.external_api import ExternalAPICredential, APIProvider

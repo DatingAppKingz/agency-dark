@@ -11,7 +11,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import AsyncSessionLocal, create_tables
-from core.security import get_password_hash
+from core.security_v2 import hash_password
 from core.domain.models import (
     Agency, User, UserRole, ModelProfile, 
     CommissionRule, CommissionTier, BillingCycle,
@@ -83,7 +83,7 @@ async def create_users(session: AsyncSession, main_agency, secondary_agency):
     super_admin = User(
         id=uuid.uuid4(),
         email="superadmin@agencydark.com",
-        hashed_password=get_password_hash("SuperAdmin123!"),
+        hashed_password=hash_password("SuperAdmin123!"),
         full_name="Super Administrator",
         role=UserRole.SUPER_ADMIN,
         is_active=True,
@@ -97,7 +97,7 @@ async def create_users(session: AsyncSession, main_agency, secondary_agency):
         id=uuid.uuid4(),
         agency_id=main_agency.id,
         email="owner@testagency.com",
-        hashed_password=get_password_hash("AgencyOwner123!"),
+        hashed_password=hash_password("AgencyOwner123!"),
         full_name="John Agency Owner",
         role=UserRole.AGENCY_OWNER,
         is_active=True,
@@ -111,7 +111,7 @@ async def create_users(session: AsyncSession, main_agency, secondary_agency):
         id=uuid.uuid4(),
         agency_id=main_agency.id,
         email="admin@testagency.com",
-        hashed_password=get_password_hash("AgencyAdmin123!"),
+        hashed_password=hash_password("AgencyAdmin123!"),
         full_name="Sarah Admin",
         role=UserRole.AGENCY_ADMIN,
         is_active=True,
@@ -125,7 +125,7 @@ async def create_users(session: AsyncSession, main_agency, secondary_agency):
         id=uuid.uuid4(),
         agency_id=main_agency.id,
         email="member@testagency.com",
-        hashed_password=get_password_hash("AgencyMember123!"),
+        hashed_password=hash_password("AgencyMember123!"),
         full_name="Mike Member",
         role=UserRole.MEMBER,
         is_active=True,
@@ -139,7 +139,7 @@ async def create_users(session: AsyncSession, main_agency, secondary_agency):
         id=uuid.uuid4(),
         agency_id=main_agency.id,
         email="model@testagency.com",
-        hashed_password=get_password_hash("ModelUser123!"),
+        hashed_password=hash_password("ModelUser123!"),
         full_name="Emma Model",
         role=UserRole.MODEL,
         is_active=True,
@@ -153,7 +153,7 @@ async def create_users(session: AsyncSession, main_agency, secondary_agency):
         id=uuid.uuid4(),
         agency_id=main_agency.id,
         email="chatter@testagency.com",
-        hashed_password=get_password_hash("ChatterUser123!"),
+        hashed_password=hash_password("ChatterUser123!"),
         full_name="Chris Chatter",
         role=UserRole.CHATTER,
         is_active=True,
@@ -167,7 +167,7 @@ async def create_users(session: AsyncSession, main_agency, secondary_agency):
         id=uuid.uuid4(),
         agency_id=secondary_agency.id,
         email="owner@competitor.com",
-        hashed_password=get_password_hash("CompetitorOwner123!"),
+        hashed_password=hash_password("CompetitorOwner123!"),
         full_name="Jane Competitor",
         role=UserRole.AGENCY_OWNER,
         is_active=True,

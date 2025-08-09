@@ -16,8 +16,8 @@ from main import app
 from core.dependencies import get_db
 from models.user import User, UserRole
 from models.agency import Agency
-from core.auth.auth_service import AuthService
-from core.security import get_password_hash
+from core.security_v2.auth_service import AuthService
+from core.security_v2 import hash_password
 
 
 # Test database URL
@@ -101,7 +101,7 @@ async def test_user(db_session: AsyncSession, test_agency: Agency) -> User:
         id=uuid.uuid4(),
         email="test@example.com",
         username="testuser",
-        hashed_password=get_password_hash("testpassword"),
+        hashed_password=hash_password("testpassword"),
         agency_id=test_agency.id,
         role=UserRole.AGENCY_ADMIN,
         is_active=True,
@@ -136,7 +136,7 @@ async def super_admin_user(db_session: AsyncSession, test_agency: Agency) -> Use
         id=uuid.uuid4(),
         email="admin@example.com",
         username="admin",
-        hashed_password=get_password_hash("adminpassword"),
+        hashed_password=hash_password("adminpassword"),
         agency_id=test_agency.id,
         role=UserRole.SUPER_ADMIN,
         is_active=True,
@@ -156,7 +156,7 @@ async def model_user(db_session: AsyncSession, test_agency: Agency) -> User:
         id=uuid.uuid4(),
         email="model@example.com",
         username="modeluser",
-        hashed_password=get_password_hash("modelpassword"),
+        hashed_password=hash_password("modelpassword"),
         agency_id=test_agency.id,
         role=UserRole.MODEL,
         is_active=True,
@@ -176,7 +176,7 @@ async def chatter_user(db_session: AsyncSession, test_agency: Agency) -> User:
         id=uuid.uuid4(),
         email="chatter@example.com",
         username="chatteruser",
-        hashed_password=get_password_hash("chatterpassword"),
+        hashed_password=hash_password("chatterpassword"),
         agency_id=test_agency.id,
         role=UserRole.CHATTER,
         is_active=True,

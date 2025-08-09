@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import SCIMUser, SSOProvider
 from core.domain.models import User, Agency
-from core.security import get_password_hash
+from core.security_v2 import hash_password
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class SCIMService:
                 username=user_data['username'],
                 first_name=user_data.get('first_name', ''),
                 last_name=user_data.get('last_name', ''),
-                hashed_password=get_password_hash(self._generate_temp_password()),
+                hashed_password=hash_password(self._generate_temp_password()),
                 is_active=user_data.get('active', True),
                 agency_id=self.provider.agency_id,
                 role=self.provider.default_role or 'fan',

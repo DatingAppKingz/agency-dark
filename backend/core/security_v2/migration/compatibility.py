@@ -81,11 +81,11 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
         raise NotImplementedError("Old security system not available")
 
 
-def get_password_hash(password: str) -> str:
+def hash_password(password: str) -> str:
     """
-    Drop-in replacement for old get_password_hash.
+    Drop-in replacement for old hash_password.
     """
-    log_compatibility_usage("get_password_hash")
+    log_compatibility_usage("hash_password")
     
     if USE_NEW_SECURITY:
         return hash_password_v2(password)
@@ -259,7 +259,7 @@ __all__ = [
     # Authentication
     'create_access_token',
     'verify_token',
-    'get_password_hash',
+    'hash_password',
     'verify_password',
     'authenticate_user',
     

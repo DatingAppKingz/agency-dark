@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from pydantic import BaseModel, Field
 
 from core.security.rate_limiter import rate_limiter, RateLimitStrategy, RateLimitConfig
-from core.security import get_current_user, require_admin
+from core.security_v2 import get_current_user, require_admin
 from core.logging import get_logger
 
 logger = get_logger(__name__)

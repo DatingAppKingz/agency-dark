@@ -10,8 +10,8 @@ from httpx import AsyncClient
 from sqlalchemy import select
 
 from core.domain.models import User, Session, UserRole
-from core.security import get_password_hash, verify_password
-from core.auth.token_blacklist import TokenBlacklist
+from core.security_v2 import hash_password, verify_password
+from core.security_v2.token_blacklist import TokenBlacklist
 from core.config import settings
 
 
@@ -117,7 +117,7 @@ class TestAuthIntegration:
         # Create user
         user = User(
             email="resettest@example.com",
-            hashed_password=get_password_hash("OldPassword123"),
+            hashed_password=hash_password("OldPassword123"),
             full_name="Reset Test User",
             role=UserRole.MODEL,
             is_active=True,
@@ -174,7 +174,7 @@ class TestAuthIntegration:
         # Create user
         user = User(
             email="sessiontest@example.com",
-            hashed_password=get_password_hash("Password123"),
+            hashed_password=hash_password("Password123"),
             full_name="Session Test User",
             role=UserRole.MODEL,
             is_active=True
@@ -289,7 +289,7 @@ class TestSessionManagementIntegration:
         # Create and login user
         user = User(
             email="activity@example.com",
-            hashed_password=get_password_hash("Password123"),
+            hashed_password=hash_password("Password123"),
             full_name="Activity User",
             role=UserRole.MODEL,
             is_active=True
@@ -333,7 +333,7 @@ class TestSessionManagementIntegration:
         # Create user
         user = User(
             email="device@example.com",
-            hashed_password=get_password_hash("Password123"),
+            hashed_password=hash_password("Password123"),
             full_name="Device User",
             role=UserRole.MODEL,
             is_active=True

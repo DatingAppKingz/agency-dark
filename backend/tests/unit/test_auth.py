@@ -9,7 +9,7 @@ import uuid
 from modules.auth.application.auth_service import AuthService
 from modules.auth.domain.schemas import UserCreate, UserLogin
 from modules.auth.domain.models import User, UserRole
-from core.security import verify_password, create_access_token, decode_token
+from core.security_v2 import verify_password, create_access_token, decode_token
 from core.exceptions import UnauthorizedException, BadRequestException
 
 

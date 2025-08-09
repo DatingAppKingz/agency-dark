@@ -513,7 +513,7 @@ class ImportService:
         user: User
     ) -> str:
         """Process user import."""
-        from core.security import get_password_hash
+        from core.security_v2 import hash_password
         
         # Check if updating existing
         existing_user = None
@@ -538,7 +538,7 @@ class ImportService:
             
             new_user = User(
                 **data,
-                password_hash=get_password_hash(password)
+                password_hash=hash_password(password)
             )
             self.db.add(new_user)
             await self.db.flush()

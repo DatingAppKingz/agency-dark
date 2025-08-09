@@ -5,10 +5,10 @@ from fastapi.responses import JSONResponse
 from jose import JWTError
 import logging
 
-from core.security import decode_token, verify_token_fingerprint
+from core.security_v2 import decode_token, verify_token_fingerprint
 from core.database import get_db_sync
 from core.domain.models import User, Session
-from core.auth.token_blacklist import token_blacklist_service
+from core.security_v2.token_blacklist import session_manager
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 jti = payload.get("jti")
                 if jti:
                     with get_db_sync() as db:
-                        if await token_blacklist_service.is_token_blacklisted(jti, db):
+                        if await session_manager.is_token_blacklisted(jti, db):
                             return JSONResponse(
                                 status_code=status.HTTP_401_UNAUTHORIZED,
                                 content={"detail": "Token has been revoked"}

@@ -21,7 +21,7 @@ from core.optimization import (
 )
 
 # Import security modules
-from core.security import (
+from core.security_v2 import (
     SecurityHeadersMiddleware,
     security_headers_config,
     audit_logger,
@@ -181,7 +181,7 @@ def create_app() -> FastAPI:
     @app.post("/admin/security/scan")
     async def security_scan(request: Request):
         """Run security vulnerability scan."""
-        from core.security import vulnerability_scanner
+        from core.security_v2 import vulnerability_scanner
         
         # TODO: Add authentication check
         

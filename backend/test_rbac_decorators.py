@@ -8,8 +8,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import dependencies first to avoid circular imports
-from core.auth.dependencies import get_current_user
-from core.auth.decorators import require_roles, require_self_or_admin, require_model_assignment
+from core.security_v2.dependencies import get_current_user
+from core.security_v2.decorators import require_roles, require_self_or_admin, require_model_assignment
 from core.database import get_db
 from models.user import User, UserRole
 from auth_fix import router as auth_router

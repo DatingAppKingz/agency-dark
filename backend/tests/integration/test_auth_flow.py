@@ -10,10 +10,10 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
-from core.security import create_access_token, get_password_hash
+from core.security_v2 import create_access_token, hash_password
 from modules.agencies.domain.models import Agency
 from models.user import User
-from core.auth.models import UserSession, RefreshToken
+from core.security_v2.models import UserSession, RefreshToken
 
 
 class TestAuthenticationFlow:
@@ -38,7 +38,7 @@ class TestAuthenticationFlow:
         user = User(
             id=uuid4(),
             email="test@example.com",
-            hashed_password=get_password_hash("TestPassword123!"),
+            hashed_password=hash_password("TestPassword123!"),
             display_name="Test User",
             agency_id=test_agency.id,
             is_active=True,
@@ -269,7 +269,7 @@ class TestPermissions:
             user = User(
                 id=uuid4(),
                 email=f"{role}@example.com",
-                hashed_password=get_password_hash("Password123!"),
+                hashed_password=hash_password("Password123!"),
                 role=role,
                 is_active=True
             )
@@ -319,7 +319,7 @@ class TestPermissions:
             user = User(
                 id=uuid4(),
                 email=f"user{i}@example.com",
-                hashed_password=get_password_hash("Password123!"),
+                hashed_password=hash_password("Password123!"),
                 agency_id=agency.id,
                 is_active=True
             )

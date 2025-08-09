@@ -16,7 +16,7 @@ from .saml import SAMLProvider
 from .oauth import OAuthProvider
 from .scim import SCIMService
 from core.domain.models import User, Agency
-from core.security import create_access_token
+from core.security_v2 import create_access_token
 
 logger = logging.getLogger(__name__)
 

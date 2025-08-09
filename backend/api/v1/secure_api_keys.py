@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 
 from core.database import get_db
-from core.auth import get_current_user
-from core.permissions import check_permission
+from core.security_v2 import get_current_user
+from core.security_v2.authorization import check_permission
 from core.security.api_key_manager import secure_api_key_manager
 from core.security.encryption import data_masking
 from core.logging import get_logger

@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db, engine
 from models.user import User, UserRole
 from models.agency import Agency
-from core.security import get_password_hash
+from core.security_v2 import hash_password
 import uuid
 from datetime import datetime
 
@@ -56,7 +56,7 @@ async def create_test_user():
                     id=uuid.uuid4(),
                     email="test@example.com",
                     username="testuser",
-                    hashed_password=get_password_hash("password123"),
+                    hashed_password=hash_password("password123"),
                     agency_id=agency.id,
                     role=UserRole.AGENCY_ADMIN,
                     is_active=True,
@@ -105,7 +105,7 @@ async def create_test_user():
                         id=uuid.uuid4(),
                         email=test_user_data["email"],
                         username=test_user_data["username"],
-                        hashed_password=get_password_hash(test_user_data["password"]),
+                        hashed_password=hash_password(test_user_data["password"]),
                         agency_id=agency.id,
                         role=test_user_data["role"],
                         is_active=True,

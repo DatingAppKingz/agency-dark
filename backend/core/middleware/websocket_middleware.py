@@ -6,7 +6,7 @@ from typing import Callable, Optional, Dict, Any
 from fastapi import WebSocket, status
 import json
 
-from core.websocket_auth import enhanced_websocket_auth, WebSocketAuthError
+from core.security_v2.authentication import enhanced_websocket_auth, WebSocketAuthError
 from core.logger import get_logger
 
 logger = get_logger(__name__)

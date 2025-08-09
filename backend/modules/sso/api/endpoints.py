@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 
 from core.database import get_db
-from core.security import get_current_user
+from core.security_v2 import get_current_user
 from core.domain.models import User, UserRole
 from ..manager import sso_manager
 from ..models import SSOProviderType

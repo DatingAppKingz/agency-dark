@@ -31,7 +31,7 @@ class TestSocketIOIntegration:
     @pytest.fixture
     def auth_token(self, test_user):
         """Generate auth token for test user."""
-        from core.security import create_access_token
+        from core.security_v2 import create_access_token
         return create_access_token(
             data={"sub": str(test_user.id)}
         )

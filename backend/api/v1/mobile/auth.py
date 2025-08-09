@@ -18,7 +18,7 @@ import secrets
 import uuid
 
 from core.database import get_db
-from core.security import create_access_token, create_refresh_token, verify_password, get_password_hash
+from core.security_v2 import create_access_token, create_refresh_token, verify_password, hash_password
 from core.security.rate_limiter import rate_limiter, RateLimitStrategy, RateLimitConfig
 from core.security.fraud_detector import fraud_detector
 from core.logging import get_logger
@@ -205,7 +205,7 @@ async def mobile_register(
     user = User(
         id=uuid.uuid4(),
         email=request.email,
-        hashed_password=get_password_hash(request.password),
+        hashed_password=hash_password(request.password),
         full_name=request.full_name,
         role="user",
         is_active=True,

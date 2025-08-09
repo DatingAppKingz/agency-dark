@@ -9,7 +9,7 @@ from sqlalchemy import select, or_
 from pydantic import BaseModel, Field
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from core.rate_limit.service import rate_limit_service
 from models.rate_limit import (
     RateLimitConfig, RateLimitType, RateLimitTier, RateLimitAlgorithm,

@@ -11,7 +11,7 @@ from uuid import UUID
 from core.bulk_operations.models import BulkOperationType
 from core.bulk_operations.bulk_processor import bulk_processor
 from core.domain.models import User, Model, Transaction, UserRole
-from core.security import get_password_hash
+from core.security_v2 import hash_password
 from modules.financial.domain.models import Payout
 
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ async def handle_user_update(
         changes["is_active"] = params["is_active"]
     
     if "password" in params:
-        user.hashed_password = get_password_hash(params["password"])
+        user.hashed_password = hash_password(params["password"])
         changes["password"] = "***"
     
     await session.commit()

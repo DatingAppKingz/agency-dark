@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
 from core.database import get_db
-from core.auth import get_current_user
-from core.permissions import check_permission
+from core.security_v2 import get_current_user
+from core.security_v2.authorization import check_permission
 from core.database_utils.partitioning import partition_manager, get_partition_statistics
 from core.tasks.partition_maintenance import (
     PartitionMaintenanceTask,

@@ -10,7 +10,7 @@ import json
 
 from core.database import get_db
 from core.dependencies import get_current_active_user
-from core.rbac import check_permission
+from core.security_v2.authorization import check_permission
 from core.redis import redis_client
 from models.user import User
 from services.import_service import ImportService

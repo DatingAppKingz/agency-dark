@@ -22,7 +22,7 @@ if DATABASE_URL.startswith("postgresql+asyncpg://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql+asyncpg://", "")
 
 
-def get_password_hash(password: str) -> str:
+def hash_password(password: str) -> str:
     """Hash a password using bcrypt"""
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -93,7 +93,7 @@ async def create_test_users():
             
             if not user_exists:
                 user_id = uuid.uuid4()
-                hashed_password = get_password_hash(user_data["password"])
+                hashed_password = hash_password(user_data["password"])
                 
                 await conn.execute("""
                     INSERT INTO users (

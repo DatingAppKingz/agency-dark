@@ -25,7 +25,7 @@ if DATABASE_URL.startswith("postgresql+asyncpg://"):
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def get_password_hash(password: str) -> str:
+def hash_password(password: str) -> str:
     """Hash a password using the same method as auth service"""
     return pwd_context.hash(password)
 
@@ -87,7 +87,7 @@ async def create_test_users():
             
             # Create new user with proper password hash
             user_id = uuid.uuid4()
-            hashed_password = get_password_hash(user_data["password"])
+            hashed_password = hash_password(user_data["password"])
             
             await conn.execute("""
                 INSERT INTO users (

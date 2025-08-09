@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta
 from jose import jwt
 
-from core.websocket_auth import enhanced_websocket_auth, WebSocketAuthError
+from core.security_v2.authentication import enhanced_websocket_auth, WebSocketAuthError
 from core.config import settings
 
 # Mock user data

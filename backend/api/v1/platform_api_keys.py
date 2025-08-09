@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, validator
 import re
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from core.security.api_keys.key_manager import api_key_manager
 from core.security.api_keys.auth_middleware import (
     get_current_api_key, 

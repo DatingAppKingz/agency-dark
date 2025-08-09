@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from core.logging import get_logger
 from models.user import User
 
@@ -330,7 +330,7 @@ async def _send_notification_to_user(
         return
     
     # Get user devices
-    from core.auth.session_manager import session_manager
+    from core.security_v2.session_manager import session_manager
     devices = await session_manager.get_user_devices(user_id)
     
     # Send to each device with push token

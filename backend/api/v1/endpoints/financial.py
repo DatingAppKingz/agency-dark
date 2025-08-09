@@ -9,7 +9,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field
 
 from core.database import get_db
-from core.auth.decorators import require_roles, require_admin, require_model_assignment
+from core.security_v2.decorators import require_roles, require_admin, require_model_assignment
 from models.user import User, UserRole
 from models.agency import Agency
 from models.model import Model

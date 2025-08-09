@@ -18,7 +18,7 @@ from core.security.fraud_detector import (
     fraud_detector, FraudRiskLevel, FraudIndicator, 
     FraudScore, VelocityRule
 )
-from core.security import get_current_user, require_admin
+from core.security_v2 import get_current_user, require_admin
 from core.database import get_db
 from core.logging import get_logger
 

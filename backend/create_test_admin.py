@@ -9,7 +9,7 @@ from datetime import datetime
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def get_password_hash(password: str) -> str:
+def hash_password(password: str) -> str:
     """Hash password."""
     return pwd_context.hash(password)
 
@@ -31,7 +31,7 @@ async def create_admin():
         admin = User(
             username="admin",
             email="admin@example.com",
-            password_hash=get_password_hash("admin123"),
+            password_hash=hash_password("admin123"),
             first_name="Admin",
             last_name="User",
             role="admin",

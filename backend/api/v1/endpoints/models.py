@@ -9,14 +9,14 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, HttpUrl
 
 from core.database import get_db
-from core.auth.decorators import require_roles, require_model_assignment, require_admin
+from core.security_v2.decorators import require_roles, require_model_assignment, require_admin
 from models.user import User, UserRole
 from models.agency import Agency
 from models.model import Model, ModelStatus, Platform
 from models.model_settings import ModelSettings, ModelSchedule
 from models.subscriber import Subscriber
 from models.financial import Transaction, TransactionStatus
-from core.dependencies import CurrentUser, get_password_hash
+from core.dependencies import CurrentUser, hash_password
 from core.errors import DuplicateError, NotFoundError, AuthorizationError, ValidationError as AppValidationError
 from core.logger import get_logger
 
@@ -282,7 +282,7 @@ async def create_model(
         model_user = User(
             email=email,
             username=username,
-            password_hash=get_password_hash("model123"),  # Default password
+            password_hash=hash_password("model123"),  # Default password
             first_name=model_data.stage_name.split()[0] if model_data.stage_name else "Model",
             last_name=model_data.stage_name.split()[-1] if len(model_data.stage_name.split()) > 1 else "",
             role=UserRole.MODEL,

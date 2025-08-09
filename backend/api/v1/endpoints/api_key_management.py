@@ -11,7 +11,7 @@ from sqlalchemy import select, and_
 from pydantic import BaseModel, Field
 
 from core.database import get_db
-from core.security import get_current_user
+from core.security_v2 import get_current_user
 from core.domain.models import User, UserRole
 from models.api_key import APIKey, APIKeyService
 from core.pagination import PaginatedResponse, get_pagination_params, paginate

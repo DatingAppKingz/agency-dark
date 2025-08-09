@@ -111,7 +111,7 @@ class APIConfigModel(Base):
     
     def to_config(self, encryption_key: Optional[str] = None) -> APIConfig:
         """Convert database model to APIConfig"""
-        from core.security import decrypt_data
+        from core.security_v2 import decrypt_data
         
         config_data = {
             'name': self.name,
@@ -144,7 +144,7 @@ class APIConfigModel(Base):
     @classmethod
     def from_config(cls, config: APIConfig, encryption_key: Optional[str] = None) -> 'APIConfigModel':
         """Create database model from APIConfig"""
-        from core.security import encrypt_data
+        from core.security_v2 import encrypt_data
         import uuid
         
         model = cls(
@@ -237,7 +237,7 @@ class APIConfigManager:
             existing.updated_at = datetime.utcnow()
             
             if config.credentials and self.encryption_key:
-                from core.security import encrypt_data
+                from core.security_v2 import encrypt_data
                 creds_dict = config.credentials.model_dump()
                 encrypted = encrypt_data(json.dumps(creds_dict), self.encryption_key)
                 existing.credentials = encrypted

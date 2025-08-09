@@ -11,7 +11,7 @@ from faker import Faker
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import AsyncSessionLocal
-from core.security import get_password_hash
+from core.security_v2 import hash_password
 from core.domain.models import Agency, User, UserRole
 from models.financial import TransactionType, Payout, PayoutStatus
 from modules.financial.domain.models import FinancialTransaction
@@ -38,7 +38,7 @@ async def create_models(session: AsyncSession, agency_id: uuid.UUID, num_models:
             id=uuid.uuid4(),
             agency_id=agency_id,
             email=f"model{i+1}@example.com",
-            hashed_password=get_password_hash("password123"),
+            hashed_password=hash_password("password123"),
             full_name=fake.name(),
             role=UserRole.MODEL,
             is_active=True,
@@ -65,7 +65,7 @@ async def create_chatters(session: AsyncSession, agency_id: uuid.UUID, num_chatt
             id=uuid.uuid4(),
             agency_id=agency_id,
             email=f"chatter{i+1}@example.com",
-            hashed_password=get_password_hash("password123"),
+            hashed_password=hash_password("password123"),
             full_name=fake.name(),
             role=UserRole.CHATTER,
             is_active=True,

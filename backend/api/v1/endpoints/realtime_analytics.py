@@ -9,8 +9,8 @@ import asyncio
 
 from core.database import get_db
 from core.dependencies import get_current_active_user
-from core.websocket_auth import get_current_user_from_websocket
-from core.rbac import check_permission
+from core.security_v2.authentication import get_current_user_from_websocket
+from core.security_v2.authorization import check_permission
 from core.redis import redis_manager
 from services.analytics.realtime_analytics_service import (
     RealtimeAnalyticsService,

@@ -10,20 +10,20 @@ from unittest.mock import Mock, patch, AsyncMock
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt
 
-from core.security import (
+from core.security_v2 import (
     create_access_token,
     create_refresh_token,
     decode_token,
     verify_password,
-    get_password_hash,
+    hash_password,
     generate_token_fingerprint,
     verify_token_fingerprint,
     encrypt_sensitive_data,
     decrypt_sensitive_data,
     hash_token
 )
-from core.auth.token_blacklist import token_blacklist_service
-from core.auth.session_manager import session_manager
+from core.security_v2.token_blacklist import session_manager
+from core.security_v2.session_manager import session_manager
 from core.domain.models import User, Session, UserRole
 from core.config import settings
 
@@ -107,7 +107,7 @@ class TestTokenBlacklist:
         expires_at = datetime.utcnow() + timedelta(hours=1)
         
         with patch('core.redis.redis_client.setex', new_callable=AsyncMock) as mock_setex:
-            result = await token_blacklist_service.blacklist_token(
+            result = await session_manager.blacklist_token(
                 token=token,
                 jti=jti,
                 user_id=user_id,
@@ -125,12 +125,12 @@ class TestTokenBlacklist:
         
         # Test cache hit
         with patch('core.redis.redis_client.get', new_callable=AsyncMock, return_value="1"):
-            is_blacklisted = await token_blacklist_service.is_token_blacklisted(jti, mock_db)
+            is_blacklisted = await session_manager.is_token_blacklisted(jti, mock_db)
             assert is_blacklisted is True
         
         # Test cache miss, not in DB
         with patch('core.redis.redis_client.get', new_callable=AsyncMock, return_value=None):
-            is_blacklisted = await token_blacklist_service.is_token_blacklisted(jti, mock_db)
+            is_blacklisted = await session_manager.is_token_blacklisted(jti, mock_db)
             assert is_blacklisted is False
 
 
@@ -202,7 +202,7 @@ class TestAuthEndpoints:
         # Create test user
         user = User(
             email="test@example.com",
-            hashed_password=get_password_hash("password123"),
+            hashed_password=hash_password("password123"),
             full_name="Test User",
             role=UserRole.MODEL,
             is_active=True
@@ -251,7 +251,7 @@ class TestAuthEndpoints:
         # Create test user
         user = User(
             email="lockout@example.com",
-            hashed_password=get_password_hash("correct_password"),
+            hashed_password=hash_password("correct_password"),
             full_name="Lockout User",
             role=UserRole.MODEL,
             is_active=True,
@@ -287,7 +287,7 @@ class TestAuthEndpoints:
         # Create test user
         user = User(
             email="reset@example.com",
-            hashed_password=get_password_hash("old_password"),
+            hashed_password=hash_password("old_password"),
             full_name="Reset User",
             role=UserRole.MODEL,
             is_active=True

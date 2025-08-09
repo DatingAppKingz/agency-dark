@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import os
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from core.logger import get_logger
 from models.user import User, UserRole
 from services.enhanced_report_service import get_enhanced_report_service

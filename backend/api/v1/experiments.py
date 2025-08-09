@@ -11,8 +11,8 @@ from sqlalchemy import select, and_
 from pydantic import BaseModel, Field
 
 from core.database import get_db
-from core.auth import get_current_user
-from core.permissions import check_agency_permission
+from core.security_v2 import get_current_user
+from core.security_v2.authorization import check_agency_permission
 from modules.ab_testing.core.experiment_manager import experiment_manager
 from modules.ab_testing.domain.models import (
     Experiment, ExperimentVariant, ExperimentType, 

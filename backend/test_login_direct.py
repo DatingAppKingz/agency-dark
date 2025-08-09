@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select
 from core.config import settings
 from models.user import User
-from core.security import verify_password
+from core.security_v2 import verify_password
 
 # Create async engine
 engine = create_async_engine(

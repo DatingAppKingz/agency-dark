@@ -17,7 +17,7 @@ from urllib.parse import quote, unquote
 from httpx import AsyncClient
 from sqlalchemy import text
 
-from core.security import verify_password, get_password_hash
+from core.security_v2 import verify_password, hash_password
 
 
 class TestOWASPTop10:
@@ -58,7 +58,7 @@ class TestOWASPTop10:
         """Test for cryptographic vulnerabilities"""
         # Test 1: Ensure passwords are hashed
         password = "TestPassword123!"
-        hashed = get_password_hash(password)
+        hashed = hash_password(password)
         assert password not in hashed, "Password should not be stored in plain text"
         assert "$2b$" in hashed or "$argon2" in hashed, "Should use strong hashing"
         

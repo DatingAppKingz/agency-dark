@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
 from core.database import get_db
-from core.auth import get_current_user
-from core.permissions import check_permission
+from core.security_v2 import get_current_user
+from core.security_v2.authorization import check_permission
 from core.database_utils.materialized_views import materialized_view_manager
 from core.tasks.materialized_view_refresh import (
     refresh_scheduler,

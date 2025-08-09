@@ -9,7 +9,7 @@ from datetime import date, datetime, timedelta
 import json
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from models.user import User
 from modules.analytics.dashboard.dashboard_service import dashboard_service
 from modules.analytics.dashboard.models import (
@@ -360,7 +360,7 @@ async def realtime_updates(
             return
             
         # Verify token and get user
-        from core.security import decode_access_token
+        from core.security_v2 import decode_access_token
         payload = decode_access_token(token)
         user_id = payload.get("sub")
         

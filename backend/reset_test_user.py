@@ -5,7 +5,7 @@ import asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import AsyncSessionLocal
-from core.security import get_password_hash
+from core.security_v2 import hash_password
 from core.domain.models import User
 
 
@@ -21,7 +21,7 @@ async def reset_test_user_password():
             
             if user:
                 # Update password
-                user.hashed_password = get_password_hash("password123")
+                user.hashed_password = hash_password("password123")
                 await session.commit()
                 print(f"✅ Password reset for {user.email}")
                 print(f"   Email: test@example.com")

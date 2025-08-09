@@ -166,7 +166,7 @@ class TestSQLInjectionPatterns:
     
     def test_sql_injection_detection(self):
         """Test SQL injection pattern detection."""
-        from core.middleware.security import SecurityMiddleware
+        from core.security_v2.middleware import SecurityMiddleware
         
         middleware = SecurityMiddleware(None)
         
@@ -200,7 +200,7 @@ class TestXSSPatterns:
     
     def test_xss_detection(self):
         """Test XSS pattern detection."""
-        from core.middleware.security import SecurityMiddleware
+        from core.security_v2.middleware import SecurityMiddleware
         
         middleware = SecurityMiddleware(None)
         

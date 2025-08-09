@@ -8,7 +8,7 @@ from sqlalchemy import select, and_, or_
 
 from core.database import get_db
 from core.dependencies import get_current_active_user
-from core.rbac import check_permission
+from core.security_v2.authorization import check_permission
 from services.notification_service import NotificationService
 from models.user import User
 from models.notification import (

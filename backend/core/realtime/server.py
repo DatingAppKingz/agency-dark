@@ -52,7 +52,7 @@ class AuthMiddleware:
             return None
         
         # Import here to avoid circular imports
-        from core.security import decode_token
+        from core.security_v2 import decode_token
         
         try:
             # Decode JWT token

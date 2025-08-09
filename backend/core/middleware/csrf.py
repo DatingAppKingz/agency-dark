@@ -5,7 +5,7 @@ CSRF middleware for automatic CSRF protection.
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-from core.auth.csrf import csrf_protection, SAFE_METHODS, CSRF_COOKIE_NAME
+from core.security_v2.csrf import csrf_protection, SAFE_METHODS, CSRF_COOKIE_NAME
 from core.logger import get_logger
 from typing import Callable
 

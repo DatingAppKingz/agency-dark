@@ -12,7 +12,7 @@ import io
 import json
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from core.audit.audit_service import audit_service
 from models.audit_log import (
     AuditLog, AuditAction, AuditSeverity, 

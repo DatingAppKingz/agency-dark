@@ -11,7 +11,7 @@ from sqlalchemy import select, update, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from core.websocket_auth import enhanced_websocket_auth, WebSocketAuthError
+from core.security_v2.authentication import enhanced_websocket_auth, WebSocketAuthError
 from core.errors import AuthenticationError, AuthorizationError, NotFoundError
 from core.logger import get_logger
 from models.user import User, UserRole

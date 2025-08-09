@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
 from core.database import get_db
-from core.auth import get_current_user
+from core.security_v2 import get_current_user
 from models.user import User, UserRole
 from ml.service import ml_service
 from schemas.ml_insights import (

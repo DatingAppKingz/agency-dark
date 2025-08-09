@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 import uuid
 
 from core.database import get_db
-from core.security import get_current_user
+from core.security_v2 import get_current_user
 from core.logging import get_logger
 from models.chat import Message
 from models.chat import Conversation
