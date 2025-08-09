@@ -64,7 +64,7 @@ class User(Base):
     agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id", ondelete="SET NULL"), nullable=True)
     
     # Relationships
-    # agency = relationship("Agency", back_populates="users", lazy="joined")  # Disabled - Agency model mismatch
+    agency = relationship("Agency", back_populates="users", lazy="joined")
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan", foreign_keys="[APIKey.user_id]")
     

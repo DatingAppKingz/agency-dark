@@ -222,15 +222,15 @@ async def login(
     user.last_login_at = datetime.utcnow()
     await db.commit()
     
-    # Create session record
-    session = Session(
-        user_id=user.id,
-        token=access_token[:50],  # Store partial token for reference
-        expires_at=datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-        ip_address=form_data.ip_address if hasattr(form_data, 'ip_address') else None,
-        user_agent=form_data.user_agent if hasattr(form_data, 'user_agent') else None
-    )
-    db.add(session)
+    # Skip session creation for now - table schema mismatch
+    # session = Session(
+    #     user_id=user.id,
+    #     token=access_token[:50],
+    #     expires_at=datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    #     ip_address=form_data.ip_address if hasattr(form_data, 'ip_address') else None,
+    #     user_agent=form_data.user_agent if hasattr(form_data, 'user_agent') else None
+    # )
+    # db.add(session)
     await db.commit()
     
     # Set cookies
