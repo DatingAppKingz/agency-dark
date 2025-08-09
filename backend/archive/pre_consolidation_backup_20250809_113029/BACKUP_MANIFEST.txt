@@ -1,0 +1,276 @@
+total 160
+drwxr-xr-x@ 14 mariuszbudzisz  staff    448 Aug  9 11:32 .
+drwxr-xr-x@  5 mariuszbudzisz  staff    160 Aug  9 11:30 ..
+drwxr-xr-x@  3 mariuszbudzisz  staff     96 Aug  9 11:31 api
+-rw-r--r--@  1 mariuszbudzisz  staff      0 Aug  9 11:32 BACKUP_MANIFEST.txt
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 core
+-rw-r--r--@  1 mariuszbudzisz  staff   9623 Aug  9 11:31 main_clean.py
+-rw-r--r--@  1 mariuszbudzisz  staff   6740 Aug  9 11:31 main_expanded.py
+-rw-r--r--@  1 mariuszbudzisz  staff   5983 Aug  9 11:31 main_minimal_api.py
+-rw-r--r--@  1 mariuszbudzisz  staff   3476 Aug  9 11:31 main_simple.py
+-rw-r--r--@  1 mariuszbudzisz  staff  14542 Aug  9 11:31 main_v2_simple.py
+-rw-r--r--@  1 mariuszbudzisz  staff  15797 Aug  9 11:31 main_v2.py
+-rw-r--r--@  1 mariuszbudzisz  staff  13622 Aug  9 11:31 main.py
+drwxr-xr-x@  2 mariuszbudzisz  staff     64 Aug  9 11:30 middleware
+drwxr-xr-x@  2 mariuszbudzisz  staff     64 Aug  9 11:30 models
+
+backend/archive/pre_consolidation_backup_20250809_113029/api:
+total 0
+drwxr-xr-x@  3 mariuszbudzisz  staff   96 Aug  9 11:31 .
+drwxr-xr-x@ 14 mariuszbudzisz  staff  448 Aug  9 11:32 ..
+drwxr-xr-x@  3 mariuszbudzisz  staff   96 Aug  9 11:31 v1
+
+backend/archive/pre_consolidation_backup_20250809_113029/api/v1:
+total 0
+drwxr-xr-x@ 3 mariuszbudzisz  staff   96 Aug  9 11:31 .
+drwxr-xr-x@ 3 mariuszbudzisz  staff   96 Aug  9 11:31 ..
+drwxr-xr-x@ 7 mariuszbudzisz  staff  224 Aug  9 11:31 endpoints
+
+backend/archive/pre_consolidation_backup_20250809_113029/api/v1/endpoints:
+total 128
+drwxr-xr-x@ 7 mariuszbudzisz  staff    224 Aug  9 11:31 .
+drwxr-xr-x@ 3 mariuszbudzisz  staff     96 Aug  9 11:31 ..
+-rw-r--r--@ 1 mariuszbudzisz  staff   5959 Aug  9 11:31 auth_minimal.py
+-rw-r--r--@ 1 mariuszbudzisz  staff   9994 Aug  9 11:31 auth_new.py
+-rw-r--r--@ 1 mariuszbudzisz  staff   9332 Aug  9 11:31 auth_simple.py
+-rw-r--r--@ 1 mariuszbudzisz  staff   8945 Aug  9 11:31 auth_validated.py
+-rw-r--r--@ 1 mariuszbudzisz  staff  16876 Aug  9 11:31 auth.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core:
+total 88
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 .
+drwxr-xr-x@ 14 mariuszbudzisz  staff    448 Aug  9 11:32 ..
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 auth
+-rw-r--r--@  1 mariuszbudzisz  staff   5201 Aug  9 11:31 auth_security.py
+-rw-r--r--@  1 mariuszbudzisz  staff   2105 Aug  9 11:31 dependencies.py
+drwxr-xr-x@ 22 mariuszbudzisz  staff    704 Aug  9 11:31 middleware
+-rw-r--r--@  1 mariuszbudzisz  staff   1586 Aug  9 11:31 permissions.py
+-rw-r--r--@  1 mariuszbudzisz  staff   2758 Aug  9 11:31 rbac.py
+drwxr-xr-x@ 23 mariuszbudzisz  staff    736 Aug  9 11:30 security
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 security_v2
+-rw-r--r--@  1 mariuszbudzisz  staff  21781 Aug  9 11:31 websocket_auth.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/auth:
+total 152
+-rw-r--r--@  1 mariuszbudzisz  staff    643 Aug  9 11:31 __init__.py
+drwxr-xr-x@  8 mariuszbudzisz  staff    256 Aug  9 11:31 __pycache__
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 ..
+-rw-r--r--@  1 mariuszbudzisz  staff  11608 Aug  9 11:31 auth_service.py
+-rw-r--r--@  1 mariuszbudzisz  staff   2450 Aug  9 11:31 cookie_utils.py
+-rw-r--r--@  1 mariuszbudzisz  staff   7678 Aug  9 11:31 csrf.py
+-rw-r--r--@  1 mariuszbudzisz  staff  12770 Aug  9 11:31 decorators.py
+-rw-r--r--@  1 mariuszbudzisz  staff   5872 Aug  9 11:31 dependencies.py
+-rw-r--r--@  1 mariuszbudzisz  staff  13990 Aug  9 11:31 session_manager.py
+-rw-r--r--@  1 mariuszbudzisz  staff   7786 Aug  9 11:31 token_blacklist.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/auth/__pycache__:
+total 120
+-rw-r--r--@  1 mariuszbudzisz  staff    484 Aug  9 11:31 __init__.cpython-313.pyc
+drwxr-xr-x@  8 mariuszbudzisz  staff    256 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 ..
+-rw-r--r--@  1 mariuszbudzisz  staff   2701 Aug  9 11:31 cookie_utils.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff   8258 Aug  9 11:31 csrf.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff   7615 Aug  9 11:31 dependencies.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  18978 Aug  9 11:31 session_manager.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  10052 Aug  9 11:31 token_blacklist.cpython-313.pyc
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/middleware:
+total 384
+-rw-r--r--@  1 mariuszbudzisz  staff      0 Aug  9 11:31 __init__.py
+drwxr-xr-x@ 17 mariuszbudzisz  staff    544 Aug  9 11:31 __pycache__
+drwxr-xr-x@ 22 mariuszbudzisz  staff    704 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 ..
+-rw-r--r--@  1 mariuszbudzisz  staff   6009 Aug  9 11:31 api_key_auth.py
+-rw-r--r--@  1 mariuszbudzisz  staff   6214 Aug  9 11:31 api_usage.py
+-rw-r--r--@  1 mariuszbudzisz  staff  13940 Aug  9 11:31 audit.py
+-rw-r--r--@  1 mariuszbudzisz  staff   4390 Aug  9 11:31 auth.py
+-rw-r--r--@  1 mariuszbudzisz  staff   7097 Aug  9 11:31 compression.py
+-rw-r--r--@  1 mariuszbudzisz  staff   5217 Aug  9 11:31 csrf.py
+-rw-r--r--@  1 mariuszbudzisz  staff   8542 Aug  9 11:31 debugging.py
+-rw-r--r--@  1 mariuszbudzisz  staff  10475 Aug  9 11:31 enhanced_security.py
+-rw-r--r--@  1 mariuszbudzisz  staff  11217 Aug  9 11:31 feature_permissions.py
+-rw-r--r--@  1 mariuszbudzisz  staff  10184 Aug  9 11:31 fraud_detection.py
+-rw-r--r--@  1 mariuszbudzisz  staff   1324 Aug  9 11:31 logging.py
+-rw-r--r--@  1 mariuszbudzisz  staff   8321 Aug  9 11:31 monitoring.py
+-rw-r--r--@  1 mariuszbudzisz  staff  14840 Aug  9 11:31 rate_limit_advanced.py
+-rw-r--r--@  1 mariuszbudzisz  staff  12230 Aug  9 11:31 rate_limit.py
+-rw-r--r--@  1 mariuszbudzisz  staff  12266 Aug  9 11:31 security.py
+-rw-r--r--@  1 mariuszbudzisz  staff   1335 Aug  9 11:31 tenant.py
+-rw-r--r--@  1 mariuszbudzisz  staff  12351 Aug  9 11:31 validation.py
+-rw-r--r--@  1 mariuszbudzisz  staff   8252 Aug  9 11:31 websocket_middleware.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/middleware/__pycache__:
+total 352
+-rw-r--r--@  1 mariuszbudzisz  staff    177 Aug  9 11:31 __init__.cpython-313.pyc
+drwxr-xr-x@ 17 mariuszbudzisz  staff    544 Aug  9 11:31 .
+drwxr-xr-x@ 22 mariuszbudzisz  staff    704 Aug  9 11:31 ..
+-rw-r--r--@  1 mariuszbudzisz  staff   7721 Aug  9 11:31 api_usage.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  16994 Aug  9 11:31 audit.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff   5004 Aug  9 11:31 auth.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff   5404 Aug  9 11:31 csrf.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  10865 Aug  9 11:31 debugging.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  12482 Aug  9 11:31 enhanced_security.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  13013 Aug  9 11:31 feature_permissions.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  11475 Aug  9 11:31 fraud_detection.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff   2047 Aug  9 11:31 logging.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  10453 Aug  9 11:31 monitoring.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  16637 Aug  9 11:31 rate_limit_advanced.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  15482 Aug  9 11:31 rate_limit.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  14625 Aug  9 11:31 security.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff   2288 Aug  9 11:31 tenant.cpython-313.pyc
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security:
+total 608
+-rw-r--r--@  1 mariuszbudzisz  staff   2912 Aug  9 11:30 __init__.py
+drwxr-xr-x@ 13 mariuszbudzisz  staff    416 Aug  9 11:30 __pycache__
+drwxr-xr-x@ 23 mariuszbudzisz  staff    736 Aug  9 11:30 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 ..
+-rw-r--r--@  1 mariuszbudzisz  staff  18806 Aug  9 11:30 advanced_rate_limiter.py
+-rw-r--r--@  1 mariuszbudzisz  staff  15851 Aug  9 11:30 api_key_manager.py
+drwxr-xr-x@  6 mariuszbudzisz  staff    192 Aug  9 11:30 api_keys
+-rw-r--r--@  1 mariuszbudzisz  staff  13860 Aug  9 11:30 api_keys_module.py
+-rw-r--r--@  1 mariuszbudzisz  staff  17046 Aug  9 11:30 audit.py
+-rw-r--r--@  1 mariuszbudzisz  staff  14017 Aug  9 11:30 cors_config.py
+-rw-r--r--@  1 mariuszbudzisz  staff   2119 Aug  9 11:30 dependencies.py
+-rw-r--r--@  1 mariuszbudzisz  staff   9092 Aug  9 11:30 encryption.py
+drwxr-xr-x@  5 mariuszbudzisz  staff    160 Aug  9 11:30 feature_permissions
+-rw-r--r--@  1 mariuszbudzisz  staff  29724 Aug  9 11:30 fraud_detector.py
+-rw-r--r--@  1 mariuszbudzisz  staff  11667 Aug  9 11:30 headers.py
+-rw-r--r--@  1 mariuszbudzisz  staff  19283 Aug  9 11:30 input_validator.py
+-rw-r--r--@  1 mariuszbudzisz  staff  26569 Aug  9 11:30 owasp_compliance.py
+-rw-r--r--@  1 mariuszbudzisz  staff  16017 Aug  9 11:30 password_policy.py
+-rw-r--r--@  1 mariuszbudzisz  staff  16400 Aug  9 11:30 rate_limiter.py
+-rw-r--r--@  1 mariuszbudzisz  staff    667 Aug  9 11:30 secrets.py
+-rw-r--r--@  1 mariuszbudzisz  staff  17580 Aug  9 11:30 session_management.py
+-rw-r--r--@  1 mariuszbudzisz  staff  17697 Aug  9 11:30 sql_injection_prevention.py
+-rw-r--r--@  1 mariuszbudzisz  staff  21476 Aug  9 11:30 vulnerability.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security/__pycache__:
+total 352
+-rw-r--r--@  1 mariuszbudzisz  staff   2971 Aug  9 11:30 __init__.cpython-313.pyc
+drwxr-xr-x@ 13 mariuszbudzisz  staff    416 Aug  9 11:30 .
+drwxr-xr-x@ 23 mariuszbudzisz  staff    736 Aug  9 11:30 ..
+-rw-r--r--@  1 mariuszbudzisz  staff  19192 Aug  9 11:30 api_key_manager.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  17995 Aug  9 11:30 api_keys_module.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  21359 Aug  9 11:30 audit.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff   3002 Aug  9 11:30 dependencies.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  11371 Aug  9 11:30 encryption.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  31020 Aug  9 11:30 fraud_detector.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  11989 Aug  9 11:30 headers.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  17103 Aug  9 11:30 rate_limiter.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff   1650 Aug  9 11:30 secrets.cpython-313.pyc
+-rw-r--r--@  1 mariuszbudzisz  staff  24312 Aug  9 11:30 vulnerability.cpython-313.pyc
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security/api_keys:
+total 104
+-rw-r--r--@  1 mariuszbudzisz  staff     18 Aug  9 11:30 __init__.py
+drwxr-xr-x@  6 mariuszbudzisz  staff    192 Aug  9 11:30 .
+drwxr-xr-x@ 23 mariuszbudzisz  staff    736 Aug  9 11:30 ..
+-rw-r--r--@  1 mariuszbudzisz  staff  13923 Aug  9 11:30 auth_middleware.py
+-rw-r--r--@  1 mariuszbudzisz  staff  10467 Aug  9 11:30 key_generator.py
+-rw-r--r--@  1 mariuszbudzisz  staff  19844 Aug  9 11:30 key_manager.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security/feature_permissions:
+total 24
+-rw-r--r--@  1 mariuszbudzisz  staff    33 Aug  9 11:30 __init__.py
+drwxr-xr-x@  4 mariuszbudzisz  staff   128 Aug  9 11:30 __pycache__
+drwxr-xr-x@  5 mariuszbudzisz  staff   160 Aug  9 11:30 .
+drwxr-xr-x@ 23 mariuszbudzisz  staff   736 Aug  9 11:30 ..
+-rw-r--r--@  1 mariuszbudzisz  staff  6460 Aug  9 11:30 service.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security/feature_permissions/__pycache__:
+total 24
+-rw-r--r--@ 1 mariuszbudzisz  staff   237 Aug  9 11:30 __init__.cpython-313.pyc
+drwxr-xr-x@ 4 mariuszbudzisz  staff   128 Aug  9 11:30 .
+drwxr-xr-x@ 5 mariuszbudzisz  staff   160 Aug  9 11:30 ..
+-rw-r--r--@ 1 mariuszbudzisz  staff  7336 Aug  9 11:30 service.cpython-313.pyc
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2:
+total 16
+-rw-r--r--@  1 mariuszbudzisz  staff  2142 Aug  9 11:31 __init__.py
+drwxr-xr-x@ 11 mariuszbudzisz  staff   352 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff   352 Aug  9 11:31 ..
+drwxr-xr-x@  2 mariuszbudzisz  staff    64 Aug  9 11:31 api_key_management
+drwxr-xr-x@  3 mariuszbudzisz  staff    96 Aug  9 11:31 audit
+drwxr-xr-x@  6 mariuszbudzisz  staff   192 Aug  9 11:31 authentication
+drwxr-xr-x@  6 mariuszbudzisz  staff   192 Aug  9 11:31 authorization
+-rw-r--r--@  1 mariuszbudzisz  staff  3049 Aug  9 11:31 config.py
+drwxr-xr-x@  7 mariuszbudzisz  staff   224 Aug  9 11:31 migration
+drwxr-xr-x@  3 mariuszbudzisz  staff    96 Aug  9 11:31 rate_limiting
+drwxr-xr-x@  2 mariuszbudzisz  staff    64 Aug  9 11:31 utils
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/api_key_management:
+total 0
+drwxr-xr-x@  2 mariuszbudzisz  staff   64 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff  352 Aug  9 11:31 ..
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/audit:
+total 0
+drwxr-xr-x@  3 mariuszbudzisz  staff   96 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff  352 Aug  9 11:31 ..
+drwxr-xr-x@  2 mariuszbudzisz  staff   64 Aug  9 11:31 compliance
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/audit/compliance:
+total 0
+drwxr-xr-x@ 2 mariuszbudzisz  staff  64 Aug  9 11:31 .
+drwxr-xr-x@ 3 mariuszbudzisz  staff  96 Aug  9 11:31 ..
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/authentication:
+total 64
+-rw-r--r--@  1 mariuszbudzisz  staff   990 Aug  9 11:31 __init__.py
+drwxr-xr-x@  6 mariuszbudzisz  staff   192 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff   352 Aug  9 11:31 ..
+-rw-r--r--@  1 mariuszbudzisz  staff  7631 Aug  9 11:31 jwt_handler.py
+-rw-r--r--@  1 mariuszbudzisz  staff  5895 Aug  9 11:31 password_handler.py
+-rw-r--r--@  1 mariuszbudzisz  staff  9910 Aug  9 11:31 session_manager.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/authorization:
+total 56
+-rw-r--r--@  1 mariuszbudzisz  staff   1042 Aug  9 11:31 __init__.py
+drwxr-xr-x@  6 mariuszbudzisz  staff    192 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 ..
+-rw-r--r--@  1 mariuszbudzisz  staff   6806 Aug  9 11:31 decorators.py
+drwxr-xr-x@  2 mariuszbudzisz  staff     64 Aug  9 11:31 feature_permissions
+-rw-r--r--@  1 mariuszbudzisz  staff  13280 Aug  9 11:31 rbac.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/authorization/feature_permissions:
+total 0
+drwxr-xr-x@ 2 mariuszbudzisz  staff   64 Aug  9 11:31 .
+drwxr-xr-x@ 6 mariuszbudzisz  staff  192 Aug  9 11:31 ..
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/migration:
+total 104
+-rw-r--r--@  1 mariuszbudzisz  staff    639 Aug  9 11:31 __init__.py
+drwxr-xr-x@  7 mariuszbudzisz  staff    224 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff    352 Aug  9 11:31 ..
+-rw-r--r--@  1 mariuszbudzisz  staff   8369 Aug  9 11:31 auth_adapter.py
+-rw-r--r--@  1 mariuszbudzisz  staff   8603 Aug  9 11:31 compatibility.py
+-rw-r--r--@  1 mariuszbudzisz  staff   9490 Aug  9 11:31 migrate_data.py
+-rw-r--r--@  1 mariuszbudzisz  staff  11764 Aug  9 11:31 permission_mapper.py
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/rate_limiting:
+total 0
+drwxr-xr-x@  3 mariuszbudzisz  staff   96 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff  352 Aug  9 11:31 ..
+drwxr-xr-x@  2 mariuszbudzisz  staff   64 Aug  9 11:31 algorithms
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/rate_limiting/algorithms:
+total 0
+drwxr-xr-x@ 2 mariuszbudzisz  staff  64 Aug  9 11:31 .
+drwxr-xr-x@ 3 mariuszbudzisz  staff  96 Aug  9 11:31 ..
+
+backend/archive/pre_consolidation_backup_20250809_113029/core/security_v2/utils:
+total 0
+drwxr-xr-x@  2 mariuszbudzisz  staff   64 Aug  9 11:31 .
+drwxr-xr-x@ 11 mariuszbudzisz  staff  352 Aug  9 11:31 ..
+
+backend/archive/pre_consolidation_backup_20250809_113029/middleware:
+total 0
+drwxr-xr-x@  2 mariuszbudzisz  staff   64 Aug  9 11:30 .
+drwxr-xr-x@ 14 mariuszbudzisz  staff  448 Aug  9 11:32 ..
+
+backend/archive/pre_consolidation_backup_20250809_113029/models:
+total 0
+drwxr-xr-x@  2 mariuszbudzisz  staff   64 Aug  9 11:30 .
+drwxr-xr-x@ 14 mariuszbudzisz  staff  448 Aug  9 11:32 ..
