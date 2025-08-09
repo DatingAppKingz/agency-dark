@@ -1,73 +1,61 @@
-"""Create a test user for authentication testing."""
+"""
+Create a test user for authentication testing.
+"""
 import asyncio
-import os
-from datetime import datetime
-from passlib.context import CryptContext
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
+from core.database import engine
+from core.security_v2 import hash_password
+import uuid
 
-# Set up environment
-os.environ['DATABASE_URL'] = 'postgresql+asyncpg://mariuszbudzisz@localhost/agencydark_dev'
-os.environ['REDIS_URL'] = 'redis://localhost:6379'
-os.environ['JWT_SECRET_KEY'] = 'your-secret-key-here'
-os.environ['DISABLE_ML'] = 'true'
 
-from core.database import engine, Base
-from models.agency import Agency
-from models.user import User, UserRole
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-async def create_test_data():
-    """Create test agency and user."""
-    async with AsyncSession(engine) as session:
-        # Check if agency exists
-        result = await session.execute(select(Agency).where(Agency.name == "Test Agency"))
-        agency = result.scalar_one_or_none()
-        
-        if not agency:
-            # Create test agency
-            agency = Agency(
-                name="Test Agency",
-                domain="testagency",
-                email="admin@testagency.com",
-                settings={},
-                is_active=True
-            )
-            session.add(agency)
-            await session.commit()
-            await session.refresh(agency)
-            print(f"Created agency: {agency.name} (ID: {agency.id})")
-        else:
-            print(f"Agency already exists: {agency.name} (ID: {agency.id})")
-        
+async def create_test_user():
+    """Create a test user directly in the database."""
+    async with engine.begin() as conn:
         # Check if user exists
-        result = await session.execute(select(User).where(User.email == "admin@agency.com"))
-        user = result.scalar_one_or_none()
+        result = await conn.execute(
+            text("SELECT id FROM users WHERE email = :email"),
+            {"email": "admin@agency.com"}
+        )
+        existing = result.fetchone()
         
-        if not user:
-            # Create test user
-            user = User(
-                agency_id=agency.id,
-                email="admin@agency.com",
-                username="admin",
-                password_hash=pwd_context.hash("admin123"),
-                first_name="Admin",
-                last_name="User",
-                role=UserRole.AGENCY_OWNER,
-                is_active=True,
-                is_verified=True,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+        if existing:
+            print(f"User admin@agency.com already exists with ID: {existing[0]}")
+            # Update password just in case
+            await conn.execute(
+                text("UPDATE users SET hashed_password = :password WHERE email = :email"),
+                {
+                    "email": "admin@agency.com",
+                    "password": hash_password("admin123")
+                }
             )
-            session.add(user)
-            await session.commit()
-            print(f"Created user: {user.email} with password: admin123")
+            print("Password updated to 'admin123'")
         else:
-            print(f"User already exists: {user.email}")
-        
-        # Close the engine
-        await engine.dispose()
+            # Create new user with minimal fields that exist in DB
+            user_id = str(uuid.uuid4())
+            await conn.execute(
+                text("""
+                    INSERT INTO users (
+                        id, email, hashed_password, 
+                        is_active, is_verified, is_superuser,
+                        role, permissions,
+                        created_at, updated_at
+                    ) VALUES (
+                        :id, :email, :password,
+                        true, true, true,
+                        'super_admin', '{}',
+                        NOW(), NOW()
+                    )
+                """),
+                {
+                    "id": user_id,
+                    "email": "admin@agency.com",
+                    "password": hash_password("admin123")
+                }
+            )
+            print(f"Created user admin@agency.com with ID: {user_id}")
+            print("Password: admin123")
+
 
 if __name__ == "__main__":
-    asyncio.run(create_test_data())
+    asyncio.run(create_test_user())

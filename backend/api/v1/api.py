@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 # Import only essential endpoints to fix authentication
-from .endpoints import auth
+from .endpoints import auth_fixed as auth
 
 # Comment out problematic imports temporarily
 # from .endpoints import auth_minimal, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, chat_enhanced, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search, notifications, translations, data_export, data_import, cache, external_api, enhanced_reports, schedule, models, models_bulk, payouts, invoices, email_preferences

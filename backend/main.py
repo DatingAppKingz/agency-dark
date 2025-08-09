@@ -66,7 +66,7 @@ async def lifespan(app: FastAPI):
     
     # Initialize security_v2 session manager
     from core.security_v2 import init_session_manager
-    await init_session_manager()
+    init_session_manager(redis_client)  # Not async, just a regular function
     logger.info("Security session manager initialized")
     
     # Start monitoring service
@@ -154,7 +154,9 @@ def get_custom_openapi():
 app.openapi = get_custom_openapi
 
 # CORS settings
-cors_origins = settings.ALLOWED_ORIGINS.split(",") if settings.ALLOWED_ORIGINS else ["http://localhost:3000"]
+cors_origins = settings.ALLOWED_ORIGINS if isinstance(settings.ALLOWED_ORIGINS, list) else (
+    settings.ALLOWED_ORIGINS.split(",") if isinstance(settings.ALLOWED_ORIGINS, str) else ["http://localhost:3000"]
+)
 
 app.add_middleware(
     CORSMiddleware,

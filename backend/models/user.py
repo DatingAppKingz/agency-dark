@@ -31,14 +31,14 @@ class User(Base):
     
     # Authentication fields
     email = Column(String(255), unique=True, index=True, nullable=False)
-    username = Column(String(100), unique=True, index=True, nullable=True)  # Made nullable for existing DB
+    username = Column(String(100), unique=True, index=True, nullable=True)  # Now exists in DB
     password_hash = Column("hashed_password", String(255), nullable=False)  # Map to actual column name
     
     # Profile fields
     # Note: Database uses 'full_name' but we map it differently
     _full_name = Column("full_name", String(255), nullable=True)
-    first_name = Column(String(100), nullable=True)  # Virtual - will use _full_name
-    last_name = Column(String(100), nullable=True)   # Virtual - will use _full_name
+    first_name = Column(String(100), nullable=True)  # Now exists in DB
+    last_name = Column(String(100), nullable=True)   # Now exists in DB
     phone = Column(String(20), nullable=True)
     avatar_url = Column(String(500), nullable=True)
     bio = Column(String(1000), nullable=True)
@@ -64,7 +64,7 @@ class User(Base):
     agency_id = Column(UUID(as_uuid=True), ForeignKey("agencies.id", ondelete="SET NULL"), nullable=True)
     
     # Relationships
-    agency = relationship("Agency", back_populates="users", lazy="joined")
+    # agency = relationship("Agency", back_populates="users", lazy="joined")  # Disabled - Agency model mismatch
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan", foreign_keys="[APIKey.user_id]")
     

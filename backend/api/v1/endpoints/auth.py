@@ -37,7 +37,7 @@ from core.domain.schemas import (
 )
 from core.dependencies import CurrentUser, CurrentUserOptional
 from core.email.email_service import email_service
-from core.middleware.rate_limit import rate_limit
+from core.middleware.rate_limit_simple import rate_limit
 from core.errors import (
     DuplicateError,
     NotFoundError,
@@ -165,6 +165,7 @@ async def register(
     
     # If full_name is provided, split it into first and last names
     if user_data.full_name:
+        user._full_name = user_data.full_name
         names = user_data.full_name.strip().split(' ', 1)
         user.first_name = names[0]
         if len(names) > 1:
