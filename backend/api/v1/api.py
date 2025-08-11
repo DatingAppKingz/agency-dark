@@ -1,10 +1,18 @@
 from fastapi import APIRouter
 
 # Import essential endpoints
-from .endpoints import auth, users_simple, agencies
+from .endpoints import (
+    auth, users_simple, agencies, 
+    # chat,  # Has issues with current_user
+    # realtime_analytics,  # Has import issues
+    # enhanced_reports,  # Has response model issues
+    # invoices, payouts,  # May have issues
+    # api_keys, notifications, search, media,  # May have issues
+    health
+)
 
 # Comment out problematic imports temporarily
-# from .endpoints import auth_minimal, api_keys, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat, chat_enhanced, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, realtime_analytics, media, search, notifications, translations, data_export, data_import, cache, external_api, enhanced_reports, schedule, models, models_bulk, payouts, invoices, email_preferences
+# from .endpoints import auth_minimal, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat_enhanced, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, translations, data_export, data_import, cache, external_api, schedule, models, models_bulk, email_preferences
 # from .platform_api_keys import router as platform_api_keys_router
 # from .audit import router as audit_router
 # from .rate_limits_advanced import router as rate_limits_advanced_router
@@ -34,6 +42,16 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(users_simple.router, tags=["users"])
 api_router.include_router(agencies.router, tags=["agencies"])
+# api_router.include_router(chat.router, prefix="/chat", tags=["chat"])
+# api_router.include_router(realtime_analytics.router, tags=["analytics"])
+# api_router.include_router(enhanced_reports.router, tags=["reports"])
+# api_router.include_router(invoices.router, prefix="/invoices", tags=["invoices"])
+# api_router.include_router(payouts.router, prefix="/payouts", tags=["payouts"])
+# api_router.include_router(api_keys.router, prefix="/api-keys", tags=["api-keys"])
+# api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+# api_router.include_router(search.router, prefix="/search", tags=["search"])
+# api_router.include_router(media.router, tags=["media"])
+api_router.include_router(health.router, tags=["health"])
 
 # Comment out other routers temporarily to fix authentication
 """
@@ -51,7 +69,6 @@ api_router.include_router(sync_dashboard.router, tags=["sync-dashboard"])
 api_router.include_router(sync_conflicts.router, tags=["sync-conflicts"])
 api_router.include_router(sync_error_monitoring.router, tags=["sync-errors"])
 api_router.include_router(realtime_analytics.router, tags=["realtime-analytics"])
-api_router.include_router(chat.router, prefix="/chat", tags=["chat"])
 api_router.include_router(chat_enhanced.router, prefix="/chat", tags=["chat-enhanced"])
 api_router.include_router(api_keys.router, prefix="/api-keys", tags=["api-keys"])
 api_router.include_router(api_keys_management.router, tags=["api-keys-management"])
