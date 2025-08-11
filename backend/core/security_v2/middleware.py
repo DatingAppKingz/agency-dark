@@ -92,7 +92,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         
         # Add CSP header for production
-        if security_config.ENVIRONMENT == "production":
+        if getattr(security_config, 'ENVIRONMENT', 'development') == "production":
             response.headers["Content-Security-Policy"] = (
                 "default-src 'self'; "
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "

@@ -157,7 +157,7 @@ async def register(
         email=user_data.email,
         username=username,
         password_hash=hash_password(user_data.password),  # Use security_v2 hash
-        role=user_data.role or UserRole.MEMBER,
+        role=user_data.role or UserRole.AGENCY_MEMBER,
         agency_id=user_data.agency_id,
         is_active=True,  # For MVP, activate immediately
         is_verified=False
@@ -175,12 +175,25 @@ async def register(
     await db.commit()
     await db.refresh(user)
     
-    # Send verification email asynchronously
-    asyncio.create_task(
-        email_service.send_verification_email(user.email, generate_verification_token())
-    )
+    # Send verification email asynchronously - disabled for now
+    # TODO: Fix email service integration
+    # asyncio.create_task(
+    #     email_service.send_verification_email(user.email, generate_verification_token())
+    # )
     
-    return UserResponse.model_validate(user)
+    # Convert to UserResponse with proper handling for datetime fields
+    return UserResponse(
+        id=user.id,
+        email=user.email,
+        agency_id=user.agency_id,
+        role=user.role,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+        last_login=user.last_login_at,
+        created_at=user.created_at or datetime.now(),
+        updated_at=user.updated_at or datetime.now(),
+        full_name=user._full_name
+    )
 
 
 @router.post("/login", response_model=Token)
@@ -252,15 +265,18 @@ async def logout(
 ):
     """Logout and invalidate tokens."""
     if current_user and credentials:
+        # current_user is a dict from the decorator, not a User object
+        user_id = current_user.get("user_id") if isinstance(current_user, dict) else current_user.id
         # Invalidate session
         await db.execute(
             text("DELETE FROM sessions WHERE user_id = :user_id"),
-            {"user_id": current_user.id}
+            {"user_id": user_id}
         )
         await db.commit()
         
         # Add token to blacklist (if using session_manager)
-        await session_manager.revoke_token(credentials.credentials)
+        if session_manager:
+            await session_manager.revoke_token(credentials.credentials)
     
     # Clear cookies
     clear_auth_cookies(response)
@@ -279,7 +295,7 @@ async def refresh_token(
         raise AuthenticationError("Refresh token not provided")
     
     # Decode and verify refresh token
-    payload = decode_token(refresh_token, token_type="refresh")
+    payload = verify_token(refresh_token, expected_type="refresh")
     if not payload:
         raise AuthenticationError("Invalid refresh token")
     
@@ -316,12 +332,36 @@ async def refresh_token(
     )
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 async def get_current_user_info(
-    current_user: CurrentUser
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db)
 ):
     """Get current user information."""
-    return UserResponse.model_validate(current_user)
+    # current_user is a dict from the decorator, get the actual User object
+    user_id = current_user.get("user_id")
+    
+    if not user_id:
+        raise AuthenticationError("User ID not found in token")
+    
+    result = await db.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise NotFoundError(resource="User", identifier=user_id)
+    
+    return {
+        "id": str(user.id),
+        "email": user.email,
+        "username": user.username,
+        "role": user.role,
+        "is_active": user.is_active,
+        "agency_id": str(user.agency_id) if user.agency_id else None,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "updated_at": user.updated_at.isoformat() if user.updated_at else None
+    }
 
 
 @router.post("/verify-email")
@@ -379,5 +419,7 @@ async def verify_access_token(
 ):
     """Verify if access token is valid."""
     if current_user:
-        return {"valid": True, "user_id": str(current_user.id)}
+        # current_user is a dict from the decorator, not a User object
+        user_id = current_user.get("user_id") if isinstance(current_user, dict) else current_user.id
+        return {"valid": True, "user_id": str(user_id)}
     return {"valid": False}

@@ -13,10 +13,10 @@ class UserRole(str, enum.Enum):
     SUPER_ADMIN = "super_admin"  # Platform owner
     AGENCY_OWNER = "agency_owner"  # Agency owner
     AGENCY_ADMIN = "agency_admin"  # Agency administrator
-    AGENCY_STAFF = "agency_staff"  # Agency staff member
+    AGENCY_MEMBER = "agency_member"  # Agency member (was AGENCY_STAFF)
     MODEL = "model"  # OnlyFans model
     CHATTER = "chatter"  # Chat operator
-    MEMBER = "member"  # Basic member
+    # Note: MEMBER not in database enum, using AGENCY_MEMBER instead
 
 
 class User(Base):
@@ -49,7 +49,7 @@ class User(Base):
     is_superuser = Column(Boolean, default=False, nullable=False)
     
     # Role and permissions
-    role = Column(SQLEnum(UserRole), default=UserRole.MEMBER, nullable=False)
+    role = Column(SQLEnum(UserRole), default=UserRole.AGENCY_MEMBER, nullable=False)
     permissions = Column(JSON, default=dict, nullable=False)
     
     # Verification and security

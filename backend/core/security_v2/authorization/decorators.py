@@ -166,7 +166,7 @@ async def get_current_user(
         )
     
     return {
-        "user_id": int(payload.get("sub")) if payload.get("sub") else None,
+        "user_id": payload.get("sub"),  # UUID, not int
         "email": payload.get("email"),
         "role": payload.get("role", "viewer"),
         "agency_id": payload.get("agency_id")
@@ -194,7 +194,7 @@ async def get_current_user_optional(
         return None
     
     return {
-        "user_id": int(payload.get("sub")) if payload.get("sub") else None,
+        "user_id": payload.get("sub"),  # UUID, not int
         "email": payload.get("email"),
         "role": payload.get("role", "viewer"),
         "agency_id": payload.get("agency_id")

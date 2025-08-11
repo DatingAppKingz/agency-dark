@@ -42,7 +42,7 @@ class Agency(AgencyBase):
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = Field(None, max_length=255)
-    role: UserRole = UserRole.MEMBER
+    role: UserRole = UserRole.AGENCY_MEMBER
 
 
 class UserCreate(UserBase):
