@@ -220,40 +220,40 @@ backend/oauth/
 
 ### Day 6-7: Authorization Server
 
-#### 2.1 OAuth Configuration
+#### 2.1 OAuth Configuration ✅
 **File**: `backend/oauth/config.py`
 
-- [ ] Create OAuthConfig class
-  - [ ] ACCESS_TOKEN_LIFETIME (default: 3600)
-  - [ ] REFRESH_TOKEN_LIFETIME (default: 1209600)
-  - [ ] AUTHORIZATION_CODE_LIFETIME (default: 600)
-  - [ ] REQUIRE_PKCE (default: True)
-  - [ ] SUPPORTED_SCOPES list
-  - [ ] ISSUER URL configuration
+- [x] Create OAuthConfig class
+  - [x] ACCESS_TOKEN_LIFETIME (default: 3600)
+  - [x] REFRESH_TOKEN_LIFETIME (default: 1209600)
+  - [x] AUTHORIZATION_CODE_LIFETIME (default: 600)
+  - [x] REQUIRE_PKCE (default: True)
+  - [x] SUPPORTED_SCOPES list
+  - [x] ISSUER URL configuration
 
-- [ ] Update .env.example
-  - [ ] Add OAuth configuration variables
-  - [ ] Document required settings
-  - [ ] Provide development defaults
+- [x] Update .env.example
+  - [x] Add OAuth configuration variables
+  - [x] Document required settings
+  - [x] Provide development defaults
 
-#### 2.2 Custom Grants Implementation
+#### 2.2 Custom Grants Implementation ✅
 **File**: `backend/oauth/grants.py`
 
-- [ ] Implement AgencyAuthorizationCodeGrant
-  - [ ] Add validate_authorization_request
-  - [ ] Add create_authorization_response
-  - [ ] Implement agency-level scope validation
-  - [ ] Add consent screen data preparation
+- [x] Implement AgencyAuthorizationCodeGrant
+  - [x] Add validate_authorization_request
+  - [x] Add create_authorization_response
+  - [x] Implement agency-level scope validation
+  - [x] Add consent screen data preparation
 
-- [ ] Implement AgencyPasswordGrant (for legacy support)
-  - [ ] Validate username/password
-  - [ ] Check agency membership
-  - [ ] Generate appropriate tokens
+- [x] Implement AgencyPasswordGrant (for legacy support)
+  - [x] Validate username/password
+  - [x] Check agency membership
+  - [x] Generate appropriate tokens
 
-- [ ] Implement AgencyClientCredentialsGrant
-  - [ ] Validate client credentials
-  - [ ] Check agency authorization
-  - [ ] Issue M2M tokens
+- [x] Implement AgencyClientCredentialsGrant
+  - [x] Validate client credentials
+  - [x] Check agency authorization
+  - [x] Issue M2M tokens
 
 ### Day 8-9: OAuth Endpoints
 
