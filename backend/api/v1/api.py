@@ -2,13 +2,9 @@ from fastapi import APIRouter
 
 # Import essential endpoints
 from .endpoints import (
-    auth, users_simple, agencies, 
-    # chat,  # Has issues with current_user
-    # realtime_analytics,  # Has import issues
-    # enhanced_reports,  # Has response model issues
-    # invoices, payouts,  # May have issues
-    # api_keys, notifications, search, media,  # May have issues
-    health
+    auth, users_simple, agencies, health,
+    chat_simple, analytics_simple, reports_simple, 
+    financial_simple, other_simple
 )
 
 # Comment out problematic imports temporarily
@@ -42,16 +38,14 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(users_simple.router, tags=["users"])
 api_router.include_router(agencies.router, tags=["agencies"])
-# api_router.include_router(chat.router, prefix="/chat", tags=["chat"])
-# api_router.include_router(realtime_analytics.router, tags=["analytics"])
-# api_router.include_router(enhanced_reports.router, tags=["reports"])
-# api_router.include_router(invoices.router, prefix="/invoices", tags=["invoices"])
-# api_router.include_router(payouts.router, prefix="/payouts", tags=["payouts"])
-# api_router.include_router(api_keys.router, prefix="/api-keys", tags=["api-keys"])
-# api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
-# api_router.include_router(search.router, prefix="/search", tags=["search"])
-# api_router.include_router(media.router, tags=["media"])
 api_router.include_router(health.router, tags=["health"])
+
+# Include simplified routers
+api_router.include_router(chat_simple.router, tags=["chat"])
+api_router.include_router(analytics_simple.router, tags=["analytics"])
+api_router.include_router(reports_simple.router, tags=["reports"])
+api_router.include_router(financial_simple.router, tags=["financial"])
+api_router.include_router(other_simple.router, tags=["misc"])
 
 # Comment out other routers temporarily to fix authentication
 """
