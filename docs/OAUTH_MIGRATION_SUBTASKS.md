@@ -24,8 +24,8 @@ This document provides granular subtasks for each phase of the OAuth migration, 
 #### 1.2 Database Schema Creation
 **File**: `backend/alembic/versions/043_add_oauth_tables.py`
 
-- [ ] Create migration file using: `alembic revision -m "Add OAuth tables"`
-- [ ] Define oauth_clients table schema
+- [x] Create migration file using: `alembic revision -m "Add OAuth tables"`
+- [x] Define oauth_clients table schema
   - [ ] id (UUID, primary key)
   - [ ] agency_id (UUID, foreign key to agencies)
   - [ ] client_id (VARCHAR(48), unique, indexed)
@@ -94,7 +94,7 @@ This document provides granular subtasks for each phase of the OAuth migration, 
 
 ### Day 3-4: Core OAuth Implementation
 
-#### 1.4 Create OAuth Directory Structure
+#### 1.4 Create OAuth Directory Structure ✅
 ```
 backend/oauth/
 ├── __init__.py
@@ -107,14 +107,14 @@ backend/oauth/
 └── utils.py
 ```
 
-- [ ] Create directory structure
-- [ ] Add __init__.py with proper exports
+- [x] Create directory structure
+- [x] Add __init__.py with proper exports
 
-#### 1.5 Implement OAuth Models
+#### 1.5 Implement OAuth Models ✅
 **File**: `backend/oauth/models.py`
 
-- [ ] Import SQLAlchemy and required types
-- [ ] Create OAuthClient model class
+- [x] Import SQLAlchemy and required types
+- [x] Create OAuthClient model class
   - [ ] Implement client_metadata property
   - [ ] Implement check_client_secret method
   - [ ] Add get_allowed_scope method
