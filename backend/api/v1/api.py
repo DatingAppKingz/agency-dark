@@ -7,6 +7,9 @@ from .endpoints import (
     financial_simple, other_simple
 )
 
+# Import OAuth endpoints
+from oauth import router as oauth_router
+
 # Comment out problematic imports temporarily
 # from .endpoints import auth_minimal, api_keys_management, rate_limits, fraud_detection, bulk_operations, reports, ml_analytics, monitoring, users, sync_status, ml_insights_advanced, chat_enhanced, webhook_receiver, webhook_queue, sync_scheduler, api_usage, api_audit, sync_dashboard, sync_conflicts, sync_error_monitoring, translations, data_export, data_import, cache, external_api, schedule, models, models_bulk, email_preferences
 # from .platform_api_keys import router as platform_api_keys_router
@@ -39,6 +42,9 @@ api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(users_simple.router, tags=["users"])
 api_router.include_router(agencies.router, tags=["agencies"])
 api_router.include_router(health.router, tags=["health"])
+
+# Include OAuth router
+api_router.include_router(oauth_router, prefix="/oauth", tags=["oauth"])
 
 # Include simplified routers
 api_router.include_router(chat_simple.router, tags=["chat"])

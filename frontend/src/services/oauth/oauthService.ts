@@ -265,6 +265,7 @@ export class OAuthService {
       code,
       redirect_uri: redirectUri,
       client_id: this.config.clientId,
+      client_secret: 'demo_secret', // For demo purposes
       code_verifier: codeVerifier,
     });
 
@@ -538,7 +539,8 @@ export class OAuthService {
 
 // Create default instance
 export const oauthService = new OAuthService({
-  clientId: process.env.REACT_APP_OAUTH_CLIENT_ID || 'agency_dark_web',
+  clientId: process.env.REACT_APP_OAUTH_CLIENT_ID || 'demo_client',
+  redirectUri: `${window.location.origin}/callback`,
 });
 
 // Export for use in other services

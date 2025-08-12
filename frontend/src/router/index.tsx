@@ -13,6 +13,7 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
+const OAuthCallback = lazy(() => import('@/pages/auth/OAuthCallback'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const UsersPage = lazy(() => import('@/pages/users/UsersPage'));
 const ModelOverviewPage = lazy(() => import('@/pages/models/ModelOverviewPage'));
@@ -86,6 +87,14 @@ export const router = createBrowserRouter([
             ),
           },
         ],
+      },
+      {
+        path: 'callback',
+        element: (
+          <LazyPage>
+            <OAuthCallback />
+          </LazyPage>
+        ),
       },
       {
         path: 'dashboard',
