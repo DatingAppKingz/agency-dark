@@ -1,0 +1,557 @@
+# OAuth Monitoring and Alert Configuration
+# This file defines monitoring rules, metrics, and alerts for OAuth infrastructure
+
+# ============================================================================
+# Application Monitoring
+# ============================================================================
+
+application:
+  health_checks:
+    oauth_endpoints:
+      - name: "Authorization Endpoint"
+        url: "${BASE_URL}/oauth/authorize"
+        method: GET
+        expected_status: [302, 400]
+        interval: 30s
+        timeout: 5s
+        
+      - name: "Token Endpoint"
+        url: "${BASE_URL}/oauth/token"
+        method: POST
+        expected_status: [400, 401]
+        interval: 30s
+        timeout: 5s
+        
+      - name: "JWKS Endpoint"
+        url: "${BASE_URL}/.well-known/jwks.json"
+        method: GET
+        expected_status: 200
+        interval: 60s
+        timeout: 5s
+        
+      - name: "OpenID Configuration"
+        url: "${BASE_URL}/.well-known/openid-configuration"
+        method: GET
+        expected_status: 200
+        interval: 60s
+        timeout: 5s
+        
+      - name: "Userinfo Endpoint"
+        url: "${BASE_URL}/oauth/userinfo"
+        method: GET
+        expected_status: [401]
+        interval: 30s
+        timeout: 5s
+    
+    provider_health:
+      google:
+        url: "https://www.googleapis.com/oauth2/v1/certs"
+        interval: 300s
+        timeout: 10s
+        
+      instagram:
+        url: "https://api.instagram.com/.well-known/oauth-authorization-server"
+        interval: 300s
+        timeout: 10s
+        
+      microsoft:
+        url: "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration"
+        interval: 300s
+        timeout: 10s
+
+  error_tracking:
+    sentry:
+      enabled: true
+      dsn: "${SENTRY_DSN}"
+      environment: "${ENVIRONMENT}"
+      traces_sample_rate: 0.1
+      profiles_sample_rate: 0.1
+      
+      error_filters:
+        - "rate_limit_exceeded"  # Expected, don't alert
+        - "token_expired"         # Expected, don't alert
+        
+      alert_rules:
+        - name: "High Error Rate"
+          condition: "error_rate > 5%"
+          time_window: "5m"
+          
+        - name: "Critical Errors"
+          condition: "error_type in ['database_connection', 'redis_connection', 'provider_unavailable']"
+          time_window: "1m"
+
+  performance_metrics:
+    apm:
+      enabled: true
+      service_name: "agency-dark-oauth"
+      
+      transactions:
+        - name: "oauth.authorize"
+          alert_threshold: 1000ms
+          
+        - name: "oauth.token"
+          alert_threshold: 500ms
+          
+        - name: "oauth.introspect"
+          alert_threshold: 100ms
+          
+        - name: "oauth.userinfo"
+          alert_threshold: 200ms
+      
+      custom_metrics:
+        - name: "oauth.token.generation_time"
+          type: histogram
+          unit: milliseconds
+          
+        - name: "oauth.pkce.validation_time"
+          type: histogram
+          unit: milliseconds
+          
+        - name: "oauth.provider.callback_time"
+          type: histogram
+          unit: milliseconds
+          tags:
+            - provider
+
+  custom_metrics:
+    oauth_specific:
+      - name: "oauth.authorizations.total"
+        type: counter
+        description: "Total authorization requests"
+        tags: ["client_id", "response_type", "status"]
+        
+      - name: "oauth.tokens.issued"
+        type: counter
+        description: "Tokens issued"
+        tags: ["client_id", "token_type", "grant_type"]
+        
+      - name: "oauth.tokens.active"
+        type: gauge
+        description: "Currently active tokens"
+        tags: ["client_id", "token_type"]
+        
+      - name: "oauth.tokens.revoked"
+        type: counter
+        description: "Tokens revoked"
+        tags: ["client_id", "reason"]
+        
+      - name: "oauth.consents.granted"
+        type: counter
+        description: "Consents granted"
+        tags: ["client_id", "scope"]
+        
+      - name: "oauth.security.failed_attempts"
+        type: counter
+        description: "Failed authentication attempts"
+        tags: ["reason", "client_id"]
+
+# ============================================================================
+# Infrastructure Monitoring
+# ============================================================================
+
+infrastructure:
+  server_metrics:
+    cpu:
+      warning_threshold: 70
+      critical_threshold: 90
+      check_interval: 60s
+      
+    memory:
+      warning_threshold: 80
+      critical_threshold: 95
+      check_interval: 60s
+      
+    disk:
+      warning_threshold: 75
+      critical_threshold: 90
+      check_interval: 300s
+      
+    network:
+      packet_loss_threshold: 0.01
+      latency_threshold: 100ms
+      bandwidth_utilization: 80
+      
+  database_metrics:
+    postgresql:
+      connection_pool:
+        min_available: 5
+        max_used_percentage: 90
+        
+      query_performance:
+        slow_query_threshold: 1000ms
+        deadlock_detection: true
+        
+      replication:
+        max_lag: 10s
+        monitor_interval: 30s
+        
+      table_stats:
+        - table: "oauth_tokens"
+          max_rows: 10000000
+          bloat_threshold: 30
+          
+        - table: "oauth_audit_logs"
+          max_rows: 50000000
+          bloat_threshold: 40
+          
+      backup_monitoring:
+        last_backup_threshold: 24h
+        backup_size_change: 20
+        
+  redis_metrics:
+    memory:
+      max_memory_percentage: 85
+      eviction_policy: "allkeys-lru"
+      
+    performance:
+      slow_log_threshold: 10ms
+      max_clients: 10000
+      
+    persistence:
+      last_save_threshold: 300s
+      aof_rewrite_percentage: 100
+      
+    keyspace:
+      - pattern: "oauth:token:*"
+        max_keys: 1000000
+        ttl_check: true
+        
+      - pattern: "oauth:session:*"
+        max_keys: 500000
+        ttl_check: true
+        
+  network_metrics:
+    load_balancer:
+      health_check_interval: 10s
+      unhealthy_threshold: 3
+      healthy_threshold: 2
+      
+    cdn:
+      cache_hit_ratio: 90
+      origin_response_time: 500ms
+      error_rate: 0.1
+
+# ============================================================================
+# Alert Configuration
+# ============================================================================
+
+alerts:
+  critical:
+    - name: "OAuth Service Down"
+      condition: |
+        health_check.oauth_endpoints.failing > 2
+      duration: "2m"
+      channels: ["pagerduty", "slack-critical", "email-oncall"]
+      
+    - name: "Database Connection Failed"
+      condition: |
+        database.connection_pool.available == 0
+      duration: "30s"
+      channels: ["pagerduty", "slack-critical", "email-oncall"]
+      
+    - name: "High Token Generation Failure"
+      condition: |
+        oauth.tokens.failed / oauth.tokens.total > 0.1
+      duration: "5m"
+      channels: ["pagerduty", "slack-critical"]
+      
+    - name: "Security Breach Detected"
+      condition: |
+        oauth.security.breach_detected == true
+      duration: "0s"
+      channels: ["pagerduty", "slack-security", "email-security", "sms-oncall"]
+      
+    - name: "Provider Authentication Failed"
+      condition: |
+        provider.auth.failures > 10
+      duration: "5m"
+      channels: ["pagerduty", "slack-critical"]
+
+  warning:
+    - name: "High Error Rate"
+      condition: |
+        application.error_rate > 0.05
+      duration: "10m"
+      channels: ["slack-warnings", "email-team"]
+      
+    - name: "Slow Response Time"
+      condition: |
+        oauth.response_time.p95 > 1000ms
+      duration: "15m"
+      channels: ["slack-warnings"]
+      
+    - name: "High CPU Usage"
+      condition: |
+        infrastructure.cpu.usage > 70
+      duration: "10m"
+      channels: ["slack-warnings"]
+      
+    - name: "Token Cleanup Overdue"
+      condition: |
+        oauth.maintenance.last_cleanup > 48h
+      duration: "1h"
+      channels: ["slack-warnings", "email-team"]
+      
+    - name: "Rate Limiting Active"
+      condition: |
+        oauth.rate_limit.rejections > 100
+      duration: "5m"
+      channels: ["slack-warnings"]
+
+  info:
+    - name: "Deployment Started"
+      condition: |
+        deployment.status == "in_progress"
+      duration: "0s"
+      channels: ["slack-deployments"]
+      
+    - name: "Provider Slow Response"
+      condition: |
+        provider.response_time.p95 > 2000ms
+      duration: "30m"
+      channels: ["slack-info"]
+      
+    - name: "Cache Hit Rate Low"
+      condition: |
+        cache.hit_rate < 0.8
+      duration: "30m"
+      channels: ["slack-info"]
+      
+    - name: "Backup Completed"
+      condition: |
+        backup.status == "completed"
+      duration: "0s"
+      channels: ["slack-info"]
+
+# ============================================================================
+# Escalation Rules
+# ============================================================================
+
+escalation:
+  policies:
+    default:
+      levels:
+        - level: 1
+          delay: 0m
+          contacts: ["oncall-primary"]
+          
+        - level: 2
+          delay: 5m
+          contacts: ["oncall-secondary", "team-lead"]
+          
+        - level: 3
+          delay: 15m
+          contacts: ["engineering-manager", "cto"]
+          
+    security:
+      levels:
+        - level: 1
+          delay: 0m
+          contacts: ["security-team", "oncall-primary"]
+          
+        - level: 2
+          delay: 2m
+          contacts: ["security-lead", "engineering-manager"]
+          
+        - level: 3
+          delay: 5m
+          contacts: ["ciso", "cto"]
+          
+    business_hours:
+      active: "Mon-Fri 09:00-18:00 PST"
+      levels:
+        - level: 1
+          delay: 0m
+          contacts: ["team-slack"]
+          
+        - level: 2
+          delay: 30m
+          contacts: ["team-lead"]
+
+  notification_channels:
+    pagerduty:
+      integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+      severity_mapping:
+        critical: "critical"
+        warning: "warning"
+        info: "info"
+        
+    slack:
+      workspaces:
+        - name: "main"
+          webhook_url: "${SLACK_WEBHOOK_URL}"
+          channels:
+            critical: "#alerts-critical"
+            warnings: "#alerts-warnings"
+            info: "#alerts-info"
+            security: "#security-alerts"
+            deployments: "#deployments"
+            
+    email:
+      smtp:
+        host: "${SMTP_HOST}"
+        port: 587
+        username: "${SMTP_USERNAME}"
+        password: "${SMTP_PASSWORD}"
+        from: "oauth-alerts@agency-dark.com"
+        
+      lists:
+        oncall: ["oncall@agency-dark.com"]
+        team: ["engineering@agency-dark.com"]
+        security: ["security@agency-dark.com"]
+        
+    sms:
+      provider: "twilio"
+      account_sid: "${TWILIO_ACCOUNT_SID}"
+      auth_token: "${TWILIO_AUTH_TOKEN}"
+      from_number: "${TWILIO_FROM_NUMBER}"
+      
+      contacts:
+        oncall: ["${ONCALL_PHONE}"]
+
+# ============================================================================
+# Dashboard Configuration
+# ============================================================================
+
+dashboards:
+  grafana:
+    oauth_overview:
+      panels:
+        - title: "Request Rate"
+          query: "rate(oauth_requests_total[5m])"
+          visualization: "graph"
+          
+        - title: "Error Rate"
+          query: "rate(oauth_errors_total[5m]) / rate(oauth_requests_total[5m])"
+          visualization: "graph"
+          
+        - title: "Response Time"
+          query: "histogram_quantile(0.95, oauth_response_time_bucket)"
+          visualization: "graph"
+          
+        - title: "Active Tokens"
+          query: "oauth_tokens_active"
+          visualization: "stat"
+          
+        - title: "Token Issuance Rate"
+          query: "rate(oauth_tokens_issued[5m])"
+          visualization: "graph"
+          
+        - title: "Provider Status"
+          query: "up{job='oauth-providers'}"
+          visualization: "table"
+          
+    security_dashboard:
+      panels:
+        - title: "Failed Auth Attempts"
+          query: "rate(oauth_auth_failures[5m])"
+          
+        - title: "Suspicious Activity"
+          query: "oauth_security_events{severity='high'}"
+          
+        - title: "Rate Limit Violations"
+          query: "rate(oauth_rate_limit_exceeded[5m])"
+          
+        - title: "Geographic Distribution"
+          query: "oauth_requests_by_country"
+          
+    performance_dashboard:
+      panels:
+        - title: "Database Query Time"
+          query: "oauth_db_query_duration_seconds"
+          
+        - title: "Redis Operations"
+          query: "rate(redis_commands_total[5m])"
+          
+        - title: "CPU Usage"
+          query: "cpu_usage_percent"
+          
+        - title: "Memory Usage"
+          query: "memory_usage_bytes"
+
+  datadog:
+    enabled: true
+    api_key: "${DATADOG_API_KEY}"
+    app_key: "${DATADOG_APP_KEY}"
+    
+    monitors:
+      - name: "OAuth Service Health"
+        type: "service check"
+        query: "\"oauth.health\".over(\"*\").last(2).count_by_status()"
+        
+      - name: "Token Generation SLO"
+        type: "slo"
+        sli: "oauth.token.success_rate"
+        target: 99.9
+        window: "30d"
+
+# ============================================================================
+# Log Aggregation
+# ============================================================================
+
+logging:
+  elasticsearch:
+    enabled: true
+    cluster: "${ES_CLUSTER_URL}"
+    index_pattern: "oauth-logs-*"
+    
+    retention:
+      hot: 7d
+      warm: 30d
+      cold: 90d
+      delete: 365d
+      
+    alerts:
+      - name: "Error Spike"
+        query: "level:ERROR"
+        threshold: 100
+        window: "5m"
+        
+      - name: "Security Event"
+        query: "tags:security AND level:WARNING"
+        threshold: 10
+        window: "5m"
+        
+  structured_logging:
+    format: "json"
+    fields:
+      - timestamp
+      - level
+      - message
+      - trace_id
+      - span_id
+      - user_id
+      - client_id
+      - ip_address
+      - user_agent
+      - response_time
+      - status_code
+      
+    sensitive_data_masking:
+      - field: "password"
+        mask: "****"
+      - field: "token"
+        mask: "tok_****"
+      - field: "client_secret"
+        mask: "secret_****"
+
+# ============================================================================
+# SLA Configuration
+# ============================================================================
+
+sla:
+  targets:
+    availability: 99.95
+    response_time_p95: 500ms
+    response_time_p99: 1000ms
+    error_rate: 0.1
+    
+  measurement_window: "30d"
+  
+  reporting:
+    frequency: "monthly"
+    recipients: ["management@agency-dark.com", "engineering@agency-dark.com"]
+    
+  violation_alerts:
+    enabled: true
+    channels: ["slack-critical", "email-management"]

@@ -1,0 +1,508 @@
+name: OAuth Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - develop
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'deployment/**'
+      - '.github/workflows/oauth-deployment.yml'
+  pull_request:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+  DOCKER_REGISTRY: 'ghcr.io'
+  IMAGE_NAME: 'agency-dark'
+
+jobs:
+  # ============================================================================
+  # Build Stage
+  # ============================================================================
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image-tag: ${{ steps.meta.outputs.tags }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate version
+        id: version
+        run: |
+          VERSION=$(git describe --tags --always --dirty)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+      
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+      
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm run build
+          npm run build:analyze
+        env:
+          REACT_APP_VERSION: ${{ steps.version.outputs.version }}
+          REACT_APP_OAUTH_ENABLED: true
+      
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      
+      - name: Lint backend
+        working-directory: backend
+        run: |
+          ruff check .
+          mypy .
+      
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ steps.version.outputs.version }}
+      
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            COMMIT_SHA=${{ github.sha }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            frontend/dist
+            backend/dist
+          retention-days: 7
+
+  # ============================================================================
+  # Test Stage
+  # ============================================================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agencydark_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+      
+      - name: Install dependencies
+        run: |
+          cd frontend && npm ci
+          cd ../backend && pip install -r requirements.txt -r requirements-dev.txt
+      
+      - name: Run frontend tests
+        working-directory: frontend
+        run: |
+          npm run test:unit -- --coverage
+          npm run test:integration
+        env:
+          CI: true
+      
+      - name: Run backend tests
+        working-directory: backend
+        run: |
+          pytest tests/unit -v --cov=. --cov-report=xml
+          pytest tests/integration -v
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/agencydark_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET_KEY: test-secret-key
+          OAUTH_ENABLED: true
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: |
+            frontend/coverage/lcov.info
+            backend/coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  # ============================================================================
+  # Security Scanning
+  # ============================================================================
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+      
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'agency-dark'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --enableRetired
+            --enableExperimental
+      
+      - name: OAuth Security Audit
+        working-directory: backend
+        run: |
+          pip install safety bandit
+          safety check
+          bandit -r . -f json -o bandit-report.json
+      
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            trivy-results.sarif
+            bandit-report.json
+            dependency-check-report.html
+
+  # ============================================================================
+  # Performance Testing
+  # ============================================================================
+  performance:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: [build, test]
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup K6
+        run: |
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Run load tests
+        run: |
+          k6 run tests/load/oauth-load-test.js \
+            --out json=load-test-results.json \
+            --summary-export=load-test-summary.json
+        env:
+          K6_VUS: 100
+          K6_DURATION: 5m
+          K6_THRESHOLD_P95: 500
+      
+      - name: Analyze performance results
+        run: |
+          python scripts/analyze-performance.py \
+            --input load-test-results.json \
+            --threshold-p95 500 \
+            --threshold-p99 1000 \
+            --threshold-error-rate 0.01
+      
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: |
+            load-test-results.json
+            load-test-summary.json
+            performance-report.html
+
+  # ============================================================================
+  # Deploy to Environment
+  # ============================================================================
+  deploy:
+    name: Deploy to ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    needs: [build, test, security]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        environment: ${{ fromJson(
+          github.event_name == 'workflow_dispatch' 
+            ? format('["{0}"]', github.event.inputs.environment)
+            : github.ref == 'refs/heads/main' 
+              ? '["production"]' 
+              : '["staging"]'
+        ) }}
+    environment:
+      name: ${{ matrix.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name agency-dark-${{ matrix.environment }} --region us-west-2
+      
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+      
+      - name: Deploy with Helm
+        id: deploy
+        run: |
+          helm upgrade --install agency-dark-oauth ./deployment/helm \
+            --namespace ${{ matrix.environment }} \
+            --create-namespace \
+            --values ./deployment/helm/values.${{ matrix.environment }}.yaml \
+            --set image.tag=${{ needs.build.outputs.version }} \
+            --set oauth.enabled=true \
+            --set oauth.issuer=https://api-${{ matrix.environment }}.agency-dark.com \
+            --wait \
+            --timeout 10m
+          
+          # Get the deployed URL
+          URL=$(kubectl get ingress -n ${{ matrix.environment }} agency-dark-oauth -o jsonpath='{.spec.rules[0].host}')
+          echo "url=https://${URL}" >> $GITHUB_OUTPUT
+      
+      - name: Run smoke tests
+        run: |
+          npm install -g newman
+          newman run tests/postman/oauth-smoke-tests.json \
+            --environment tests/postman/environments/${{ matrix.environment }}.json \
+            --reporters cli,json \
+            --reporter-json-export smoke-test-results.json
+      
+      - name: Verify deployment health
+        run: |
+          kubectl wait --for=condition=ready pod \
+            -l app=agency-dark-oauth \
+            -n ${{ matrix.environment }} \
+            --timeout=300s
+          
+          # Check OAuth endpoints
+          curl -f https://api-${{ matrix.environment }}.agency-dark.com/.well-known/openid-configuration
+          curl -f https://api-${{ matrix.environment }}.agency-dark.com/health
+      
+      - name: Update feature flags
+        run: |
+          python scripts/update-feature-flags.py \
+            --environment ${{ matrix.environment }} \
+            --flag oauth_enabled=true \
+            --flag jwt_enabled=${{ matrix.environment == 'production' && 'false' || 'true' }}
+      
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            OAuth deployment to ${{ matrix.environment }} ${{ job.status }}
+            Version: ${{ needs.build.outputs.version }}
+            URL: ${{ steps.deploy.outputs.url }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+  # ============================================================================
+  # Post-Deployment Verification
+  # ============================================================================
+  verify:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run E2E tests
+        run: |
+          npm install -g @playwright/test
+          npx playwright install chromium
+          npx playwright test tests/e2e/oauth-flows.spec.ts \
+            --config=tests/e2e/playwright.config.ts \
+            --reporter=html
+        env:
+          BASE_URL: ${{ needs.deploy.outputs.url }}
+          OAUTH_ENABLED: true
+      
+      - name: Monitor metrics
+        run: |
+          python scripts/monitor-deployment.py \
+            --environment ${{ matrix.environment }} \
+            --duration 600 \
+            --metrics error_rate,response_time,token_issuance_rate \
+            --threshold-error-rate 0.01 \
+            --threshold-p95-response-time 500
+      
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: playwright-report/
+
+  # ============================================================================
+  # Rollback on Failure
+  # ============================================================================
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy, verify]
+    if: failure()
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      
+      - name: Rollback with Helm
+        run: |
+          helm rollback agency-dark-oauth \
+            --namespace ${{ matrix.environment }} \
+            --wait \
+            --timeout 10m
+      
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "⚠️ OAuth deployment rollback initiated for ${{ matrix.environment }}",
+              color: "warning"
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

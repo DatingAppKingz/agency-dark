@@ -1,0 +1,36 @@
+apiVersion: v2
+name: agency-dark-oauth
+description: OAuth 2.0 Authentication System for Agency Dark
+type: application
+version: 1.0.0
+appVersion: "2.0.0"
+
+keywords:
+  - oauth
+  - authentication
+  - security
+  - react
+  - fastapi
+
+home: https://agency-dark.com
+sources:
+  - https://github.com/agency-dark/oauth
+
+maintainers:
+  - name: Engineering Team
+    email: engineering@agency-dark.com
+
+dependencies:
+  - name: postgresql
+    version: "12.1.9"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+    
+  - name: redis
+    version: "17.7.3"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+
+annotations:
+  category: Authentication
+  licenses: MIT

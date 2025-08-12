@@ -1,0 +1,585 @@
+# Default values for agency-dark-oauth
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# ============================================================================
+# Global Configuration
+# ============================================================================
+
+global:
+  environment: production
+  domain: agency-dark.com
+  imageRegistry: ghcr.io
+  imagePullSecrets:
+    - name: ghcr-secret
+  
+  oauth:
+    enabled: true
+    issuer: https://api.agency-dark.com
+    
+  monitoring:
+    enabled: true
+    namespace: monitoring
+
+# ============================================================================
+# Backend API Configuration
+# ============================================================================
+
+backend:
+  enabled: true
+  
+  replicaCount: 3
+  
+  image:
+    repository: ghcr.io/agency-dark/backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
+    annotations: {}
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+      nginx.ingress.kubernetes.io/rate-limit: "100"
+    hosts:
+      - host: api.agency-dark.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: api-tls
+        hosts:
+          - api.agency-dark.com
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  env:
+    - name: ENVIRONMENT
+      value: production
+    - name: LOG_LEVEL
+      value: INFO
+    - name: CORS_ORIGINS
+      value: "https://app.agency-dark.com,https://admin.agency-dark.com"
+    - name: OAUTH_ENABLED
+      value: "true"
+    - name: JWT_ENABLED
+      value: "false"
+    - name: RATE_LIMIT_ENABLED
+      value: "true"
+    - name: MAX_REQUESTS_PER_MINUTE
+      value: "100"
+  
+  secrets:
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: oauth-secrets
+          key: database-url
+    - name: REDIS_URL
+      valueFrom:
+        secretKeyRef:
+          name: oauth-secrets
+          key: redis-url
+    - name: JWT_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: oauth-secrets
+          key: jwt-secret
+    - name: OAUTH_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: oauth-secrets
+          key: oauth-client-secret
+    - name: ENCRYPTION_KEY
+      valueFrom:
+        secretKeyRef:
+          name: oauth-secrets
+          key: encryption-key
+  
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 8000
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# ============================================================================
+# Frontend Configuration
+# ============================================================================
+
+frontend:
+  enabled: true
+  
+  replicaCount: 2
+  
+  image:
+    repository: ghcr.io/agency-dark/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        more_set_headers "X-Frame-Options: SAMEORIGIN";
+        more_set_headers "X-Content-Type-Options: nosniff";
+        more_set_headers "X-XSS-Protection: 1; mode=block";
+        more_set_headers "Content-Security-Policy: default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:;";
+    hosts:
+      - host: app.agency-dark.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: app-tls
+        hosts:
+          - app.agency-dark.com
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  
+  env:
+    - name: REACT_APP_API_URL
+      value: https://api.agency-dark.com
+    - name: REACT_APP_OAUTH_ENABLED
+      value: "true"
+    - name: REACT_APP_ENVIRONMENT
+      value: production
+
+# ============================================================================
+# OAuth Service Configuration
+# ============================================================================
+
+oauth:
+  enabled: true
+  
+  replicaCount: 3
+  
+  image:
+    repository: ghcr.io/agency-dark/oauth-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  config:
+    issuer: https://api.agency-dark.com
+    
+    token:
+      accessTokenLifetime: 3600
+      refreshTokenLifetime: 2592000
+      idTokenLifetime: 3600
+      authorizationCodeLifetime: 600
+      rotateRefreshTokens: true
+    
+    security:
+      requireHttps: true
+      requirePkce: true
+      tokenEncryption: true
+      
+    providers:
+      google:
+        enabled: true
+        clientId: "google-client-id"
+        # clientSecret stored in secrets
+        
+      instagram:
+        enabled: true
+        clientId: "instagram-client-id"
+        # clientSecret stored in secrets
+        
+      microsoft:
+        enabled: true
+        clientId: "microsoft-client-id"
+        tenantId: "microsoft-tenant-id"
+        # clientSecret stored in secrets
+    
+    rateLimit:
+      authorize: 100
+      token: 200
+      introspect: 500
+      revoke: 100
+
+# ============================================================================
+# Database Configuration
+# ============================================================================
+
+postgresql:
+  enabled: false  # Using external managed database
+  
+  # If using internal PostgreSQL
+  auth:
+    username: agencydark
+    password: ""  # Set via secrets
+    database: agencydark_prod
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: fast-ssd
+    
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+  
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+
+# External database configuration
+externalDatabase:
+  enabled: true
+  host: "postgres.agency-dark.com"
+  port: 5432
+  database: "agencydark_prod"
+  username: "agencydark"
+  # password set via secrets
+  sslMode: "require"
+  
+  poolConfig:
+    minSize: 10
+    maxSize: 50
+    maxOverflow: 20
+    poolTimeout: 30
+    idleTimeout: 600
+
+# ============================================================================
+# Redis Configuration
+# ============================================================================
+
+redis:
+  enabled: false  # Using external managed Redis
+  
+  # If using internal Redis
+  architecture: replication
+  
+  auth:
+    enabled: true
+    password: ""  # Set via secrets
+  
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: fast-ssd
+    
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  
+  replica:
+    replicaCount: 2
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+  
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# External Redis configuration
+externalRedis:
+  enabled: true
+  host: "redis.agency-dark.com"
+  port: 6379
+  # password set via secrets
+  db: 0
+  ssl: true
+  
+  poolConfig:
+    maxConnections: 100
+
+# ============================================================================
+# Job Configuration
+# ============================================================================
+
+jobs:
+  dbMigration:
+    enabled: true
+    
+    image:
+      repository: ghcr.io/agency-dark/migrations
+      tag: latest
+      pullPolicy: IfNotPresent
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    
+    backoffLimit: 3
+    
+  tokenCleanup:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    
+    image:
+      repository: ghcr.io/agency-dark/oauth-cleanup
+      tag: latest
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+# ============================================================================
+# Service Mesh Configuration
+# ============================================================================
+
+serviceMesh:
+  enabled: true
+  
+  istio:
+    enabled: true
+    
+    virtualService:
+      enabled: true
+      gateways:
+        - istio-system/main-gateway
+      
+      retries:
+        attempts: 3
+        perTryTimeout: 30s
+        retryOn: 5xx,reset,connect-failure,refused-stream
+    
+    destinationRule:
+      enabled: true
+      
+      trafficPolicy:
+        connectionPool:
+          tcp:
+            maxConnections: 100
+          http:
+            http1MaxPendingRequests: 100
+            http2MaxRequests: 100
+            maxRequestsPerConnection: 2
+        
+        loadBalancer:
+          simple: LEAST_REQUEST
+        
+        outlierDetection:
+          consecutive5xxErrors: 5
+          interval: 30s
+          baseEjectionTime: 30s
+          maxEjectionPercent: 50
+
+# ============================================================================
+# Monitoring & Observability
+# ============================================================================
+
+monitoring:
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      scrapeTimeout: 10s
+  
+  grafana:
+    enabled: true
+    dashboards:
+      - oauth-overview
+      - oauth-security
+      - oauth-performance
+  
+  alerts:
+    enabled: true
+    rules:
+      - highErrorRate
+      - slowResponseTime
+      - tokenGenerationFailure
+      - providerUnavailable
+
+observability:
+  tracing:
+    enabled: true
+    jaeger:
+      agentHost: jaeger-agent.monitoring
+      agentPort: 6831
+      samplingRate: 0.1
+  
+  logging:
+    enabled: true
+    level: INFO
+    format: json
+    
+    elasticsearch:
+      enabled: true
+      host: elasticsearch.monitoring
+      port: 9200
+      index: oauth-logs
+
+# ============================================================================
+# Security Configuration
+# ============================================================================
+
+security:
+  podSecurityPolicy:
+    enabled: true
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+  
+  networkPolicy:
+    enabled: true
+    policyTypes:
+      - Ingress
+      - Egress
+    
+    ingress:
+      - from:
+        - namespaceSelector:
+            matchLabels:
+              name: production
+        ports:
+        - protocol: TCP
+          port: 8000
+    
+    egress:
+      - to:
+        - namespaceSelector:
+            matchLabels:
+              name: production
+        ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+  
+  secrets:
+    externalSecrets:
+      enabled: true
+      backend: awsSecretsManager
+      region: us-west-2
+    
+    sealedSecrets:
+      enabled: false
+
+# ============================================================================
+# Backup Configuration
+# ============================================================================
+
+backup:
+  enabled: true
+  
+  velero:
+    enabled: true
+    schedule: "0 3 * * *"  # Daily at 3 AM
+    ttl: 720h  # 30 days
+    
+    includeNamespaces:
+      - production
+    
+    excludeResources:
+      - events
+      - events.events.k8s.io
+    
+    storageLocation:
+      provider: aws
+      bucket: agency-dark-backups
+      config:
+        region: us-west-2
+
+# ============================================================================
+# Cost Optimization
+# ============================================================================
+
+costOptimization:
+  spotInstances:
+    enabled: true
+    spotPercentage: 50
+  
+  verticalPodAutoscaler:
+    enabled: true
+    updateMode: Auto
+  
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1

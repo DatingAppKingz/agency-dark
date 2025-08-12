@@ -1,0 +1,386 @@
+# OAuth Configuration for Different Environments
+# This file contains OAuth settings for production, staging, and development
+
+environments:
+  production:
+    oauth:
+      issuer: "https://api.agency-dark.com"
+      authorization_endpoint: "https://api.agency-dark.com/oauth/authorize"
+      token_endpoint: "https://api.agency-dark.com/oauth/token"
+      userinfo_endpoint: "https://api.agency-dark.com/oauth/userinfo"
+      jwks_uri: "https://api.agency-dark.com/.well-known/jwks.json"
+      introspection_endpoint: "https://api.agency-dark.com/oauth/introspect"
+      revocation_endpoint: "https://api.agency-dark.com/oauth/revoke"
+      
+    security:
+      require_https: true
+      require_pkce: true
+      token_encryption: true
+      rate_limiting:
+        enabled: true
+        authorize: 100  # requests per minute
+        token: 200
+        introspect: 500
+        revoke: 100
+      
+    token_settings:
+      access_token_lifetime: 3600  # 1 hour
+      refresh_token_lifetime: 2592000  # 30 days
+      id_token_lifetime: 3600
+      authorization_code_lifetime: 600  # 10 minutes
+      rotate_refresh_tokens: true
+      
+    cors:
+      allowed_origins:
+        - "https://app.agency-dark.com"
+        - "https://admin.agency-dark.com"
+      allowed_methods:
+        - GET
+        - POST
+        - OPTIONS
+      allowed_headers:
+        - Authorization
+        - Content-Type
+        - X-Requested-With
+      
+    providers:
+      google:
+        client_id: "${GOOGLE_CLIENT_ID}"
+        client_secret: "${GOOGLE_CLIENT_SECRET}"
+        authorization_endpoint: "https://accounts.google.com/o/oauth2/v2/auth"
+        token_endpoint: "https://oauth2.googleapis.com/token"
+        userinfo_endpoint: "https://www.googleapis.com/oauth2/v2/userinfo"
+        scopes:
+          - openid
+          - email
+          - profile
+        
+      instagram:
+        client_id: "${INSTAGRAM_CLIENT_ID}"
+        client_secret: "${INSTAGRAM_CLIENT_SECRET}"
+        authorization_endpoint: "https://api.instagram.com/oauth/authorize"
+        token_endpoint: "https://api.instagram.com/oauth/access_token"
+        userinfo_endpoint: "https://graph.instagram.com/me"
+        scopes:
+          - user_profile
+          - user_media
+        
+      microsoft:
+        client_id: "${MICROSOFT_CLIENT_ID}"
+        client_secret: "${MICROSOFT_CLIENT_SECRET}"
+        tenant_id: "${MICROSOFT_TENANT_ID}"
+        authorization_endpoint: "https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/authorize"
+        token_endpoint: "https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/token"
+        userinfo_endpoint: "https://graph.microsoft.com/v1.0/me"
+        scopes:
+          - openid
+          - email
+          - profile
+          - User.Read
+    
+    database:
+      host: "${DB_HOST}"
+      port: 5432
+      name: "agencydark_prod"
+      user: "${DB_USER}"
+      password: "${DB_PASSWORD}"
+      ssl_mode: "require"
+      pool:
+        min_size: 10
+        max_size: 50
+        max_overflow: 20
+        pool_timeout: 30
+        idle_timeout: 600
+        
+    redis:
+      host: "${REDIS_HOST}"
+      port: 6379
+      password: "${REDIS_PASSWORD}"
+      db: 0
+      ssl: true
+      pool:
+        max_connections: 100
+        
+    monitoring:
+      enabled: true
+      sentry_dsn: "${SENTRY_DSN}"
+      datadog_api_key: "${DATADOG_API_KEY}"
+      log_level: "INFO"
+      
+    feature_flags:
+      oauth_enabled: true
+      jwt_enabled: false  # Disabled after migration
+      pkce_required: true
+      consent_required: true
+      mfa_available: true
+
+  staging:
+    oauth:
+      issuer: "https://staging-api.agency-dark.com"
+      authorization_endpoint: "https://staging-api.agency-dark.com/oauth/authorize"
+      token_endpoint: "https://staging-api.agency-dark.com/oauth/token"
+      userinfo_endpoint: "https://staging-api.agency-dark.com/oauth/userinfo"
+      jwks_uri: "https://staging-api.agency-dark.com/.well-known/jwks.json"
+      introspection_endpoint: "https://staging-api.agency-dark.com/oauth/introspect"
+      revocation_endpoint: "https://staging-api.agency-dark.com/oauth/revoke"
+      
+    security:
+      require_https: true
+      require_pkce: false  # Optional for testing
+      token_encryption: true
+      rate_limiting:
+        enabled: true
+        authorize: 200
+        token: 400
+        introspect: 1000
+        revoke: 200
+      
+    token_settings:
+      access_token_lifetime: 900  # 15 minutes for faster testing
+      refresh_token_lifetime: 86400  # 1 day
+      id_token_lifetime: 900
+      authorization_code_lifetime: 300  # 5 minutes
+      rotate_refresh_tokens: true
+      
+    cors:
+      allowed_origins:
+        - "https://staging-app.agency-dark.com"
+        - "https://staging-admin.agency-dark.com"
+        - "http://localhost:3000"  # For local testing
+      allowed_methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowed_headers:
+        - "*"
+      
+    providers:
+      google:
+        client_id: "${STAGING_GOOGLE_CLIENT_ID}"
+        client_secret: "${STAGING_GOOGLE_CLIENT_SECRET}"
+        # Same endpoints as production
+        
+      mock_provider:
+        enabled: true
+        client_id: "mock_client_id"
+        client_secret: "mock_client_secret"
+        authorization_endpoint: "https://staging-api.agency-dark.com/mock/oauth/authorize"
+        token_endpoint: "https://staging-api.agency-dark.com/mock/oauth/token"
+        userinfo_endpoint: "https://staging-api.agency-dark.com/mock/oauth/userinfo"
+    
+    database:
+      host: "${STAGING_DB_HOST}"
+      port: 5432
+      name: "agencydark_staging"
+      user: "${STAGING_DB_USER}"
+      password: "${STAGING_DB_PASSWORD}"
+      ssl_mode: "prefer"
+      pool:
+        min_size: 5
+        max_size: 20
+        
+    redis:
+      host: "${STAGING_REDIS_HOST}"
+      port: 6379
+      password: "${STAGING_REDIS_PASSWORD}"
+      db: 1
+      ssl: false
+      
+    monitoring:
+      enabled: true
+      sentry_dsn: "${STAGING_SENTRY_DSN}"
+      datadog_api_key: "${STAGING_DATADOG_API_KEY}"
+      log_level: "DEBUG"
+      
+    feature_flags:
+      oauth_enabled: true
+      jwt_enabled: true  # Both enabled for migration testing
+      pkce_required: false
+      consent_required: true
+      mfa_available: true
+      debug_mode: true
+
+  development:
+    oauth:
+      issuer: "http://localhost:8000"
+      authorization_endpoint: "http://localhost:8000/oauth/authorize"
+      token_endpoint: "http://localhost:8000/oauth/token"
+      userinfo_endpoint: "http://localhost:8000/oauth/userinfo"
+      jwks_uri: "http://localhost:8000/.well-known/jwks.json"
+      introspection_endpoint: "http://localhost:8000/oauth/introspect"
+      revocation_endpoint: "http://localhost:8000/oauth/revoke"
+      
+    security:
+      require_https: false  # Allow HTTP for local dev
+      require_pkce: false
+      token_encryption: false  # Disabled for debugging
+      rate_limiting:
+        enabled: false  # Disabled for development
+      
+    token_settings:
+      access_token_lifetime: 7200  # 2 hours
+      refresh_token_lifetime: 604800  # 1 week
+      id_token_lifetime: 7200
+      authorization_code_lifetime: 600
+      rotate_refresh_tokens: false  # Easier debugging
+      
+    cors:
+      allowed_origins:
+        - "*"  # Allow all origins in development
+      allowed_methods:
+        - "*"
+      allowed_headers:
+        - "*"
+      
+    providers:
+      mock_provider:
+        enabled: true
+        client_id: "dev_mock_client"
+        client_secret: "dev_mock_secret"
+        authorization_endpoint: "http://localhost:8000/mock/oauth/authorize"
+        token_endpoint: "http://localhost:8000/mock/oauth/token"
+        userinfo_endpoint: "http://localhost:8000/mock/oauth/userinfo"
+        auto_approve: true  # Skip consent for faster testing
+    
+    database:
+      host: "localhost"
+      port: 5432
+      name: "agencydark_dev"
+      user: "postgres"
+      password: "postgres"
+      ssl_mode: "disable"
+      pool:
+        min_size: 2
+        max_size: 10
+        
+    redis:
+      host: "localhost"
+      port: 6379
+      password: ""
+      db: 2
+      ssl: false
+      
+    monitoring:
+      enabled: false  # Disabled for local dev
+      log_level: "DEBUG"
+      console_output: true
+      
+    feature_flags:
+      oauth_enabled: true
+      jwt_enabled: true
+      pkce_required: false
+      consent_required: false  # Skip for faster testing
+      mfa_available: false
+      debug_mode: true
+      hot_reload: true
+
+# Client configurations
+clients:
+  production:
+    - client_id: "prod_web_app"
+      client_secret: "${PROD_WEB_APP_SECRET}"
+      name: "Agency Dark Web Application"
+      type: "confidential"
+      redirect_uris:
+        - "https://app.agency-dark.com/callback"
+        - "https://app.agency-dark.com/silent-refresh"
+      allowed_scopes:
+        - openid
+        - profile
+        - email
+        - api:read
+        - api:write
+        - offline_access
+      grant_types:
+        - authorization_code
+        - refresh_token
+      response_types:
+        - code
+      require_pkce: true
+      require_consent: false  # First-party app
+      
+    - client_id: "prod_mobile_app"
+      name: "Agency Dark Mobile"
+      type: "public"
+      redirect_uris:
+        - "com.agencydark://callback"
+        - "agencydark://callback"
+      allowed_scopes:
+        - openid
+        - profile
+        - email
+        - api:read
+        - api:write
+        - offline_access
+      grant_types:
+        - authorization_code
+        - refresh_token
+      response_types:
+        - code
+      require_pkce: true
+      require_consent: false
+      
+    - client_id: "prod_admin_portal"
+      client_secret: "${PROD_ADMIN_SECRET}"
+      name: "Admin Portal"
+      type: "confidential"
+      redirect_uris:
+        - "https://admin.agency-dark.com/callback"
+      allowed_scopes:
+        - openid
+        - profile
+        - email
+        - admin:read
+        - admin:write
+      grant_types:
+        - authorization_code
+        - client_credentials
+      response_types:
+        - code
+      require_pkce: true
+      require_consent: false
+      access_token_lifetime: 1800  # 30 minutes for admin
+
+  staging:
+    - client_id: "staging_test_app"
+      client_secret: "staging_test_secret"
+      name: "Test Application"
+      type: "confidential"
+      redirect_uris:
+        - "https://staging-app.agency-dark.com/callback"
+        - "http://localhost:3000/callback"
+      allowed_scopes:
+        - "*"  # All scopes for testing
+      grant_types:
+        - authorization_code
+        - implicit
+        - client_credentials
+        - password
+        - refresh_token
+      response_types:
+        - code
+        - token
+        - id_token
+      require_pkce: false
+      require_consent: true
+
+  development:
+    - client_id: "dev_test_client"
+      client_secret: "dev_test_secret"
+      name: "Development Test Client"
+      type: "confidential"
+      redirect_uris:
+        - "http://localhost:3000/callback"
+        - "http://localhost:3001/callback"
+        - "http://127.0.0.1:3000/callback"
+      allowed_scopes:
+        - "*"
+      grant_types:
+        - "*"
+      response_types:
+        - "*"
+      require_pkce: false
+      require_consent: false
+      debug_mode: true
